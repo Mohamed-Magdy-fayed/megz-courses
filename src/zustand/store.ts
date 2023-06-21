@@ -24,7 +24,7 @@ export const useToastStore = create<ToastState>()((set) => ({
 export type ActiveLinkType =
   | ""
   | "students"
-  | "companies"
+  | "staff"
   | "account"
   | "settings"
   | "login"

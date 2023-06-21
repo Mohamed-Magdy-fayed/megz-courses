@@ -11,6 +11,7 @@ import Navbar from "./Navbar";
 import { ThemeProvider, createTheme } from "@mui/material";
 import { useRouter } from "next/router";
 import Spinner from "./Spinner";
+import { usePathname } from "next/navigation";
 
 const drawerWidth = 240;
 
@@ -78,40 +79,50 @@ export default function AppDrawer({ children }: AppDrawerPrps) {
         component="div"
         className="flex flex-col items-center gap-2 [&>*]:w-full [&>*]:rounded-lg [&>*]:bg-transparent [&>*]:p-2 [&>*]:font-bold [&>*]:text-slate-300 hover:[&>*]:bg-slate-100/10"
       >
-        <Link className={navStore.activeLink === "" ? active : ""} href="/">
+        <Link
+          onClick={() => navStore.closeNav()}
+          className={navStore.activeLink === "" ? active : ""}
+          href="/"
+        >
           Overview
         </Link>
         <Link
+          onClick={() => navStore.closeNav()}
           className={navStore.activeLink === "students" ? active : ""}
           href="/students"
         >
           Students
         </Link>
         <Link
-          className={navStore.activeLink === "companies" ? active : ""}
-          href="/companies"
+          onClick={() => navStore.closeNav()}
+          className={navStore.activeLink === "staff" ? active : ""}
+          href="/staff"
         >
-          Companies
+          Staff
         </Link>
         <Link
+          onClick={() => navStore.closeNav()}
           className={navStore.activeLink === "account" ? active : ""}
           href="/account"
         >
           Account
         </Link>
         <Link
+          onClick={() => navStore.closeNav()}
           className={navStore.activeLink === "settings" ? active : ""}
           href="/settings"
         >
           Settings
         </Link>
         <Link
+          onClick={() => navStore.closeNav()}
           className={navStore.activeLink === "login" ? active : ""}
           href="/authentication"
         >
           Login or Register
         </Link>
         <Link
+          onClick={() => navStore.closeNav()}
           className={navStore.activeLink === "error" ? active : ""}
           href="/"
         >

@@ -11,13 +11,12 @@ import Avatar from "@mui/material/Avatar";
 import Divider from "@mui/material/Divider";
 import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
-import MenuItem from "@mui/material/MenuItem";
-import LogoDevIcon from "@mui/icons-material/LogoDev";
 import { signOut, useSession } from "next-auth/react";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import PeopleIcon from "@mui/icons-material/People";
 import { useRouter } from "next/router";
 import { useNavStore } from "@/zustand/store";
+import { usePathname } from "next/navigation";
 
 export default function Navbar({ drawerWidth }: { drawerWidth: number }) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -31,6 +30,21 @@ export default function Navbar({ drawerWidth }: { drawerWidth: number }) {
   const session = useSession();
   const router = useRouter();
   const navStore = useNavStore((state) => state);
+  const pathname = usePathname();
+
+  const handlePathnameChange = React.useCallback(() => {
+    if (navStore.opened) {
+      navStore.closeNav();
+    }
+  }, [navStore.opened]);
+
+  React.useEffect(
+    () => {
+      handlePathnameChange();
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [pathname]
+  );
 
   return (
     <AppBar

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Spinner from "@/components/Spinner";
 import AppDrawer from "@/components/AppDrawer";
 import { Toolbar } from "@mui/material";
-import Dashboard from "@/components/Dashboard";
+import Dashboard from "@/components/overview/Dashboard";
 
 export default function Home() {
   const session = useSession();
