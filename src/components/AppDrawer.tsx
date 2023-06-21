@@ -11,23 +11,8 @@ import Navbar from "./Navbar";
 import { ThemeProvider, createTheme } from "@mui/material";
 import { useRouter } from "next/router";
 import Spinner from "./Spinner";
-import { usePathname } from "next/navigation";
 
 const drawerWidth = 240;
-
-declare module "@mui/material/styles" {
-  interface Theme {
-    status: {
-      danger: string;
-    };
-  }
-  // allow configuration using `createTheme`
-  interface ThemeOptions {
-    status?: {
-      danger?: string;
-    };
-  }
-}
 
 const theme = createTheme({
   breakpoints: {
@@ -196,6 +181,7 @@ export default function AppDrawer({ children }: AppDrawerPrps) {
             p: 3,
             width: { xl: `calc(100% - ${drawerWidth}px)` },
           }}
+          className="w-full"
         >
           <Toolbar />
           {children}

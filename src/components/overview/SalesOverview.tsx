@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import ArrowPathIcon from "@heroicons/react/24/solid/ArrowPathIcon";
 import ArrowRightIcon from "@heroicons/react/24/solid/ArrowRightIcon";
 import {
@@ -9,9 +8,11 @@ import {
   CardHeader,
   Divider,
   SvgIcon,
+  SxProps,
 } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
-import { Chart } from "@/components/Chart";
+import { Chart } from "@/components/overview/Chart";
+import { Theme } from "@mui/material/styles/createTheme";
 
 const useChartOptions = () => {
   const theme = useTheme();
@@ -107,8 +108,12 @@ const useChartOptions = () => {
   };
 };
 
-export const SalesOverview = (props: any) => {
-  const { chartSeries, sx } = props;
+interface SalsesOverviewProps {
+  chartSeries: any[];
+  sx: SxProps<Theme>;
+}
+
+export const SalesOverview = ({ chartSeries, sx }: SalsesOverviewProps) => {
   const chartOptions = useChartOptions();
 
   return (
@@ -154,9 +159,4 @@ export const SalesOverview = (props: any) => {
       </CardActions>
     </Card>
   );
-};
-
-SalesOverview.protoTypes = {
-  chartSeries: PropTypes.array.isRequired,
-  sx: PropTypes.object,
 };

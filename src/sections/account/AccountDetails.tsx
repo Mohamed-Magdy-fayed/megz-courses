@@ -9,6 +9,11 @@ import {
   Divider,
   TextField,
   Unstable_Grid2 as Grid,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  SelectChangeEvent,
 } from "@mui/material";
 
 const states = [
@@ -39,6 +44,16 @@ export const AccountDetails = () => {
     state: "los-angeles",
     country: "USA",
   });
+
+  const handleSelectChange = useCallback(
+    (event: SelectChangeEvent<HTMLInputElement>) => {
+      setValues((prevState) => ({
+        ...prevState,
+        [event.target.name]: event.target.value,
+      }));
+    },
+    []
+  );
 
   const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setValues((prevState) => ({
@@ -113,22 +128,26 @@ export const AccountDetails = () => {
                 />
               </Grid>
               <Grid xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Select State"
-                  name="state"
-                  onChange={handleChange}
-                  required
-                  select
-                  SelectProps={{ native: true }}
-                  value={values.state}
-                >
-                  {states.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </TextField>
+                <FormControl className="w-full">
+                  <InputLabel id="demo-simple-select-helper-label">
+                    Select State
+                  </InputLabel>
+                  <Select
+                    name="state"
+                    labelId="demo-simple-select-helper-label"
+                    id="demo-simple-select-helper"
+                    label="Select State"
+                    onChange={handleSelectChange}
+                    required
+                    value={values.state as unknown as HTMLInputElement}
+                  >
+                    {states.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
             </Grid>
           </Box>

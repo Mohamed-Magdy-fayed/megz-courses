@@ -6,7 +6,7 @@ import GoogleIcon from "@mui/icons-material/Google";
 import Spinner from "@/components/Spinner";
 import { useRouter } from "next/router";
 
-export default function login() {
+const Page = () => {
   const session = useSession();
   const router = useRouter();
 
@@ -31,3 +31,5 @@ export default function login() {
     </main>
   );
 }
+
+export default Page;

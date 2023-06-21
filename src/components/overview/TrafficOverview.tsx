@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import ComputerDesktopIcon from "@heroicons/react/24/solid/ComputerDesktopIcon";
 import DeviceTabletIcon from "@heroicons/react/24/solid/DeviceTabletIcon";
 import PhoneIcon from "@heroicons/react/24/solid/PhoneIcon";
@@ -12,7 +11,7 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import { Chart } from "@/components/Chart";
+import { Chart } from "@/components/overview/Chart";
 
 const useChartOptions = (labels: string[]) => {
   const theme = useTheme();
@@ -80,12 +79,17 @@ const iconMap = {
   ),
 };
 
-export const TrafficOverview = (props: {
+interface TrafficOverviewProps {
   chartSeries: number[];
   labels: string[];
   sx: any;
-}) => {
-  const { chartSeries, labels, sx } = props;
+}
+
+export const TrafficOverview = ({
+  chartSeries,
+  labels,
+  sx,
+}: TrafficOverviewProps) => {
   const chartOptions = useChartOptions(labels);
 
   return (
@@ -133,10 +137,4 @@ export const TrafficOverview = (props: {
       </CardContent>
     </Card>
   );
-};
-
-TrafficOverview.propTypes = {
-  chartSeries: PropTypes.array.isRequired,
-  labels: PropTypes.array.isRequired,
-  sx: PropTypes.object,
 };

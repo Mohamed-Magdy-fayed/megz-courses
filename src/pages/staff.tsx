@@ -135,9 +135,13 @@ const Page = () => (
             </div>
           </Stack>
           <StaffSearch />
-          <Grid container spacing={3}>
+          <Grid component="div" className="grid grid-cols-12 gap-8">
             {staff.map((staffMember) => (
-              <Grid xs={12} md={6} lg={4} key={staffMember.id}>
+              <Grid
+                component="div"
+                className="col-span-12 md:col-span-6 lg:col-span-4"
+                key={staffMember.id}
+              >
                 <StaffMemberCard staffMember={staffMember} />
               </Grid>
             ))}

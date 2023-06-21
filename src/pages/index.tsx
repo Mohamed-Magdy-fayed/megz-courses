@@ -6,7 +6,7 @@ import AppDrawer from "@/components/AppDrawer";
 import { Toolbar } from "@mui/material";
 import Dashboard from "@/components/overview/Dashboard";
 
-export default function Home() {
+const Page = () => {
   const session = useSession();
   const router = useRouter();
 
@@ -22,4 +22,6 @@ export default function Home() {
       <Dashboard></Dashboard>
     </AppDrawer>
   );
-}
+};
+
+export default Page;

@@ -1,5 +1,4 @@
 import { format } from "date-fns";
-import PropTypes from "prop-types";
 import ArrowRightIcon from "@heroicons/react/24/solid/ArrowRightIcon";
 import {
   Box,
@@ -16,7 +15,9 @@ import {
   TableRow,
   CssBaseline,
 } from "@mui/material";
-import { SeverityPill } from "@/components/SeverityPill";
+import { SeverityPill } from "@/components/overview/SeverityPill";
+import { SxProps, Theme } from "@mui/material/styles";
+import Scrollbar from "../Scrollbar";
 
 const statusMap: {
   pending: "warning";
@@ -39,17 +40,17 @@ interface Order {
   status: string;
 }
 
-export const LatestOrdersOverview = (props: { orders: Order[]; sx: any }) => {
+export const LatestOrdersOverview = (props: {
+  orders: Order[];
+  sx: SxProps<Theme>;
+}) => {
   const { orders = [], sx } = props;
 
   return (
     <Card sx={sx} className="col-span-12 lg:col-span-8">
       <CssBaseline />
       <CardHeader title="Latest Orders" />
-      <Box
-        component="div"
-        className="overflow-y-scroll transition-all scrollbar-thin scrollbar-track-transparent scrollbar-thumb-rounded-lg scrollbar-thumb-primary/50"
-      >
+      <Scrollbar>
         <Box sx={{ minWidth: 800 }}>
           <Table>
             <TableHead>
@@ -82,7 +83,7 @@ export const LatestOrdersOverview = (props: { orders: Order[]; sx: any }) => {
             </TableBody>
           </Table>
         </Box>
-      </Box>
+      </Scrollbar>{" "}
       <Divider />
       <CardActions sx={{ justifyContent: "flex-end" }}>
         <Button
@@ -100,9 +101,4 @@ export const LatestOrdersOverview = (props: { orders: Order[]; sx: any }) => {
       </CardActions>
     </Card>
   );
-};
-
-LatestOrdersOverview.prototype = {
-  orders: PropTypes.array,
-  sx: PropTypes.object,
 };

@@ -7,7 +7,7 @@ import GoogleIcon from "@mui/icons-material/Google";
 import LoginForm from "@/components/LoginForm";
 import Copyright from "@/components/Copyright";
 
-export default function authentication() {
+const Page = () => {
   const [variant, setVariant] = React.useState<"login" | "register">("login");
   const session = useSession();
   const router = useRouter();
@@ -17,7 +17,7 @@ export default function authentication() {
   }, [session.status]);
 
   return (
-    <main className="min-h-screen p-4 bg-slate-50">
+    <main className="min-h-screen bg-slate-50 p-4">
       {variant === "register" ? (
         <RegisterForm></RegisterForm>
       ) : (
@@ -60,4 +60,6 @@ export default function authentication() {
       </div>
     </main>
   );
-}
+};
+
+export default Page;

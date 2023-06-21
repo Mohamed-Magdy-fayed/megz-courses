@@ -14,8 +14,8 @@ import {
 } from "@mui/material";
 import { useSelection } from "src/hooks/UseSelection";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
-import { CustomersTable } from "src/sections/customer/CustomersTable";
-import { CustomersSearch } from "src/sections/customer/CustomersSearch";
+import { StudentsTable } from "@/sections/students/StudentsTable";
+import { StudentsSearch } from "@/sections/students/StudentsSearch";
 import { applyPagination } from "src/utils/applyPagination";
 
 const now = new Date();
@@ -210,72 +210,63 @@ const Page = () => {
 
   return (
     <DashboardLayout>
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          py: 8,
-        }}
-      >
-        <Container maxWidth="xl">
-          <Stack spacing={3}>
-            <Stack direction="row" justifyContent="space-between" spacing={4}>
-              <Stack spacing={1}>
-                <Typography variant="h4">Students</Typography>
-                <Stack alignItems="center" direction="row" spacing={1}>
-                  <Button
-                    color="inherit"
-                    startIcon={
-                      <SvgIcon fontSize="small">
-                        <ArrowUpOnSquareIcon />
-                      </SvgIcon>
-                    }
-                  >
-                    Import
-                  </Button>
-                  <Button
-                    color="inherit"
-                    startIcon={
-                      <SvgIcon fontSize="small">
-                        <ArrowDownOnSquareIcon />
-                      </SvgIcon>
-                    }
-                  >
-                    Export
-                  </Button>
-                </Stack>
-              </Stack>
-              <div>
+      <Box component="main">
+        <Stack spacing={3}>
+          <Stack direction="row" justifyContent="space-between" spacing={4}>
+            <Stack spacing={1}>
+              <Typography variant="h4">Students</Typography>
+              <Stack alignItems="center" direction="row" spacing={1}>
                 <Button
+                  color="inherit"
                   startIcon={
                     <SvgIcon fontSize="small">
-                      <PlusIcon />
+                      <ArrowUpOnSquareIcon />
                     </SvgIcon>
                   }
-                  className="bg-primary"
-                  variant="contained"
-                  color="primary"
                 >
-                  Add
+                  Import
                 </Button>
-              </div>
+                <Button
+                  color="inherit"
+                  startIcon={
+                    <SvgIcon fontSize="small">
+                      <ArrowDownOnSquareIcon />
+                    </SvgIcon>
+                  }
+                >
+                  Export
+                </Button>
+              </Stack>
             </Stack>
-            <CustomersSearch />
-            <CustomersTable
-              count={data.length}
-              items={customers}
-              onDeselectAll={customersSelection.handleDeselectAll}
-              onDeselectOne={customersSelection.handleDeselectOne}
-              onPageChange={handlePageChange}
-              onRowsPerPageChange={handleRowsPerPageChange}
-              onSelectAll={customersSelection.handleSelectAll}
-              onSelectOne={customersSelection.handleSelectOne}
-              page={page}
-              rowsPerPage={rowsPerPage}
-              selected={customersSelection.selected}
-            />
+            <div>
+              <Button
+                startIcon={
+                  <SvgIcon fontSize="small">
+                    <PlusIcon />
+                  </SvgIcon>
+                }
+                className="bg-primary"
+                variant="contained"
+              >
+                Add
+              </Button>
+            </div>
           </Stack>
-        </Container>
+          <StudentsSearch />
+          <StudentsTable
+            count={data.length}
+            items={customers}
+            onDeselectAll={customersSelection.handleDeselectAll}
+            onDeselectOne={customersSelection.handleDeselectOne}
+            onPageChange={handlePageChange}
+            onRowsPerPageChange={handleRowsPerPageChange}
+            onSelectAll={customersSelection.handleSelectAll}
+            onSelectOne={customersSelection.handleSelectOne}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            selected={customersSelection.selected}
+          />
+        </Stack>
       </Box>
     </DashboardLayout>
   );

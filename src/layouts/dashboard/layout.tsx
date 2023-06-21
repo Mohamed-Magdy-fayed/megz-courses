@@ -21,9 +21,5 @@ export const Layout = ({ children }: { children: ReactNode }) => {
     [pathname]
   );
 
-  return (
-    <AppDrawer>
-      {children}
-    </AppDrawer>
-  );
+  return <AppDrawer>{children}</AppDrawer>;
 };
