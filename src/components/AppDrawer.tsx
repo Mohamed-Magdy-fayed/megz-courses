@@ -123,8 +123,8 @@ export default function AppDrawer({ children }: AppDrawerPrps) {
         </Link>
         <Link
           onClick={() => navStore.closeNav()}
-          className={navStore.activeLink === "error" ? active : ""}
-          href="/"
+          className={navStore.activeLink === "404" ? active : ""}
+          href="/404"
         >
           Error
         </Link>

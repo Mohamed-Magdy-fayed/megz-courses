@@ -29,7 +29,7 @@ export type ActiveLinkType =
   | "settings"
   | "login"
   | "register"
-  | "error"
+  | "404"
   | null;
 
 interface SideNavState {
