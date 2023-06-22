@@ -11,6 +11,7 @@ import React from "react";
 interface PasswordFieldProps {
   loading: boolean;
   password: string;
+  smallGrid?: boolean;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
@@ -18,6 +19,7 @@ export default function PasswordField({
   loading,
   password,
   handleChange,
+  smallGrid,
 }: PasswordFieldProps) {
   const [showPassword, setShowPassword] = React.useState(false);
 
@@ -32,7 +34,11 @@ export default function PasswordField({
     <FormControl
       fullWidth
       variant="outlined"
-      className="col-span-12  md:col-span-6 lg:col-span-4"
+      className={`${
+        smallGrid
+          ? "col-span-12 lg:col-span-6"
+          : "col-span-12 md:col-span-6 lg:col-span-4"
+      }`}
     >
       <InputLabel htmlFor="password">Password *</InputLabel>
       <OutlinedInput

@@ -106,4 +106,69 @@ export const studentsRouter = createTRPCRouter({
         user,
       };
     }),
+  editStudentImage: protectedProcedure
+    .input(
+      z.object({
+        url: z.string(),
+        email: z.string().email(),
+      })
+    )
+    .mutation(async ({ ctx, input: { url, email } }) => {
+      const updatedUser = await ctx.prisma.user.update({
+        where: {
+          email,
+        },
+        data: {
+          image: url,
+        },
+        include: {
+          address: true,
+        },
+      });
+
+      return { updatedUser };
+    }),
+  editStudent: protectedProcedure
+    .input(
+      z.object({
+        name: z.string(),
+        email: z.string().email(),
+        phone: z.string().optional(),
+        state: z.string().optional(),
+        country: z.string().optional(),
+        street: z.string().optional(),
+        city: z.string().optional(),
+        id: z.string(),
+      })
+    )
+    .mutation(
+      async ({
+        ctx,
+        input: { name, email, phone, state, country, street, city, id },
+      }) => {
+        const updatedUser = await ctx.prisma.address.update({
+          where: {
+            userId: id,
+          },
+          data: {
+            state,
+            country,
+            street,
+            city,
+            User: {
+              update: {
+                name,
+                email,
+                phone,
+              },
+            },
+          },
+          include: {
+            User: true,
+          },
+        });
+
+        return { updatedUser };
+      }
+    ),
 });

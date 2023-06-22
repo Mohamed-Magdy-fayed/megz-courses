@@ -93,6 +93,7 @@ const Page = () => {
             </Stack>
             <div>
               <TransitionsModal
+                Content={AddStudentForm}
                 modalTitle="Create a student"
                 buttonProps={{
                   startIcon: (
@@ -104,9 +105,7 @@ const Page = () => {
                   variant: "contained",
                 }}
                 buttonChildren={"Add"}
-              >
-                <AddStudentForm></AddStudentForm>
-              </TransitionsModal>
+              />
             </div>
           </Stack>
           <StudentsSearch />

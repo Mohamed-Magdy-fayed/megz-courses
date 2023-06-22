@@ -9,6 +9,8 @@ import Slide from "@mui/material/Slide";
 import { TransitionProps } from "@mui/material/transitions";
 import { api } from "@/utils/api";
 import { Box, Stack, Typography } from "@mui/material";
+import { Address, User } from "@prisma/client";
+import { Student } from "@/pages/students";
 
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
@@ -22,13 +24,13 @@ const Transition = React.forwardRef(function Transition(
 interface AlertDialogSlideProps {
   buttonLabel: string;
   buttonProps?: ButtonProps;
-  userIds: string[];
+  users: Student[];
 }
 
 export default function AlertDialogSlide({
   buttonLabel,
   buttonProps,
-  userIds,
+  users,
 }: AlertDialogSlideProps) {
   const [open, setOpen] = React.useState(false);
 
@@ -45,7 +47,7 @@ export default function AlertDialogSlide({
 
   const handleDelete = () => {
     deleteStudent.mutate(
-      { userIds },
+      { userIds: users.map((user) => user.id) },
       {
         onSuccess() {
           trpcUtils.students.getStudents.invalidate();
@@ -71,12 +73,12 @@ export default function AlertDialogSlide({
         <DialogContent>
           <DialogContentText id="alert-dialog-slide-description">
             Are you sure that you want to delete{" "}
-            {userIds.length > 1 ? "these" : "this"} user?
+            {users.length > 1 ? "these" : "this"} user?
           </DialogContentText>
           <Stack direction="column">
-            {userIds.map((id) => (
-              <Typography key={id} className="text-error">
-                {id}
+            {users.map((user) => (
+              <Typography key={user.id} className="text-error">
+                {user.email}
               </Typography>
             ))}
           </Stack>

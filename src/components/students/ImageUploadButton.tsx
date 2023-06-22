@@ -5,11 +5,13 @@ import { CldUploadButton } from "next-cloudinary";
 
 interface ImageUploadButtonProps {
   loading: boolean;
+  isAccount?: boolean;
   handleChange: (url: string) => void;
 }
 
 export default function ImageUploadButton({
   loading,
+  isAccount,
   handleChange,
 }: ImageUploadButtonProps) {
   const [result, setResult] = React.useState<any>(null);
@@ -30,14 +32,16 @@ export default function ImageUploadButton({
       size="small"
     >
       <FileUploadOutlinedIcon className="mr-2"></FileUploadOutlinedIcon>
-      {!result
+      {isAccount
+        ? "Change Image"
+        : !result && !isAccount
         ? "Choose an image"
         : `${result.info.original_filename}.${result.info.format}`}
     </Button>
   );
 
   return (
-    <Tooltip title={!result ? "upload an image" : "change"}>
+    <Tooltip title={!result && !isAccount ? "upload an image" : "change"}>
       <label htmlFor="uploadImage">
         <CldUploadButton
           options={{ maxFiles: 1, sources: ["local"] }}

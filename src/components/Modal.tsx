@@ -7,6 +7,7 @@ import Button, { ButtonProps } from "@mui/material/Button";
 import { Divider, IconButton, Stack, Typography } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import Scrollbar from "./Scrollbar";
+import { ReactJSXElement } from "@emotion/react/types/jsx-namespace";
 
 const style = {
   position: "absolute" as "absolute",
@@ -21,12 +22,12 @@ const style = {
 };
 
 export default function TransitionsModal({
-  children,
+  Content,
   buttonChildren,
   buttonProps,
   modalTitle,
 }: {
-  children: React.ReactNode;
+  Content: ({ handleClose }: { handleClose: () => void }) => JSX.Element;
   buttonChildren: React.ReactNode;
   buttonProps: ButtonProps;
   modalTitle: string;
@@ -58,24 +59,24 @@ export default function TransitionsModal({
             component="div"
             className="absolute inset-8 grid overflow-auto rounded-lg bg-white shadow-md md:bottom-auto"
           >
-            <Scrollbar>
-              <Stack
-                direction="row"
-                className="w-full items-center justify-between p-4"
+            <Stack
+              direction="row"
+              className="w-full items-center justify-between p-4"
+            >
+              <Typography
+                id="transition-modal-title"
+                variant="h6"
+                component="h2"
               >
-                <Typography
-                  id="transition-modal-title"
-                  variant="h6"
-                  component="h2"
-                >
-                  {modalTitle}
-                </Typography>
-                <IconButton type="button" color="warning" onClick={handleClose}>
-                  <Close></Close>
-                </IconButton>
-              </Stack>
-              <Divider></Divider>
-              {children}
+                {modalTitle}
+              </Typography>
+              <IconButton type="button" color="warning" onClick={handleClose}>
+                <Close></Close>
+              </IconButton>
+            </Stack>
+            <Divider></Divider>
+            <Scrollbar>
+              <Content handleClose={handleClose} />
             </Scrollbar>
           </Box>
         </Fade>

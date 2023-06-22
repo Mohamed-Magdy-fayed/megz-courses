@@ -50,7 +50,11 @@ interface ValuesTypes {
   city?: string;
 }
 
-export default function AddStudentForm() {
+export default function AddStudentForm({
+  handleClose,
+}: {
+  handleClose: () => void;
+}) {
   const [values, setValues] = React.useState<ValuesTypes>({
     userName: "",
     email: "",
@@ -95,6 +99,7 @@ export default function AddStudentForm() {
     [values]
   );
 
+  const trpcUrils = api.useContext();
   const createStudent = api.students.createStudent.useMutation();
   const toast = useToastStore((state) => state);
 
@@ -112,6 +117,8 @@ export default function AddStudentForm() {
           onSuccess(data) {
             if (data.error?.message) return toast.error(data.error?.message);
             toast.success(`User created with the email: ${data.user?.email}`);
+            trpcUrils.students.getStudents.invalidate();
+            handleClose();
           },
           onSettled() {
             setLoading(false);

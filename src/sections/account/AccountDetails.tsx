@@ -1,4 +1,10 @@
-import { ChangeEvent, FormEventHandler, useCallback, useState } from "react";
+import {
+  ChangeEvent,
+  FormEventHandler,
+  useCallback,
+  useState,
+  useEffect,
+} from "react";
 import {
   Box,
   Button,
@@ -14,147 +20,200 @@ import {
   Select,
   MenuItem,
   SelectChangeEvent,
+  CircularProgress,
 } from "@mui/material";
+import CustomInput from "@/components/students/CustomInput";
+import { Address, User } from "@prisma/client";
+import { z } from "zod";
+import { api } from "@/utils/api";
+import { useToastStore } from "@/zustand/store";
 
-const states = [
-  {
-    value: "alabama",
-    label: "Alabama",
-  },
-  {
-    value: "new-york",
-    label: "New York",
-  },
-  {
-    value: "san-francisco",
-    label: "San Francisco",
-  },
-  {
-    value: "los-angeles",
-    label: "Los Angeles",
-  },
-];
+const valuesSchema = z.object({
+  name: z.string(),
+  email: z.string().email(),
+  phone: z.string().optional(),
+  state: z.string().optional(),
+  country: z.string().optional(),
+  street: z.string().optional(),
+  city: z.string().optional(),
+});
 
-export const AccountDetails = () => {
-  const [values, setValues] = useState({
-    firstName: "Anika",
-    lastName: "Visser",
-    email: "demo@devias.io",
-    phone: "",
-    state: "los-angeles",
-    country: "USA",
+interface ValuesTypes {
+  name: string;
+  email: string;
+  phone?: string;
+  state?: string;
+  country?: string;
+  street?: string;
+  city?: string;
+}
+
+export const AccountDetails = ({
+  user,
+}: {
+  user:
+    | (User & {
+        address: Address | null;
+      })
+    | null
+    | undefined;
+}) => {
+  const [values, setValues] = useState<ValuesTypes>({
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    city: user?.address?.city || "",
+    country: user?.address?.country || "",
+    state: user?.address?.state || "",
+    street: user?.address?.street || "",
   });
+  const [errors, setErrors] = useState<Partial<ValuesTypes>>({});
+  const [loading, setLoading] = useState(false);
 
-  const handleSelectChange = useCallback(
-    (event: SelectChangeEvent<HTMLInputElement>) => {
-      setValues((prevState) => ({
-        ...prevState,
-        [event.target.name]: event.target.value,
-      }));
+  const handleChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      setValues((prevState) => {
+        const newValues = {
+          ...prevState,
+          [event.target.name]: event.target.value,
+        };
+        setErrors(getErrors(newValues));
+        return newValues;
+      });
     },
-    []
+    [values]
   );
 
-  const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    setValues((prevState) => ({
-      ...prevState,
-      [event.target.name]: event.target.value,
-    }));
-  }, []);
+  const trpcUrils = api.useContext();
+  const editStudent = api.students.editStudent.useMutation();
+  const toast = useToastStore((state) => state);
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = useCallback(
     (event) => {
       event.preventDefault();
+      console.log(values);
+
+      if (!valuesSchema.safeParse(values).success)
+        return toast.error("Invalid input");
+
+      setLoading(true);
+      if (!user) return;
+      editStudent.mutate(
+        { ...values, id: user?.id },
+        {
+          onSuccess(data) {
+            trpcUrils.account.getByEmail.invalidate();
+            trpcUrils.account.getById.invalidate();
+            toast.success(
+              `User with the email: ${data.updatedUser?.User.email} has been updated`
+            );
+          },
+          onSettled() {
+            setLoading(false);
+          },
+        }
+      );
     },
-    []
+    [values]
   );
 
+  function getErrors(values: any) {
+    const parsed = valuesSchema.safeParse(values);
+    let errorsObj: Partial<ValuesTypes> = {};
+
+    !parsed.success
+      ? parsed.error.issues.map((issue) => {
+          errorsObj[issue.path[0] as keyof typeof errorsObj] = issue.message;
+        })
+      : {};
+    console.log(values);
+    console.log(errorsObj);
+
+    return errorsObj;
+  }
+
   return (
-    <form autoComplete="off" noValidate onSubmit={handleSubmit}>
+    <form
+      autoComplete="off"
+      aria-disabled={loading}
+      noValidate
+      onSubmit={handleSubmit}
+    >
       <Card>
         <CardHeader subheader="The information can be edited" title="Profile" />
         <CardContent sx={{ pt: 0 }}>
-          <Box sx={{ m: -1.5 }}>
-            <Grid container spacing={3}>
-              <Grid xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  helperText="Please specify the first name"
-                  label="First name"
-                  name="firstName"
-                  onChange={handleChange}
-                  required
-                  value={values.firstName}
-                />
-              </Grid>
-              <Grid xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Last name"
-                  name="lastName"
-                  onChange={handleChange}
-                  required
-                  value={values.lastName}
-                />
-              </Grid>
-              <Grid xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Email Address"
-                  name="email"
-                  onChange={handleChange}
-                  required
-                  value={values.email}
-                />
-              </Grid>
-              <Grid xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Phone Number"
-                  name="phone"
-                  onChange={handleChange}
-                  type="number"
-                  value={values.phone}
-                />
-              </Grid>
-              <Grid xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Country"
-                  name="country"
-                  onChange={handleChange}
-                  required
-                  value={values.country}
-                />
-              </Grid>
-              <Grid xs={12} md={6}>
-                <FormControl className="w-full">
-                  <InputLabel id="demo-simple-select-helper-label">
-                    Select State
-                  </InputLabel>
-                  <Select
-                    name="state"
-                    labelId="demo-simple-select-helper-label"
-                    id="demo-simple-select-helper"
-                    label="Select State"
-                    onChange={handleSelectChange}
-                    required
-                    value={values.state as unknown as HTMLInputElement}
-                  >
-                    {states.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-            </Grid>
+          <Box component="div" className="grid grid-cols-12 gap-4 p-4">
+            <CustomInput
+              smallGrid
+              loading={loading}
+              handleChange={handleChange}
+              value={values.name}
+              fullWidth
+              label="User Name"
+              name="name"
+            />
+            <CustomInput
+              smallGrid
+              loading={loading}
+              handleChange={handleChange}
+              value={values.email}
+              error={errors.email && values.email.length > 0 ? true : false}
+              fullWidth
+              label="Email Address"
+              name="email"
+              helperText={values.email.length > 0 && errors.email}
+            />
+            <CustomInput
+              smallGrid
+              loading={loading}
+              handleChange={handleChange}
+              value={values.phone}
+              fullWidth
+              label="Phone Number"
+              name="phone"
+              type="number"
+            />
+            <CustomInput
+              smallGrid
+              loading={loading}
+              handleChange={handleChange}
+              value={values.street}
+              fullWidth
+              label="Street"
+              name="street"
+            />
+            <CustomInput
+              smallGrid
+              loading={loading}
+              handleChange={handleChange}
+              value={values.city}
+              fullWidth
+              label="City"
+              name="city"
+            />
+            <CustomInput
+              smallGrid
+              loading={loading}
+              handleChange={handleChange}
+              value={values.state}
+              fullWidth
+              name="state"
+              label="State"
+            />
+            <CustomInput
+              smallGrid
+              loading={loading}
+              handleChange={handleChange}
+              value={values.country}
+              fullWidth
+              label="Country"
+              name="country"
+            />
           </Box>
         </CardContent>
         <Divider />
         <CardActions sx={{ justifyContent: "flex-end" }}>
-          <Button variant="contained" className="bg-primary">
+          <Button variant="contained" className="bg-primary" type="submit">
             Save details
           </Button>
         </CardActions>

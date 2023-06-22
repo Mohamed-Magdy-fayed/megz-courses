@@ -21,6 +21,7 @@ import { useMemo } from "react";
 import { applyPagination } from "@/utils/applyPagination";
 import { useSelection } from "@/hooks/UseSelection";
 import AlertDialogSlide from "@/components/students/AlertDialog";
+import Link from "next/link";
 
 interface StudentsTableProps {
   items?: Student[];
@@ -93,7 +94,9 @@ export const StudentsTable = (props: StudentsTableProps) => {
                   <AlertDialogSlide
                     buttonLabel="Delete"
                     buttonProps={{ color: "warning" }}
-                    userIds={selected}
+                    users={props.items.filter((user) =>
+                      selected.includes(user.id)
+                    )}
                   ></AlertDialogSlide>
                   <Button color="info">edit</Button>
                 </TableCell>
@@ -128,14 +131,19 @@ export const StudentsTable = (props: StudentsTableProps) => {
                     />
                   </TableCell>
                   <TableCell>
-                    <Stack alignItems="center" direction="row" spacing={2}>
-                      <Avatar src={student.image || ""}>
-                        {getInitials(student.name || "")}
-                      </Avatar>
-                      <Typography variant="subtitle2">
-                        {student.name}
-                      </Typography>
-                    </Stack>
+                    <Link href={`/account/${student.id}`}>
+                      <Stack alignItems="center" direction="row" spacing={2}>
+                        <Avatar src={student.image || ""}>
+                          {getInitials(student.name || "")}
+                        </Avatar>
+                        <Typography
+                          className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
+                          variant="subtitle2"
+                        >
+                          {student.name}
+                        </Typography>
+                      </Stack>
+                    </Link>
                   </TableCell>
                   <TableCell>{student.email}</TableCell>
                   <TableCell>{getAddress(student)}</TableCell>
