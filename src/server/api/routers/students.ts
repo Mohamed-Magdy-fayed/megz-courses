@@ -7,6 +7,52 @@ import {
 import bcrypt from "bcrypt";
 
 export const studentsRouter = createTRPCRouter({
+  getStudents: publicProcedure
+    .input(
+      z
+        .object({
+          limit: z.number().optional(),
+          cursor: z.object({ id: z.string(), createdAt: z.date() }),
+        })
+        .optional()
+    )
+    .query(async ({ ctx }) => {
+      const users = await ctx.prisma.user.findMany({
+        include: { address: true },
+      });
+
+      return users.map((user) => ({
+        id: user.id,
+        address: {
+          city: user.address?.city,
+          country: user.address?.country,
+          state: user.address?.state,
+          street: user.address?.street,
+        },
+        image: user.image,
+        createdAt: user.createdAt,
+        email: user.email,
+        name: user.name,
+        phone: user.phone,
+      }));
+    }),
+  deleteStudent: protectedProcedure
+    .input(
+      z.object({
+        userIds: z.array(z.string()),
+      })
+    )
+    .mutation(async ({ input: { userIds }, ctx }) => {
+      const deletedUsers = await ctx.prisma.user.deleteMany({
+        where: {
+          id: {
+            in: userIds,
+          },
+        },
+      });
+
+      return { deletedUsers };
+    }),
   createStudent: protectedProcedure
     .input(
       z.object({

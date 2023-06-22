@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 export const useSelection = (items: string[] = []) => {
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>(items);
 
   useEffect(() => {
     setSelected([]);

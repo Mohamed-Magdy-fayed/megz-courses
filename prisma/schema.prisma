@@ -97,7 +97,7 @@ model Address {
     state   String?
     street  String?
 
-    User   User   @relation(fields: [userId], references: [id])
+    User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId String @unique @db.ObjectId
 
     updatedAt DateTime @updatedAt
