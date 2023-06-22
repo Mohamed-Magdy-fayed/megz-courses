@@ -17,10 +17,12 @@ import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { StudentsTable } from "@/sections/students/StudentsTable";
 import { StudentsSearch } from "@/sections/students/StudentsSearch";
 import { applyPagination } from "src/utils/applyPagination";
+import TransitionsModal from "@/components/Modal";
+import AddStudentForm from "@/components/students/AddStudentForm";
 
 const now = new Date();
 
-interface Customer {
+interface Student {
   id: string;
   address: {
     city: string;
@@ -35,7 +37,7 @@ interface Customer {
   phone: string;
 }
 
-const data: Customer[] = [
+const data: Student[] = [
   {
     id: "5e887ac47eed253091be10cb",
     address: {
@@ -178,24 +180,24 @@ const data: Customer[] = [
   },
 ];
 
-const useCustomers = (page: number, rowsPerPage: number) => {
+const useStudents = (page: number, rowsPerPage: number) => {
   return useMemo(() => {
     return applyPagination(data, page, rowsPerPage);
   }, [page, rowsPerPage]);
 };
 
-const useCustomerIds = (customers: Customer[]) => {
+const useStudentsIds = (students: Student[]) => {
   return useMemo(() => {
-    return customers.map((customer) => customer.id);
-  }, [customers]);
+    return students.map((student) => student.id);
+  }, [students]);
 };
 
 const Page = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const customers = useCustomers(page, rowsPerPage);
-  const customersIds = useCustomerIds(customers);
-  const customersSelection = useSelection(customersIds);
+  const students = useStudents(page, rowsPerPage);
+  const studentsIds = useStudentsIds(students);
+  const studentsSelection = useSelection(studentsIds);
 
   const handlePageChange = useCallback(
     (event: MouseEvent<HTMLButtonElement> | null, value: number) => {
@@ -239,32 +241,36 @@ const Page = () => {
               </Stack>
             </Stack>
             <div>
-              <Button
-                startIcon={
-                  <SvgIcon fontSize="small">
-                    <PlusIcon />
-                  </SvgIcon>
-                }
-                className="bg-primary"
-                variant="contained"
+              <TransitionsModal
+                modalTitle="Create a student"
+                buttonProps={{
+                  startIcon: (
+                    <SvgIcon fontSize="small">
+                      <PlusIcon />
+                    </SvgIcon>
+                  ),
+                  className: "bg-primary",
+                  variant: "contained",
+                }}
+                buttonChildren={"Add"}
               >
-                Add
-              </Button>
+                <AddStudentForm></AddStudentForm>
+              </TransitionsModal>
             </div>
           </Stack>
           <StudentsSearch />
           <StudentsTable
             count={data.length}
-            items={customers}
-            onDeselectAll={customersSelection.handleDeselectAll}
-            onDeselectOne={customersSelection.handleDeselectOne}
+            items={students}
+            onDeselectAll={studentsSelection.handleDeselectAll}
+            onDeselectOne={studentsSelection.handleDeselectOne}
             onPageChange={handlePageChange}
             onRowsPerPageChange={handleRowsPerPageChange}
-            onSelectAll={customersSelection.handleSelectAll}
-            onSelectOne={customersSelection.handleSelectOne}
+            onSelectAll={studentsSelection.handleSelectAll}
+            onSelectOne={studentsSelection.handleSelectOne}
             page={page}
             rowsPerPage={rowsPerPage}
-            selected={customersSelection.selected}
+            selected={studentsSelection.selected}
           />
         </Stack>
       </Box>

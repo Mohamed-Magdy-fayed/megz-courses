@@ -25,7 +25,7 @@ export default function SnackbarContainer() {
   };
 
   return (
-    <Snackbar open={toast.open} autoHideDuration={6000} onClose={handleClose}>
+    <Snackbar open={toast.open} autoHideDuration={3000} onClose={handleClose}>
       <Alert onClose={handleClose} severity={toast.type} sx={{ width: "100%" }}>
         {toast.msg}
       </Alert>

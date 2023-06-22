@@ -48,8 +48,16 @@ model User {
     emailVerified  DateTime?
     image          String?
     hashedPassword String?
-    accounts       Account[]
-    sessions       Session[]
+    phone          String?
+
+    accounts    Account[]
+    sessions    Session[]
+    Order       Order[]
+    staffMember StaffMember?
+    address     Address?
+
+    updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
 }
 
 model VerificationToken {
@@ -59,4 +67,66 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model Course {
+    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    name      String
+    image     String
+    updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
+}
+
+model Order {
+    id          String @id @default(auto()) @map("_id") @db.ObjectId
+    orderNumber String
+    amount      Float
+    status      String
+
+    student User   @relation(fields: [userId], references: [id])
+    userId  String @db.ObjectId
+
+    updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
+}
+
+model Address {
+    id      String  @id @default(auto()) @map("_id") @db.ObjectId
+    city    String?
+    country String?
+    state   String?
+    street  String?
+
+    User   User   @relation(fields: [userId], references: [id])
+    userId String @unique @db.ObjectId
+
+    updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
+}
+
+model StaffMember {
+    id             String @id @default(auto()) @map("_id") @db.ObjectId
+    jobTitle       String
+    jobDescription String
+    team           String
+
+    tasks  Task[]
+    user   User   @relation(fields: [userId], references: [id])
+    userId String @unique @db.ObjectId
+
+    updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
+}
+
+model Task {
+    id         String @id @default(auto()) @map("_id") @db.ObjectId
+    name       String
+    department String
+    status     String
+
+    StaffMember   StaffMember? @relation(fields: [staffMemberId], references: [id])
+    staffMemberId String?      @db.ObjectId
+
+    updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
 }

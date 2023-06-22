@@ -3,7 +3,7 @@ import { Box } from "@mui/material";
 import StatesOverview from "./StatesOverview";
 import { SalesOverview } from "./SalesOverview";
 import { TrafficOverview } from "./TrafficOverview";
-import { LatestProductsOverview } from "./LatestProductsOverview";
+import { LatestCourseOverview } from "./LatestCourseOverview";
 import { subDays, subHours } from "date-fns";
 import { LatestOrdersOverview } from "./LatestOrdersOverview";
 
@@ -31,8 +31,8 @@ export default function Dashboard() {
         labels={["Desktop", "Tablet", "Phone"]}
         sx={{ height: "100%" }}
       />
-      <LatestProductsOverview
-        products={[
+      <LatestCourseOverview
+        courses={[
           {
             id: "5ece2c077e39da27658aa8a9",
             image: "/product-1.png",

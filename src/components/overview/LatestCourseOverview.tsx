@@ -14,36 +14,38 @@ import {
   ListItemAvatar,
   ListItemText,
   SvgIcon,
+  SxProps,
+  Theme,
 } from "@mui/material";
 
-interface ProductType {
+interface CourseType {
   id: string;
   image?: string;
   name: string;
   updatedAt: number;
 }
 
-export const LatestProductsOverview = (props: {
-  products: ProductType[];
-  sx: any;
+export const LatestCourseOverview = (props: {
+  courses: CourseType[];
+  sx: SxProps<Theme>;
 }) => {
-  const { products = [], sx } = props;
+  const { courses = [], sx } = props;
 
   return (
     <Card sx={sx} className="col-span-12 md:col-span-6 lg:col-span-4">
-      <CardHeader title="Latest Products" />
+      <CardHeader title="Latest courses" />
       <List>
-        {products.map((product, index) => {
-          const hasDivider = index < products.length - 1;
-          const ago = formatDistanceToNow(product.updatedAt);
+        {courses.map((course, index) => {
+          const hasDivider = index < courses.length - 1;
+          const ago = formatDistanceToNow(course.updatedAt);
 
           return (
-            <ListItem divider={hasDivider} key={product.id}>
+            <ListItem divider={hasDivider} key={course.id}>
               <ListItemAvatar>
-                {product.image ? (
+                {course.image ? (
                   <Box
                     component="img"
-                    src={product.image}
+                    src={course.image}
                     sx={{
                       borderRadius: 1,
                       height: 48,
@@ -62,7 +64,7 @@ export const LatestProductsOverview = (props: {
                 )}
               </ListItemAvatar>
               <ListItemText
-                primary={product.name}
+                primary={course.name}
                 primaryTypographyProps={{ variant: "subtitle1" }}
                 secondary={`Updated ${ago} ago`}
                 secondaryTypographyProps={{ variant: "body2" }}
