@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
-import AppDrawer from "@/components/AppDrawer";
+import AppDrawer from "@/components/layout/AppDrawer";
 
 export const Layout = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname();

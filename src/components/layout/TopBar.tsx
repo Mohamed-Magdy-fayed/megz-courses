@@ -6,7 +6,6 @@ import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import Menu from "@mui/material/Menu";
 import MenuIcon from "@mui/icons-material/Menu";
-import Container from "@mui/material/Container";
 import Avatar from "@mui/material/Avatar";
 import Divider from "@mui/material/Divider";
 import Button from "@mui/material/Button";
@@ -18,7 +17,7 @@ import { useRouter } from "next/router";
 import { useNavStore } from "@/zustand/store";
 import { usePathname } from "next/navigation";
 
-export default function Navbar({ drawerWidth }: { drawerWidth: number }) {
+export default function MegzTopBar({ drawerWidth }: { drawerWidth: number }) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -48,7 +47,6 @@ export default function Navbar({ drawerWidth }: { drawerWidth: number }) {
 
   return (
     <AppBar
-      position="fixed"
       className={`!bg-white/80 !shadow-none !backdrop-blur-sm xl:!w-[calc(100%-${drawerWidth}px)] xl:!ml-[${drawerWidth}px]`}
     >
       <Toolbar disableGutters className="flex justify-between p-2">
