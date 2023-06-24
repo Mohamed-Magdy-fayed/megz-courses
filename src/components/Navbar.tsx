@@ -49,12 +49,7 @@ export default function Navbar({ drawerWidth }: { drawerWidth: number }) {
   return (
     <AppBar
       position="fixed"
-      sx={{
-        width: { xl: `calc(100% - ${drawerWidth}px)` },
-        ml: { xl: `${drawerWidth}px` },
-        backgroundColor: "white"
-      }}
-      className="bg-white/80 shadow-none backdrop-blur-sm"
+      className={`bg-white/80 shadow-none backdrop-blur-sm xl:w-[calc(100%_-_${drawerWidth}px)] ml-[${drawerWidth}px]`}
     >
       <Container maxWidth="xl">
         <Toolbar disableGutters className="flex justify-between p-2">
