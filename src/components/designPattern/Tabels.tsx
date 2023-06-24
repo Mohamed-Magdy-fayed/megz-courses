@@ -58,11 +58,11 @@ function getComparator<Key extends keyof any>(
 // stableSort() brings sort stability to non-modern browsers (notably IE11). If you
 // only support modern browsers you can replace stableSort(exampleArray, exampleComparator)
 // with exampleArray.slice().sort(exampleComparator)
-function stableSort<T>(
-  array: readonly T[],
-  comparator: (a: T, b: T) => number
+function stableSort(
+  array: readonly any[],
+  comparator: (a: any, b: any) => number
 ) {
-  const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
+  const stabilizedThis = array.map((el, index) => [el, index] as [any, number]);
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0]);
     if (order !== 0) {
