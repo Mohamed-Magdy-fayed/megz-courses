@@ -13,16 +13,16 @@ import {
   Typography,
 } from "@mui/material";
 import { useRouter } from "next/router";
-import React, { useState } from "react";
+import React from "react";
 
 export default function Page() {
   const router = useRouter();
   const id = router.query.id as string;
 
-  const user = api.account.getById.useQuery({ id }).data?.user;
+  const userQuery = api.account.getById.useQuery({ id });
+  const user = userQuery.data?.user;
 
-  const [loading, setLoading] = useState(false);
-  const [url, setUrl] = useState(user?.image);
+  const loading = userQuery.isLoading;
 
   return (
     <DashboardLayout>
@@ -43,7 +43,7 @@ export default function Page() {
             </Stack>
             <div>
               <Grid container spacing={3}>
-                {!user ? (
+                {loading || !user ? (
                   <Grid item xs={12} md={6} lg={4}>
                     <CircularProgress></CircularProgress>
                   </Grid>

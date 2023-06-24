@@ -1,5 +1,6 @@
 import { useCallback, useState, ChangeEvent, FormEventHandler } from "react";
 import {
+  Box,
   Button,
   Card,
   CardActions,
@@ -9,6 +10,7 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
+import { PaperContainer } from "@/components/designPattern/PaperContainers";
 
 export const SettingsPassword = () => {
   const [values, setValues] = useState({
@@ -32,7 +34,7 @@ export const SettingsPassword = () => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <Card>
+      <PaperContainer>
         <CardHeader subheader="Update password" title="Password" />
         <Divider />
         <CardContent>
@@ -56,12 +58,12 @@ export const SettingsPassword = () => {
           </Stack>
         </CardContent>
         <Divider />
-        <CardActions sx={{ justifyContent: "flex-end" }}>
+        <Box component="div" className="flex justify-end p-4">
           <Button variant="contained" className="bg-primary">
             Update
           </Button>
-        </CardActions>
-      </Card>
+        </Box>
+      </PaperContainer>
     </form>
   );
 };

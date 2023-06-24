@@ -11,7 +11,9 @@ import {
   Stack,
   Typography,
   Unstable_Grid2 as Grid,
+  Box,
 } from "@mui/material";
+import { PaperContainer } from "@/components/designPattern/PaperContainers";
 
 export const SettingsNotifications = () => {
   const handleSubmit: FormEventHandler = useCallback((event) => {
@@ -20,7 +22,7 @@ export const SettingsNotifications = () => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <Card>
+      <PaperContainer>
         <CardHeader
           subheader="Manage the notifications"
           title="Notifications"
@@ -73,12 +75,12 @@ export const SettingsNotifications = () => {
           </Grid>
         </CardContent>
         <Divider />
-        <CardActions sx={{ justifyContent: "flex-end" }}>
+        <Box component="div" className="flex justify-end p-4">
           <Button variant="contained" className="bg-primary">
             Save
           </Button>
-        </CardActions>
-      </Card>
+        </Box>
+      </PaperContainer>
     </form>
   );
 };

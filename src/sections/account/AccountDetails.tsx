@@ -27,6 +27,7 @@ import { Address, User } from "@prisma/client";
 import { z } from "zod";
 import { api } from "@/utils/api";
 import { useToastStore } from "@/zustand/store";
+import { PaperContainer } from "@/components/designPattern/PaperContainers";
 
 const valuesSchema = z.object({
   name: z.string(),
@@ -139,8 +140,9 @@ export const AccountDetails = ({
       noValidate
       onSubmit={handleSubmit}
     >
-      <Card>
+      <PaperContainer>
         <CardHeader subheader="The information can be edited" title="Profile" />
+        <Divider />
         <CardContent sx={{ pt: 0 }}>
           <Box component="div" className="grid grid-cols-12 gap-4 p-4">
             <CustomInput
@@ -212,12 +214,12 @@ export const AccountDetails = ({
           </Box>
         </CardContent>
         <Divider />
-        <CardActions sx={{ justifyContent: "flex-end" }}>
+        <Box component="div" className="flex justify-end p-4">
           <Button variant="contained" className="bg-primary" type="submit">
             Save details
           </Button>
-        </CardActions>
-      </Card>
+        </Box>
+      </PaperContainer>
     </form>
   );
 };

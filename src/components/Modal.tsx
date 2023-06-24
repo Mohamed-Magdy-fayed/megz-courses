@@ -4,37 +4,49 @@ import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
 import Fade from "@mui/material/Fade";
 import Button, { ButtonProps } from "@mui/material/Button";
-import { Divider, IconButton, Stack, Typography } from "@mui/material";
+import {
+  CircularProgress,
+  Divider,
+  IconButton,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { Close } from "@mui/icons-material";
 import Scrollbar from "./Scrollbar";
-import { ReactJSXElement } from "@emotion/react/types/jsx-namespace";
 
-const style = {
-  position: "absolute" as "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-};
-
-export default function TransitionsModal({
+function TransitionsModal({
   Content,
+  modalActions,
   buttonChildren,
   buttonProps,
   modalTitle,
+  open,
+  setOpen,
+  dispatchCloseModal,
 }: {
-  Content: ({ handleClose }: { handleClose: () => void }) => JSX.Element;
+  Content: JSX.Element;
+  modalActions: React.ReactNode;
   buttonChildren: React.ReactNode;
   buttonProps: ButtonProps;
   modalTitle: string;
+  open: boolean;
+  dispatchCloseModal: boolean;
+  setOpen: (val: boolean) => void;
 }) {
-  const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const [innerOpen, InneSetOpen] = React.useState(false);
+
+  const handleOpen = () => {
+    setOpen(true);
+    InneSetOpen(true);
+  };
+  const handleClose = () => {
+    setOpen(false);
+    InneSetOpen(false);
+  };
+
+  React.useEffect(() => {
+    handleClose();
+  }, [dispatchCloseModal]);
 
   return (
     <div>
@@ -44,7 +56,7 @@ export default function TransitionsModal({
       <Modal
         aria-labelledby="transition-modal-title"
         aria-describedby="transition-modal-description"
-        open={open}
+        open={innerOpen}
         onClose={handleClose}
         closeAfterTransition
         slots={{ backdrop: Backdrop }}
@@ -57,11 +69,11 @@ export default function TransitionsModal({
         <Fade in={open}>
           <Box
             component="div"
-            className="absolute inset-8 grid overflow-auto rounded-lg bg-white shadow-md md:bottom-auto"
+            className="absolute inset-8 flex flex-col overflow-auto rounded-lg bg-white shadow-md md:bottom-auto"
           >
             <Stack
               direction="row"
-              className="w-full items-center justify-between p-4"
+              className="h-fit w-full items-center justify-between p-4"
             >
               <Typography
                 id="transition-modal-title"
@@ -75,12 +87,27 @@ export default function TransitionsModal({
               </IconButton>
             </Stack>
             <Divider></Divider>
-            <Scrollbar>
-              <Content handleClose={handleClose} />
-            </Scrollbar>
+            <Scrollbar>{Content}</Scrollbar>
+            <Divider className="mt-auto" />
+            <Box
+              component="div"
+              className="!mt-0 flex w-full justify-between gap-4 p-4"
+            >
+              {modalActions}
+            </Box>
           </Box>
         </Fade>
       </Modal>
     </div>
   );
 }
+
+export const useTransitionsModal = () => {
+  const [open, setOpen] = React.useState(false);
+
+  return {
+    open,
+    setOpen,
+    TransitionsModal,
+  };
+};

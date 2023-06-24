@@ -1,3 +1,4 @@
+import { PaperContainer } from "@/components/designPattern/PaperContainers";
 import ImageUploadButton from "@/components/students/ImageUploadButton";
 import { api } from "@/utils/api";
 import { useToastStore } from "@/zustand/store";
@@ -44,45 +45,37 @@ export const Account = ({
   };
 
   return (
-    <Card>
-      <CardContent>
-        <Box
-          sx={{
-            alignItems: "center",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          {!isLoading && (isSuccess || isIdle) && (
-            <Avatar
-              src={user?.image || ""}
-              sx={{
-                height: 80,
-                mb: 2,
-                width: 80,
-              }}
-            />
-          )}
-          {isLoading && !isSuccess && <CircularProgress></CircularProgress>}
-          <Typography gutterBottom variant="h5">
-            {user?.name}
-          </Typography>
-          <Typography color="text.secondary" variant="body2">
-            {user?.address?.city} {user?.address?.state}
-          </Typography>
-          <Typography color="text.secondary" variant="body2">
-            {user?.address?.country}
-          </Typography>
-        </Box>
-      </CardContent>
+    <PaperContainer>
+      <Box component="div" className="flex flex-col items-center p-4">
+        {!isLoading && (isSuccess || isIdle) && (
+          <Avatar
+            src={user?.image || ""}
+            sx={{
+              height: 80,
+              mb: 2,
+              width: 80,
+            }}
+          />
+        )}
+        {isLoading && !isSuccess && <CircularProgress></CircularProgress>}
+        <Typography gutterBottom variant="h5">
+          {user?.name}
+        </Typography>
+        <Typography color="text.secondary" variant="body2">
+          {user?.address?.city} {user?.address?.state}
+        </Typography>
+        <Typography color="text.secondary" variant="body2">
+          {user?.address?.country}
+        </Typography>
+      </Box>
       <Divider />
-      <CardActions className="grid place-content-center">
+      <Box component="div" className="flex items-center justify-center p-4">
         <ImageUploadButton
           isAccount
           loading={loading}
           handleChange={handleChange}
         />
-      </CardActions>
-    </Card>
+      </Box>
+    </PaperContainer>
   );
 };

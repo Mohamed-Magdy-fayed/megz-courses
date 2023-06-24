@@ -17,24 +17,17 @@ export const studentsRouter = createTRPCRouter({
         .optional()
     )
     .query(async ({ ctx }) => {
-      const users = await ctx.prisma.user.findMany({
-        include: { address: true },
-      });
+      try {
+        const users = await ctx.prisma.user.findMany({
+          include: { address: true },
+        });
 
-      return users.map((user) => ({
-        id: user.id,
-        address: {
-          city: user.address?.city,
-          country: user.address?.country,
-          state: user.address?.state,
-          street: user.address?.street,
-        },
-        image: user.image,
-        createdAt: user.createdAt,
-        email: user.email,
-        name: user.name,
-        phone: user.phone,
-      }));
+        return {
+          users,
+        };
+      } catch (error) {
+        return { users: [] };
+      }
     }),
   deleteStudent: protectedProcedure
     .input(
@@ -56,7 +49,7 @@ export const studentsRouter = createTRPCRouter({
   createStudent: protectedProcedure
     .input(
       z.object({
-        userName: z.string(),
+        name: z.string(),
         email: z.string().email(),
         password: z.string(),
         phone: z.string().optional(),
@@ -83,7 +76,7 @@ export const studentsRouter = createTRPCRouter({
 
       const user = await ctx.prisma.user.create({
         data: {
-          name: input.userName,
+          name: input.name,
           email: input.email,
           hashedPassword,
           phone: input.phone,

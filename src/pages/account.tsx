@@ -12,6 +12,7 @@ import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { Account } from "src/sections/account/Account";
 import { AccountDetails } from "src/sections/account/AccountDetails";
 import { useEffect, useState } from "react";
+import { ConceptTitle } from "@/components/designPattern/Typoghraphy";
 
 const Page = () => {
   const session = useSession();
@@ -35,30 +36,28 @@ const Page = () => {
         <Container maxWidth="lg">
           <Stack spacing={3}>
             <div>
-              <Typography variant="h4">Account</Typography>
+              <ConceptTitle>Account</ConceptTitle>
             </div>
-            <div>
-              <Grid container spacing={3}>
+            <Grid container spacing={3}>
+              {user ? (
+                <Grid xs={12} md={6} lg={4}>
+                  <Account loading={loading} user={user} />
+                </Grid>
+              ) : (
+                <Grid xs={12} md={12} lg={12}>
+                  <CircularProgress></CircularProgress>
+                </Grid>
+              )}
+              <Grid xs={12} md={6} lg={8}>
                 {user ? (
-                  <Grid xs={12} md={6} lg={4}>
-                    <Account loading={loading} user={user} />
-                  </Grid>
+                  <AccountDetails user={user} />
                 ) : (
                   <Grid xs={12} md={12} lg={12}>
                     <CircularProgress></CircularProgress>
                   </Grid>
                 )}
-                <Grid xs={12} md={6} lg={8}>
-                  {user ? (
-                    <AccountDetails user={user} />
-                  ) : (
-                    <Grid xs={12} md={12} lg={12}>
-                      <CircularProgress></CircularProgress>
-                    </Grid>
-                  )}
-                </Grid>
               </Grid>
-            </div>
+            </Grid>
           </Stack>
         </Container>
       </Box>
