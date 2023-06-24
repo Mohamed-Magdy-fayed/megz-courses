@@ -52,6 +52,7 @@ export default function Navbar({ drawerWidth }: { drawerWidth: number }) {
       sx={{
         width: { xl: `calc(100% - ${drawerWidth}px)` },
         ml: { xl: `${drawerWidth}px` },
+        backgroundColor: "white"
       }}
       className="bg-white/80 shadow-none backdrop-blur-sm"
     >
