@@ -49,80 +49,77 @@ export default function Navbar({ drawerWidth }: { drawerWidth: number }) {
   return (
     <AppBar
       position="fixed"
-      className={`!bg-white/80 !shadow-none !backdrop-blur-sm xl:!w-[calc(100%_-_${drawerWidth}px)] !ml-[${drawerWidth}px]`}
+      className={`!bg-white/80 !shadow-none !backdrop-blur-sm xl:!w-[calc(100%-${drawerWidth}px)] xl:!ml-[${drawerWidth}px]`}
     >
-      <Container maxWidth="xl">
-        <Toolbar disableGutters className="flex justify-between p-2">
-          <Box component="div" className="flex items-center gap-2">
-            <Tooltip title="Navigation">
-              <IconButton
-                sx={{
-                  display: { xl: "none" },
-                }}
-                onClick={() => navStore.openNav()}
-              >
-                <MenuIcon
-                  sx={{
-                    fontSize: "20px",
-                  }}
-                ></MenuIcon>
-              </IconButton>
-            </Tooltip>
-            <Box
-              component="div"
-              className="flex cursor-pointer gap-2 font-sans text-slate-500"
-              onClick={() => router.push("/")}
-            >
-              <Avatar className="h-6 w-6" alt="Logo" src="/favicon.png" />{" "}
-              Courses
-            </Box>
-          </Box>
-          <Box component="div" className="flex items-center gap-2">
-            <IconButton>
-              <NotificationsIcon></NotificationsIcon>
-            </IconButton>
-            <IconButton>
-              <PeopleIcon></PeopleIcon>
-            </IconButton>
-            <Tooltip title="Profile menu">
-              <IconButton aria-label="menuButton" onClick={handleClick}>
-                <Avatar
-                  className="h-8 w-8 cursor-pointer outline outline-primary/30 hover:outline-primary/70"
-                  alt={session.data?.user.name || "NA"}
-                  src={session.data?.user.image || ""}
-                />
-              </IconButton>
-            </Tooltip>
-            <Menu
-              open={open}
-              anchorEl={anchorEl}
-              onClose={handleClose}
-              MenuListProps={{
-                sx: {
-                  p: 0,
-                },
+      <Toolbar disableGutters className="flex justify-between p-2">
+        <Box component="div" className="flex items-center gap-2">
+          <Tooltip title="Navigation">
+            <IconButton
+              sx={{
+                display: { xl: "none" },
               }}
+              onClick={() => navStore.openNav()}
             >
-              <Box component="div" className="p-2">
-                <Typography
-                  variant="body1"
-                  fontWeight={500}
-                  className="text-slate-700"
-                >
-                  Account
-                </Typography>
-                <Typography variant="caption" color="GrayText">
-                  {session.data?.user.name}
-                </Typography>
-              </Box>
-              <Divider></Divider>
-              <Button onClick={() => signOut()} className="m-2 min-w-[10rem]">
-                Sign out
-              </Button>
-            </Menu>
+              <MenuIcon
+                sx={{
+                  fontSize: "20px",
+                }}
+              ></MenuIcon>
+            </IconButton>
+          </Tooltip>
+          <Box
+            component="div"
+            className="flex cursor-pointer gap-2 font-sans text-slate-500"
+            onClick={() => router.push("/")}
+          >
+            <Avatar className="h-6 w-6" alt="Logo" src="/favicon.png" /> Courses
           </Box>
-        </Toolbar>
-      </Container>
+        </Box>
+        <Box component="div" className="flex items-center gap-2">
+          <IconButton>
+            <NotificationsIcon></NotificationsIcon>
+          </IconButton>
+          <IconButton>
+            <PeopleIcon></PeopleIcon>
+          </IconButton>
+          <Tooltip title="Profile menu">
+            <IconButton aria-label="menuButton" onClick={handleClick}>
+              <Avatar
+                className="h-8 w-8 cursor-pointer outline outline-primary/30 hover:outline-primary/70"
+                alt={session.data?.user.name || "NA"}
+                src={session.data?.user.image || ""}
+              />
+            </IconButton>
+          </Tooltip>
+          <Menu
+            open={open}
+            anchorEl={anchorEl}
+            onClose={handleClose}
+            MenuListProps={{
+              sx: {
+                p: 0,
+              },
+            }}
+          >
+            <Box component="div" className="p-2">
+              <Typography
+                variant="body1"
+                fontWeight={500}
+                className="text-slate-700"
+              >
+                Account
+              </Typography>
+              <Typography variant="caption" color="GrayText">
+                {session.data?.user.name}
+              </Typography>
+            </Box>
+            <Divider></Divider>
+            <Button onClick={() => signOut()} className="m-2 min-w-[10rem]">
+              Sign out
+            </Button>
+          </Menu>
+        </Box>
+      </Toolbar>
     </AppBar>
   );
 }
