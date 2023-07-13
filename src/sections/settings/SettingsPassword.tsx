@@ -2,35 +2,55 @@ import { useCallback, useState, ChangeEvent, FormEventHandler } from "react";
 import {
   Box,
   Button,
-  Card,
-  CardActions,
   CardContent,
   CardHeader,
   Divider,
   Stack,
   TextField,
 } from "@mui/material";
-import { PaperContainer } from "@/components/designPattern/PaperContainers";
+import { PaperContainer } from "@/components/ui/PaperContainers";
+import { useToastStore } from "@/zustand/store";
+import { api } from "@/lib/api";
+import { useSession } from "next-auth/react";
 
 export const SettingsPassword = () => {
-  const [values, setValues] = useState({
-    password: "",
-    confirm: "",
-  });
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
 
-  const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    setValues((prevState) => ({
-      ...prevState,
-      [event.target.name]: event.target.value,
-    }));
-  }, []);
+  const toast = useToastStore();
 
-  const handleSubmit: FormEventHandler<HTMLFormElement> = useCallback(
-    (event) => {
-      event.preventDefault();
+  const handlePasswordChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      setPassword(event.target.value);
     },
     []
   );
+
+  const handleConfirmChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      setConfirm(event.target.value);
+    },
+    []
+  );
+
+  const sesstion = useSession();
+  const resetPasswordMutation = api.auth.resetPassword.useMutation();
+
+  const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
+    event.preventDefault();
+
+    console.log(password);
+    console.log(confirm);
+
+    if (password !== confirm) return toast.error("Passwords don't match!");
+
+    if (!sesstion.data?.user.email) return toast.error("not authenticated");
+
+    resetPasswordMutation.mutate({
+      newPassword: password,
+      email: sesstion.data?.user.email,
+    });
+  };
 
   return (
     <form onSubmit={handleSubmit}>
@@ -43,23 +63,23 @@ export const SettingsPassword = () => {
               fullWidth
               label="Password"
               name="password"
-              onChange={handleChange}
+              onChange={handlePasswordChange}
               type="password"
-              value={values.password}
+              value={password}
             />
             <TextField
               fullWidth
               label="Password (Confirm)"
               name="confirm"
-              onChange={handleChange}
+              onChange={handleConfirmChange}
               type="password"
-              value={values.confirm}
+              value={confirm}
             />
           </Stack>
         </CardContent>
         <Divider />
         <Box component="div" className="flex justify-end p-4">
-          <Button variant="contained" className="bg-primary">
+          <Button variant="contained" type="submit" className="bg-primary">
             Update
           </Button>
         </Box>

@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { useTransitionsModal } from "@/components/Modal";
-import { api } from "@/utils/api";
+import { api } from "@/lib/api";
 import Spinner from "@/components/Spinner";
 import FileUploadOutlinedIcon from "@mui/icons-material/FileUploadOutlined";
 import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";

@@ -1,7 +1,7 @@
 import { Layout as DashboardLayout } from "@/layouts/dashboard/layout";
 import { Account } from "@/sections/account/Account";
 import { AccountDetails } from "@/sections/account/AccountDetails";
-import { api } from "@/utils/api";
+import { api } from "@/lib/api";
 import { KeyboardDoubleArrowLeft } from "@mui/icons-material";
 import {
   Box,
@@ -19,7 +19,7 @@ export default function Page() {
   const router = useRouter();
   const id = router.query.id as string;
 
-  const userQuery = api.account.getById.useQuery({ id });
+  const userQuery = api.users.getUserById.useQuery({ id });
   const user = userQuery.data?.user;
 
   const loading = userQuery.isLoading;

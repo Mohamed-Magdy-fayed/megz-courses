@@ -1,8 +1,8 @@
-import { Box, Container, Stack, Typography } from "@mui/material";
+import { Box, Container, Stack } from "@mui/material";
 import { SettingsNotifications } from "src/sections/settings/SettingsNotifications";
 import { SettingsPassword } from "src/sections/settings/SettingsPassword";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
-import { ConceptTitle } from "@/components/designPattern/Typoghraphy";
+import { ConceptTitle } from "@/components/ui/Typoghraphy";
 
 const Page = () => (
   <DashboardLayout>

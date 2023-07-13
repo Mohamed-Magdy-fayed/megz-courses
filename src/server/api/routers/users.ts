@@ -6,47 +6,57 @@ import {
 } from "@/server/api/trpc";
 import bcrypt from "bcrypt";
 
-export const studentsRouter = createTRPCRouter({
-  getStudents: publicProcedure
-    .input(
-      z
-        .object({
-          limit: z.number().optional(),
-          cursor: z.object({ id: z.string(), createdAt: z.date() }),
-        })
-        .optional()
-    )
-    .query(async ({ ctx }) => {
-      try {
-        const users = await ctx.prisma.user.findMany({
-          include: { address: true },
-        });
-
-        return {
-          users,
-        };
-      } catch (error) {
-        return { users: [] };
-      }
-    }),
-  deleteStudent: protectedProcedure
+export const usersRouter = createTRPCRouter({
+  getUsers: protectedProcedure
     .input(
       z.object({
-        userIds: z.array(z.string()),
+        userType: z.enum(["admin", "student", "teacher"]),
       })
     )
-    .mutation(async ({ input: { userIds }, ctx }) => {
-      const deletedUsers = await ctx.prisma.user.deleteMany({
+    .query(async ({ ctx, input: { userType } }) => {
+      const users = await ctx.prisma.user.findMany({
         where: {
-          id: {
-            in: userIds,
-          },
+          userType,
+        },
+        include: {
+          address: true,
+          orders: true,
+          tasks: true,
         },
       });
 
-      return { deletedUsers };
+      return { users };
     }),
-  createStudent: protectedProcedure
+  getUserById: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .query(async ({ ctx, input: { id } }) => {
+      const user = await ctx.prisma.user.findUnique({
+        where: { id },
+        include: { address: true, orders: true },
+      });
+      return { user };
+    }),
+  getUserByEmail: publicProcedure
+    .input(
+      z.object({
+        email: z.string(),
+      })
+    )
+    .query(async ({ input: { email }, ctx }) => {
+      const user = await ctx.prisma.user.findUnique({
+        where: {
+          email,
+        },
+        include: { address: true, orders: true },
+      });
+
+      return { user };
+    }),
+  createUser: protectedProcedure
     .input(
       z.object({
         name: z.string(),
@@ -58,6 +68,7 @@ export const studentsRouter = createTRPCRouter({
         country: z.string().optional(),
         street: z.string().optional(),
         city: z.string().optional(),
+        userType: z.enum(["admin", "student", "teacher"]).optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -69,10 +80,7 @@ export const studentsRouter = createTRPCRouter({
           email: input.email,
         },
       });
-      if (exists)
-        return {
-          error: { message: "Email already taken" },
-        };
+      if (exists) throw new Error("Email already used!");
 
       const user = await ctx.prisma.user.create({
         data: {
@@ -89,6 +97,7 @@ export const studentsRouter = createTRPCRouter({
               country: input.country,
             },
           },
+          userType: input.userType,
         },
         include: {
           address: true,
@@ -99,7 +108,7 @@ export const studentsRouter = createTRPCRouter({
         user,
       };
     }),
-  editStudentImage: protectedProcedure
+  editUserImage: protectedProcedure
     .input(
       z.object({
         url: z.string(),
@@ -121,7 +130,7 @@ export const studentsRouter = createTRPCRouter({
 
       return { updatedUser };
     }),
-  editStudent: protectedProcedure
+  editUser: protectedProcedure
     .input(
       z.object({
         name: z.string(),
@@ -131,37 +140,49 @@ export const studentsRouter = createTRPCRouter({
         country: z.string().optional(),
         street: z.string().optional(),
         city: z.string().optional(),
-        id: z.string(),
       })
     )
     .mutation(
       async ({
         ctx,
-        input: { name, email, phone, state, country, street, city, id },
+        input: { name, email, phone, state, country, street, city },
       }) => {
-        const updatedUser = await ctx.prisma.address.update({
+        const updatedUser = await ctx.prisma.user.update({
           where: {
-            userId: id,
+            email: email,
           },
           data: {
-            state,
-            country,
-            street,
-            city,
-            User: {
+            name,
+            email,
+            phone,
+            address: {
               update: {
-                name,
-                email,
-                phone,
+                state,
+                country,
+                street,
+                city,
               },
             },
           },
           include: {
-            User: true,
+            address: true,
           },
         });
 
         return { updatedUser };
       }
     ),
+  deleteUser: protectedProcedure
+    .input(z.array(z.string()))
+    .mutation(async ({ input, ctx }) => {
+      const deletedUsers = await ctx.prisma.user.deleteMany({
+        where: {
+          id: {
+            in: input,
+          },
+        },
+      });
+
+      return { deletedUsers };
+    }),
 });

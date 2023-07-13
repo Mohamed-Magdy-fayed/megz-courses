@@ -28,6 +28,6 @@
     "**/*.tsx",
     "**/*.cjs",
     "**/*.mjs"
-  ],
+, "students"  ],
   "exclude": ["node_modules"]
 }

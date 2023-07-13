@@ -41,23 +41,28 @@ model Session {
     @@index([userId])
 }
 
+enum UserType {
+    admin
+    teacher
+    student
+}
+
 model User {
     id             String    @id @default(auto()) @map("_id") @db.ObjectId
-    name           String?
-    email          String?   @unique
+    name           String
+    email          String    @unique
     emailVerified  DateTime?
     image          String?
     hashedPassword String?
     phone          String?
-
-    accounts    Account[]
-    sessions    Session[]
-    Order       Order[]
-    staffMember StaffMember?
-    address     Address?
-
-    updatedAt DateTime @updatedAt
-    createdAt DateTime @default(now())
+    userType       UserType  @default(student)
+    accounts       Account[]
+    sessions       Session[]
+    orders         Order[]
+    tasks          Task[]
+    address        Address?
+    updatedAt      DateTime  @updatedAt
+    createdAt      DateTime  @default(now())
 }
 
 model VerificationToken {
@@ -77,56 +82,50 @@ model Course {
     createdAt DateTime @default(now())
 }
 
+enum OrderStatus {
+    pending
+    paid
+    cancelled
+    done
+}
+
 model Order {
-    id          String @id @default(auto()) @map("_id") @db.ObjectId
+    id          String      @id @default(auto()) @map("_id") @db.ObjectId
     orderNumber String
     amount      Float
-    status      String
-
-    student User   @relation(fields: [userId], references: [id])
-    userId  String @db.ObjectId
-
-    updatedAt DateTime @updatedAt
-    createdAt DateTime @default(now())
+    status      OrderStatus @default(pending)
+    user        User        @relation(fields: [userId], references: [id])
+    userId      String      @db.ObjectId
+    updatedAt   DateTime    @updatedAt
+    createdAt   DateTime    @default(now())
 }
 
 model Address {
-    id      String  @id @default(auto()) @map("_id") @db.ObjectId
-    city    String?
-    country String?
-    state   String?
-    street  String?
-
-    User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-    userId String @unique @db.ObjectId
-
+    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    city      String?
+    country   String?
+    state     String?
+    street    String?
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId    String   @unique @db.ObjectId
     updatedAt DateTime @updatedAt
     createdAt DateTime @default(now())
 }
 
-model StaffMember {
-    id             String @id @default(auto()) @map("_id") @db.ObjectId
-    jobTitle       String
-    jobDescription String
-    team           String
-
-    tasks  Task[]
-    user   User   @relation(fields: [userId], references: [id])
-    userId String @unique @db.ObjectId
-
-    updatedAt DateTime @updatedAt
-    createdAt DateTime @default(now())
+enum TaskStatus {
+    created
+    assigned
+    ongoing
+    completed
+    cancelled
 }
 
 model Task {
-    id         String @id @default(auto()) @map("_id") @db.ObjectId
-    name       String
-    department String
-    status     String
-
-    StaffMember   StaffMember? @relation(fields: [staffMemberId], references: [id])
-    staffMemberId String?      @db.ObjectId
-
-    updatedAt DateTime @updatedAt
-    createdAt DateTime @default(now())
+    id        String     @id @default(auto()) @map("_id") @db.ObjectId
+    name      String
+    status    TaskStatus @default(created)
+    assignee  User       @relation(fields: [userId], references: [id])
+    userId    String     @db.ObjectId
+    updatedAt DateTime   @updatedAt
+    createdAt DateTime   @default(now())
 }

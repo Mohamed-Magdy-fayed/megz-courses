@@ -10,7 +10,7 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { CircularProgress } from "@mui/material";
 import { useToastStore } from "@/zustand/store";
-import { api } from "@/utils/api";
+import { api } from "@/lib/api";
 
 export default function RegisterForm() {
   const [loading, setLoading] = React.useState(false);

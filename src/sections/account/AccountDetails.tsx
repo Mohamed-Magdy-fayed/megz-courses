@@ -25,9 +25,9 @@ import {
 import CustomInput from "@/components/students/CustomInput";
 import { Address, User } from "@prisma/client";
 import { z } from "zod";
-import { api } from "@/utils/api";
+import { api } from "@/lib/api";
 import { useToastStore } from "@/zustand/store";
-import { PaperContainer } from "@/components/designPattern/PaperContainers";
+import { PaperContainer } from "@/components/ui/PaperContainers";
 
 const valuesSchema = z.object({
   name: z.string(),
@@ -86,7 +86,7 @@ export const AccountDetails = ({
   );
 
   const trpcUrils = api.useContext();
-  const editStudent = api.students.editStudent.useMutation();
+  const editUser = api.users.editUser.useMutation();
   const toast = useToastStore((state) => state);
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = useCallback(
@@ -99,14 +99,13 @@ export const AccountDetails = ({
 
       setLoading(true);
       if (!user) return;
-      editStudent.mutate(
-        { ...values, id: user?.id },
+      editUser.mutate(
+        { ...values },
         {
-          onSuccess(data) {
-            trpcUrils.account.getByEmail.invalidate();
-            trpcUrils.account.getById.invalidate();
+          onSuccess: (data) => {
+            trpcUrils.users.invalidate();
             toast.success(
-              `User with the email: ${data.updatedUser?.User.email} has been updated`
+              `User with the email: ${data.updatedUser?.email} has been updated`
             );
           },
           onSettled() {

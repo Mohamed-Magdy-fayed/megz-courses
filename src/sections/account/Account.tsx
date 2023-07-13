@@ -1,6 +1,6 @@
-import { PaperContainer } from "@/components/designPattern/PaperContainers";
 import ImageUploadButton from "@/components/students/ImageUploadButton";
-import { api } from "@/utils/api";
+import { PaperContainer } from "@/components/ui/PaperContainers";
+import { api } from "@/lib/api";
 import { useToastStore } from "@/zustand/store";
 import {
   Avatar,
@@ -26,22 +26,19 @@ export const Account = ({
 }) => {
   const trpcUtils = api.useContext();
 
-  const editStudentImage = api.students.editStudentImage.useMutation({
+  const editUserImage = api.users.editUserImage.useMutation({
     onSuccess() {
-      trpcUtils.account.getByEmail.invalidate();
-      trpcUtils.account.getById.invalidate();
+      trpcUtils.users.invalidate();
     },
   });
-  const isIdle = editStudentImage.isIdle;
-  const isLoading = editStudentImage.isLoading;
-  const isSuccess = editStudentImage.isSuccess;
+  const isIdle = editUserImage.isIdle;
+  const isLoading = editUserImage.isLoading;
+  const isSuccess = editUserImage.isSuccess;
 
   const toast = useToastStore((state) => state);
   const handleChange = (url: string) => {
-    console.log(user);
-
     if (!user?.email) return toast.error("no email");
-    editStudentImage.mutate({ url, email: user.email });
+    editUserImage.mutate({ url, email: user.email });
   };
 
   return (

@@ -41,4 +41,29 @@ export const authRouter = createTRPCRouter({
         user,
       };
     }),
+  resetPassword: protectedProcedure
+    .input(
+      z.object({
+        newPassword: z.string(),
+        email: z.string().email(),
+      })
+    )
+    .mutation(async ({ ctx, input: { email, newPassword } }) => {
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      const updated = await ctx.prisma.user.update({
+        where: {
+          email,
+        },
+        data: {
+          hashedPassword,
+        },
+        include: {
+          address: true,
+          orders: true,
+        },
+      });
+
+      return { updated };
+    }),
 });

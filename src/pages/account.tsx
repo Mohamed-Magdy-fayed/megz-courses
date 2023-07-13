@@ -1,4 +1,4 @@
-import { api } from "@/utils/api";
+import { api } from "@/lib/api";
 import {
   Box,
   Container,
@@ -12,12 +12,12 @@ import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { Account } from "src/sections/account/Account";
 import { AccountDetails } from "src/sections/account/AccountDetails";
 import { useEffect, useState } from "react";
-import { ConceptTitle } from "@/components/designPattern/Typoghraphy";
+import { ConceptTitle } from "@/components/ui/Typoghraphy";
 
 const Page = () => {
   const session = useSession();
 
-  const user = api.account.getByEmail.useQuery({
+  const user = api.users.getUserByEmail.useQuery({
     email: session.data?.user.email || "",
   }).data?.user;
 

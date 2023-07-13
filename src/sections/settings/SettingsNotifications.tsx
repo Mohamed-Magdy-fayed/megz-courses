@@ -1,8 +1,6 @@
 import { useCallback, FormEventHandler } from "react";
 import {
   Button,
-  Card,
-  CardActions,
   CardContent,
   CardHeader,
   Checkbox,
@@ -13,7 +11,7 @@ import {
   Unstable_Grid2 as Grid,
   Box,
 } from "@mui/material";
-import { PaperContainer } from "@/components/designPattern/PaperContainers";
+import { PaperContainer } from "@/components/ui/PaperContainers";
 
 export const SettingsNotifications = () => {
   const handleSubmit: FormEventHandler = useCallback((event) => {
