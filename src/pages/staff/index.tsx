@@ -9,7 +9,7 @@ import { PlusIcon } from "lucide-react";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import Spinner from "@/components/Spinner";
 import Client from "./client";
-import { UserForm } from "./components/form";
+import { UserForm } from "./_components/form";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/layouts/AppLayout";
 

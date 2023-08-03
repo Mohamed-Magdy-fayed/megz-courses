@@ -11,7 +11,7 @@ import Spinner from "@/components/Spinner";
 import Client from "./client";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/layouts/AppLayout";
-import { UserForm } from "./components/form";
+import { UserForm } from "./_components/form";
 
 const StudentsPage = () => {
   const { data, isLoading, isError } = api.users.getUsers.useQuery({

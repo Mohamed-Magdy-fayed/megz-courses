@@ -5,7 +5,7 @@ import { User, Address, Task } from "@prisma/client";
 import { DataTable } from "@/components/ui/DataTable";
 import { api } from "@/lib/api";
 import { useToastStore } from "@/zustand/store";
-import { Teacher, columns } from "./components/columns";
+import { Teacher, columns } from "./_components/columns";
 
 interface Users extends User {
   address: Address | null;

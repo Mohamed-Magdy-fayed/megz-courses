@@ -1,7 +1,7 @@
 import { getAddress } from "@/lib/utils";
 import { format } from "date-fns";
 import React, { useState } from "react";
-import { Student, columns } from "./components/columns";
+import { Student, columns } from "./_components/columns";
 import { User, Address } from "@prisma/client";
 import { DataTable } from "@/components/ui/DataTable";
 import { api } from "@/lib/api";
