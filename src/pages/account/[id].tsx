@@ -1,4 +1,3 @@
-import { Layout as DashboardLayout } from "@/layouts/dashboard/layout";
 import { Account } from "@/sections/account/Account";
 import { AccountDetails } from "@/sections/account/AccountDetails";
 import { api } from "@/lib/api";
@@ -14,6 +13,7 @@ import {
 } from "@mui/material";
 import { useRouter } from "next/router";
 import React from "react";
+import AppLayout from "@/layouts/AppLayout";
 
 export default function Page() {
   const router = useRouter();
@@ -25,7 +25,7 @@ export default function Page() {
   const loading = userQuery.isLoading;
 
   return (
-    <DashboardLayout>
+    <AppLayout>
       <Box
         component="main"
         sx={{
@@ -62,6 +62,6 @@ export default function Page() {
           </Stack>
         </Container>
       </Box>
-    </DashboardLayout>
+    </AppLayout>
   );
 }

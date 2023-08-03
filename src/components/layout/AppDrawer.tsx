@@ -46,7 +46,7 @@ export default function AppDrawer({ children }: AppDrawerProps) {
 
   return (
     <ThemeProvider theme={theme}>
-      <Box sx={{ display: "flex" }}>
+      <div className="flex flex-col">
         <MegzTopBar drawerWidth={drawerWidth} />
         <Box
           component="nav"
@@ -96,7 +96,7 @@ export default function AppDrawer({ children }: AppDrawerProps) {
           <Toolbar />
           {children}
         </Box>
-      </Box>
+      </div>
     </ThemeProvider>
   );
 }

@@ -17,7 +17,7 @@ import { useRouter } from "next/router";
 import { useNavStore } from "@/zustand/store";
 import { usePathname } from "next/navigation";
 
-export default function MegzTopBar({ drawerWidth }: { drawerWidth: number }) {
+export default function MegzTopBar() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -46,16 +46,12 @@ export default function MegzTopBar({ drawerWidth }: { drawerWidth: number }) {
   );
 
   return (
-    <AppBar
-      className={`!bg-white/80 !shadow-none !backdrop-blur-sm xl:!w-[calc(100%-${drawerWidth}px)] xl:!ml-[${drawerWidth}px]`}
-    >
+    <AppBar className={`!bg-white/80 !shadow-none !backdrop-blur-sm top-0`} position="sticky">
       <Toolbar disableGutters className="flex justify-between p-2">
         <Box component="div" className="flex items-center gap-2">
           <Tooltip title="Navigation">
             <IconButton
-              sx={{
-                display: { xl: "none" },
-              }}
+              className="lg:hidden"
               onClick={() => navStore.openNav()}
             >
               <MenuIcon
