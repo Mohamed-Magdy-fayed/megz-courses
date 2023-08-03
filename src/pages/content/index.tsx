@@ -1,6 +1,6 @@
 import AppLayout from "@/layouts/AppLayout";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Courses from "./components/Courses";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ContentPage = () => {
   const contentTabs = [
