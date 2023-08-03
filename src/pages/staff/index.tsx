@@ -7,10 +7,9 @@ import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import { useState } from "react";
 import { PlusIcon } from "lucide-react";
 import { PaperContainer } from "@/components/ui/PaperContainers";
-import { useBasicTabs } from "@/components/ui/Tabs";
 import Spinner from "@/components/Spinner";
 import Client from "./client";
-import { UserForm } from "./form";
+import { UserForm } from "./components/form";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/layouts/AppLayout";
 
@@ -18,7 +17,6 @@ const StaffPage = () => {
   const { data, isLoading, isError } = api.users.getUsers.useQuery({
     userType: "teacher",
   });
-  const { value, setValue, BasicTabs } = useBasicTabs();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -54,14 +52,6 @@ const StaffPage = () => {
             </PaperContainer>
           )}
           <PaperContainer>
-            <BasicTabs
-              {...{
-                tabs: ["All", "Accepts Marketing", "Prospect", "Returning"],
-                textColor: "primary",
-                indicatorColor: "primary",
-                setValue: setValue,
-              }}
-            />
             {isLoading ? (
               <Spinner></Spinner>
             ) : isError ? (

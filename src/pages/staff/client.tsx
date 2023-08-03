@@ -1,11 +1,11 @@
 import { getAddress } from "@/lib/utils";
 import { format } from "date-fns";
 import React, { useState } from "react";
-import { Teacher, columns } from "./columns";
 import { User, Address, Task } from "@prisma/client";
 import { DataTable } from "@/components/ui/DataTable";
 import { api } from "@/lib/api";
 import { useToastStore } from "@/zustand/store";
+import { Teacher, columns } from "./components/columns";
 
 interface Users extends User {
   address: Address | null;
