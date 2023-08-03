@@ -97,3 +97,7 @@ export const columns: ColumnDef<Student>[] = [
     },
   },
 ];
+
+export default function homei() {
+  return <></>;
+}
