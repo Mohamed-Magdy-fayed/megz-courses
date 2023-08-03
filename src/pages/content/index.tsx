@@ -1,6 +1,5 @@
 import AppLayout from "@/layouts/AppLayout";
 import Courses from "./components/Courses";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ContentPage = () => {
   const contentTabs = [
@@ -24,23 +23,7 @@ const ContentPage = () => {
 
   return (
     <AppLayout>
-      <Tabs defaultValue="courses" className="w-full">
-        <TabsList className="w-full">
-          {contentTabs.map((tab) => (
-            <TabsTrigger key={tab.value} value={tab.value}>
-              {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        <TabsContent value="courses">
-          <Courses />
-        </TabsContent>
-        <TabsContent value="levels">Change your password here.</TabsContent>
-        <TabsContent value="lessons">
-          Make changes to your account here.
-        </TabsContent>
-        <TabsContent value="materials">Change your password here.</TabsContent>
-      </Tabs>
+      <Courses />
     </AppLayout>
   );
 };
