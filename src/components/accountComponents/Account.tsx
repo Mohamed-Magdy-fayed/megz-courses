@@ -16,13 +16,11 @@ import { Address, User } from "@prisma/client";
 
 export const Account = ({
   user,
-  loading,
 }: {
   user:
     | User & {
         address: Address | null;
       };
-  loading: boolean;
 }) => {
   const trpcUtils = api.useContext();
 
@@ -69,7 +67,7 @@ export const Account = ({
       <Box component="div" className="flex items-center justify-center p-4">
         <ImageUploadButton
           isAccount
-          loading={loading}
+          loading={isLoading}
           handleChange={handleChange}
         />
       </Box>

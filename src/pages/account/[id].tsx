@@ -1,5 +1,5 @@
-import { Account } from "@/sections/account/Account";
-import { AccountDetails } from "@/sections/account/AccountDetails";
+import { Account } from "@/components/accountComponents/Account";
+import { AccountDetails } from "@/components/accountComponents/AccountDetails";
 import { api } from "@/lib/api";
 import { KeyboardDoubleArrowLeft } from "@mui/icons-material";
 import {
@@ -50,7 +50,7 @@ export default function Page() {
                 ) : (
                   <>
                     <Grid item xs={12} md={6} lg={4}>
-                      <Account loading={loading} user={user} />
+                      <Account user={user} />
                     </Grid>
                     <Grid item xs={12} md={6} lg={8}>
                       <AccountDetails user={user} />

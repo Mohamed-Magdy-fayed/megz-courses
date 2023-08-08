@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Button, Grid, Link, Typography } from "@mui/material";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -6,13 +5,14 @@ import RegisterForm from "@/components/RegisterForm";
 import GoogleIcon from "@mui/icons-material/Google";
 import LoginForm from "@/components/LoginForm";
 import Copyright from "@/components/Copyright";
+import { useEffect, useState } from "react";
 
-const Page = () => {
-  const [variant, setVariant] = React.useState<"login" | "register">("login");
+const AuthenticationPage = () => {
+  const [variant, setVariant] = useState<"login" | "register">("login");
   const session = useSession();
   const router = useRouter();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (session.status === "authenticated") router.push("/");
   }, [session.status]);
 
@@ -62,4 +62,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default AuthenticationPage;
