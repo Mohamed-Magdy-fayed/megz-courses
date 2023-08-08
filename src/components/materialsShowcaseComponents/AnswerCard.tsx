@@ -37,9 +37,11 @@ const AnswerCard: FC<AnswerCardProps> = ({ card, isInArea, isSelected }) => {
           : "cursor-pointer rounded bg-slate-100 hover:bg-blue-200",
         isSelected ? "bg-blue-200" : "",
         isUsed ? "cursor-not-allowed text-primary hover:bg-slate-100" : "",
-        isCorrect
-          ? "outline outline-1 outline-success"
-          : "outline outline-1 outline-warning"
+        submission.completed
+          ? isCorrect
+            ? "outline outline-1 outline-success"
+            : "outline outline-1 outline-warning"
+          : ""
       )}
     >
       <TextToSpeech text={card.name}>
