@@ -22,51 +22,177 @@ export const materialItemsRouter = createTRPCRouter({
   createMaterialItem: protectedProcedure
     .input(
       z.object({
-        name: z.string(),
-        url: z.string(),
-        size: z.string(),
-        fileType: z.string(),
         lessonId: z.string(),
+        leadinText: z.string(),
+        leadinImageUrl: z.string(),
+        firstTestTitle: z.string(),
+        title: z.string(),
+        subTitle: z.string(),
+        answerCards: z.array(
+          z.object({
+            id: z.string(),
+            text: z.string(),
+          })
+        ),
+        answerAreas: z.array(
+          z.object({
+            img: z.string(),
+            card: z
+              .object({
+                id: z.string(),
+                text: z.string(),
+              })
+              .nullable(),
+            correctAnswer: z.string(),
+          })
+        ),
+        vocabularyCards: z.array(
+          z.object({
+            word: z.string(),
+            context: z.string(),
+            example: z.string(),
+            images: z.object({ front: z.string(), back: z.string() }),
+          })
+        ),
+        practiceQuestions: z.array(
+          z.object({
+            id: z.string(),
+            question: z.string(),
+            choices: z.array(z.string()),
+            correctAnswer: z.string(),
+            studentAnswer: z.string(),
+          })
+        ),
       })
     )
-    .mutation(async ({ input, ctx }) => {
-      const materialItem = await ctx.prisma.materialItem.create({
-        data: {
-          name: input.name,
-          url: input.name,
-          size: input.name,
-          fileType: input.name,
-          lessonId: input.lessonId,
+    .mutation(
+      async ({
+        input: {
+          answerAreas,
+          answerCards,
+          firstTestTitle,
+          leadinImageUrl,
+          leadinText,
+          lessonId,
+          practiceQuestions,
+          subTitle,
+          title,
+          vocabularyCards,
         },
-      });
+        ctx,
+      }) => {
+        const materialItem = await ctx.prisma.materialItem.create({
+          data: {
+            leadinText,
+            leadinImageUrl,
+            firstTestTitle,
+            title,
+            subTitle,
+            frameWorkName: "TTT vocab",
+            answerCards,
+            answerAreas,
+            lesson: {
+              connect: { id: lessonId },
+            },
+            vocabularyCards,
+            practiceQuestions: practiceQuestions.map((q) => ({
+              ...q,
+              type: "ControlledPracticeMultichoiceQuestion",
+            })),
+          },
+        });
 
-      return {
-        materialItem,
-      };
-    }),
+        return {
+          materialItem,
+        };
+      }
+    ),
   editMaterialItem: protectedProcedure
     .input(
       z.object({
         id: z.string(),
-        name: z.string(),
-        url: z.string(),
-        size: z.string(),
-        fileType: z.string(),
         lessonId: z.string(),
+        leadinText: z.string(),
+        leadinImageUrl: z.string(),
+        firstTestTitle: z.string(),
+        title: z.string(),
+        subTitle: z.string(),
+        answerCards: z.array(
+          z.object({
+            id: z.string(),
+            text: z.string(),
+          })
+        ),
+        answerAreas: z.array(
+          z.object({
+            img: z.string(),
+            card: z
+              .object({
+                id: z.string(),
+                text: z.string(),
+              })
+              .nullable(),
+            correctAnswer: z.string(),
+          })
+        ),
+        vocabularyCards: z.array(
+          z.object({
+            word: z.string(),
+            context: z.string(),
+            example: z.string(),
+            images: z.object({ front: z.string(), back: z.string() }),
+          })
+        ),
+        practiceQuestions: z.array(
+          z.object({
+            id: z.string(),
+            type: z.enum([
+              "ControlledPracticeMultichoiceQuestion",
+              "ControlledPracticeFillTheGapQuestion",
+              "ControlledPracticeQuestion",
+            ]),
+            question: z.string(),
+            choices: z.array(z.string()),
+            correctAnswer: z.string(),
+            studentAnswer: z.string(),
+          })
+        ),
       })
     )
     .mutation(
-      async ({ ctx, input: { id, name, fileType, lessonId, size, url } }) => {
+      async ({
+        ctx,
+        input: {
+          id,
+          answerAreas,
+          answerCards,
+          firstTestTitle,
+          leadinImageUrl,
+          leadinText,
+          lessonId,
+          practiceQuestions,
+          subTitle,
+          title,
+          vocabularyCards,
+        },
+      }) => {
         const updatedmaterialItem = await ctx.prisma.materialItem.update({
           where: {
             id,
           },
           data: {
-            name,
-            fileType,
-            lessonId,
-            size,
-            url,
+            leadinText,
+            leadinImageUrl,
+            firstTestTitle,
+            title,
+            subTitle,
+            answerCards,
+            answerAreas,
+            lesson: {
+              connect: { id: lessonId },
+            },
+            vocabularyCards,
+            practiceQuestions,
           },
         });
 

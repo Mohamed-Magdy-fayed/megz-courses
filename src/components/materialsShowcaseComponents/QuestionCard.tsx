@@ -1,6 +1,5 @@
 import { Typography } from "@mui/material";
 import {
-  ControlledPracticeMultichoiceQuestion,
   useControlledPracticeMultichoiceStore,
 } from "@/zustand/store";
 import { cn } from "@/lib/utils";
@@ -8,12 +7,9 @@ import { useEffect, useState } from "react";
 import TextToSpeech from "@/components/TextToSpeech";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Question } from "@prisma/client";
 
-const QuestionCard = ({
-  question,
-}: {
-  question: ControlledPracticeMultichoiceQuestion;
-}) => {
+const QuestionCard = ({ question }: { question: Question }) => {
   const { setAnswer, questions, submission } =
     useControlledPracticeMultichoiceStore();
   const [isCorrect, setIsCorrect] = useState(false);
@@ -68,4 +64,4 @@ const QuestionCard = ({
   );
 };
 
-export default QuestionCard
+export default QuestionCard;

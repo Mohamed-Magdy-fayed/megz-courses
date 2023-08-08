@@ -5,19 +5,19 @@ import { Button } from "../ui/button";
 
 interface AnswerAreaProps {
   isCard: boolean;
-  answerAreaId: string;
+  answerAreaImage: string;
   children: ReactNode;
 }
-const AnswerArea = ({ isCard, answerAreaId, children }: AnswerAreaProps) => {
+const AnswerArea = ({ isCard, answerAreaImage, children }: AnswerAreaProps) => {
   const { areas, removeSelection } = useDraggingStore();
 
   return (
     <div className={cn("relative grid", isCard ? "" : "bg-white text-black")}>
       {children}
-      {areas.filter((area) => area.id === answerAreaId)[0]?.card && (
+      {areas.filter((area) => area.img === answerAreaImage)[0]?.card && (
         <Button
           onClick={() => {
-            removeSelection(answerAreaId);
+            removeSelection(answerAreaImage);
           }}
           variant="x"
           className="absolute right-2 top-2"

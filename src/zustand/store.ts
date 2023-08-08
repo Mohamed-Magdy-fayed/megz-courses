@@ -1,4 +1,5 @@
 import type { AlertColor } from "@mui/material";
+import { Question } from "@prisma/client";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -51,35 +52,36 @@ export const useNavStore = create<SideNavState>()((set) => ({
   closeNav: () => set((state) => ({ opened: false })),
 }));
 
-export interface Card {
+export interface AnswerCard {
   id: string;
-  name: string;
+  text: string;
 }
 
-export interface Area {
-  id: string;
+export interface AnswerArea {
   img: string;
-  card: Card | null;
+  card: AnswerCard | null;
   correctAnswer: string;
 }
 
 export interface DraggingState {
-  selectedCard: Card | null;
-  usedCards: Card[];
-  cards: Card[];
-  areas: Area[];
+  selectedCard: AnswerCard | null;
+  usedCards: AnswerCard[];
+  cards: AnswerCard[];
+  areas: AnswerArea[];
   submission: {
     completed: boolean;
-    correctAreas: Area[];
+    correctAreas: AnswerArea[];
     attempts: number;
     highestScore: number;
   };
-  addSelection: (card: Card, areaId: string) => void;
+  addSelection: (card: AnswerCard, areaId: string) => void;
   removeSelection: (areaId: string) => void;
-  addUsedCard: (card: Card) => void;
+  addUsedCard: (card: AnswerCard) => void;
   clearAnswers: () => void;
-  setSelectedCard: (card: Card | null) => void;
+  setSelectedCard: (card: AnswerCard | null) => void;
   submit: () => void;
+  setCards: (cards: AnswerCard[]) => void;
+  setAreas: (areas: AnswerArea[]) => void;
 }
 
 export const useDraggingStore = create<DraggingState>()(
@@ -88,95 +90,35 @@ export const useDraggingStore = create<DraggingState>()(
       return {
         selectedCard: null,
         usedCards: [],
-        cards: [
-          {
-            id: "Shoeshine service",
-            name: "Shoeshine service",
-          },
-          {
-            id: "Airport shuttle",
-            name: "Airport shuttle",
-          },
-          {
-            id: "Bell service",
-            name: "Bell service",
-          },
-          {
-            id: "Laundry service",
-            name: "Laundry service",
-          },
-          {
-            id: "Room service",
-            name: "Room service",
-          },
-          {
-            id: "Wake-up service",
-            name: "Wake-up service",
-          },
-        ],
-        areas: [
-          {
-            id: "area1",
-            img: "/sessionImages/Picture2.jpg",
-            card: null,
-            correctAnswer: "Laundry service",
-          },
-          {
-            id: "area2",
-            img: "/sessionImages/Picture3.jpg",
-            card: null,
-            correctAnswer: "Room service",
-          },
-          {
-            id: "area3",
-            img: "/sessionImages/Picture4.jpg",
-            card: null,
-            correctAnswer: "Shoeshine service",
-          },
-          {
-            id: "area5",
-            img: "/sessionImages/Picture6.jpg",
-            card: null,
-            correctAnswer: "Bell service",
-          },
-          {
-            id: "area6",
-            img: "/sessionImages/Picture7.jpg",
-            card: null,
-            correctAnswer: "Wake-up service",
-          },
-          {
-            id: "area7",
-            img: "/sessionImages/Picture8.jpg",
-            card: null,
-            correctAnswer: "Airport shuttle",
-          },
-        ],
+        cards: [],
+        areas: [],
         submission: {
           attempts: 0,
           completed: false,
           correctAreas: [],
           highestScore: 0,
         },
-        addSelection: (card, areaId) =>
+        addSelection: (card, areaImage) =>
           set((state) => {
-            const area = state.areas.filter((area) => area.id === areaId)[0];
+            const area = state.areas.filter(
+              (area) => area.img === areaImage
+            )[0];
             const cardInArea = area?.card;
             const newAreas = state.areas.map((area) =>
-              area.id === areaId ? { ...area, card } : { ...area }
+              area.img === areaImage ? { ...area, card } : { ...area }
             );
             const remainingCards = cardInArea
               ? state.usedCards.filter((card) => card.id !== cardInArea?.id)
               : state.usedCards;
             return { areas: newAreas, usedCards: [...remainingCards, card] };
           }),
-        removeSelection: (areaId) =>
+        removeSelection: (areaImage) =>
           set((state) => {
             const newAreas = state.areas.map((area) =>
-              area.id === areaId ? { ...area, card: null } : { ...area }
+              area.img === areaImage ? { ...area, card: null } : { ...area }
             );
             const usedCardId = state.areas.filter(
-              (area) => area.id === areaId
+              (area) => area.img === areaImage
             )[0]?.card?.id;
 
             return {
@@ -202,10 +144,12 @@ export const useDraggingStore = create<DraggingState>()(
           }));
         },
         setSelectedCard: (card) => set((state) => ({ selectedCard: card })),
+        setCards: (cards) => set((state) => ({ cards })),
+        setAreas: (areas) => set((state) => ({ areas })),
         submit: () =>
           set((state) => {
             const correctAreas = state.areas.filter(
-              (area) => area.card?.id === area.correctAnswer
+              (area) => area.card?.text === area.correctAnswer
             );
 
             return {
@@ -248,20 +192,18 @@ export interface ControlledPracticeQuestion {
 }
 
 export interface ControlledPracticeMultichoiceState {
-  questions: ControlledPracticeMultichoiceQuestion[];
+  questions: Question[];
   submission: {
     completed: boolean;
-    correctAnswers: ControlledPracticeMultichoiceQuestion[];
+    correctAnswers: Question[];
     attempts: number;
     highestScore: number;
   };
-  setAnswer: (
-    question: ControlledPracticeMultichoiceQuestion,
-    answer: string
-  ) => void;
-  removeAnswer: (question: ControlledPracticeMultichoiceQuestion) => void;
+  setAnswer: (question: Question, answer: string) => void;
+  removeAnswer: (question: Question) => void;
   clearAnswers: () => void;
   submit: () => void;
+  setQuestions: (questions: Question[]) => void;
 }
 
 export const useControlledPracticeMultichoiceStore =
@@ -269,32 +211,7 @@ export const useControlledPracticeMultichoiceStore =
     persist(
       (set) => {
         return {
-          questions: [
-            {
-              id: "huaf",
-              type: "ControlledPracticeMultichoiceQuestion",
-              question: "A room with one bed.",
-              choices: ["Single room", "Double room", "Suite"],
-              correctAnswer: "Single room",
-              studentAnswer: "",
-            },
-            {
-              id: "hund",
-              type: "ControlledPracticeMultichoiceQuestion",
-              question: "A room with two bed.",
-              choices: ["Single room", "Double room", "Suite"],
-              correctAnswer: "Double room",
-              studentAnswer: "",
-            },
-            {
-              id: "huur",
-              type: "ControlledPracticeMultichoiceQuestion",
-              question: "A room with multiple parts.",
-              choices: ["Single room", "Double room", "Suite"],
-              correctAnswer: "Suite",
-              studentAnswer: "",
-            },
-          ],
+          questions: [],
           submission: {
             completed: false,
             correctAnswers: [],
@@ -352,6 +269,9 @@ export const useControlledPracticeMultichoiceStore =
                 },
               };
             }),
+          setQuestions: (questions) => {
+            set((state) => ({ questions }));
+          },
         };
       },
       {

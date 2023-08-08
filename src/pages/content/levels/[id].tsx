@@ -4,26 +4,12 @@ import LessonsShowcase from "@/components/contentComponents/LessonsShowcase";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import AppLayout from "@/layouts/AppLayout";
 import { api } from "@/lib/api";
-import { useToastStore } from "@/zustand/store";
-import { IconButton, Typography } from "@mui/material";
-import { Lesson, MaterialItem } from "@prisma/client";
-import { Edit, Edit2, PlusIcon, Trash, X } from "lucide-react";
+import { Typography } from "@mui/material";
+import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/router";
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { useState } from "react";
 
 const LevelPage = () => {
   const router = useRouter();

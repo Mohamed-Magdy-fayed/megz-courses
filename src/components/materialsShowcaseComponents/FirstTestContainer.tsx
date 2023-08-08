@@ -1,18 +1,37 @@
-import { useDraggingStore, useToastStore } from "@/zustand/store";
+import {
+  AnswerArea as AnswerAreaType,
+  AnswerCard as AnswerCardType,
+  useDraggingStore,
+  useToastStore,
+} from "@/zustand/store";
 import { useStore } from "zustand";
 import { Button } from "@/components/ui/button";
 import { Trash } from "lucide-react";
 import Image from "next/image";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import AnswerArea from "./AnswerArea";
+import { FC, useEffect } from "react";
 import AnswerCard from "./AnswerCard";
+import AnswerArea from "./AnswerArea";
+import { Typography } from "@mui/material";
 
-const FirstTestContainer = () => {
+interface FirstTestContainerProps {
+  DBcards: AnswerCardType[];
+  DBareas: AnswerAreaType[];
+  firstTestTitle: string;
+}
+
+const FirstTestContainer: FC<FirstTestContainerProps> = ({
+  DBcards,
+  DBareas,
+  firstTestTitle,
+}) => {
   const {
     setSelectedCard,
     cards,
-    usedCards,
+    setCards,
     areas,
+    setAreas,
+    usedCards,
     selectedCard,
     addSelection,
     addUsedCard,
@@ -24,7 +43,7 @@ const FirstTestContainer = () => {
   const handleTestSubmit = () => {
     submit();
     const correctAnswers = areas.filter(
-      (area) => area.card?.id === area.correctAnswer
+      (area) => area.card?.text === area.correctAnswer
     ).length;
     correctAnswers < areas.length / 2
       ? toast.error(
@@ -39,14 +58,21 @@ const FirstTestContainer = () => {
         );
   };
 
+  useEffect(() => {
+    setCards(DBcards);
+    setAreas(DBareas);
+    clearAnswers();
+  }, []);
+
   return (
     <>
+      <Typography className="text-center">{firstTestTitle}</Typography>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
         {cards.map((card) => (
           <div
             key={card.id}
             onClick={() => {
-              const selection = selectedCard?.name === card.name ? null : card;
+              const selection = selectedCard?.text === card.text ? null : card;
               const isUsed = usedCards.filter(
                 (Ncard) => Ncard.id === card.id
               )[0]
@@ -56,9 +82,9 @@ const FirstTestContainer = () => {
             }}
           >
             <AnswerCard
-              key={card.name}
+              key={card.text}
               card={card}
-              isSelected={selectedCard?.name === card.name}
+              isSelected={selectedCard?.text === card.text}
             />
           </div>
         ))}
@@ -72,15 +98,15 @@ const FirstTestContainer = () => {
       </Button>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 [&>*]:cursor-pointer [&>*]:rounded-md [&>*]:border [&>*]:text-xl [&>*]:transition-all [&>*]:duration-300 hover:[&>*]:scale-105">
         {areas.map((area) => (
-          <AnswerArea key={area.id} isCard={false} answerAreaId={area.id}>
+          <AnswerArea key={area.img} isCard={false} answerAreaImage={area.img}>
             {area.card &&
-              cards.find((item) => item.name === area.card?.name) && (
+              cards.find((item) => item.text === area.card?.text) && (
                 <AnswerCard card={area.card} isInArea />
               )}
             {selectedCard ? (
               <Image
                 onClick={() => {
-                  addSelection(selectedCard, area.id);
+                  addSelection(selectedCard, area.img);
                   addUsedCard(selectedCard);
                   setSelectedCard(null);
                 }}

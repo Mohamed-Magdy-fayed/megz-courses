@@ -2,8 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider        = "prisma-client-js"
-    previewFeatures = ["jsonProtocol"]
+    provider = "prisma-client-js"
 }
 
 datasource db {
@@ -104,15 +103,59 @@ model Lesson {
 }
 
 model MaterialItem {
-    id        String   @id @default(auto()) @map("_id") @db.ObjectId
-    name      String
-    url       String
-    size      String
-    fileType  String
-    lesson    Lesson?  @relation(fields: [lessonId], references: [id])
-    lessonId  String?  @db.ObjectId
-    updatedAt DateTime @updatedAt
-    createdAt DateTime @default(now())
+    id                String       @id @default(auto()) @map("_id") @db.ObjectId
+    frameWorkName     String
+    leadinText        String
+    leadinImageUrl    String
+    title             String
+    subTitle          String
+    firstTestTitle    String
+    answerCards       AnswerCard[]
+    answerAreas       AnswerArea[]
+    vocabularyCards   VocabCard[]
+    practiceQuestions Question[]
+    lesson            Lesson?      @relation(fields: [lessonId], references: [id])
+    lessonId          String?      @db.ObjectId
+    updatedAt         DateTime     @updatedAt
+    createdAt         DateTime     @default(now())
+}
+
+type Question {
+    id            String
+    type          QuestionType
+    question      String
+    choices       String[]
+    correctAnswer String
+    studentAnswer String
+}
+
+enum QuestionType {
+    ControlledPracticeMultichoiceQuestion
+    ControlledPracticeFillTheGapQuestion
+    ControlledPracticeQuestion
+}
+
+type VocabCard {
+    word    String
+    context String
+    example String
+    images  Images
+}
+
+type Images {
+    front String
+    back  String
+}
+
+type AnswerArea {
+    img           String
+    card          AnswerCard?
+    correctAnswer String
+}
+
+type AnswerCard {
+    id   String
+    text String
 }
 
 enum OrderStatus {

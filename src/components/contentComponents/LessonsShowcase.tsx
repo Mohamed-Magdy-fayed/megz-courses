@@ -11,9 +11,7 @@ import { useRouter } from "next/router";
 const LessonsShowcase = ({
   data,
 }: {
-  data: (Lesson & {
-    materials: MaterialItem[];
-  })[];
+  data: (Lesson & { materials: MaterialItem[] })[];
 }) => {
   const deleteLessonsMutation = api.lessons.deleteLessons.useMutation();
   const trpcUtils = api.useContext();
@@ -63,7 +61,7 @@ const LessonsShowcase = ({
             )}
             {lesson.materials.map((material) => (
               <div key={material.id}>
-                <div>{material.name}</div>
+                <div>{material.title}</div>
               </div>
             ))}
             <Separator />

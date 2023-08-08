@@ -1,11 +1,14 @@
 import { Typography } from "@mui/material";
-import { Card, useDraggingStore } from "@/zustand/store";
+import {
+  AnswerCard as AnswerCardType,
+  useDraggingStore,
+} from "@/zustand/store";
 import { cn } from "@/lib/utils";
 import { FC, useEffect, useState } from "react";
 import TextToSpeech from "@/components/TextToSpeech";
 
 interface AnswerCardProps {
-  card: Card;
+  card: AnswerCardType;
   isInArea?: boolean;
   isSelected?: boolean;
 }
@@ -38,14 +41,16 @@ const AnswerCard: FC<AnswerCardProps> = ({ card, isInArea, isSelected }) => {
         isSelected ? "bg-blue-200" : "",
         isUsed ? "cursor-not-allowed text-primary hover:bg-slate-100" : "",
         submission.completed
-          ? isCorrect
-            ? "outline outline-1 outline-success"
-            : "outline outline-1 outline-warning"
+          ? !isInArea
+            ? isCorrect
+              ? "outline outline-1 outline-success"
+              : "outline outline-1 outline-warning"
+            : ""
           : ""
       )}
     >
-      <TextToSpeech text={card.name}>
-        <Typography className={cn("relative")}>{card.name}</Typography>
+      <TextToSpeech text={card.text}>
+        <Typography className={cn("relative")}>{card.text}</Typography>
       </TextToSpeech>
     </div>
   );

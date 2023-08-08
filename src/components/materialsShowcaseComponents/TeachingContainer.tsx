@@ -1,6 +1,7 @@
 import { Typography } from "@mui/material";
 import FlipCard from "./FlipCard";
 import TextToSpeech from "../TextToSpeech";
+import { FC } from "react";
 
 export interface VocabCard {
   word: string;
@@ -9,19 +10,11 @@ export interface VocabCard {
   images: { front: string; back: string };
 }
 
-const TeachingContainer = () => {
-  const vocabCards: VocabCard[] = [
-    {
-      word: "Single Room",
-      context: "What kind of rooms would you like?",
-      example: "A single room , please.",
-      images: {
-        front: "/sessionImages/word1.jpg",
-        back: "/sessionImages/word1.jpg",
-      },
-    },
-  ];
+interface TeachingContainerProps {
+  vocabularyCards: VocabCard[];
+}
 
+const TeachingContainer: FC<TeachingContainerProps> = ({ vocabularyCards }) => {
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -32,7 +25,7 @@ const TeachingContainer = () => {
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {vocabCards.map((card) => (
+        {vocabularyCards.map((card) => (
           <FlipCard
             key={card.word}
             front={

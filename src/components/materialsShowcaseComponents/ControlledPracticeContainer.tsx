@@ -1,20 +1,22 @@
-import { IconButton, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import {
   useControlledPracticeMultichoiceStore,
   useToastStore,
 } from "@/zustand/store";
 import { Button } from "@/components/ui/button";
 import { Trash } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import QuestionCard from "./QuestionCard";
+import { FC, useEffect } from "react";
+import { Question } from "@prisma/client";
 
-const ControlledPracticeContainer = () => {
-  const { clearAnswers, questions, submit } =
+interface ControlledPracticeContainerProps {
+  practiceQuestions: Question[];
+}
+
+const ControlledPracticeContainer: FC<ControlledPracticeContainerProps> = ({
+  practiceQuestions,
+}) => {
+  const { clearAnswers, questions, submit, setQuestions } =
     useControlledPracticeMultichoiceStore();
 
   const toast = useToastStore();
@@ -38,6 +40,10 @@ const ControlledPracticeContainer = () => {
           ).toFixed(2)}`
         );
   };
+
+  useEffect(() => {
+    setQuestions(practiceQuestions);
+  }, []);
 
   return (
     <div>
