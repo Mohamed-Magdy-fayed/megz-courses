@@ -1,6 +1,7 @@
 import Spinner from "@/components/Spinner";
-import LevelForm from "@/components/contentComponents/LevelForm";
-import LevelsShowcase from "@/components/contentComponents/LevelsShowcase";
+import LevelCard from "@/components/contentComponents/levels/LevelCard";
+import LevelForm from "@/components/contentComponents/levels/LevelForm";
+import CardsSkeleton from "@/components/layout/CardsSkeleton";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,7 @@ import { useState } from "react";
 
 const CoursePage = () => {
   const router = useRouter();
-  const id = router.query.id as string;
+  const id = router.query?.id as string;
   const { data, isLoading, isError } = api.courses.getById.useQuery({ id });
   const [isOpen, setIsOpen] = useState(false);
 
@@ -38,13 +39,17 @@ const CoursePage = () => {
           </PaperContainer>
         )}
         {isLoading ? (
-          <Spinner />
+          <CardsSkeleton />
         ) : isError ? (
           <>Error</>
         ) : !data.course?.levels ? (
           <>No levels yet</>
         ) : (
-          <LevelsShowcase data={data.course?.levels}></LevelsShowcase>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {data?.course?.levels.map((level) => (
+              <LevelCard key={level.id} id={level.id} />
+            ))}
+          </div>
         )}
       </div>
     </AppLayout>

@@ -1,5 +1,7 @@
 import { FC, ReactNode, useState } from "react";
 import { cn } from "@/lib/utils";
+import Scrollbar from "../Scrollbar";
+import { ScrollArea } from "../ui/scroll-area";
 
 interface FlipCardProps {
   front: ReactNode;
@@ -10,18 +12,18 @@ const FlipCard: FC<FlipCardProps> = ({ back, front }) => {
   const [flipped, setFlipped] = useState(false);
 
   return (
-    <div className="select-none [perspective:1000px]">
+    <div className="z-0 flex select-none transition-all [perspective:1000px] hover:z-[1]">
       <div
         onClick={() => setFlipped(!flipped)}
         className={cn(
-          "my-4 w-full cursor-pointer transition-all duration-700 ease-out [transform-style:preserve-3d]",
+          "flex flex-1 cursor-pointer rounded-lg transition-all duration-700 ease-out [transform-style:preserve-3d]",
           flipped ? "[transform:rotateY(180deg)]" : "[transform:rotateY(0deg)]"
         )}
       >
-        <div className="relative flex flex-col items-center gap-4 rounded-lg bg-primary p-4 text-white [transform:translateZ(1px)]">
+        <div className="flex min-w-full flex-col items-center justify-between gap-4 rounded-lg bg-primary p-4 [backface-visibility:hidden]">
           {front}
         </div>
-        <div className="absolute right-0 top-0 flex h-full w-full flex-col items-center gap-4 rounded-lg bg-secondary p-4 text-white [transform:translateZ(-1px)_rotateY(180deg)]">
+        <div className="flex min-w-full flex-col items-center justify-between gap-4 rounded-lg bg-secondary p-4 [backface-visibility:hidden] [transform:rotateY(180deg)_translate(100%,0)]">
           {back}
         </div>
       </div>

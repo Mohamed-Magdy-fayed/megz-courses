@@ -1,4 +1,7 @@
 import Spinner from "@/components/Spinner";
+import MaterialCard from "@/components/contentComponents/materials/MaterialCard";
+import MaterialsForm from "@/components/contentComponents/materials/MaterialsForm";
+import CardsSkeleton from "@/components/layout/CardsSkeleton";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
@@ -8,8 +11,6 @@ import { Typography } from "@mui/material";
 import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
-import MaterialsShowcase from "@/components/contentComponents/MaterialsShowcase";
-import MaterialsForm from "@/components/contentComponents/MaterialsForm";
 
 const LessonPage = () => {
   const router = useRouter();
@@ -38,13 +39,17 @@ const LessonPage = () => {
           </PaperContainer>
         )}
         {isLoading ? (
-          <Spinner />
+          <CardsSkeleton />
         ) : isError ? (
           <>Error</>
         ) : !data.lesson?.materials ? (
           <>No materials yet</>
         ) : (
-          <MaterialsShowcase data={data.lesson?.materials}></MaterialsShowcase>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {data.lesson.materials.map((material) => (
+              <MaterialCard material={material} />
+            ))}
+          </div>
         )}
       </div>
     </AppLayout>

@@ -24,7 +24,7 @@ const TeachingContainer: FC<TeachingContainerProps> = ({ vocabularyCards }) => {
           </Typography>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid auto-rows-fr grid-cols-1 gap-4 text-slate-50 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {vocabularyCards.map((card) => (
           <FlipCard
             key={card.word}
@@ -34,7 +34,7 @@ const TeachingContainer: FC<TeachingContainerProps> = ({ vocabularyCards }) => {
                   <Typography>{card.context}</Typography>
                 </TextToSpeech>
                 <img
-                  className="rounded-lg"
+                  className="h-full rounded-lg object-cover"
                   src={card.images.front}
                   alt={card.word}
                 />
@@ -49,7 +49,7 @@ const TeachingContainer: FC<TeachingContainerProps> = ({ vocabularyCards }) => {
                   <Typography>{card.example}</Typography>
                 </TextToSpeech>
                 <img
-                  className="rounded-lg"
+                  className="h-full rounded-lg object-cover"
                   src={card.images.back}
                   alt={card.word}
                 />

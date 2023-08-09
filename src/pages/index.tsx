@@ -2,9 +2,8 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import Spinner from "@/components/Spinner";
-import AppDrawer from "@/components/layout/AppDrawer";
-import { Toolbar } from "@mui/material";
 import Dashboard from "@/components/overview/Dashboard";
+import AppLayout from "@/layouts/AppLayout";
 
 const Page = () => {
   const session = useSession();
@@ -17,10 +16,9 @@ const Page = () => {
   if (session.status === "loading") return <Spinner></Spinner>;
 
   return (
-    <AppDrawer>
-      <Toolbar />
+    <AppLayout>
       <Dashboard></Dashboard>
-    </AppDrawer>
+    </AppLayout>
   );
 };
 

@@ -56,7 +56,7 @@ const MaterialShowcasePage = () => {
         <Typography className="text-center text-2xl font-bold">
           {leadinText}
         </Typography>
-        <img src={leadinImageUrl} />
+        <img src={leadinImageUrl} className="max-h-[50vh] object-cover" />
       </div>
       <div className="flex items-center justify-between">
         <div className="flex flex-col items-center whitespace-nowrap p-4">

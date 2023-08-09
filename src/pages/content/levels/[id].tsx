@@ -1,6 +1,6 @@
-import Spinner from "@/components/Spinner";
-import LessonForm from "@/components/contentComponents/LessonForm";
-import LessonsShowcase from "@/components/contentComponents/LessonsShowcase";
+import LessonCard from "@/components/contentComponents/lessons/LessonCard";
+import LessonForm from "@/components/contentComponents/lessons/LessonForm";
+import CardsSkeleton from "@/components/layout/CardsSkeleton";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
@@ -41,13 +41,17 @@ const LevelPage = () => {
           </PaperContainer>
         )}
         {isLoading ? (
-          <Spinner />
+          <CardsSkeleton />
         ) : isError ? (
           <>Error</>
         ) : !data.level?.lessons ? (
           <>No materials yet</>
         ) : (
-          <LessonsShowcase data={data.level?.lessons}></LessonsShowcase>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {data.level?.lessons.map((lesson) => (
+              <LessonCard lesson={lesson} />
+            ))}
+          </div>
         )}
       </div>
     </AppLayout>

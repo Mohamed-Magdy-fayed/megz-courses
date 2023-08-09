@@ -19,6 +19,18 @@ export const materialItemsRouter = createTRPCRouter({
       });
       return { materialItem };
     }),
+  getByLessonId: protectedProcedure
+    .input(
+      z.object({
+        lessonId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input: { lessonId } }) => {
+      const materialItems = await ctx.prisma.materialItem.findMany({
+        where: { lessonId },
+      });
+      return { materialItems };
+    }),
   createMaterialItem: protectedProcedure
     .input(
       z.object({
@@ -111,7 +123,6 @@ export const materialItemsRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-        lessonId: z.string(),
         leadinText: z.string(),
         leadinImageUrl: z.string(),
         firstTestTitle: z.string(),
@@ -146,11 +157,6 @@ export const materialItemsRouter = createTRPCRouter({
         practiceQuestions: z.array(
           z.object({
             id: z.string(),
-            type: z.enum([
-              "ControlledPracticeMultichoiceQuestion",
-              "ControlledPracticeFillTheGapQuestion",
-              "ControlledPracticeQuestion",
-            ]),
             question: z.string(),
             choices: z.array(z.string()),
             correctAnswer: z.string(),
@@ -169,7 +175,6 @@ export const materialItemsRouter = createTRPCRouter({
           firstTestTitle,
           leadinImageUrl,
           leadinText,
-          lessonId,
           practiceQuestions,
           subTitle,
           title,
@@ -188,11 +193,11 @@ export const materialItemsRouter = createTRPCRouter({
             subTitle,
             answerCards,
             answerAreas,
-            lesson: {
-              connect: { id: lessonId },
-            },
             vocabularyCards,
-            practiceQuestions,
+            practiceQuestions: practiceQuestions.map((q) => ({
+              ...q,
+              type: "ControlledPracticeMultichoiceQuestion",
+            })),
           },
         });
 

@@ -24,6 +24,19 @@ export const lessonsRouter = createTRPCRouter({
       });
       return { lesson };
     }),
+  getByLevelId: protectedProcedure
+    .input(
+      z.object({
+        levelId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input: { levelId } }) => {
+      const lessons = await ctx.prisma.lesson.findMany({
+        where: { levelId },
+        include: { materials: true },
+      });
+      return { lessons };
+    }),
   createLesson: protectedProcedure
     .input(
       z.object({

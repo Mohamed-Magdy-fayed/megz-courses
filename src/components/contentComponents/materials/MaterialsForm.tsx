@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { IconButton, Typography } from "@mui/material";
 import { Plus, Trash, X } from "lucide-react";
-import React, { FC, useId, useState } from "react";
+import React, { FC, useState } from "react";
 import { AnswerCard, useToastStore } from "@/zustand/store";
 import { Separator } from "@/components/ui/separator";
 import { z } from "zod";
@@ -17,9 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import ImageUpload from "../ui/ImageUpload";
-import MaterialImageUpload from "../ui/MaterialImageUpload";
-import { cn } from "@/lib/utils";
+import MaterialImageUpload from "../../ui/MaterialImageUpload";
 import _, { uniqueId } from "lodash";
 import {
   Select,
@@ -27,7 +25,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select";
+} from "../../ui/select";
 
 const formSchema = z.object({
   leadinText: z.string(),
@@ -86,7 +84,6 @@ const MaterialsForm = ({
   const [selectCards, setSelectCards] = useState<
     { id: string; text: string }[]
   >([]);
-  const [areaImage, setAreaImage] = useState("");
   const [answerArea, setAnswerArea] = useState<{
     img: string;
     card: AnswerCard | null;
@@ -122,7 +119,7 @@ const MaterialsForm = ({
       {
         onSuccess: ({ materialItem }) => {
           toast.success(`Your new material (${materialItem.title}) is ready!`);
-          trpcUtils.materials.invalidate();
+          trpcUtils.lessons.invalidate();
           setLoading(false);
         },
         onError: () => {

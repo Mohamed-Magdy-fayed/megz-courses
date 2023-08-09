@@ -37,11 +37,11 @@ const MaterialImageUpload: React.FC<MaterialImageUploadProps> = ({
       <div className="flex items-center justify-between gap-4 p-4">
         {value && value.length > 0 ? (
           <div className="flex gap-4 rounded-md">
-            <img alt="user image" src={value} />
+            <img alt="user image" src={value} className="max-h-60" />
             <div className="">
-              <IconButton onClick={() => onRemove()} color="warning">
+              <Button variant="x" onClick={() => onRemove()}>
                 <Trash className="h-4 w-4" />
-              </IconButton>
+              </Button>
             </div>
           </div>
         ) : (

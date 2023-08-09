@@ -1,4 +1,10 @@
 import { Button } from "@/components/ui/button";
+import { api } from "@/lib/api";
+import { IconButton } from "@mui/material";
+import { X } from "lucide-react";
+import React, { useState } from "react";
+import { Separator } from "@/components/ui/separator";
+import { useToastStore } from "@/zustand/store";
 import {
   Form,
   FormControl,
@@ -8,22 +14,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { api } from "@/lib/api";
-import { useToastStore } from "@/zustand/store";
-import { IconButton } from "@mui/material";
-import { X } from "lucide-react";
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useForm } from "react-hook-form";
 
 const formSchema = z.object({
   name: z.string().nonempty(),
+  code: z.string().nonempty(),
 });
 
-type LessonFormValues = z.infer<typeof formSchema>;
+type LevelFormValues = z.infer<typeof formSchema>;
 
-const LessonForm = ({
+const LevelForm = ({
   setIsOpen,
   id,
 }: {
@@ -32,20 +33,19 @@ const LessonForm = ({
 }) => {
   const [loading, setLoading] = useState(false);
 
-  const form = useForm({ defaultValues: { name: "" } });
-  const createLessonMutation = api.lessons.createLesson.useMutation();
+  const form = useForm({ defaultValues: { name: "", code: "" } });
+  const createlevelMutation = api.levels.createLevel.useMutation();
   const trpcUtils = api.useContext();
   const toast = useToastStore();
 
-  const onSubmit = (data: LessonFormValues) => {
+  const onSubmit = (data: LevelFormValues) => {
     setLoading(true);
-
-    createLessonMutation.mutate(
-      { ...data, levelId: id },
+    createlevelMutation.mutate(
+      { ...data, courseId: id },
       {
-        onSuccess: ({ lesson }) => {
-          toast.success(`Your new lesson (${lesson.name}) is ready!`);
-          trpcUtils.lessons.invalidate();
+        onSuccess: ({ level }) => {
+          toast.success(`Your new level (${level.name}) is ready!`);
+          trpcUtils.courses.invalidate();
           setLoading(false);
         },
         onError: () => {
@@ -59,7 +59,7 @@ const LessonForm = ({
   return (
     <div>
       <div className="flex items-center justify-between p-4">
-        <div>Create lesson</div>
+        <div>Create level</div>
         <IconButton onClick={() => setIsOpen(false)}>
           <X className="h-4 w-4" />
         </IconButton>
@@ -70,17 +70,28 @@ const LessonForm = ({
           <FormField
             control={form.control}
             name="name"
-            render={({ field }) => {
-              return (
-                <FormItem className="p-4">
-                  <FormLabel>Lesson Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Level 1" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              );
-            }}
+            render={({ field }) => (
+              <FormItem className="p-4">
+                <FormLabel>level Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Level 1" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="code"
+            render={({ field }) => (
+              <FormItem className="p-4">
+                <FormLabel>Level Code</FormLabel>
+                <FormControl>
+                  <Input placeholder="L1" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
           <Separator />
           <div className="flex w-full justify-end gap-4 self-end p-4">
@@ -101,7 +112,7 @@ const LessonForm = ({
               Reset
             </Button>
             <Button disabled={loading} type="submit">
-              Create Lesson
+              Create Level
             </Button>
           </div>
         </form>
@@ -110,4 +121,4 @@ const LessonForm = ({
   );
 };
 
-export default LessonForm;
+export default LevelForm;
