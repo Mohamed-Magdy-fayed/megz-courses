@@ -49,12 +49,12 @@ const FirstTestContainer: FC<FirstTestContainerProps> = ({
       ? toast.error(
           `Correct answers: ${correctAnswers} out of ${
             areas.length
-          } - Score: ${((correctAnswers / areas.length) * 100).toFixed(2)}%`
+          } - Score: ${((correctAnswers / areas.length) * 100).toFixed(0)}%`
         )
       : toast.success(
           `Correct answers: ${correctAnswers} out of ${
             areas.length
-          } -  Score: ${((correctAnswers / areas.length) * 100).toFixed(2)}%`
+          } -  Score: ${((correctAnswers / areas.length) * 100).toFixed(0)}%`
         );
   };
 

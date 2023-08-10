@@ -1,5 +1,5 @@
 import AppLayout from "@/layouts/AppLayout";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import { Typography } from "@mui/material";
@@ -9,10 +9,27 @@ import { PaperContainer } from "@/components/ui/PaperContainers";
 import CourseForm from "@/components/contentComponents/courses/CourseForm";
 import CourseCard from "@/components/contentComponents/courses/CourseCard";
 import CardsSkeleton from "@/components/layout/CardsSkeleton";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { useTutorialStore } from "@/zustand/store";
+import { useRouter } from "next/router";
+import { cn } from "@/lib/utils";
 
 const ContentPage = () => {
   const { data, isLoading, isError } = api.courses.getAll.useQuery();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const { skipTutorial, steps, setStep, setSkipTutorial } = useTutorialStore();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    if (!isMounted) setIsMounted(true);
+  }, []);
+
+  if (!isMounted) return null;
 
   return (
     <AppLayout>
@@ -25,10 +42,35 @@ const ContentPage = () => {
                 total courses: {data?.courses.length}
               </Typography>
             </div>
-            <Button onClick={() => setIsOpen(true)}>
-              <PlusIcon className="mr-2"></PlusIcon>
-              Create a course
-            </Button>
+            <Popover
+              open={
+                !steps.createCourse &&
+                !skipTutorial &&
+                router.route === "/content"
+              }
+            >
+              <PopoverTrigger asChild>
+                <Button
+                  onClick={() => {
+                    setIsOpen(true);
+                    setStep(true, "createCourse");
+                  }}
+                  className={cn(
+                    "",
+                    !steps.createCourse &&
+                      !skipTutorial &&
+                      router.route === "/content" &&
+                      "tutorial-ping"
+                  )}
+                >
+                  <PlusIcon className="mr-2"></PlusIcon>
+                  Create a course
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent side="bottom">
+                You can create a coures from here!
+              </PopoverContent>
+            </Popover>
           </div>
           {isOpen && (
             <PaperContainer>
@@ -40,7 +82,7 @@ const ContentPage = () => {
           ) : isError ? (
             <>Error</>
           ) : (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
               {data?.courses.map((course) => (
                 <CourseCard id={course.id} />
               ))}

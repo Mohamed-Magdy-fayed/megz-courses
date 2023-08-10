@@ -280,3 +280,66 @@ export const useControlledPracticeMultichoiceStore =
       }
     )
   );
+
+export interface TutorialSteps {
+  openMenu: boolean;
+  clickContent: boolean;
+  createCourse: boolean;
+  confirmCreateCourse: boolean;
+  manageCourse: boolean;
+  createLevel: boolean;
+  confirmCreateLevel: boolean;
+  manageLevel: boolean;
+  createLesson: boolean;
+  confirmCreateLesson: boolean;
+  manageLesson: boolean;
+  createMaterial: boolean;
+  confirmCreateMaterial: boolean;
+  manageMaterial: boolean;
+}
+
+export interface TutorialState {
+  skipTutorial: boolean;
+  setSkipTutorial: (value: boolean) => void;
+  steps: TutorialSteps;
+  setStep: (value: boolean, step: string) => void;
+}
+
+export const useTutorialStore = create<TutorialState>()(
+  persist(
+    (set) => {
+      return {
+        skipTutorial: false,
+        steps: {
+          openMenu: false,
+          clickContent: false,
+          createCourse: false,
+          confirmCreateCourse: false,
+          manageCourse: false,
+          createLevel: false,
+          confirmCreateLevel: false,
+          manageLevel: false,
+          createLesson: false,
+          confirmCreateLesson: false,
+          manageLesson: false,
+          createMaterial: false,
+          confirmCreateMaterial: false,
+          manageMaterial: false,
+        },
+        setSkipTutorial: (value) => set((state) => ({ skipTutorial: value })),
+        setStep: (value, step) =>
+          set((state) => ({
+            steps: {
+              ...state.steps,
+              [step]: value,
+            },
+          })),
+      };
+    },
+    {
+      name: "TutorialStatus",
+      storage: createJSONStorage(() => sessionStorage),
+      skipHydration: true,
+    }
+  )
+);

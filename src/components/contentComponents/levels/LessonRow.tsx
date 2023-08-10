@@ -17,6 +17,8 @@ const LessonRow = ({ lesson }: { lesson: Lesson }) => {
   const [loading, setLoading] = useState(false);
 
   const handleDelete = (id: string) => {
+    if (id === "64d370ceb84ac3b8c1093819")
+      return toast.error(`don't delete that please! ^_^`);
     setLoading(true);
     deleteLessonMutation.mutate([id], {
       onSuccess: () => {

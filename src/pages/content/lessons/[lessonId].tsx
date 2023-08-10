@@ -5,19 +5,33 @@ import CardsSkeleton from "@/components/layout/CardsSkeleton";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import AppLayout from "@/layouts/AppLayout";
 import { api } from "@/lib/api";
+import { cn } from "@/lib/utils";
+import { useTutorialStore } from "@/zustand/store";
 import { Typography } from "@mui/material";
 import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const LessonPage = () => {
   const router = useRouter();
   const id = router.query.lessonId as string;
   const { data, isLoading, isError } = api.lessons.getById.useQuery({ id });
   const [isOpen, setIsOpen] = useState(false);
+  const { skipTutorial, steps, setStep, setSkipTutorial } = useTutorialStore();
+  const [isMounted, setIsMounted] = useState(false);
 
+  useEffect(() => {
+    if (!isMounted) setIsMounted(true);
+  }, []);
+
+  if (!isMounted) return null;
   return (
     <AppLayout>
       <div className="space-y-4">
@@ -28,10 +42,38 @@ const LessonPage = () => {
               total materials: {data?.lesson?.materials.length}
             </Typography>
           </div>
-          <Button onClick={() => setIsOpen(true)}>
-            <PlusIcon className="mr-2"></PlusIcon>
-            Add material
-          </Button>
+          <Popover
+            open={
+              !steps.createMaterial &&
+              steps.manageLesson &&
+              !skipTutorial &&
+              router.route.startsWith("/content/lessons")
+            }
+          >
+            <PopoverTrigger asChild>
+              <Button
+                onClick={() => {
+                  setIsOpen(true);
+                  setStep(true, "createMaterial");
+                }}
+                className={cn(
+                  "",
+                  !steps.createMaterial &&
+                    steps.manageLesson &&
+                    !skipTutorial &&
+                    router.route.startsWith("/content/lessons") &&
+                    "tutorial-ping"
+                )}
+              >
+                <PlusIcon className="mr-2"></PlusIcon>
+                Add material
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent side="bottom">
+              Creating a material will help you present your language to the
+              students in an interactive way!
+            </PopoverContent>
+          </Popover>
         </div>
         {isOpen && (
           <PaperContainer>
@@ -45,7 +87,7 @@ const LessonPage = () => {
         ) : !data.lesson?.materials ? (
           <>No materials yet</>
         ) : (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {data.lesson.materials.map((material) => (
               <MaterialCard material={material} />
             ))}

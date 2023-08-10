@@ -3,7 +3,7 @@ import { api } from "@/lib/api";
 import { IconButton, Typography } from "@mui/material";
 import { Plus, Trash, X } from "lucide-react";
 import React, { FC, useState } from "react";
-import { AnswerCard, useToastStore } from "@/zustand/store";
+import { AnswerCard, useToastStore, useTutorialStore } from "@/zustand/store";
 import { Separator } from "@/components/ui/separator";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -26,6 +26,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import router from "next/router";
 
 const formSchema = z.object({
   leadinText: z.string(),
@@ -110,8 +117,10 @@ const MaterialsForm = ({
   const createMaterialMutation = api.materials.createMaterialItem.useMutation();
   const trpcUtils = api.useContext();
   const toast = useToastStore();
+  const { skipTutorial, steps, setStep, setSkipTutorial } = useTutorialStore();
 
   const onSubmit = (data: MaterialsFormValues) => {
+    setStep(true, "confirmCreateMaterial");
     setLoading(true);
 
     createMaterialMutation.mutate(
@@ -155,7 +164,10 @@ const MaterialsForm = ({
   return (
     <div>
       <div className="flex items-center justify-between p-4">
-        <div>Create material</div>
+        <div className="flex items-center gap-8">
+          <Typography>Create material</Typography>
+          <Typography>(using the TTT vocab framework)</Typography>
+        </div>
         <IconButton onClick={() => setIsOpen(false)}>
           <X className="h-4 w-4" />
         </IconButton>
@@ -206,7 +218,8 @@ const MaterialsForm = ({
             control={form.control}
             name="leadinImageUrl"
             render={({ field }) => (
-              <FormItem className="md:col-span-2">
+              <FormItem className="p-4 md:col-span-2">
+                <FormLabel>Leadin Image</FormLabel>
                 <FormControl>
                   <MaterialImageUpload
                     value={field.value}
@@ -390,6 +403,9 @@ const MaterialsForm = ({
                           </Button>
                         </div>
                       </FormControl>
+                      <FormDescription>
+                        Add cards to select from
+                      </FormDescription>
                       <SelectContent>
                         {selectCards
                           .filter(
@@ -517,9 +533,34 @@ const MaterialsForm = ({
             >
               Reset
             </Button>
-            <Button disabled={loading} type="submit">
-              Create Material
-            </Button>
+            <Popover
+              open={
+                !steps.confirmCreateMaterial &&
+                !skipTutorial &&
+                steps.createMaterial &&
+                router.route.startsWith("/content/lessons")
+              }
+            >
+              <PopoverTrigger asChild>
+                <Button
+                  disabled={loading}
+                  type="submit"
+                  className={cn(
+                    "",
+                    !steps.confirmCreateMaterial &&
+                      !skipTutorial &&
+                      steps.createMaterial &&
+                      router.route.startsWith("/content/lessons") &&
+                      "tutorial-ping"
+                  )}
+                >
+                  Create Material
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent side="bottom">
+                Fill in the data and click here!
+              </PopoverContent>
+            </Popover>
           </div>
         </form>
       </Form>

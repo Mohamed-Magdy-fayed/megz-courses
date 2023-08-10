@@ -1,7 +1,7 @@
 import MegzDrawer from "@/components/layout/Drawer";
 import MegzTopBar from "@/components/layout/TopBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { useNavStore } from "@/zustand/store";
+import { useNavStore, useTutorialStore } from "@/zustand/store";
 import { SwipeableDrawer } from "@mui/material";
 import { ReactNode } from "react";
 
@@ -16,7 +16,7 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
         onClose={() => closeNav()}
         onOpen={() => openNav()}
       >
-        <MegzDrawer />
+        <MegzDrawer mobile />
       </SwipeableDrawer>
       <div className="hidden lg:block">
         <MegzDrawer />

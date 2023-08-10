@@ -2,7 +2,7 @@ import { useState } from "react";
 import { api } from "@/lib/api";
 import { IconButton } from "@mui/material";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { PlusIcon, X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import {
   Form,
@@ -14,8 +14,15 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
-import { useToastStore } from "@/zustand/store";
+import { useToastStore, useTutorialStore } from "@/zustand/store";
 import { z } from "zod";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import router from "next/router";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   name: z.string().nonempty(),
@@ -25,6 +32,7 @@ type CoursesFormValues = z.infer<typeof formSchema>;
 
 const CourseForm = ({ setIsOpen }: { setIsOpen: (val: boolean) => void }) => {
   const [loading, setLoading] = useState(false);
+  const { skipTutorial, steps, setStep, setSkipTutorial } = useTutorialStore();
 
   const form = useForm({ defaultValues: { name: "" } });
   const createCourseMutation = api.courses.createCourse.useMutation();
@@ -32,6 +40,7 @@ const CourseForm = ({ setIsOpen }: { setIsOpen: (val: boolean) => void }) => {
   const toast = useToastStore();
 
   const onSubmit = (data: CoursesFormValues) => {
+    setStep(true, "confirmCreateCourse");
     setLoading(true);
     createCourseMutation.mutate(data, {
       onSuccess: ({ course }) => {
@@ -88,9 +97,34 @@ const CourseForm = ({ setIsOpen }: { setIsOpen: (val: boolean) => void }) => {
             >
               Reset
             </Button>
-            <Button disabled={loading} type="submit">
-              Create Course
-            </Button>
+            <Popover
+              open={
+                !steps.confirmCreateCourse &&
+                !skipTutorial &&
+                steps.createCourse &&
+                router.route === "/content"
+              }
+            >
+              <PopoverTrigger asChild>
+                <Button
+                  disabled={loading}
+                  type="submit"
+                  className={cn(
+                    "",
+                    !steps.confirmCreateCourse &&
+                      !skipTutorial &&
+                      steps.createCourse &&
+                      router.route === "/content" &&
+                      "tutorial-ping"
+                  )}
+                >
+                  Create Course
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent side="bottom">
+                Fill in the data and click here!
+              </PopoverContent>
+            </Popover>
           </div>
         </form>
       </Form>

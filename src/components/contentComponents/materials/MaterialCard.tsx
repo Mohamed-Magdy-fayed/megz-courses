@@ -5,19 +5,29 @@ import { IconButton, Tooltip, Typography } from "@mui/material";
 import { Edit, Edit2, Trash, X } from "lucide-react";
 import { useRouter } from "next/router";
 import { MaterialItem } from "@prisma/client";
-import { useToastStore } from "@/zustand/store";
+import { useToastStore, useTutorialStore } from "@/zustand/store";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 const MaterialCard = ({ material }: { material: MaterialItem }) => {
   const deleteMaterialMutation =
     api.materials.deleteMaterialItems.useMutation();
   const trpcUtils = api.useContext();
   const toast = useToastStore();
+  const { skipTutorial, steps, setStep, setSkipTutorial } = useTutorialStore();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const handleDelete = (id: string) => {
+    if (id === "64d4f2bf25c5bf7a1c90bd93")
+      return toast.error(`Don't delete that please! ^_^`);
+
     setLoading(true);
     deleteMaterialMutation.mutate([id], {
       onSuccess: () => {
@@ -41,7 +51,10 @@ const MaterialCard = ({ material }: { material: MaterialItem }) => {
             </div>
             <Tooltip title="Edit Material">
               <IconButton
-                onClick={() => router.push(`/content/materials/${material.id}`)}
+                onClick={() => {
+                  setStep(true, "manageMaterial");
+                  router.push(`/content/materials/${material.id}`);
+                }}
               >
                 <Edit2 className="h-4 w-4" />
               </IconButton>
@@ -59,15 +72,50 @@ const MaterialCard = ({ material }: { material: MaterialItem }) => {
         </div>
         <Separator />
         <div className="flex w-full p-4">
-          <Button
-            variant="ghost"
-            onClick={() =>
-              router.push(`/content/materials/${material.id}/show`)
-            }
-          >
-            <Edit className="mr-2 h-4 w-4" />
-            Showcase
-          </Button>
+          {material.title === "Vocab" ? (
+            <Popover
+              open={
+                !steps.manageMaterial &&
+                steps.confirmCreateMaterial &&
+                !skipTutorial &&
+                router.route.startsWith("/content/lessons")
+              }
+            >
+              <PopoverTrigger asChild>
+                <Button
+                  className={cn(
+                    "",
+                    !steps.manageMaterial &&
+                      steps.confirmCreateMaterial &&
+                      !skipTutorial &&
+                      router.route.startsWith("/content/lessons") &&
+                      "tutorial-ping"
+                  )}
+                  variant="ghost"
+                  onClick={() => {
+                    router.push(`/content/materials/${material.id}/show`);
+                    setStep(true, "manageMaterial");
+                  }}
+                >
+                  <Edit className="mr-2 h-4 w-4" />
+                  Showcase
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent side="bottom">
+                Finally view how your material looks as a student!
+              </PopoverContent>
+            </Popover>
+          ) : (
+            <Button
+              variant="ghost"
+              onClick={() =>
+                router.push(`/content/materials/${material.id}/show`)
+              }
+            >
+              <Edit className="mr-2 h-4 w-4" />
+              Showcase
+            </Button>
+          )}
           <Button
             variant="ghost"
             className="ml-auto"

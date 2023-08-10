@@ -5,18 +5,33 @@ import CardsSkeleton from "@/components/layout/CardsSkeleton";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import AppLayout from "@/layouts/AppLayout";
 import { api } from "@/lib/api";
+import { cn } from "@/lib/utils";
+import { useTutorialStore } from "@/zustand/store";
 import { Typography } from "@mui/material";
 import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const CoursePage = () => {
   const router = useRouter();
   const id = router.query?.id as string;
   const { data, isLoading, isError } = api.courses.getById.useQuery({ id });
   const [isOpen, setIsOpen] = useState(false);
+  const { skipTutorial, steps, setStep, setSkipTutorial } = useTutorialStore();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    if (!isMounted) setIsMounted(true);
+  }, []);
+
+  if (!isMounted) return null;
 
   return (
     <AppLayout>
@@ -28,10 +43,37 @@ const CoursePage = () => {
               total levels: {data?.course?.levels.length}
             </Typography>
           </div>
-          <Button onClick={() => setIsOpen(true)}>
-            <PlusIcon className="mr-2"></PlusIcon>
-            Add a level
-          </Button>
+          <Popover
+            open={
+              !steps.createLevel &&
+              steps.manageCourse &&
+              !skipTutorial &&
+              router.route.startsWith("/content/courses")
+            }
+          >
+            <PopoverTrigger asChild>
+              <Button
+                onClick={() => {
+                  setIsOpen(true);
+                  setStep(true, "createLevel");
+                }}
+                className={cn(
+                  "",
+                  !steps.createLevel &&
+                    steps.manageCourse &&
+                    !skipTutorial &&
+                    router.route.startsWith("/content/courses") &&
+                    "tutorial-ping"
+                )}
+              >
+                <PlusIcon className="mr-2"></PlusIcon>
+                Add a level
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent side="bottom">
+              You can create levels from here!
+            </PopoverContent>
+          </Popover>
         </div>
         {isOpen && (
           <PaperContainer>
@@ -45,7 +87,7 @@ const CoursePage = () => {
         ) : !data.course?.levels ? (
           <>No levels yet</>
         ) : (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {data?.course?.levels.map((level) => (
               <LevelCard key={level.id} id={level.id} />
             ))}

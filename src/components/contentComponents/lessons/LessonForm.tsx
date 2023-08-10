@@ -8,11 +8,18 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { api } from "@/lib/api";
-import { useToastStore } from "@/zustand/store";
+import { cn } from "@/lib/utils";
+import { useToastStore, useTutorialStore } from "@/zustand/store";
 import { IconButton } from "@mui/material";
 import { X } from "lucide-react";
+import router from "next/router";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -31,6 +38,7 @@ const LessonForm = ({
   id: string;
 }) => {
   const [loading, setLoading] = useState(false);
+  const { skipTutorial, steps, setStep, setSkipTutorial } = useTutorialStore();
 
   const form = useForm({ defaultValues: { name: "" } });
   const createLessonMutation = api.lessons.createLesson.useMutation();
@@ -38,6 +46,7 @@ const LessonForm = ({
   const toast = useToastStore();
 
   const onSubmit = (data: LessonFormValues) => {
+    setStep(true, "confirmCreateLesson");
     setLoading(true);
 
     createLessonMutation.mutate(
@@ -100,9 +109,34 @@ const LessonForm = ({
             >
               Reset
             </Button>
-            <Button disabled={loading} type="submit">
-              Create Lesson
-            </Button>
+            <Popover
+              open={
+                !steps.confirmCreateLesson &&
+                !skipTutorial &&
+                steps.createLesson &&
+                router.route.startsWith("/content/levels")
+              }
+            >
+              <PopoverTrigger asChild>
+                <Button
+                  disabled={loading}
+                  type="submit"
+                  className={cn(
+                    "",
+                    !steps.confirmCreateLesson &&
+                      !skipTutorial &&
+                      steps.createLesson &&
+                      router.route.startsWith("/content/levels") &&
+                      "tutorial-ping"
+                  )}
+                >
+                  Create Lesson
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent side="bottom">
+                Fill in the data and click here!
+              </PopoverContent>
+            </Popover>
           </div>
         </form>
       </Form>

@@ -31,13 +31,13 @@ const ControlledPracticeContainer: FC<ControlledPracticeContainerProps> = ({
           `${correctAnswers} Correct answers of ${questions.length} - Score: ${(
             (correctAnswers / questions.length) *
             100
-          ).toFixed(2)}`
+          ).toFixed(0)}%`
         )
       : toast.error(
           `${correctAnswers} Correct answers of ${questions.length} - Score: ${(
             (correctAnswers / questions.length) *
             100
-          ).toFixed(2)}`
+          ).toFixed(0)}%`
         );
   };
 

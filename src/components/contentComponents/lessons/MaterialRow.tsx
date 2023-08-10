@@ -15,6 +15,8 @@ const MaterialRow = ({ material }: { material: MaterialItem }) => {
   const [loading, setLoading] = useState(false);
 
   const handleDelete = (id: string) => {
+    if (id === "64d4f2bf25c5bf7a1c90bd93")
+      return toast.error(`don't delete that please! ^_^`);
     setLoading(true);
     deleteMaterialMutation.mutate([id], {
       onSuccess: () => {

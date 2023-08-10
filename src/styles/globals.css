@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .tutorial-ping {
+    @apply relative after:absolute after:inset-0 after:max-h-[3rem] after:max-w-[3rem] after:animate-ping after:rounded-full after:bg-secondary/30 after:content-[''];
+  }
+}

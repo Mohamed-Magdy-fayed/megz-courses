@@ -17,6 +17,8 @@ const LevelRow = ({ level }: { level: Level }) => {
   const [loading, setLoading] = useState(false);
 
   const handleDelete = (id: string) => {
+    if (id === "64d35d5eb84ac3b8c1093813")
+      return toast.error(`don't delete that please! ^_^`);
     setLoading(true);
     deleteLevelMutation.mutate([id], {
       onSuccess: () => {

@@ -5,10 +5,16 @@ import { IconButton, Tooltip, Typography } from "@mui/material";
 import { Copy, Edit, Edit2, Trash } from "lucide-react";
 import { useRouter } from "next/router";
 import { Separator } from "@/components/ui/separator";
-import { useToastStore } from "@/zustand/store";
+import { useToastStore, useTutorialStore } from "@/zustand/store";
 import { useState } from "react";
 import CardsSkeleton from "@/components/layout/CardsSkeleton";
 import LessonRow from "./LessonRow";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 const LevelCard = ({ id }: { id: string }) => {
   const { data } = api.levels.getById.useQuery({
@@ -18,10 +24,13 @@ const LevelCard = ({ id }: { id: string }) => {
   const deleteLevelMutation = api.levels.deleteLevels.useMutation();
   const trpcUtils = api.useContext();
   const toast = useToastStore();
+  const { skipTutorial, steps, setStep, setSkipTutorial } = useTutorialStore();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const handleDelete = (id: string) => {
+    if (id === "64d35d5eb84ac3b8c1093813")
+      return toast.error(`don't delete that please! ^_^`);
     setLoading(true);
     deleteLevelMutation.mutate([id], {
       onSuccess: () => {
@@ -48,13 +57,51 @@ const LevelCard = ({ id }: { id: string }) => {
                 {level.code}
               </Typography>
             </div>
-            <Tooltip title="Edit Level">
-              <IconButton
-                onClick={() => router.push(`/content/levels/${level.id}`)}
+            {level.name === "Level 1" ? (
+              <Popover
+                open={
+                  !steps.manageLevel &&
+                  steps.confirmCreateLevel &&
+                  !skipTutorial &&
+                  router.route.startsWith("/content/courses")
+                }
               >
-                <Edit2 className="h-4 w-4" />
-              </IconButton>
-            </Tooltip>
+                <PopoverTrigger asChild>
+                  <Tooltip title="Edit Level">
+                    <IconButton
+                      onClick={() => {
+                        setStep(true, "manageLevel");
+                        router.push(`/content/levels/${level.id}`);
+                      }}
+                      className={cn(
+                        "",
+                        !steps.manageLevel &&
+                          steps.confirmCreateLevel &&
+                          !skipTutorial &&
+                          router.route.startsWith("/content/courses") &&
+                          "tutorial-ping"
+                      )}
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </IconButton>
+                  </Tooltip>
+                </PopoverTrigger>
+                <PopoverContent side="bottom">
+                  You can manage that level from here!
+                </PopoverContent>
+              </Popover>
+            ) : (
+              <Tooltip title="Edit Level">
+                <IconButton
+                  onClick={() => {
+                    setStep(true, "manageCourse");
+                    router.push(`/content/levels/${level.id}`);
+                  }}
+                >
+                  <Edit2 className="h-4 w-4" />
+                </IconButton>
+              </Tooltip>
+            )}
           </div>
           <Tooltip title="Delete Level">
             <IconButton
