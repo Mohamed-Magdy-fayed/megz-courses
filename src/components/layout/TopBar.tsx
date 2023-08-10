@@ -19,7 +19,6 @@ import { useNavStore, useTutorialStore } from "@/zustand/store";
 import { usePathname } from "next/navigation";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { cn } from "@/lib/utils";
-import TutorialPopover from "../tutorials/TutorialPopover";
 import { SkipForward } from "lucide-react";
 
 export default function MegzTopBar() {
@@ -65,7 +64,7 @@ export default function MegzTopBar() {
               <Tooltip title="Navigation">
                 <IconButton
                   className={cn(
-                    "lg:hidden",
+                    "lg:!hidden",
                     !steps.openMenu &&
                       !skipTutorial &&
                       router.route === "/" &&
