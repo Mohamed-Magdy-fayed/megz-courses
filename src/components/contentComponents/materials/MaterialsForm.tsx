@@ -3,7 +3,7 @@ import { api } from "@/lib/api";
 import { IconButton, Typography } from "@mui/material";
 import { Plus, Trash, X } from "lucide-react";
 import React, { FC, useState } from "react";
-import { AnswerCard, useToastStore, useTutorialStore } from "@/zustand/store";
+import { AnswerCard, useToastStore } from "@/zustand/store";
 import { Separator } from "@/components/ui/separator";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -26,13 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import router from "next/router";
 
 const formSchema = z.object({
   leadinText: z.string(),
@@ -117,10 +110,8 @@ const MaterialsForm = ({
   const createMaterialMutation = api.materials.createMaterialItem.useMutation();
   const trpcUtils = api.useContext();
   const toast = useToastStore();
-  const { skipTutorial, steps, setStep, setSkipTutorial } = useTutorialStore();
 
   const onSubmit = (data: MaterialsFormValues) => {
-    setStep(true, "confirmCreateMaterial");
     setLoading(true);
 
     createMaterialMutation.mutate(
@@ -533,34 +524,9 @@ const MaterialsForm = ({
             >
               Reset
             </Button>
-            <Popover
-              open={
-                !steps.confirmCreateMaterial &&
-                !skipTutorial &&
-                steps.createMaterial &&
-                router.route.startsWith("/content/lessons")
-              }
-            >
-              <PopoverTrigger asChild>
-                <Button
-                  disabled={loading}
-                  type="submit"
-                  className={cn(
-                    "",
-                    !steps.confirmCreateMaterial &&
-                      !skipTutorial &&
-                      steps.createMaterial &&
-                      router.route.startsWith("/content/lessons") &&
-                      "tutorial-ping"
-                  )}
-                >
-                  Create Material
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent side="bottom">
-                Fill in the data and click here!
-              </PopoverContent>
-            </Popover>
+            <Button disabled={loading} type="submit">
+              Create Material
+            </Button>
           </div>
         </form>
       </Form>

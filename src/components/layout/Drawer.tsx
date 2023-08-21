@@ -1,13 +1,8 @@
 import { cn } from "@/lib/utils";
-import { useNavStore, useTutorialStore } from "@/zustand/store";
+import { useNavStore } from "@/zustand/store";
 import { Box, Divider, Typography } from "@mui/material";
-import { ScrollArea } from "@radix-ui/react-scroll-area";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
-import TutorialPopover from "../tutorials/TutorialPopover";
-import { Button } from "../ui/button";
-import { SkipForward } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
 export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
@@ -48,9 +43,6 @@ export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
     },
   ];
 
-  const router = useRouter();
-  const { skipTutorial, steps, setStep, setSkipTutorial } = useTutorialStore();
-
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -78,18 +70,11 @@ export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
             key={link.url}
             onClick={() => {
               navStore.closeNav();
-              setStep(true, "clickContent");
             }}
             className={cn(
-              "whitespace-nowrap after:aspect-square",
+              "whitespace-nowrap",
               navStore.activeLink === link.url &&
-                "!bg-slate-100/10 !text-slate-100",
-              !steps.clickContent &&
-                !skipTutorial &&
-                ((steps.openMenu && navStore.opened && mobile) || !mobile) &&
-                link.label === "Content Management" &&
-                router.route === "/" &&
-                `tutorial-ping relative before:absolute before:translate-y-full before:rounded before:bg-slate-50 before:p-4 before:text-slate-700 before:content-["Content_got_better!"]`
+                "!bg-slate-100/10 !text-slate-100"
             )}
             href={`/${link.url}`}
           >

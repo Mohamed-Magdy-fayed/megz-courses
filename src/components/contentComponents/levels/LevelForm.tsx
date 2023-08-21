@@ -4,7 +4,7 @@ import { IconButton } from "@mui/material";
 import { X } from "lucide-react";
 import React, { useState } from "react";
 import { Separator } from "@/components/ui/separator";
-import { useToastStore, useTutorialStore } from "@/zustand/store";
+import { useToastStore } from "@/zustand/store";
 import {
   Form,
   FormControl,
@@ -16,13 +16,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import router from "next/router";
-import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   name: z.string().nonempty(),
@@ -39,7 +32,6 @@ const LevelForm = ({
   id: string;
 }) => {
   const [loading, setLoading] = useState(false);
-  const { skipTutorial, steps, setStep, setSkipTutorial } = useTutorialStore();
 
   const form = useForm({ defaultValues: { name: "", code: "" } });
   const createlevelMutation = api.levels.createLevel.useMutation();
@@ -47,7 +39,6 @@ const LevelForm = ({
   const toast = useToastStore();
 
   const onSubmit = (data: LevelFormValues) => {
-    setStep(true, "confirmCreateLevel");
     setLoading(true);
     createlevelMutation.mutate(
       { ...data, courseId: id },
@@ -120,34 +111,9 @@ const LevelForm = ({
             >
               Reset
             </Button>
-            <Popover
-              open={
-                !steps.confirmCreateLevel &&
-                !skipTutorial &&
-                steps.createLevel &&
-                router.route.startsWith("/content/courses")
-              }
-            >
-              <PopoverTrigger asChild>
-                <Button
-                  disabled={loading}
-                  type="submit"
-                  className={cn(
-                    "",
-                    !steps.confirmCreateLevel &&
-                      !skipTutorial &&
-                      steps.createLevel &&
-                      router.route.startsWith("/content/courses") &&
-                      "tutorial-ping"
-                  )}
-                >
-                  Create Level
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent side="bottom">
-                Fill in the data and click here!
-              </PopoverContent>
-            </Popover>
+            <Button disabled={loading} type="submit">
+              Create Level
+            </Button>
           </div>
         </form>
       </Form>

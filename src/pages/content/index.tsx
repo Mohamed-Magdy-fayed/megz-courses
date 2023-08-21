@@ -9,20 +9,10 @@ import { PaperContainer } from "@/components/ui/PaperContainers";
 import CourseForm from "@/components/contentComponents/courses/CourseForm";
 import CourseCard from "@/components/contentComponents/courses/CourseCard";
 import CardsSkeleton from "@/components/layout/CardsSkeleton";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { useTutorialStore } from "@/zustand/store";
-import { useRouter } from "next/router";
-import { cn } from "@/lib/utils";
 
 const ContentPage = () => {
   const { data, isLoading, isError } = api.courses.getAll.useQuery();
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const { skipTutorial, steps, setStep, setSkipTutorial } = useTutorialStore();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -42,35 +32,14 @@ const ContentPage = () => {
                 total courses: {data?.courses.length}
               </Typography>
             </div>
-            <Popover
-              open={
-                !steps.createCourse &&
-                !skipTutorial &&
-                router.route === "/content"
-              }
+            <Button
+              onClick={() => {
+                setIsOpen(true);
+              }}
             >
-              <PopoverTrigger asChild>
-                <Button
-                  onClick={() => {
-                    setIsOpen(true);
-                    setStep(true, "createCourse");
-                  }}
-                  className={cn(
-                    "",
-                    !steps.createCourse &&
-                      !skipTutorial &&
-                      router.route === "/content" &&
-                      "tutorial-ping"
-                  )}
-                >
-                  <PlusIcon className="mr-2"></PlusIcon>
-                  Create a course
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent side="bottom">
-                You can create a coures from here!
-              </PopoverContent>
-            </Popover>
+              <PlusIcon className="mr-2"></PlusIcon>
+              Create a course
+            </Button>
           </div>
           {isOpen && (
             <PaperContainer>

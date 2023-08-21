@@ -4,15 +4,8 @@ import CardsSkeleton from "@/components/layout/CardsSkeleton";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import AppLayout from "@/layouts/AppLayout";
 import { api } from "@/lib/api";
-import { cn } from "@/lib/utils";
-import { useTutorialStore } from "@/zustand/store";
 import { Typography } from "@mui/material";
 import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/router";
@@ -23,7 +16,6 @@ const LevelPage = () => {
   const id = router.query.id as string;
   const { data, isLoading, isError } = api.levels.getById.useQuery({ id });
   const [isOpen, setIsOpen] = useState(false);
-  const { skipTutorial, steps, setStep, setSkipTutorial } = useTutorialStore();
 
   const [isMounted, setIsMounted] = useState(false);
 
@@ -32,7 +24,7 @@ const LevelPage = () => {
   }, []);
 
   if (!isMounted) return null;
-  
+
   return (
     <AppLayout>
       <div className="space-y-4">
@@ -46,37 +38,14 @@ const LevelPage = () => {
               total lessons: {data?.level?.lessons.length}
             </Typography>
           </div>
-          <Popover
-            open={
-              !steps.createLesson &&
-              steps.manageLevel &&
-              !skipTutorial &&
-              router.route.startsWith("/content/levels")
-            }
+          <Button
+            onClick={() => {
+              setIsOpen(true);
+            }}
           >
-            <PopoverTrigger asChild>
-              <Button
-                onClick={() => {
-                  setIsOpen(true);
-                  setStep(true, "createLesson");
-                }}
-                className={cn(
-                  "",
-                  !steps.createLesson &&
-                    steps.manageLevel &&
-                    !skipTutorial &&
-                    router.route.startsWith("/content/levels") &&
-                    "tutorial-ping"
-                )}
-              >
-                <PlusIcon className="mr-2"></PlusIcon>
-                Add a lesson
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent side="bottom">
-              Now create lessons for this level!
-            </PopoverContent>
-          </Popover>
+            <PlusIcon className="mr-2"></PlusIcon>
+            Add a lesson
+          </Button>
         </div>
         {isOpen && (
           <PaperContainer>

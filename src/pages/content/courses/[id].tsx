@@ -1,19 +1,11 @@
-import Spinner from "@/components/Spinner";
 import LevelCard from "@/components/contentComponents/levels/LevelCard";
 import LevelForm from "@/components/contentComponents/levels/LevelForm";
 import CardsSkeleton from "@/components/layout/CardsSkeleton";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import AppLayout from "@/layouts/AppLayout";
 import { api } from "@/lib/api";
-import { cn } from "@/lib/utils";
-import { useTutorialStore } from "@/zustand/store";
 import { Typography } from "@mui/material";
 import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/router";
@@ -24,7 +16,6 @@ const CoursePage = () => {
   const id = router.query?.id as string;
   const { data, isLoading, isError } = api.courses.getById.useQuery({ id });
   const [isOpen, setIsOpen] = useState(false);
-  const { skipTutorial, steps, setStep, setSkipTutorial } = useTutorialStore();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -43,37 +34,14 @@ const CoursePage = () => {
               total levels: {data?.course?.levels.length}
             </Typography>
           </div>
-          <Popover
-            open={
-              !steps.createLevel &&
-              steps.manageCourse &&
-              !skipTutorial &&
-              router.route.startsWith("/content/courses")
-            }
+          <Button
+            onClick={() => {
+              setIsOpen(true);
+            }}
           >
-            <PopoverTrigger asChild>
-              <Button
-                onClick={() => {
-                  setIsOpen(true);
-                  setStep(true, "createLevel");
-                }}
-                className={cn(
-                  "",
-                  !steps.createLevel &&
-                    steps.manageCourse &&
-                    !skipTutorial &&
-                    router.route.startsWith("/content/courses") &&
-                    "tutorial-ping"
-                )}
-              >
-                <PlusIcon className="mr-2"></PlusIcon>
-                Add a level
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent side="bottom">
-              You can create levels from here!
-            </PopoverContent>
-          </Popover>
+            <PlusIcon className="mr-2"></PlusIcon>
+            Add a level
+          </Button>
         </div>
         {isOpen && (
           <PaperContainer>

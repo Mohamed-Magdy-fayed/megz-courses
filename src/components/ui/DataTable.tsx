@@ -19,31 +19,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import Scrollbar from "../Scrollbar";
 import {
   Box,
   Button,
   Icon,
   IconButton,
-  Input,
   InputAdornment,
   InputBase,
   Typography,
 } from "@mui/material";
 import { ArrowLeft, ArrowRight, Delete, Search } from "@mui/icons-material";
-
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { api } from "@/lib/api";
 import { AlertModal } from "../modals/AlertModal";
 
 interface DataTableProps<TData, TValue> {

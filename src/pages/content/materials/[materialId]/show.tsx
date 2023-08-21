@@ -1,6 +1,6 @@
 import AppLayout from "@/layouts/AppLayout";
 import { Typography } from "@mui/material";
-import { useDraggingStore, useTutorialStore } from "@/zustand/store";
+import { useDraggingStore } from "@/zustand/store";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import Spinner from "@/components/Spinner";
@@ -9,19 +9,12 @@ import ControlledPracticeContainer from "@/components/materialsShowcaseComponent
 import FirstTestContainer from "@/components/materialsShowcaseComponents/FirstTestContainer";
 import { api } from "@/lib/api";
 import { useRouter } from "next/router";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
 
 const MaterialShowcasePage = () => {
   const { submission } = useDraggingStore();
   const router = useRouter();
   const id = router.query.materialId as string;
   const { data, isLoading, isError } = api.materials.getById.useQuery({ id });
-  const { skipTutorial, steps, setStep, setSkipTutorial } = useTutorialStore();
 
   const [mounted, setMounted] = useState(false);
 
@@ -67,33 +60,9 @@ const MaterialShowcasePage = () => {
       </div>
       <div className="flex items-center justify-between">
         <div className="flex flex-col items-center whitespace-nowrap p-4">
-          <Popover
-            open={
-              steps.manageMaterial &&
-              !skipTutorial &&
-              router.route.startsWith("/content/materials")
-            }
-          >
-            <PopoverTrigger asChild>
-              <Typography className="w-full text-left text-4xl font-bold text-cyan-600">
-                {title}
-              </Typography>
-            </PopoverTrigger>
-            <PopoverContent
-              side="right"
-              className="flex flex-col items-center gap-4 whitespace-nowrap"
-            >
-              <Typography>Check it out, your all set!</Typography>
-              <Button
-                onClick={() => {
-                  setStep(true, "manageMaterial");
-                  setSkipTutorial(true);
-                }}
-              >
-                Exit Tutorial
-              </Button>
-            </PopoverContent>
-          </Popover>
+          <Typography className="w-full text-left text-4xl font-bold text-cyan-600">
+            {title}
+          </Typography>
           <Typography className="w-full text-left text-base text-warning">
             {subTitle}
           </Typography>

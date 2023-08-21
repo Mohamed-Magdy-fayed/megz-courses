@@ -2,19 +2,13 @@ import { PaperContainer } from "@/components/ui/PaperContainers";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { api } from "@/lib/api";
-import { useToastStore, useTutorialStore } from "@/zustand/store";
+import { useToastStore } from "@/zustand/store";
 import { IconButton, Tooltip, Typography } from "@mui/material";
 import { Lesson, MaterialItem } from "@prisma/client";
 import { Edit, Edit2, Trash, X } from "lucide-react";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import MaterialRow from "./MaterialRow";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 
 const LessonCard = ({
   lesson,
@@ -24,7 +18,6 @@ const LessonCard = ({
   const deleteLessonsMutation = api.lessons.deleteLessons.useMutation();
   const trpcUtils = api.useContext();
   const toast = useToastStore();
-  const { skipTutorial, steps, setStep, setSkipTutorial } = useTutorialStore();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -52,51 +45,15 @@ const LessonCard = ({
             <div className="flex flex-col gap-2">
               <Typography>{lesson.name}</Typography>
             </div>
-            {lesson.name === "Lesson 1 - Animals" ? (
-              <Popover
-                open={
-                  !steps.manageLesson &&
-                  steps.confirmCreateLesson &&
-                  !skipTutorial &&
-                  router.route.startsWith("/content/levels/")
-                }
+            <Tooltip title="Edit Lesson">
+              <IconButton
+                onClick={() => {
+                  router.push(`/content/lessons/${lesson.id}`);
+                }}
               >
-                <PopoverTrigger asChild>
-                  <Tooltip title="Edit Lesson">
-                    <IconButton
-                      onClick={() => {
-                        setStep(true, "manageLesson");
-                        router.push(`/content/lessons/${lesson.id}`);
-                      }}
-                      className={cn(
-                        "",
-                        !steps.manageLesson &&
-                          steps.confirmCreateLesson &&
-                          !skipTutorial &&
-                          router.route.startsWith("/content/levels/") &&
-                          "tutorial-ping"
-                      )}
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </IconButton>
-                  </Tooltip>
-                </PopoverTrigger>
-                <PopoverContent side="bottom">
-                  You can manage that lesson from here!
-                </PopoverContent>
-              </Popover>
-            ) : (
-              <Tooltip title="Edit Lesson">
-                <IconButton
-                  onClick={() => {
-                    setStep(true, "manageLevel");
-                    router.push(`/content/lessons/${lesson.id}`);
-                  }}
-                >
-                  <Edit2 className="h-4 w-4" />
-                </IconButton>
-              </Tooltip>
-            )}
+                <Edit2 className="h-4 w-4" />
+              </IconButton>
+            </Tooltip>
           </div>
           <Tooltip title="Delete Lesson">
             <IconButton

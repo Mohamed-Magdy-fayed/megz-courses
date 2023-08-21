@@ -1,19 +1,11 @@
-import Spinner from "@/components/Spinner";
 import MaterialCard from "@/components/contentComponents/materials/MaterialCard";
 import MaterialsForm from "@/components/contentComponents/materials/MaterialsForm";
 import CardsSkeleton from "@/components/layout/CardsSkeleton";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import AppLayout from "@/layouts/AppLayout";
 import { api } from "@/lib/api";
-import { cn } from "@/lib/utils";
-import { useTutorialStore } from "@/zustand/store";
 import { Typography } from "@mui/material";
 import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/router";
@@ -24,7 +16,6 @@ const LessonPage = () => {
   const id = router.query.lessonId as string;
   const { data, isLoading, isError } = api.lessons.getById.useQuery({ id });
   const [isOpen, setIsOpen] = useState(false);
-  const { skipTutorial, steps, setStep, setSkipTutorial } = useTutorialStore();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -42,38 +33,14 @@ const LessonPage = () => {
               total materials: {data?.lesson?.materials.length}
             </Typography>
           </div>
-          <Popover
-            open={
-              !steps.createMaterial &&
-              steps.manageLesson &&
-              !skipTutorial &&
-              router.route.startsWith("/content/lessons")
-            }
+          <Button
+            onClick={() => {
+              setIsOpen(true);
+            }}
           >
-            <PopoverTrigger asChild>
-              <Button
-                onClick={() => {
-                  setIsOpen(true);
-                  setStep(true, "createMaterial");
-                }}
-                className={cn(
-                  "",
-                  !steps.createMaterial &&
-                    steps.manageLesson &&
-                    !skipTutorial &&
-                    router.route.startsWith("/content/lessons") &&
-                    "tutorial-ping"
-                )}
-              >
-                <PlusIcon className="mr-2"></PlusIcon>
-                Add material
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent side="bottom">
-              Creating a material will help you present your language to the
-              students in an interactive way!
-            </PopoverContent>
-          </Popover>
+            <PlusIcon className="mr-2"></PlusIcon>
+            Add material
+          </Button>
         </div>
         {isOpen && (
           <PaperContainer>

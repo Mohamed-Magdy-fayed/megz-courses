@@ -9,7 +9,6 @@ import MenuIcon from "@mui/icons-material/Menu";
 import Avatar from "@mui/material/Avatar";
 import Divider from "@mui/material/Divider";
 import Button from "@mui/material/Button";
-import { Button as UiButton } from "@/components/ui/button";
 import Tooltip from "@mui/material/Tooltip";
 import { signOut, useSession } from "next-auth/react";
 import NotificationsIcon from "@mui/icons-material/Notifications";
@@ -17,9 +16,7 @@ import PeopleIcon from "@mui/icons-material/People";
 import { useRouter } from "next/router";
 import { useNavStore, useTutorialStore } from "@/zustand/store";
 import { usePathname } from "next/navigation";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { cn } from "@/lib/utils";
-import { SkipForward } from "lucide-react";
 
 export default function MegzTopBar() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -34,7 +31,6 @@ export default function MegzTopBar() {
   const router = useRouter();
   const navStore = useNavStore((state) => state);
   const pathname = usePathname();
-  const { skipTutorial, steps, setStep, setSkipTutorial } = useTutorialStore();
 
   const handlePathnameChange = React.useCallback(() => {
     if (navStore.opened) {
@@ -57,49 +53,20 @@ export default function MegzTopBar() {
     >
       <Toolbar disableGutters className="flex justify-between p-2">
         <Box component="div" className="flex items-center gap-2">
-          <Popover
-            open={!steps.openMenu && !skipTutorial && router.route === "/"}
-          >
-            <PopoverTrigger asChild>
-              <Tooltip title="Navigation">
-                <IconButton
-                  className={cn(
-                    "lg:!hidden",
-                    !steps.openMenu &&
-                      !skipTutorial &&
-                      router.route === "/" &&
-                      "tutorial-ping"
-                  )}
-                  onClick={() => {
-                    navStore.openNav();
-                    !steps.openMenu && setStep(true, "openMenu");
-                  }}
-                >
-                  <MenuIcon
-                    sx={{
-                      fontSize: "20px",
-                    }}
-                  ></MenuIcon>
-                </IconButton>
-              </Tooltip>
-            </PopoverTrigger>
-            <PopoverContent
-              side="bottom"
-              className="fixed translate-y-4 lg:hidden"
+          <Tooltip title="Navigation">
+            <IconButton
+              className={cn("lg:!hidden")}
+              onClick={() => {
+                navStore.openNav();
+              }}
             >
-              <div className="flex flex-col justify-center gap-4 lg:hidden">
-                <Typography>Checkout the latest update!</Typography>
-                <UiButton
-                  onClick={() => setSkipTutorial(true)}
-                  variant={"outline"}
-                  className="whitespace-nowrap text-slate-700"
-                >
-                  <Typography>Skip tutorial</Typography>
-                  <SkipForward className="ml-2 h-4 w-4" />
-                </UiButton>
-              </div>
-            </PopoverContent>
-          </Popover>
+              <MenuIcon
+                sx={{
+                  fontSize: "20px",
+                }}
+              ></MenuIcon>
+            </IconButton>
+          </Tooltip>
           <Box
             component="div"
             className="flex cursor-pointer gap-2 font-sans text-slate-500"

@@ -1,20 +1,14 @@
 import { api } from "@/lib/api";
 import { IconButton, Tooltip, Typography } from "@mui/material";
 import { Button } from "@/components/ui/button";
-import { Copy, Edit, Edit2, PlusIcon, Trash } from "lucide-react";
+import { Copy, Edit, Edit2, Trash } from "lucide-react";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import { Separator } from "@/components/ui/separator";
-import { useToastStore, useTutorialStore } from "@/zustand/store";
+import { useToastStore } from "@/zustand/store";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import LevelRow from "./LevelRow";
 import CardsSkeleton from "@/components/layout/CardsSkeleton";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 
 const CourseCard = ({ id }: { id: string }) => {
   const { data } = api.courses.getById.useQuery({
@@ -24,13 +18,10 @@ const CourseCard = ({ id }: { id: string }) => {
   const deleteCourseMutation = api.courses.deleteCourses.useMutation();
   const trpcUtils = api.useContext();
   const toast = useToastStore();
-  const { skipTutorial, steps, setStep, setSkipTutorial } = useTutorialStore();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const handleDelete = (id: string) => {
-    if (id === "64d35a9fb84ac3b8c109380c")
-      return toast.error(`don't delete that please! ^_^`);
     setLoading(true);
     deleteCourseMutation.mutate([id], {
       onSuccess: () => {
@@ -52,48 +43,13 @@ const CourseCard = ({ id }: { id: string }) => {
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-2">
             <Typography>{course.name}</Typography>
-            {course.name === "Beginner Vocabulary" ? (
-              <Popover
-                open={
-                  !steps.manageCourse &&
-                  steps.confirmCreateCourse &&
-                  !skipTutorial &&
-                  router.route === "/content"
-                }
+            <Tooltip title="Edit Course">
+              <IconButton
+                onClick={() => router.push(`/content/courses/${course.id}`)}
               >
-                <PopoverTrigger asChild>
-                  <Tooltip title="Edit Course">
-                    <IconButton
-                      onClick={() => {
-                        setStep(true, "manageCourse");
-                        router.push(`/content/courses/${course.id}`);
-                      }}
-                      className={cn(
-                        "",
-                        !steps.manageCourse &&
-                          steps.confirmCreateCourse &&
-                          !skipTutorial &&
-                          router.route === "/content" &&
-                          "tutorial-ping"
-                      )}
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </IconButton>
-                  </Tooltip>
-                </PopoverTrigger>
-                <PopoverContent side="bottom">
-                  You can manage your course from here!
-                </PopoverContent>
-              </Popover>
-            ) : (
-              <Tooltip title="Edit Course">
-                <IconButton
-                  onClick={() => router.push(`/content/courses/${course.id}`)}
-                >
-                  <Edit2 className="h-4 w-4" />
-                </IconButton>
-              </Tooltip>
-            )}
+                <Edit2 className="h-4 w-4" />
+              </IconButton>
+            </Tooltip>
           </div>
           <Tooltip title="Delete Course">
             <IconButton
