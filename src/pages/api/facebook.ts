@@ -1,7 +1,7 @@
 import { prisma } from "@/server/db";
 import type { NextApiRequest, NextApiResponse } from "next";
 
-const handler = (req: NextApiRequest, res: NextApiResponse<any>) => {
+const handler = async (req: NextApiRequest, res: NextApiResponse<any>) => {
     switch (req.method) {
         case "GET":
             console.log("GET request");
@@ -13,7 +13,7 @@ const handler = (req: NextApiRequest, res: NextApiResponse<any>) => {
             break;
         case "POST":
             console.log("POST request");
-            prisma.facebook.create({
+            await prisma.facebook.create({
                 data: { data: JSON.stringify(req.body) }
             })
 

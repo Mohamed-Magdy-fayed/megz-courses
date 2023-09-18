@@ -63,8 +63,8 @@ export default function Dashboard() {
           );
         })}
       </div>
-      <div className="bg-red-50 h-screen p-8">
-        <pre>{JSON.stringify(data)}</pre>
+      <div className="bg-red-50 h-screen p-8 overflow-auto">
+        <pre className="text-sm">{data?.data.map(item => (<p>{JSON.stringify(item)}</p>))}</pre>
       </div>
       <Box component="div" className="grid grid-cols-12 gap-8">
         <StatesOverview></StatesOverview>

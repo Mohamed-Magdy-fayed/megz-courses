@@ -10,12 +10,8 @@ const Page = () => {
   const session = useSession();
   const router = useRouter();
 
-  const funcy = async () => {
-    await axios.post('/api/facebook', { name: "test" })
-  }
   useEffect(() => {
     if (session.status === "unauthenticated") router.push("/authentication");
-    funcy()
   }, [session.status]);
 
   if (session.status === "loading") return <Spinner></Spinner>;
