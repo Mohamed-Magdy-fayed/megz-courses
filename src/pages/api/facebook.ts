@@ -1,13 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
 type Data = {
-    name: string;
+    value: number;
 };
 
 const POST = (req: NextApiRequest, res: NextApiResponse<Data>) => {
     console.log(req.body);
 
-    res.status(200).json({ name: "John Doe" });
+    res.status(200).json({ value: 2013469864 });
 };
 
 export default POST
