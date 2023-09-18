@@ -1,11 +1,7 @@
 import { prisma } from "@/server/db";
 import type { NextApiRequest, NextApiResponse } from "next";
 
-type Data = {
-    value: string | string[] | undefined;
-};
-
-const handler = (req: NextApiRequest, res: NextApiResponse<Data>) => {
+const handler = (req: NextApiRequest, res: NextApiResponse<any>) => {
     switch (req.method) {
         case "GET":
             console.log("GET request");
@@ -13,7 +9,7 @@ const handler = (req: NextApiRequest, res: NextApiResponse<Data>) => {
             console.log("req.query.hub_challenge", req.query["hub.challenge"]);
             console.log("req.query.hub_verify_token", req.query["hub.verify_token"]);
 
-            res.status(200).json({ value: req.query["hub.challenge"] });
+            res.status(200).send(req.query["hub.challenge"]);
             break;
         case "POST":
             console.log("POST request");
