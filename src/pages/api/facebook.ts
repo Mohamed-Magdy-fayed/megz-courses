@@ -9,6 +9,7 @@ const handler = (req: NextApiRequest, res: NextApiResponse<Data>) => {
     switch (req.method) {
         case "GET":
             console.log("GET request");
+            console.log("req.query", req.query);
             console.log("req.query.hub_challenge", req.query.hub_challenge);
             console.log("req.query.hub_verify_token", req.query.hub_verify_token);
 
