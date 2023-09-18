@@ -205,3 +205,10 @@ model Task {
     updatedAt DateTime   @updatedAt
     createdAt DateTime   @default(now())
 }
+
+model facebook {
+    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    data      Json
+    updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
+}
