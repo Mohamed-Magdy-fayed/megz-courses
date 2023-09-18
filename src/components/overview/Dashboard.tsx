@@ -9,6 +9,7 @@ import { LatestOrdersOverview } from "./LatestOrdersOverview";
 import useDrag from "@/hooks/useDrag";
 import { cn } from "@/lib/utils";
 import { prisma } from "@/server/db";
+import { api } from "@/lib/api";
 
 const now = new Date();
 
@@ -16,15 +17,7 @@ export default function Dashboard() {
   const items = [1, 2, 3, 4];
   const { dragingArea } = useDrag(items);
   const [currentDropArea, setCurrentDropArea] = useState<HTMLDivElement>();
-  const [data, setData] = useState<any>();
-
-  const asFunc = async () => {
-    return await prisma.facebook.findMany()
-  }
-
-  useEffect(() => {
-    asFunc().then(data => setData(data))
-  }, [])
+  const { data } = api.auth.getFacebook.useQuery()
 
   return (
     <>
@@ -71,7 +64,7 @@ export default function Dashboard() {
         })}
       </div>
       <div className="bg-red-50 h-screen p-8">
-        <pre>{data}</pre>
+        <pre>{JSON.stringify(data)}</pre>
       </div>
       <Box component="div" className="grid grid-cols-12 gap-8">
         <StatesOverview></StatesOverview>

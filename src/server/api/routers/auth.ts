@@ -66,4 +66,9 @@ export const authRouter = createTRPCRouter({
 
       return { updated };
     }),
+  getFacebook: publicProcedure.query(async ({ ctx }) => {
+    const data = await ctx.prisma.facebook.findMany()
+
+    return { data }
+  })
 });
