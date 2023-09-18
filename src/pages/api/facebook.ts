@@ -10,10 +10,10 @@ const handler = (req: NextApiRequest, res: NextApiResponse<Data>) => {
         case "GET":
             console.log("GET request");
             console.log("req.query", req.query);
-            console.log("req.query.hub_challenge", req.query.hub_challenge);
-            console.log("req.query.hub_verify_token", req.query.hub_verify_token);
+            console.log("req.query.hub_challenge", req.query["hub.challenge"]);
+            console.log("req.query.hub_verify_token", req.query["hub.verify_token"]);
 
-            res.status(200).json({ value: req.query.hub_challenge });
+            res.status(200).json({ value: req.query["hub.challenge"] });
             break;
         case "POST":
             console.log("POST request");
