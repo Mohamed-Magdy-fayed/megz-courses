@@ -8,6 +8,7 @@
     "postinstall": "prisma generate",
     "lint": "next lint",
     "start": "next start",
+    "ngrok": "ngrok http 3000",
     "dep": "git add . & git commit -m \"auto commit\" & git push"
   },
   "dependencies": {
@@ -53,6 +54,7 @@
     "next-auth": "^4.22.1",
     "next-cloudinary": "^4.13.0",
     "next-themes": "^0.2.1",
+    "ngrok": "^5.0.0-beta.2",
     "nprogress": "0.2.0",
     "prop-types": "15.8.1",
     "react": "18.2.0",
@@ -70,6 +72,7 @@
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",
     "@types/eslint": "^8.37.0",
+    "@types/facebook-js-sdk": "^3.3.7",
     "@types/node": "^18.16.0",
     "@types/prettier": "^2.7.2",
     "@types/react": "^18.2.6",

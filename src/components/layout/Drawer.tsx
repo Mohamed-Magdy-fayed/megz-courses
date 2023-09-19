@@ -4,6 +4,7 @@ import { Box, Divider, Typography } from "@mui/material";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import { ScrollArea } from "../ui/scroll-area";
 
 export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
   const navStore = useNavStore();
@@ -24,6 +25,14 @@ export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
     {
       label: "Content Management",
       url: "content",
+    },
+    {
+      label: "Database",
+      url: "database",
+    },
+    {
+      label: "Configurations",
+      url: "config",
     },
     {
       label: "Account",
@@ -61,43 +70,45 @@ export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
         <Typography className="text-sm text-slate-300">Development</Typography>
       </Box>
       <Divider></Divider>
-      <Box
-        component="div"
-        className="flex flex-col items-center gap-2 [&>*]:w-full [&>*]:rounded-lg [&>*]:bg-transparent [&>*]:p-2 [&>*]:font-bold [&>*]:text-slate-300 hover:[&>*]:bg-slate-100/10"
-      >
-        {links.map((link) => (
-          <Link
-            key={link.url}
-            onClick={() => {
-              navStore.closeNav();
-            }}
-            className={cn(
-              "whitespace-nowrap",
-              navStore.activeLink === link.url &&
+      <ScrollArea className="w-fit h-screen">
+        <Box
+          component="div"
+          className="flex flex-col items-center gap-2 [&>*]:w-full [&>*]:rounded-lg [&>*]:bg-transparent [&>*]:p-2 [&>*]:font-bold [&>*]:text-slate-300 hover:[&>*]:bg-slate-100/10"
+        >
+          {links.map((link) => (
+            <Link
+              key={link.url}
+              onClick={() => {
+                navStore.closeNav();
+              }}
+              className={cn(
+                "whitespace-nowrap",
+                navStore.activeLink === link.url &&
                 "!bg-slate-100/10 !text-slate-100"
-            )}
-            href={`/${link.url}`}
-          >
-            {link.label}
-          </Link>
-        ))}
-      </Box>
-      <Divider></Divider>
-      <Box component="div">
-        <Typography className="text-base text-slate-50">
-          Need different featrues?
-        </Typography>
-        <Typography className="whitespace-nowrap text-sm text-slate-300">
-          <Link
-            className="text-dark underline decoration-slate-700 hover:decoration-dark"
-            href="https://portfolio-2-iota-brown.vercel.app/"
-            target="_blank"
-          >
-            Contact
-          </Link>{" "}
-          me for customizations
-        </Typography>
-      </Box>
+              )}
+              href={`/${link.url}`}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </Box>
+        <Divider></Divider>
+        <Box component="div">
+          <Typography className="text-base text-slate-50">
+            Need different featrues?
+          </Typography>
+          <Typography className="whitespace-nowrap text-sm text-slate-300">
+            <Link
+              className="text-dark underline decoration-slate-700 hover:decoration-dark"
+              href="https://portfolio-2-iota-brown.vercel.app/"
+              target="_blank"
+            >
+              Contact
+            </Link>{" "}
+            me for customizations
+          </Typography>
+        </Box>
+      </ScrollArea>
     </div>
   );
 }

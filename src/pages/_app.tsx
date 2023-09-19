@@ -5,11 +5,24 @@ import { api } from "@/lib/api";
 import "@/styles/globals.css";
 import SnackbarContainer from "@/components/SnackbarContainer";
 import Head from "next/head";
+import Script from "next/script";
+import { useEffect } from "react";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
   pageProps: { session, ...pageProps },
 }) => {
+
+  useEffect(() => {
+    window.fbAsyncInit = function () {
+      window.FB.init({
+        appId: process.env.FACEBOOK_APP_ID,
+        autoLogAppEvents: true,
+        xfbml: true,
+        version: 'v18.0'
+      });
+    };
+  }, [])
   return (
     <SessionProvider session={session}>
       <Head>
@@ -22,6 +35,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
       </Head>
       <SnackbarContainer></SnackbarContainer>
       <Component {...pageProps} />
+      <Script async defer crossOrigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js" />
     </SessionProvider>
   );
 };

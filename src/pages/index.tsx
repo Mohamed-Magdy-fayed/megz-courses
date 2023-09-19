@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import Spinner from "@/components/Spinner";
 import Dashboard from "@/components/overview/Dashboard";
 import AppLayout from "@/layouts/AppLayout";
-import axios from "axios";
 
 const Page = () => {
   const session = useSession();

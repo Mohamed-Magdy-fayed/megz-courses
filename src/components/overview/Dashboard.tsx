@@ -6,66 +6,12 @@ import { TrafficOverview } from "./TrafficOverview";
 import { LatestCourseOverview } from "./LatestCourseOverview";
 import { subDays, subHours } from "date-fns";
 import { LatestOrdersOverview } from "./LatestOrdersOverview";
-import useDrag from "@/hooks/useDrag";
-import { cn } from "@/lib/utils";
-import { prisma } from "@/server/db";
-import { api } from "@/lib/api";
 
 const now = new Date();
 
 export default function Dashboard() {
-  const items = [1, 2, 3, 4];
-  const { dragingArea } = useDrag(items);
-  const [currentDropArea, setCurrentDropArea] = useState<HTMLDivElement>();
-  const { data } = api.auth.getFacebook.useQuery()
-
   return (
     <>
-      <div className="flex gap-4 p-4">
-        {items.map((item, i) => {
-          const areaRef = useRef<HTMLDivElement>(null);
-          const itemRef = useRef<HTMLDivElement>(null);
-          const [isOver, setIsOver] = useState(false);
-
-          return (
-            <div
-              key={i}
-              ref={areaRef}
-              className={cn(
-                "grid h-20 w-20 place-content-center bg-slate-100",
-                isOver && "rounded-lg border-2 border-dashed border-primary"
-              )}
-              onDragEnter={() => setIsOver(true)}
-              onDragLeave={() => setIsOver(false)}
-              onDragOver={(e) => {
-                e.preventDefault();
-                setCurrentDropArea(areaRef.current!);
-                return true;
-              }}
-            >
-              <div
-                className="grid h-10 w-10 place-content-center bg-red-50"
-                ref={itemRef}
-                draggable
-                onDragStart={(e) => {
-                  itemRef.current!.style.opacity = "0.4";
-                  console.log("start");
-                }}
-                onDragEnd={(e) => {
-                  e.preventDefault();
-                  itemRef.current!.style.opacity = "1";
-                  console.log("end");
-                }}
-              >
-                {item}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      <div className="bg-red-50 h-screen p-8 overflow-auto">
-        <pre className="text-sm">{data?.data.map(item => (<p>{JSON.stringify(item)}</p>))}</pre>
-      </div>
       <Box component="div" className="grid grid-cols-12 gap-8">
         <StatesOverview></StatesOverview>
         <SalesOverview
