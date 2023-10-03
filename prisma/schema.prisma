@@ -44,24 +44,26 @@ enum UserType {
     admin
     teacher
     student
+    salesAgent
 }
 
 model User {
-    id             String    @id @default(auto()) @map("_id") @db.ObjectId
+    id             String      @id @default(auto()) @map("_id") @db.ObjectId
     name           String
-    email          String    @unique
+    email          String      @unique
     emailVerified  DateTime?
     image          String?
     hashedPassword String?
     phone          String?
-    userType       UserType  @default(student)
+    userType       UserType    @default(student)
     accounts       Account[]
     sessions       Session[]
     orders         Order[]
-    tasks          Task[]
     address        Address?
-    updatedAt      DateTime  @updatedAt
-    createdAt      DateTime  @default(now())
+    salesAgent     SalesAgent? @relation("UserToSalesAgent")
+    updatedAt      DateTime    @updatedAt
+    createdAt      DateTime    @default(now())
+    salesAgentId   String?     @db.ObjectId
 }
 
 model VerificationToken {
@@ -188,7 +190,7 @@ model Address {
     createdAt DateTime @default(now())
 }
 
-enum TaskStatus {
+enum SalesOperationStatus {
     created
     assigned
     ongoing
@@ -196,21 +198,24 @@ enum TaskStatus {
     cancelled
 }
 
-model Task {
-    id        String     @id @default(auto()) @map("_id") @db.ObjectId
-    name      String
-    status    TaskStatus @default(created)
-    assignee  User       @relation(fields: [userId], references: [id])
-    userId    String     @db.ObjectId
-    updatedAt DateTime   @updatedAt
-    createdAt DateTime   @default(now())
+model SalesOperation {
+    id           String               @id @default(auto()) @map("_id") @db.ObjectId
+    code         String
+    status       SalesOperationStatus @default(created)
+    assignee     SalesAgent?          @relation(fields: [salesAgentId], references: [id])
+    salesAgentId String?              @db.ObjectId
+    updatedAt    DateTime             @updatedAt
+    createdAt    DateTime             @default(now())
 }
 
-model AdsData {
-    id        String   @id @default(auto()) @map("_id") @db.ObjectId
-    data      Json
-    updatedAt DateTime @updatedAt
-    createdAt DateTime @default(now())
+model SalesAgent {
+    id        String           @id @default(auto()) @map("_id") @db.ObjectId
+    salary    String
+    tasks     SalesOperation[]
+    user      User             @relation("UserToSalesAgent", fields: [userId], references: [id])
+    userId    String           @unique @db.ObjectId
+    updatedAt DateTime         @updatedAt
+    createdAt DateTime         @default(now())
 }
 
 model PotintialCustomer {

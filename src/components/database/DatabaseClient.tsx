@@ -6,12 +6,6 @@ import { DatabaseTable } from "./DatabaseTable";
 const DatabaseClient = ({ data }: { data: PotintialCustomer[] }) => {
   const [customers, setCustomers] = useState<PotintialCustomer[]>([]);
 
-  const onDelete = () => { };
-
-  const exportFunc = () => {
-    console.log(customers);
-  }
-
   return (
     <DatabaseTable
       columns={columns}

@@ -23,6 +23,10 @@ export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
       url: "staff",
     },
     {
+      label: "Sales Team",
+      url: "salesAgents",
+    },
+    {
       label: "Content Management",
       url: "content",
     },

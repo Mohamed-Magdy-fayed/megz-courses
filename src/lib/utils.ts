@@ -6,7 +6,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const getAddress = (address: Address) => `${
-  address?.city || "no city"
-}, ${address?.state || "no state"}, 
+export const getAddress = (address: Address) => `${address?.city || "no city"
+  }, ${address?.state || "no state"}, 
 ${address?.country || "no country"}`;
+
+export const salesOperationCodeGenerator = () => {
+  return `SO-${Date.now()}`
+}

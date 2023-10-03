@@ -1,21 +1,23 @@
-import { Avatar, Stack, Typography } from "@mui/material";
-import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { Checkbox } from "../ui/checkbox";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ArrowUpDown } from "lucide-react";
 import Link from "next/link";
+import { Avatar, Stack, Typography } from "@mui/material";
 import { getInitials } from "@/lib/getInitials";
 
-export type Teacher = {
-  id: string;
-  name: string;
-  email: string;
-  image?: string;
-  phone?: string;
-  createdAt: string;
-};
+export type SalesAgentsColumn = {
+  id: string
+  name: string
+  email: string
+  image: string
+  phone: string
+  salary: string
+  tasks: number
+  createdAt: string
+}
 
-export const columns: ColumnDef<Teacher>[] = [
+export const columns: ColumnDef<SalesAgentsColumn>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -72,19 +74,33 @@ export const columns: ColumnDef<Teacher>[] = [
     ),
   },
   {
-    accessorKey: "taskCount",
-    header: "Tasks",
+    accessorKey: "salary",
+    header: "Salary",
+    cell: ({ row }) => (
+      <div>
+        ${row.original.salary}
+      </div>
+    ),
   },
   {
     accessorKey: "phone",
     header: "Phone",
   },
   {
+    accessorKey: "tasks",
+    header: "Tasks",
+    cell: ({ row }) => (
+      <div>
+        {row.original.tasks} Tasks
+      </div>
+    ),
+  },
+  {
     accessorKey: "createdAt",
     header: ({ column }) => {
       return (
         <div className="flex items-center justify-between">
-          User Since
+          Joined
           <Button
             className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}

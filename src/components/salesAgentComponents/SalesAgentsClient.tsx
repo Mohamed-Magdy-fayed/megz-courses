@@ -1,23 +1,28 @@
 import { api } from "@/lib/api";
 import { useState } from "react";
-import { Address, User } from "@prisma/client";
-import { format } from "date-fns";
 import { useToastStore } from "@/zustand/store";
-import { DataTable } from "../ui/DataTable";
-import { Teacher, columns } from "./StaffColumns";
+import { format } from "date-fns";
+import { DataTable } from "@/components/ui/DataTable";
+import { SalesAgentsColumn, columns } from "./SalesAgentColumn";
+import { SalesAgent, SalesOperation, User } from "@prisma/client";
 
-export interface Users extends User {
-  address: Address | null;
+interface Users extends User {
+  salesAgent: (SalesAgent & {
+    tasks: SalesOperation[];
+  }) | null;
+
 }
 
-const StaffClient = ({ data }: { data: Users[] }) => {
-  const [users, setUsers] = useState<Teacher[]>([]);
+const SalesAgentClient = ({ data }: { data: Users[] }) => {
+  const [salesAgents, setSalesAgents] = useState<SalesAgentsColumn[]>([]);
   const formattedData = data.map((user) => ({
     id: user.id,
     name: user.name || "no name",
     email: user.email || "no email",
     image: user.image || "no image",
     phone: user.phone || "no phone",
+    tasks: user.salesAgent?.tasks.length || 0,
+    salary: user.salesAgent?.salary || "no salary",
     createdAt: format(user.createdAt, "MMMM do, yyyy"),
   }));
 
@@ -27,7 +32,7 @@ const StaffClient = ({ data }: { data: Users[] }) => {
 
   const onDelete = () => {
     deleteMutation.mutate(
-      users.map((user) => user.id),
+      salesAgents.map((salesAgent) => salesAgent.id),
       {
         onSuccess: () => {
           toast.info("User(s) deleted");
@@ -44,10 +49,10 @@ const StaffClient = ({ data }: { data: Users[] }) => {
     <DataTable
       columns={columns}
       data={formattedData}
-      setUsers={setUsers}
+      setUsers={setSalesAgents}
       onDelete={onDelete}
     />
   );
 };
 
-export default StaffClient;
+export default SalesAgentClient;

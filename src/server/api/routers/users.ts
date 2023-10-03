@@ -10,7 +10,7 @@ export const usersRouter = createTRPCRouter({
   getUsers: protectedProcedure
     .input(
       z.object({
-        userType: z.enum(["admin", "student", "teacher"]),
+        userType: z.enum(["admin", "student", "teacher", "salesAgent"]),
       })
     )
     .query(async ({ ctx, input: { userType } }) => {
@@ -21,7 +21,6 @@ export const usersRouter = createTRPCRouter({
         include: {
           address: true,
           orders: true,
-          tasks: true,
         },
       });
 

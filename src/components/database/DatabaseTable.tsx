@@ -27,6 +27,7 @@ import {
 import { ArrowLeft, ArrowRight, Delete, Search } from "@mui/icons-material";
 import { useExport } from "@/zustand/exportTrigger";
 import { csvMaker } from "@/lib/csvMaker";
+import { ScrollArea } from "../ui/scroll-area";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -71,10 +72,10 @@ export function DatabaseTable<TData, TValue>({
   }, [triggered])
 
   return (
-    <div>
-      <div className="whitespace-nowrap">
+    <>
+      <div className="whitespace-nowrap grid">
         {table.getSelectedRowModel().rows.length > 0 && (
-          <div className="flex w-full flex-1 justify-between px-4 pb-4 text-sm text-muted-foreground">
+          <div className="flex w-full flex-1 justify-between px-4 py-4 text-sm text-muted-foreground">
             <Typography>
               {table.getFilteredSelectedRowModel().rows.length} of{" "}
               {table.getFilteredRowModel().rows.length} row(s) selected.
@@ -150,6 +151,6 @@ export function DatabaseTable<TData, TValue>({
           <ArrowRight></ArrowRight>
         </Button>
       </div>
-    </div>
+    </>
   );
 }

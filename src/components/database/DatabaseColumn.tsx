@@ -6,6 +6,7 @@ import { Avatar, Typography } from "@mui/material";
 import { getInitials } from "@/lib/getInitials";
 import { PotintialCustomer } from "@prisma/client";
 import { cn } from "@/lib/utils";
+import CellAction from "./cell-action";
 
 export const columns: ColumnDef<PotintialCustomer>[] = [
   {
@@ -116,5 +117,12 @@ export const columns: ColumnDef<PotintialCustomer>[] = [
         01234567890
       </Typography>
     ),
+  },
+  {
+    id: "actions",
+    header: () => (
+      <Typography>Actions</Typography>
+    ),
+    cell: ({ row }) => <CellAction data={row.original} />,
   },
 ];
