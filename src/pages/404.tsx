@@ -1,31 +1,13 @@
-import NextLink from "next/link";
-import ArrowLeftIcon from "@heroicons/react/24/solid/ArrowLeftIcon";
-import { Box, Button, Container, SvgIcon, Typography } from "@mui/material";
+import { Typography } from "@/components/ui/Typoghraphy";
+import { Button } from "@/components/ui/button";
+import { ArrowLeftToLine } from "lucide-react";
+import Link from "next/link";
 
 const Page = () => (
-  <Box
-    component="main"
-    sx={{
-      alignItems: "center",
-      display: "flex",
-      flexGrow: 1,
-      minHeight: "100%",
-    }}
-  >
-    <Container maxWidth="md">
-      <Box
-        sx={{
-          alignItems: "center",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <Box
-          sx={{
-            mb: 3,
-            textAlign: "center",
-          }}
-        >
+  <main className="items-center flex flex-grow min-h-full"  >
+    <div>
+      <div className="flex flex-col items-center">
+        <div className="text-center mb-4">
           <img
             alt="Under development"
             src="/error-404.png"
@@ -35,30 +17,22 @@ const Page = () => (
               width: 400,
             }}
           />
-        </Box>
-        <Typography align="center" sx={{ mb: 3 }} variant="h3">
+        </div>
+        <Typography className="mb-4">
           404: The page you are looking for isn’t here
         </Typography>
-        <Typography align="center" color="text.secondary" variant="body1">
+        <Typography className="text-secondary" variant="bodyText">
           You either tried some shady route or you came here by mistake.
           Whichever it is, try using the navigation
         </Typography>
-        <Button
-          component={NextLink}
-          href="/"
-          startIcon={
-            <SvgIcon fontSize="small">
-              <ArrowLeftIcon />
-            </SvgIcon>
-          }
-          sx={{ mt: 3 }}
-          variant="contained"
-        >
-          Go back to dashboard
+        <Button>
+          <Link href="/">
+            <ArrowLeftToLine />Go back to dashboard
+          </Link>
         </Button>
-      </Box>
-    </Container>
-  </Box>
+      </div>
+    </div>
+  </main>
 );
 
 export default Page;

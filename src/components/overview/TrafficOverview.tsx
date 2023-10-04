@@ -1,30 +1,13 @@
-import ComputerDesktopIcon from "@heroicons/react/24/solid/ComputerDesktopIcon";
-import DeviceTabletIcon from "@heroicons/react/24/solid/DeviceTabletIcon";
-import PhoneIcon from "@heroicons/react/24/solid/PhoneIcon";
-import {
-  Box,
-  Card,
-  CardContent,
-  CardHeader,
-  Stack,
-  SvgIcon,
-  Typography,
-  useTheme,
-} from "@mui/material";
 import { Chart } from "@/components/overview/Chart";
+import { Laptop, Smartphone, Tablet } from 'lucide-react'
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Typography } from "@/components/ui/Typoghraphy";
 
 const useChartOptions = (labels: string[]) => {
-  const theme = useTheme();
-
   return {
     chart: {
       background: "transparent",
     },
-    colors: [
-      theme.palette.primary.main,
-      theme.palette.success.main,
-      theme.palette.warning.main,
-    ],
     dataLabels: {
       enabled: false,
     },
@@ -50,10 +33,9 @@ const useChartOptions = (labels: string[]) => {
       },
     },
     stroke: {
-      width: 0,
+      width: 5,
     },
     theme: {
-      mode: theme.palette.mode,
     },
     tooltip: {
       fillSeriesColor: false,
@@ -63,38 +45,32 @@ const useChartOptions = (labels: string[]) => {
 
 const iconMap = {
   Desktop: (
-    <SvgIcon>
-      <ComputerDesktopIcon />
-    </SvgIcon>
+    <Laptop />
   ),
   Tablet: (
-    <SvgIcon>
-      <DeviceTabletIcon />
-    </SvgIcon>
+    <Tablet />
   ),
   Phone: (
-    <SvgIcon>
-      <PhoneIcon />
-    </SvgIcon>
+    <Smartphone />
   ),
 };
 
 interface TrafficOverviewProps {
   chartSeries: number[];
   labels: string[];
-  sx: any;
 }
 
 export const TrafficOverview = ({
   chartSeries,
   labels,
-  sx,
 }: TrafficOverviewProps) => {
   const chartOptions = useChartOptions(labels);
 
   return (
-    <Card sx={sx} className="col-span-12 md:col-span-6 lg:col-span-4">
-      <CardHeader title="Traffic Source" />
+    <Card className="col-span-12 xl:col-span-4">
+      <CardHeader>
+        <Typography variant={"secondary"}>Traffic Source</Typography>
+      </CardHeader>
       <CardContent>
         <Chart
           height={300}
@@ -103,37 +79,29 @@ export const TrafficOverview = ({
           type="donut"
           width="100%"
         />
-        <Stack
-          alignItems="center"
-          direction="row"
-          justifyContent="center"
-          spacing={2}
-          sx={{ mt: 2 }}
+        <div
+          className="items-center flex justify-center gap-2 mt-2"
         >
           {chartSeries.map((item, index) => {
             const label = labels[index] as keyof typeof iconMap;
             if (!label) return;
 
             return (
-              <Box
+              <div
                 key={label}
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                }}
+                className="flex flex-col items-center"
               >
                 {iconMap[label]}
-                <Typography sx={{ my: 1 }} variant="h6">
+                <Typography className="my-1" variant="buttonText">
                   {label}
                 </Typography>
-                <Typography color="text.secondary" variant="subtitle2">
+                <Typography variant="bodyText">
                   {item}%
                 </Typography>
-              </Box>
+              </div>
             );
           })}
-        </Stack>
+        </div>
       </CardContent>
     </Card>
   );

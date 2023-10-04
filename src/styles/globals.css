@@ -8,6 +8,94 @@
   }
 }
 
+@layer base {
+  :root {
+    /* 90% of accent #fffdf9 */
+    --background: #fffdf9;
+    --foreground: #454545;
+
+    --card: #fffdf9;
+    --card-foreground: #454545;
+
+    --popover: #fffdf9;
+    --popover-foreground: #454545;
+
+    --primary: #FF6000;
+    /* 90% of primary #ffefe6 */
+    --primary-foreground: #ffefe6;
+    --primary-hover: #e65600;
+
+    --secondary: #FFA559;
+    --secondary-foreground: #454545;
+    --secondary-hover: #e69550;
+
+    --accent: #FFE6C7;
+    --accent-foreground: #454545;
+    --accent-hover: #e6cfb3;
+
+    /* 50% of accent #807364 */
+    --muted: #807364;
+    --muted-foreground: #ffe6c7;
+
+    --destructive: #ef4444;
+    --destructive-foreground: #ffefe6;
+    --destructive-hover: #d73d3d;
+
+    /* 90% of primary #454545 */
+    --border: #454545;
+    --input: #454545;
+    --ring: #454545;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: #2D2424;
+    /*90% of primary #ded8d5 */
+    --foreground: #ded8d5;
+
+    --card: #2D2424;
+    --card-foreground: #ded8d5;
+
+    --popover: #2D2424;
+    --popover-foreground: #ded8d5;
+
+    --primary: #5C3D2E;
+    --primary-foreground: #ded8d5;
+    --primary-hover: #533729;
+
+    --secondary: #B85C38;
+    --secondary-foreground: #ded8d5;
+    --secondary-hover: #a65332;
+
+    --accent: #E0C097;
+    --accent-foreground: #2D2424;
+    --accent-hover: #caad88;
+
+    --muted: #70604c;
+    /* 50% pf accent #f0e0cb */
+    --muted-foreground: #f0e0cb;
+
+    --destructive: #7f1d1d;
+    --destructive-foreground: #efecea;
+    --destructive-hover: #721a1a;
+
+    --border: #E0C097;
+    --input: #E0C097;
+    --ring: #E0C097;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
 body {
   overflow-x: hidden;
 }

@@ -1,11 +1,12 @@
-import { Chip } from "@mui/material";
+import { ReactNode } from "react";
+import { Badge } from "../ui/badge";
 
 interface SeverityPillProps {
-  label: string;
   color: "primary" | "secondary" | "error" | "info" | "warning" | "success";
+  children: ReactNode;
 }
 
-export const SeverityPill = ({ color, label }: SeverityPillProps) => {
+export const SeverityPill = ({ color, children }: SeverityPillProps) => {
   const tailwindClass =
     color === "success"
       ? "text-[#2e7d32] bg-[#10b9811f]"
@@ -16,11 +17,11 @@ export const SeverityPill = ({ color, label }: SeverityPillProps) => {
           : "text-[#d32f2f] bg-[#f044381f]";
 
   return (
-    <Chip
-      variant="filled"
-      component="span"
-      label={label}
+    <Badge
+      variant="default"
       className={`h-6 whitespace-nowrap rounded-xl px-0 py-2 text-center text-xs font-semibold uppercase ${tailwindClass}`}
-    />
+    >
+      {children}
+    </Badge>
   );
 };

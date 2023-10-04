@@ -1,6 +1,6 @@
 import React from "react";
-import Typography from "@mui/material/Typography";
-import Link from "@mui/material/Link";
+import { Typography } from "./ui/Typoghraphy";
+import Link from "next/link";
 
 export default function Copyright(props: any) {
   return (
@@ -13,7 +13,6 @@ export default function Copyright(props: any) {
       {"Copyright © "}
       <Link
         target="_blank"
-        color="inherit"
         href="https://portfolio-2-iota-brown.vercel.app/"
       >
         Megz

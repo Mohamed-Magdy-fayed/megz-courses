@@ -19,17 +19,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Box,
-  Button,
-  Icon,
-  IconButton,
-  InputAdornment,
-  InputBase,
-  Typography,
-} from "@mui/material";
-import { ArrowLeft, ArrowRight, Delete, Search } from "@mui/icons-material";
 import { AlertModal } from "../modals/AlertModal";
+import { Input } from "./input";
+import { Typography } from "./Typoghraphy";
+import { Button } from "./button";
+import { ArrowLeft, ArrowRight, Delete } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -86,24 +80,16 @@ export function DataTable<TData, TValue>({
         }}
         loading={loading}
       />
-      <Box component="div" className="p-4">
-        <InputBase
+      <div className="p-4">
+        <Input
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
           }
-          fullWidth
           placeholder="Search Students"
-          className="hover:shadow-0 rounded-full p-2 text-sm font-medium leading-6 outline-none outline-1 outline-offset-0 outline-slate-300 focus-within:!bg-white focus-within:outline-2 focus-within:outline-primary hover:bg-slate-100"
-          startAdornment={
-            <InputAdornment position="start">
-              <Icon color="action">
-                <Search />
-              </Icon>
-            </InputAdornment>
-          }
+          className="w-full hover:shadow-0 rounded-full p-2 text-sm font-medium leading-6 outline-none outline-1 outline-offset-0 outline-slate-300 focus-within:!bg-white focus-within:outline-2 focus-within:outline-primary hover:bg-slate-100"
         />
-      </Box>
+      </div>
       <div className="whitespace-nowrap grid">
         {table.getSelectedRowModel().rows.length > 0 && (
           <div className="flex w-full flex-1 justify-between px-4 pb-4 text-sm text-muted-foreground">
@@ -111,9 +97,9 @@ export function DataTable<TData, TValue>({
               {table.getFilteredSelectedRowModel().rows.length} of{" "}
               {table.getFilteredRowModel().rows.length} row(s) selected.
             </Typography>
-            <IconButton onClick={handleOpen} color="warning">
+            <Button variant={"icon"} onClick={handleOpen} color="warning">
               <Delete />
-            </IconButton>
+            </Button>
           </div>
         )}
         <Table>
@@ -126,9 +112,9 @@ export function DataTable<TData, TValue>({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </TableHead>
                   );
                 })}
@@ -165,26 +151,24 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="contained"
-          size="small"
-          className="bg-primary"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          <ArrowLeft></ArrowLeft>
-        </Button>
-        <Button
-          variant="contained"
-          size="small"
-          className="bg-primary"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          <ArrowRight></ArrowRight>
-        </Button>
-      </div>
+      {data.length > 10 && (
+        <div className="flex items-center justify-end space-x-2 py-4">
+          <Button
+            className="bg-primary"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            <ArrowLeft></ArrowLeft>
+          </Button>
+          <Button
+            className="bg-primary"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            <ArrowRight></ArrowRight>
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

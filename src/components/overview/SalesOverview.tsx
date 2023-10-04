@@ -1,33 +1,30 @@
-import ArrowPathIcon from "@heroicons/react/24/solid/ArrowPathIcon";
-import ArrowRightIcon from "@heroicons/react/24/solid/ArrowRightIcon";
-import {
-  Button,
-  Card,
-  CardActions,
-  CardContent,
-  CardHeader,
-  Divider,
-  SvgIcon,
-  SxProps,
-} from "@mui/material";
-import { alpha, useTheme } from "@mui/material/styles";
 import { Chart } from "@/components/overview/Chart";
-import { Theme } from "@mui/material/styles/createTheme";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { MoveRight, RefreshCcw } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Typography } from "../ui/Typoghraphy";
 
 const useChartOptions = () => {
-  const theme = useTheme();
-
   return {
+    title: {
+      text: "sales",
+      style: {
+        color: "var(--muted)",
+        fontSize: "32px"
+      }
+    },
     chart: {
       background: "transparent",
       stacked: false,
       toolbar: {
-        show: false,
+        show: true,
+        offsetY: 15,
       },
     },
     colors: [
-      theme.palette.primary.main,
-      alpha(theme.palette.primary.main, 0.25),
+      "var(--primary)",
+      "var(--muted)",
     ],
     dataLabels: {
       enabled: false,
@@ -37,11 +34,11 @@ const useChartOptions = () => {
       type: "solid",
     },
     grid: {
-      borderColor: theme.palette.divider,
+      borderColor: "var(--foreground)",
       strokeDashArray: 2,
       xaxis: {
         lines: {
-          show: false,
+          show: true,
         },
       },
       yaxis: {
@@ -51,30 +48,26 @@ const useChartOptions = () => {
       },
     },
     legend: {
-      show: false,
+      show: true,
+      offsetY: 5
     },
     plotOptions: {
       bar: {
-        columnWidth: "40px",
+        columnWidth: "80px",
+        borderRadius: 5,
       },
-    },
-    stroke: {
-      colors: ["transparent"],
-      show: true,
-      width: 2,
-    },
-    theme: {
-      mode: theme.palette.mode,
     },
     xaxis: {
       axisBorder: {
-        color: theme.palette.divider,
+        color: "var(--foreground)",
         show: true,
+        offsetY: 5
       },
       axisTicks: {
-        color: theme.palette.divider,
+        color: "var(--foreground)",
         show: true,
       },
+      offsetY: 5,
       categories: [
         "Jan",
         "Feb",
@@ -90,18 +83,23 @@ const useChartOptions = () => {
         "Dec",
       ],
       labels: {
-        offsetY: 5,
-        style: {
-          colors: theme.palette.text.secondary,
-        },
+        offsetY: -2,
       },
     },
     yaxis: {
+      axisBorder: {
+        color: "var(--foreground)",
+        show: true,
+      },
+      axisTicks: {
+        color: "var(--foreground)",
+        show: true
+      },
       labels: {
-        formatter: (value: any) => (value > 0 ? `${value}K` : `${value}`),
-        offsetX: -10,
+        offsetX: -5,
+        formatter: (value: any) => (value > 1000 ? `${value / 1000}K` : `${value}`),
         style: {
-          colors: theme.palette.text.secondary,
+          colors: "var(--foreground)",
         },
       },
     },
@@ -110,53 +108,35 @@ const useChartOptions = () => {
 
 interface SalsesOverviewProps {
   chartSeries: any[];
-  sx: SxProps<Theme>;
 }
 
-export const SalesOverview = ({ chartSeries, sx }: SalsesOverviewProps) => {
+export const SalesOverview = ({ chartSeries }: SalsesOverviewProps) => {
   const chartOptions = useChartOptions();
 
   return (
-    <Card sx={sx} className="col-span-12 lg:col-span-8">
-      <CardHeader
-        action={
-          <Button
-            color="inherit"
-            size="small"
-            startIcon={
-              <SvgIcon fontSize="small">
-                <ArrowPathIcon />
-              </SvgIcon>
-            }
-          >
-            Sync
-          </Button>
-        }
-        title="Sales"
-      />
+    <Card className="col-span-12 xl:col-span-8">
+      <CardHeader>
+        <Button variant={"default"}>
+          <RefreshCcw />
+          <Typography variant={"buttonText"}>Sync</Typography>
+        </Button>
+      </CardHeader>
       <CardContent>
         <Chart
           height={350}
-          options={chartOptions}
+          options={{ ...chartOptions }}
           series={chartSeries}
           type="bar"
           width="100%"
         />
       </CardContent>
-      <Divider />
-      <CardActions sx={{ justifyContent: "flex-end" }}>
-        <Button
-          color="inherit"
-          endIcon={
-            <SvgIcon fontSize="small">
-              <ArrowRightIcon />
-            </SvgIcon>
-          }
-          size="small"
-        >
-          Overview
+      <Separator />
+      <CardFooter className="flex items-center justify-end p-4">
+        <Button variant={"default"}>
+          <MoveRight />
+          <Typography variant={"buttonText"}>Overview</Typography>
         </Button>
-      </CardActions>
-    </Card>
+      </CardFooter>
+    </Card >
   );
 };

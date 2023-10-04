@@ -1,5 +1,4 @@
 import React, { ReactNode } from "react";
-import { Box } from "@mui/material";
 
 interface ScrollbarProps {
   children: ReactNode;
@@ -7,11 +6,10 @@ interface ScrollbarProps {
 
 export default function Scrollbar({ children }: ScrollbarProps) {
   return (
-    <Box
-      component="div"
-      className="overflow-auto transition-all scrollbar-thin scrollbar-track-transparent scrollbar-thumb-primary/50 scrollbar-thumb-rounded-lg"
+    <div
+      className="overflow-auto transition-all scrollbar-thin scrollbar-track-transparent scrollbar-thumb-primary scrollbar-thumb-rounded-lg"
     >
       {children}
-    </Box>
+    </div>
   );
 }

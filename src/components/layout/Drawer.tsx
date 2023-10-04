@@ -1,10 +1,10 @@
 import { cn } from "@/lib/utils";
 import { useNavStore } from "@/zustand/store";
-import { Box, Divider, Typography } from "@mui/material";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
 import { ScrollArea } from "../ui/scroll-area";
+import { Separator } from "../ui/separator";
+import { Typography } from "../ui/Typoghraphy";
 
 export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
   const navStore = useNavStore();
@@ -67,16 +67,16 @@ export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
   return (
     <div className="sticky left-0 top-0 flex h-screen flex-col gap-4 overflow-auto bg-primary p-4">
       <img src="/favicon.png" className="w-20" />
-      <Box component="div" className="rounded-lg bg-slate-100/10 p-4">
+      <div className="rounded-lg bg-slate-100/10 p-4">
         <Typography className="font-sans text-xl font-bold text-slate-50">
           Megz
         </Typography>
         <Typography className="text-sm text-slate-300">Development</Typography>
-      </Box>
-      <Divider></Divider>
+      </div>
+      <Separator />
       <ScrollArea className="w-fit h-screen">
-        <Box
-          component="div"
+        <div
+
           className="flex flex-col items-center gap-2 [&>*]:w-full [&>*]:rounded-lg [&>*]:bg-transparent [&>*]:p-2 [&>*]:font-bold [&>*]:text-slate-300 hover:[&>*]:bg-slate-100/10"
         >
           {links.map((link) => (
@@ -95,9 +95,9 @@ export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
               {link.label}
             </Link>
           ))}
-        </Box>
-        <Divider></Divider>
-        <Box component="div">
+        </div>
+        <Separator />
+        <div >
           <Typography className="text-base text-slate-50">
             Need different featrues?
           </Typography>
@@ -111,7 +111,7 @@ export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
             </Link>{" "}
             me for customizations
           </Typography>
-        </Box>
+        </div>
       </ScrollArea>
     </div>
   );

@@ -1,8 +1,8 @@
 import MegzDrawer from "@/components/layout/Drawer";
 import MegzTopBar from "@/components/layout/TopBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { useNavStore, useTutorialStore } from "@/zustand/store";
-import { SwipeableDrawer } from "@mui/material";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useNavStore } from "@/zustand/store";
 import { ReactNode } from "react";
 
 const AppLayout = ({ children }: { children: ReactNode }) => {
@@ -10,14 +10,14 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
 
   return (
     <div className="flex">
-      <SwipeableDrawer
-        anchor="left"
+      <Sheet
         open={opened}
-        onClose={() => closeNav()}
-        onOpen={() => openNav()}
+        onOpenChange={() => opened ? closeNav : openNav}
       >
-        <MegzDrawer mobile />
-      </SwipeableDrawer>
+        <SheetContent side="left">
+          <MegzDrawer mobile />
+        </SheetContent>
+      </Sheet>
       <div className="hidden lg:block">
         <MegzDrawer />
       </div>

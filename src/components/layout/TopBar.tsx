@@ -1,22 +1,16 @@
 import * as React from "react";
-import AppBar from "@mui/material/AppBar";
-import Box from "@mui/material/Box";
-import Toolbar from "@mui/material/Toolbar";
-import IconButton from "@mui/material/IconButton";
-import Typography from "@mui/material/Typography";
-import Menu from "@mui/material/Menu";
-import MenuIcon from "@mui/icons-material/Menu";
-import Avatar from "@mui/material/Avatar";
-import Divider from "@mui/material/Divider";
-import Button from "@mui/material/Button";
-import Tooltip from "@mui/material/Tooltip";
 import { signOut, useSession } from "next-auth/react";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import PeopleIcon from "@mui/icons-material/People";
 import { useRouter } from "next/router";
-import { useNavStore, useTutorialStore } from "@/zustand/store";
+import { useNavStore } from "@/zustand/store";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { Button } from "../ui/button";
+import { MenuIcon, BellIcon, UserCircle } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { DropdownMenu } from "../ui/dropdown-menu";
+import { Typography } from "../ui/Typoghraphy";
+import { Separator } from "../ui/separator";
 
 export default function MegzTopBar() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -47,79 +41,79 @@ export default function MegzTopBar() {
   );
 
   return (
-    <AppBar
-      className={`top-0 !bg-white/80 !shadow-none !backdrop-blur-sm`}
-      position="sticky"
+    <div
+      className={`sticky top-0 !bg-white/80 !shadow-none !backdrop-blur-sm`}
     >
-      <Toolbar disableGutters className="flex justify-between p-2">
-        <Box component="div" className="flex items-center gap-2">
-          <Tooltip title="Navigation">
-            <IconButton
-              className={cn("lg:!hidden")}
-              onClick={() => {
-                navStore.openNav();
-              }}
-            >
-              <MenuIcon
-                sx={{
-                  fontSize: "20px",
+      <div className="flex justify-between p-2">
+        <div className="flex items-center gap-2">
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                variant="icon"
+                className={cn("lg:!hidden")}
+                onClick={() => {
+                  navStore.openNav();
                 }}
-              ></MenuIcon>
-            </IconButton>
+              >
+                <MenuIcon className="w-5 h-5" />
+              </Button>
+            </TooltipTrigger>
           </Tooltip>
-          <Box
-            component="div"
+          <div
             className="flex cursor-pointer gap-2 font-sans text-slate-500"
             onClick={() => router.push("/")}
           >
-            <Avatar className="h-6 w-6" alt="Logo" src="/favicon.png" /> Courses
-          </Box>
-        </Box>
-        <Box component="div" className="flex items-center gap-2">
-          <IconButton>
-            <NotificationsIcon></NotificationsIcon>
-          </IconButton>
-          <IconButton>
-            <PeopleIcon></PeopleIcon>
-          </IconButton>
-          <Tooltip title="Profile menu">
-            <IconButton aria-label="menuButton" onClick={handleClick}>
-              <Avatar
-                className="h-8 w-8 cursor-pointer outline outline-primary/30 hover:outline-primary/70"
-                alt={session.data?.user.name || "NA"}
-                src={session.data?.user.image || ""}
-              />
-            </IconButton>
+            <Avatar className="h-6 w-6" >
+              <AvatarImage src="/favicon.png" alt="Logo" />
+              <AvatarFallback>Logo</AvatarFallback>
+            </Avatar>
+            Courses.
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="icon">
+            <BellIcon></BellIcon>
+          </Button>
+          <Button variant="icon">
+            <UserCircle></UserCircle>
+          </Button>
+          <Tooltip>
+            <TooltipTrigger>
+              <Button variant="icon" aria-label="menuButton" onClick={handleClick}>
+                <Avatar
+                  className="h-8 w-8 cursor-pointer outline outline-primary/30 hover:outline-primary/70"
+                >
+                  <AvatarImage
+                    alt={session.data?.user.name || "NA"}
+                    src={session.data?.user.image || ""} />
+                  <AvatarFallback>{session.data?.user.name || "NA"}</AvatarFallback>
+                </Avatar>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              Profile Menu
+            </TooltipContent>
           </Tooltip>
-          <Menu
+          <DropdownMenu
             open={open}
-            anchorEl={anchorEl}
-            onClose={handleClose}
-            MenuListProps={{
-              sx: {
-                p: 0,
-              },
-            }}
           >
-            <Box component="div" className="p-2">
+            <div className="p-2">
               <Typography
-                variant="body1"
-                fontWeight={500}
-                className="text-slate-700"
+                className="text-slate-700 font-medium"
               >
                 Account
               </Typography>
-              <Typography variant="caption" color="GrayText">
+              <Typography color="GrayText">
                 {session.data?.user.name}
               </Typography>
-            </Box>
-            <Divider></Divider>
+            </div>
+            <Separator></Separator>
             <Button onClick={() => signOut()} className="m-2 min-w-[10rem]">
               Sign out
             </Button>
-          </Menu>
-        </Box>
-      </Toolbar>
-    </AppBar>
+          </DropdownMenu>
+        </div>
+      </div>
+    </div>
   );
 }
