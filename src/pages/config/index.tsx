@@ -1,7 +1,7 @@
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import { ApiAlert } from "@/components/ui/api-alert";
 import { Button } from "@/components/ui/button";
-// import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AppLayout from "@/layouts/AppLayout";
 import { Typography } from "@mui/material";
 import { ArrowRightFromLineIcon } from "lucide-react";
@@ -12,7 +12,7 @@ const ConfigPage: NextPage = () => {
         <AppLayout>
             <ConceptTitle>Configure Facebook webhooks</ConceptTitle>
             <Typography></Typography>
-            {/* <Tabs defaultValue="facebook" className="w-full mt-8 p-4">
+            <Tabs defaultValue="facebook" className="w-full mt-8 p-4">
                 <TabsList>
                     <TabsTrigger value="facebook">Facebook</TabsTrigger>
                     <TabsTrigger value="other">Other</TabsTrigger>
@@ -27,8 +27,7 @@ const ConfigPage: NextPage = () => {
                 <TabsContent value="other">
                     Comming Soon...
                 </TabsContent>
-            </Tabs> */}
-
+            </Tabs>
         </AppLayout>
     )
 }
