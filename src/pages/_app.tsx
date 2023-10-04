@@ -7,6 +7,7 @@ import SnackbarContainer from "@/components/SnackbarContainer";
 import Head from "next/head";
 import Script from "next/script";
 import { useEffect } from "react";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -34,7 +35,9 @@ const MyApp: AppType<{ session: Session | null }> = ({
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <SnackbarContainer></SnackbarContainer>
-      <Component {...pageProps} />
+      <TooltipProvider>
+        <Component {...pageProps} />
+      </TooltipProvider>
       <Script async defer crossOrigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js" />
     </SessionProvider>
   );

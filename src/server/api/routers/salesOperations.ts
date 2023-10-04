@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { SalesOperationStatus } from "@prisma/client";
-import { salesOperationCodeGenerator } from "@/lib/utils";
+import { orderCodeGenerator, salesOperationCodeGenerator } from "@/lib/utils";
 
 export const salesOperationsRouter = createTRPCRouter({
     getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -23,7 +23,8 @@ export const salesOperationsRouter = createTRPCRouter({
             const salesOperations = await ctx.prisma.salesOperation.findUnique({
                 where: { id },
                 include: {
-                    assignee: true,
+                    assignee: { include: { user: true } },
+                    orderDetails: { include: { user: true, courses: true } },
                 },
             });
             return { salesOperations };
@@ -55,22 +56,32 @@ export const salesOperationsRouter = createTRPCRouter({
         .input(
             z.object({
                 id: z.string(),
-                assigneeId: z.string(),
-                code: z.string(),
-                status: z.enum(["created", "assigned", "ongoing", "completed", "cancelled"]),
+                email: z.string().email().optional(),
+                amount: z.number().optional(),
+                status: z.enum(["created", "assigned", "ongoing", "completed", "cancelled"]).optional(),
             })
         )
-        .mutation(async ({ ctx, input: { id, assigneeId, code, status } }) => {
+        .mutation(async ({ ctx, input: { id, status, amount, email } }) => {
             const updatedSalesOperations = await ctx.prisma.salesOperation.update({
                 where: {
                     id,
                 },
                 data: {
-                    code,
-                    status
+                    status,
+                    orderDetails: !email || !amount ? undefined : {
+                        connectOrCreate: {
+                            where: { salesOperationId: id },
+                            create: {
+                                orderNumber: orderCodeGenerator(),
+                                amount,
+                                user: { connect: { email } },
+                            }
+                        }
+                    }
                 },
                 include: {
-                    assignee: true,
+                    assignee: { include: { user: true, tasks: true } },
+                    orderDetails: true
                 },
             });
 

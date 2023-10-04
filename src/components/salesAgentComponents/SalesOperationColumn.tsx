@@ -3,6 +3,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import AssigneeCell from "./AssigneeCell";
 import { Typography } from "@mui/material";
 import CellAction from "./ActionCell";
+import Link from "next/link";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 export type SalesOperationColumn = {
   id: string,
@@ -35,6 +37,16 @@ export const columns: ColumnDef<SalesOperationColumn>[] = [
   {
     accessorKey: "code",
     header: "Code",
+    cell: ({ row }) => (
+        <Tooltip>
+          <TooltipTrigger>
+            <Link className="in-table-link" href={`/ops/${row.original.id}`}>{row.original.code}</Link>
+          </TooltipTrigger>
+          <TooltipContent className="bg-primary/20">
+            Process operation
+          </TooltipContent>
+        </Tooltip>
+    )
   },
   {
     accessorKey: "assignee",

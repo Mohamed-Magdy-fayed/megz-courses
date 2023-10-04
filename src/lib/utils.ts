@@ -13,3 +13,11 @@ ${address?.country || "no country"}`;
 export const salesOperationCodeGenerator = () => {
   return `SO-${Date.now()}`
 }
+
+export const orderCodeGenerator = () => {
+  return `CO-${Date.now()}`
+}
+
+export const formatPrice = (price: number) => {
+  return `$${(price / 100).toFixed(2)}`
+}

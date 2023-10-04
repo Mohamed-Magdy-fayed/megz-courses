@@ -24,7 +24,7 @@ export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
     },
     {
       label: "Sales Team",
-      url: "salesAgents",
+      url: "sales-agents",
     },
     {
       label: "Content Management",

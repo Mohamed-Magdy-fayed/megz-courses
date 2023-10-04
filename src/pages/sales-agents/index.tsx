@@ -13,11 +13,38 @@ import AppLayout from "@/layouts/AppLayout";
 import SalesAgentsClient from "@/components/salesAgentComponents/SalesAgentsClient";
 import SalesAgentForm from "@/components/salesAgentComponents/SalesAgentForm";
 import SalesOperationsClient from "@/components/salesAgentComponents/SalesOperationsClient";
+import { AssignModal } from "@/components/modals/AssignModal";
+import { useToastStore } from "@/zustand/store";
 
 const SalesAgentsPage = () => {
   const salesAgents = api.salesAgents.getSalesAgents.useQuery();
   const salesOperations = api.salesOperations.getAll.useQuery();
+  const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [assignIsOpen, setAssingIsOpen] = useState(false);
+
+  const toast = useToastStore()
+  const trpcUtils = api.useContext()
+  const createOperationMutation = api.salesOperations.createSalesOperation.useMutation()
+  const handleCreateOperation = (assigneeId: string) => {
+    setLoading(true)
+    createOperationMutation.mutate(
+      { assigneeId, status: "assigned" },
+      {
+        onSuccess: (data) => {
+          toast.success(`Operation ID: ${data.salesOperations.code}`)
+        },
+        onError: (error) => {
+          toast.error(`an error occured ${error}`)
+        },
+        onSettled: () => {
+          trpcUtils.invalidate()
+          setAssingIsOpen(false)
+          setLoading(false)
+        }
+      }
+    )
+  }
 
   return (
     <AppLayout>
@@ -72,6 +99,15 @@ const SalesAgentsPage = () => {
               <SalesOperationsClient data={salesOperations.data.salesOperations}></SalesOperationsClient>
             )}
           </PaperContainer>
+          <div>
+            <AssignModal
+              isOpen={assignIsOpen}
+              loading={loading}
+              onClose={() => setAssingIsOpen(false)}
+              onConfirm={handleCreateOperation}
+            />
+            <Button onClick={() => setAssingIsOpen(true)}>Create Operation</Button>
+          </div>
 
         </div>
       </main>

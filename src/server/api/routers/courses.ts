@@ -34,12 +34,14 @@ export const coursesRouter = createTRPCRouter({
     .input(
       z.object({
         name: z.string(),
+        price: z.number(),
       })
     )
     .mutation(async ({ input, ctx }) => {
       const course = await ctx.prisma.course.create({
         data: {
           name: input.name,
+          price: input.price,
         },
         include: {
           levels: true,

@@ -104,7 +104,7 @@ export function DataTable<TData, TValue>({
           }
         />
       </Box>
-      <div className="whitespace-nowrap">
+      <div className="whitespace-nowrap grid">
         {table.getSelectedRowModel().rows.length > 0 && (
           <div className="flex w-full flex-1 justify-between px-4 pb-4 text-sm text-muted-foreground">
             <Typography>

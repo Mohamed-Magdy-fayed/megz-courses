@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -19,6 +20,7 @@ import { z } from "zod";
 
 const formSchema = z.object({
   name: z.string().nonempty(),
+  price: z.string().nonempty(),
 });
 
 type CoursesFormValues = z.infer<typeof formSchema>;
@@ -26,14 +28,19 @@ type CoursesFormValues = z.infer<typeof formSchema>;
 const CourseForm = ({ setIsOpen }: { setIsOpen: (val: boolean) => void }) => {
   const [loading, setLoading] = useState(false);
 
-  const form = useForm({ defaultValues: { name: "" } });
+  const form = useForm({ defaultValues: { name: "", price: "" } });
   const createCourseMutation = api.courses.createCourse.useMutation();
   const trpcUtils = api.useContext();
   const toast = useToastStore();
 
   const onSubmit = (data: CoursesFormValues) => {
+    const dataWithNumber = {
+      name: data.name,
+      price: Number(data.price)
+    }
+
     setLoading(true);
-    createCourseMutation.mutate(data, {
+    createCourseMutation.mutate(dataWithNumber, {
       onSuccess: ({ course }) => {
         toast.success(`Your new course (${course.name}) is ready!`);
         trpcUtils.courses.invalidate();
@@ -65,6 +72,19 @@ const CourseForm = ({ setIsOpen }: { setIsOpen: (val: boolean) => void }) => {
                 <FormLabel>Course Name</FormLabel>
                 <FormControl>
                   <Input placeholder="Begginers Course" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="price"
+            render={({ field }) => (
+              <FormItem className="p-4">
+                <FormLabel>Course Price</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="EX. 9999 is EGP 99.99" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

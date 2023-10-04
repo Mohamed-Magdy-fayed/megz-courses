@@ -10,8 +10,10 @@ export const SeverityPill = ({ color, label }: SeverityPillProps) => {
     color === "success"
       ? "text-[#2e7d32] bg-[#10b9811f]"
       : color === "warning"
-      ? "text-[#b54709] bg-[#f790091f]"
-      : "text-[#d32f2f] bg-[#f044381f]";
+        ? "text-[#b54709] bg-[#f790091f]"
+        : color === "info"
+          ? "text-info bg-info/20"
+          : "text-[#d32f2f] bg-[#f044381f]";
 
   return (
     <Chip

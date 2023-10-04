@@ -11,3 +11,7 @@
 body {
   overflow-x: hidden;
 }
+
+.in-table-link {
+  @apply font-medium hover:text-primary
+}
