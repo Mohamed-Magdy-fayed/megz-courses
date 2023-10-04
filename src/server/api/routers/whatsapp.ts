@@ -7,6 +7,7 @@ import {
 import axios from "axios";
 import nodemailer from "nodemailer";
 import { env } from "@/env.mjs";
+import { orderCodeGenerator } from "@/lib/utils";
 
 export const commsRouter = createTRPCRouter({
     sendWhatsappMessage: protectedProcedure
@@ -38,8 +39,17 @@ export const commsRouter = createTRPCRouter({
             message: z.string(),
             subject: z.string(),
             orderId: z.string(),
+            salesOperationId: z.string(),
         })
-    ).mutation(async ({ ctx, input: { message, email, subject, orderId } }) => {
+    ).mutation(async ({
+        ctx,
+        input: {
+            message,
+            email,
+            subject,
+            orderId,
+            salesOperationId,
+        } }) => {
         const transporter = nodemailer.createTransport({
             service: "gmail",
             auth: {
@@ -79,7 +89,29 @@ export const commsRouter = createTRPCRouter({
                 user: true,
             }
         })
-        
-        return order
+
+        const updatedSalesOperations = await ctx.prisma.salesOperation.update({
+            where: {
+                id: salesOperationId,
+            },
+            data: {
+                orderDetails: !email || !order?.amount ? undefined : {
+                    connectOrCreate: {
+                        where: { salesOperationId },
+                        create: {
+                            orderNumber: orderCodeGenerator(),
+                            amount: order.amount,
+                            user: { connect: { email } },
+                        }
+                    }
+                }
+            },
+            include: {
+                assignee: { include: { user: true, tasks: true } },
+                orderDetails: true
+            },
+        });
+
+        return {order, updatedSalesOperations}
     })
 });
