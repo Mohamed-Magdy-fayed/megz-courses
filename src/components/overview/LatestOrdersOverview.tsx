@@ -13,7 +13,7 @@ import LatestOrdersClient from "./ordersOverviewComponents/OrdersOverviewClient"
 export const LatestOrdersOverview = () => {
   const { data: orders } = api.orders.getAll.useQuery()
   return (
-    <Card className="col-span-12 md:col-span-6 lg:col-span-8">
+    <Card className="col-span-12 md:col-span-6 xl:col-span-8">
       <CardHeader >
         <Typography variant={"secondary"}>Latest Orders</Typography>
       </CardHeader>
@@ -23,7 +23,7 @@ export const LatestOrdersOverview = () => {
         )}
       </CardContent>
       <Separator />
-      <CardFooter className="justify-end p-4">
+      <CardFooter className="justify-end p-4 mt-auto">
         <Button>
           <ArrowRight />
           <Typography variant={"buttonText"}>View all</Typography>

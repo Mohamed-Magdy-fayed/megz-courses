@@ -21,11 +21,11 @@ const typographyVariants = cva(
   {
     variants: {
       variant: {
-        primary: "lg:text-5xl md:text-4xl text-2xl font-extrabold leading-loose tracking-wide",
-        secondary: "xl:text-2xl lg:text-1xl md:text-lg text-base font-semibold leading-tight tracking-wide",
-        menuButton: "xl:text-2xl lg:text-xl md:text-lg text-base font-medium leading-4 tracking-tight uppercase",
-        bodyText: "xl:text-xl lg:text-lg md:text-base text-sm font-light tracking-tighter",
-        buttonText: "xl:text-xl lg:text-lg md:text-base text-sm font-medium leading-4 tracking-wide uppercase",
+        primary: "md:text-4xl text-2xl font-extrabold leading-loose tracking-wide",
+        secondary: "lg:text-1xl md:text-lg text-base font-semibold leading-tight tracking-wide",
+        menuButton: "lg:text-xl md:text-lg text-base font-medium leading-4 tracking-tight uppercase",
+        bodyText: "lg:text-lg md:text-base text-sm font-light tracking-tighter",
+        buttonText: "lg:text-lg md:text-base text-sm font-medium leading-4 tracking-wide uppercase",
       },
     },
     defaultVariants: {

@@ -38,7 +38,7 @@ export default function StatesOverview() {
       value: totalSalaries,
       marker: { after: false, value: "$" },
       difference: { increased: true, value: 12 },
-      icon: <CircleDollarSign className="text-background bg-red-500"></CircleDollarSign>,
+      icon: <CircleDollarSign className="text-background"></CircleDollarSign>,
       textColor: "text-red-500",
       backgroundColor: "bg-red-500",
     },
@@ -46,14 +46,14 @@ export default function StatesOverview() {
       title: "Total students",
       value: totalStudents,
       difference: { increased: false, value: 16 },
-      icon: <Users2 className="text-background bg-green-500"></Users2>,
+      icon: <Users2 className="text-background"></Users2>,
       textColor: "text-green-500",
       backgroundColor: "bg-green-500",
     },
     {
       title: "Tasks progress",
       value: Number((progress * 100).toFixed(2)),
-      icon: <ListTodo className="text-background bg-orange-500"></ListTodo>,
+      icon: <ListTodo className="text-background"></ListTodo>,
       marker: { after: true, value: "%" },
       progress: true,
       textColor: "text-orange-500",
@@ -64,7 +64,7 @@ export default function StatesOverview() {
       totalOrders,
       value: Number(totalIncome.toFixed()),
       marker: { after: false, value: "$" },
-      icon: <CircleDollarSign className="text-background bg-indigo-500"></CircleDollarSign>,
+      icon: <CircleDollarSign className="text-background"></CircleDollarSign>,
       textColor: "text-indigo-500",
       backgroundColor: "bg-indigo-500",
     },
@@ -75,10 +75,10 @@ export default function StatesOverview() {
       {states.map((state) => (
         <Card
           key={state.title}
-          className="col-span-12 rounded-2xl bg-white p-2 shadow drop-shadow-sm md:col-span-6 xl:col-span-3"
+          className="col-span-12 rounded-2xl bg-white p-2 shadow relative md:col-span-6 xl:col-span-3"
         >
           <CardHeader>
-            <Typography variant="secondary" className="!text-xl">
+            <Typography variant="secondary" className="!text-xl xl:tracking-tighter xl:!text-lg">
               {state.title}
             </Typography>
           </CardHeader>

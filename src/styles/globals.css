@@ -20,7 +20,7 @@
     --popover: #fffdf9;
     --popover-foreground: #454545;
 
-    --primary: #FF6000;
+    --primary: 23 100% 50%;
     /* 90% of primary #ffefe6 */
     --primary-foreground: #ffefe6;
     --primary-hover: #e65600;
@@ -34,8 +34,8 @@
     --accent-hover: #e6cfb3;
 
     /* 50% of accent #807364 */
-    --muted: #807364;
-    --muted-foreground: #ffe6c7;
+    --muted: 32 12% 45%;
+    --muted-foreground: 33 100% 89%;
 
     --destructive: #ef4444;
     --destructive-foreground: #ffefe6;

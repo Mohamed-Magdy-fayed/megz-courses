@@ -12,13 +12,13 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
     <div className="flex">
       <Sheet
         open={opened}
-        onOpenChange={() => opened ? closeNav : openNav}
+        onOpenChange={() => opened ? closeNav() : openNav()}
       >
-        <SheetContent side="left">
+        <SheetContent side="left" className="p-0 w-min">
           <MegzDrawer mobile />
         </SheetContent>
       </Sheet>
-      <div className="hidden lg:block">
+      <div className="hidden lg:block p-0 w-min">
         <MegzDrawer />
       </div>
       <div className="w-full">

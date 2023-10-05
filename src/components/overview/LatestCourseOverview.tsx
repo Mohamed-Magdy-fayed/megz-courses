@@ -4,29 +4,22 @@ import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Typography } from "@/components/ui/Typoghraphy";
-import { ArrowRight, MoreVertical } from "lucide-react";
+import { ArrowRight, Loader2, MoreVertical } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { api } from "@/lib/api";
+import Link from "next/link";
 
-interface CourseType {
-  id: string;
-  image?: string;
-  name: string;
-  updatedAt: number;
-}
-
-export const LatestCourseOverview = (props: {
-  courses: CourseType[];
-}) => {
-  const { courses = [] } = props;
+export const LatestCourseOverview = () => {
+  const { data } = api.courses.getAll.useQuery()
 
   return (
-    <Card className="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-4 h-full">
+    <Card className="col-span-12 md:col-span-6 xl:col-span-4 h-full flex flex-col">
       <CardHeader>
         <Typography variant={"secondary"}>Latest courses</Typography>
       </CardHeader>
       <div className="flex flex-col">
-        {courses.map((course, index) => {
-          const hasDivider = index < courses.length - 1;
+        {!data?.courses ? <Loader2 className="animate-spin" /> : data.courses.slice(0, 7).map((course, index) => {
+          const hasDivider = index < data.courses.length - 1;
           const ago = formatDistanceToNow(course.updatedAt);
 
           return (
@@ -64,11 +57,13 @@ export const LatestCourseOverview = (props: {
         })}
       </div>
       <Separator />
-      <CardFooter className="p-4 justify-end">
-        <Button>
-          <ArrowRight />
-          <Typography variant={"buttonText"}>View all</Typography>
-        </Button>
+      <CardFooter className="p-4 justify-end mt-auto">
+        <Link href="/content">
+          <Button>
+            <ArrowRight />
+            <Typography variant={"buttonText"}>View all</Typography>
+          </Button>
+        </Link>
       </CardFooter>
     </Card>
   );

@@ -28,40 +28,6 @@ export default function AppDrawer({ children }: AppDrawerProps) {
   return (
     <div className="flex flex-col">
       <MegzTopBar />
-      <nav
-        aria-label="main-navigation"
-      >
-        {/* <Drawer
-            variant="temporary"
-            open={navStore.opened}
-            onClose={handleDrawerToggle}
-            ModalProps={{
-              keepMounted: true,
-            }}
-            sx={{
-              display: { sm: "block", xl: "none" },
-              "& .MuiDrawer-paper": {
-                boxSizing: "border-box",
-                width: drawerWidth,
-              },
-            }}
-          >
-            <MegzDrawer />
-          </Drawer>
-          <Drawer
-            variant="permanent"
-            sx={{
-              display: { xs: "none", xl: "block" },
-              "& .MuiDrawer-paper": {
-                boxSizing: "border-box",
-                width: drawerWidth,
-              },
-            }}
-            open
-          >
-            <MegzDrawer />
-          </Drawer> */}
-      </nav>
       <main
         className="w-full"
       >

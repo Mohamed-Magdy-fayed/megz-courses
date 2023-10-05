@@ -5,8 +5,11 @@ import { useEffect, useState } from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
 import { Typography } from "../ui/Typoghraphy";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
+  const pathname = usePathname().split("/")[1];
   const navStore = useNavStore();
 
   const links = [
@@ -65,20 +68,15 @@ export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
   if (!isMounted) return null;
 
   return (
-    <div className="sticky left-0 top-0 flex h-screen flex-col gap-4 overflow-auto bg-primary p-4">
-      <img src="/favicon.png" className="w-20" />
-      <div className="rounded-lg bg-slate-100/10 p-4">
-        <Typography className="font-sans text-xl font-bold text-slate-50">
-          Megz
-        </Typography>
-        <Typography className="text-sm text-slate-300">Development</Typography>
+    <div className="sticky left-0 top-0 flex items-center h-screen flex-col gap-4 overflow-auto bg-muted text-muted-foreground p-4">
+      <Image src="/favicon.png" width={80} height={80} alt="logo" />
+      <div className="rounded-lg bg-muted-foreground/50 p-4 w-full text-foreground">
+        <Typography variant={"secondary"} >Megz</Typography>
+        <Typography>Development</Typography>
       </div>
       <Separator />
-      <ScrollArea className="w-fit h-screen">
-        <div
-
-          className="flex flex-col items-center gap-2 [&>*]:w-full [&>*]:rounded-lg [&>*]:bg-transparent [&>*]:p-2 [&>*]:font-bold [&>*]:text-slate-300 hover:[&>*]:bg-slate-100/10"
-        >
+      <ScrollArea className="w-min h-screen">
+        <div className="flex flex-col items-center gap-2">
           {links.map((link) => (
             <Link
               key={link.url}
@@ -86,9 +84,9 @@ export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
                 navStore.closeNav();
               }}
               className={cn(
-                "whitespace-nowrap",
-                navStore.activeLink === link.url &&
-                "!bg-slate-100/10 !text-slate-100"
+                "whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-muted-foreground/80 hover:text-muted",
+                pathname === link.url &&
+                "bg-muted-foreground text-muted"
               )}
               href={`/${link.url}`}
             >
@@ -96,23 +94,23 @@ export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
             </Link>
           ))}
         </div>
-        <Separator />
-        <div >
-          <Typography className="text-base text-slate-50">
-            Need different featrues?
-          </Typography>
-          <Typography className="whitespace-nowrap text-sm text-slate-300">
-            <Link
-              className="text-dark underline decoration-slate-700 hover:decoration-dark"
-              href="https://portfolio-2-iota-brown.vercel.app/"
-              target="_blank"
-            >
-              Contact
-            </Link>{" "}
-            me for customizations
-          </Typography>
-        </div>
       </ScrollArea>
+      <Separator />
+      <div className="py-4">
+        <Typography>
+          Need different featrues?
+        </Typography>
+        <Typography className="whitespace-nowrap !text-xs">
+          <Link
+            className="text-dark underline decoration-slate-700 hover:decoration-dark"
+            href="https://portfolio-2-iota-brown.vercel.app/"
+            target="_blank"
+          >
+            Contact
+          </Link>{" "}
+          me for customizations
+        </Typography>
+      </div>
     </div>
   );
 }

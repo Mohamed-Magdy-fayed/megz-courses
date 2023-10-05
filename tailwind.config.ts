@@ -27,7 +27,7 @@ module.exports = {
         background: "var(--background)",
         foreground: "var(--foreground)",
         primary: {
-          DEFAULT: "var(--primary)",
+          DEFAULT: "hsl(var(--primary))",
           foreground: "var(--primary-foreground)",
           hover: "var(--primary-hover)",
         },
@@ -42,8 +42,8 @@ module.exports = {
           hover: "var(--destructive-hover)",
         },
         muted: {
-          DEFAULT: "var(--muted)",
-          foreground: "var(--muted-foreground)",
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
           DEFAULT: "var(--accent)",

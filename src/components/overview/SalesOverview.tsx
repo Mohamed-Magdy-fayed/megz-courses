@@ -10,7 +10,7 @@ const useChartOptions = () => {
     title: {
       text: "sales",
       style: {
-        color: "var(--muted)",
+        color: "hsl(var(--muted))",
         fontSize: "32px"
       }
     },
@@ -23,8 +23,8 @@ const useChartOptions = () => {
       },
     },
     colors: [
-      "var(--primary)",
-      "var(--muted)",
+      "hsl(var(--primary))",
+      "hsl(var(--muted))",
     ],
     dataLabels: {
       enabled: false,
@@ -34,7 +34,7 @@ const useChartOptions = () => {
       type: "solid",
     },
     grid: {
-      borderColor: "var(--foreground)",
+      borderColor: "hsl(var(--foreground))",
       strokeDashArray: 2,
       xaxis: {
         lines: {
@@ -59,12 +59,12 @@ const useChartOptions = () => {
     },
     xaxis: {
       axisBorder: {
-        color: "var(--foreground)",
+        color: "hsl(var(--foreground))",
         show: true,
         offsetY: 5
       },
       axisTicks: {
-        color: "var(--foreground)",
+        color: "hsl(var(--foreground))",
         show: true,
       },
       offsetY: 5,
@@ -88,18 +88,18 @@ const useChartOptions = () => {
     },
     yaxis: {
       axisBorder: {
-        color: "var(--foreground)",
+        color: "hsl(var(--foreground))",
         show: true,
       },
       axisTicks: {
-        color: "var(--foreground)",
+        color: "hsl(var(--foreground))",
         show: true
       },
       labels: {
         offsetX: -5,
         formatter: (value: any) => (value > 1000 ? `${value / 1000}K` : `${value}`),
         style: {
-          colors: "var(--foreground)",
+          colors: "hsl(var(--foreground))",
         },
       },
     },
