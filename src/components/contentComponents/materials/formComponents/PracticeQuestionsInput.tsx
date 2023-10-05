@@ -1,19 +1,20 @@
 import { FC, useState } from "react";
 import { ControllerRenderProps, UseFormReturn } from "react-hook-form";
-import { MaterialsFormValues } from "../MaterialsEditForm";
 import {
   FormControl,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { IconButton, Tooltip, Typography } from "@mui/material";
 import { Edit, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PracticeQuestionsController, {
   PracticeQuestion,
 } from "./PracticeQuestionsController";
 import { cn } from "@/lib/utils";
+import { Typography } from "@/components/ui/Typoghraphy";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { MaterialsFormValues } from "../MaterialsForm";
 
 interface AnswerAreaInputProps {
   field: ControllerRenderProps<MaterialsFormValues, "practiceQuestions">;
@@ -53,33 +54,46 @@ const PracticeQuestionsInput: FC<AnswerAreaInputProps> = ({ field, form }) => {
               {question.question}
             </Typography>
             <div>
-              <Tooltip title="Edit">
-                <IconButton
-                  onClick={() => {
-                    setEdit(question);
-                    field.onChange([
-                      ...form
-                        .getValues()
-                        .practiceQuestions.filter((q) => q.id !== question.id),
-                    ]);
-                  }}
-                >
-                  <Edit className="h-4 w-4" />
-                </IconButton>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={"icon"}
+                    customeColor={"infoIcon"}
+                    onClick={() => {
+                      setEdit(question);
+                      field.onChange([
+                        ...form
+                          .getValues()
+                          .practiceQuestions.filter((q) => q.id !== question.id),
+                      ]);
+                    }}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Edit
+                </TooltipContent>
               </Tooltip>
-              <Tooltip title="Delete">
-                <IconButton
-                  onClick={() =>
-                    field.onChange(
-                      form
-                        .getValues()
-                        .practiceQuestions.filter((q) => q.id !== question.id)
-                    )
-                  }
-                  className="text-error hover:bg-red-100"
-                >
-                  <Trash className="h-4 w-4" />
-                </IconButton>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={"icon"}
+                    customeColor={"destructiveIcon"}
+                    onClick={() =>
+                      field.onChange(
+                        form
+                          .getValues()
+                          .practiceQuestions.filter((q) => q.id !== question.id)
+                      )
+                    }
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Delete
+                </TooltipContent>
               </Tooltip>
             </div>
           </div>

@@ -120,7 +120,8 @@ const VocabularyCardsController: FC<AnswerCardFieldProps> = ({
                 },
               })
             }
-            variant="ghost"
+            variant="outline"
+            customeColor="primaryOutlined"
             className="whitespace-nowrap"
           >
             <Plus /> Add word

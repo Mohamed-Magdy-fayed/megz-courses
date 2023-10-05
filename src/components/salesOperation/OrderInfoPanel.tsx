@@ -1,7 +1,7 @@
 import { formatPrice } from "@/lib/utils";
-import { Typography } from "@mui/material";
 import { SalesOperation, SalesAgent, Order, Course, User } from "@prisma/client";
 import { PaperContainer } from "../ui/PaperContainers";
+import { Typography } from "../ui/Typoghraphy";
 
 const OrderInfoPanel = ({ data }: {
     data: SalesOperation & {

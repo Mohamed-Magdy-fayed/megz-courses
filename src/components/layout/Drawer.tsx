@@ -9,7 +9,8 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
-  const pathname = usePathname().split("/")[1];
+  const pathname = usePathname();
+
   const navStore = useNavStore();
 
   const links = [
@@ -85,7 +86,7 @@ export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
               }}
               className={cn(
                 "whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-muted-foreground/80 hover:text-muted",
-                pathname === link.url &&
+                pathname && pathname.split("/")[1] === link.url &&
                 "bg-muted-foreground text-muted"
               )}
               href={`/${link.url}`}

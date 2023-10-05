@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ImagePlus, Trash } from "lucide-react";
+import { ImageOff, ImagePlus, Trash } from "lucide-react";
 import Image from "next/image";
 import { CldUploadWidget } from "next-cloudinary";
-import { Avatar, IconButton } from "@mui/material";
+import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
+import { Skeleton } from "./skeleton";
 
 interface ImageUploadProps {
   disabled?: boolean;
@@ -36,17 +37,29 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     <div>
       <div className="flex items-center justify-between gap-4 py-4">
         {value && value.length > 0 ? (
-          <div className="flex gap-4 rounded-md">
-            <Avatar alt="user image" src={value} />
+          <div className="flex gap-4 rounded-md items-center">
+            <Avatar className="w-20 h-20">
+              <AvatarImage alt="user image" src={value} />
+              <AvatarFallback>
+                <Skeleton className="w-full h-full rounded-full" />
+              </AvatarFallback>
+            </Avatar>
             <div className="">
-              <IconButton onClick={() => onRemove()} color="warning">
-                <Trash className="h-4 w-4" />
-              </IconButton>
+              <Button
+                variant={"icon"}
+                customeColor={"destructiveIcon"}
+                onClick={() => onRemove()}
+                className=""
+              >
+                <Trash className="h-4 w-4 text-error" />
+              </Button>
             </div>
           </div>
         ) : (
-          <div className="rounded-md">
-            <Avatar alt="no image" src={""} />
+          <div className="rounded-md w-20 h-20">
+            <Skeleton className="w-full h-full rounded-full grid place-content-center">
+              <ImageOff></ImageOff>
+            </Skeleton>
           </div>
         )}
         <CldUploadWidget onUpload={onUpload} uploadPreset="zaibke97">
@@ -59,7 +72,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               <Button
                 type="button"
                 disabled={disabled}
-                variant="secondary"
+                variant="outline"
+                customeColor="primaryOutlined"
                 onClick={onClick}
               >
                 <ImagePlus className="mr-2 h-4 w-4" />

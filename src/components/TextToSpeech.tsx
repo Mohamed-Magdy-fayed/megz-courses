@@ -1,8 +1,8 @@
 import { talkback } from "@/lib/talkback";
 import { cn } from "@/lib/utils";
-import { ButtonProps, IconButton } from "@mui/material";
 import { PlayCircle } from "lucide-react";
 import { ReactNode } from "react";
+import { Button, ButtonProps } from "./ui/button";
 
 interface TextToSpeechProps extends ButtonProps {
   text: string;
@@ -19,17 +19,18 @@ const TextToSpeech = ({
   return (
     <div className="flex items-center gap-2">
       <div>{children}</div>
-      <IconButton
+      <Button
+        variant={"icon"}
+        customeColor={"infoIcon"}
         onClick={(e) => {
           e.stopPropagation();
           talkback(text);
         }}
-        size="small"
         className={cn(className)}
         {...rest}
       >
         <PlayCircle></PlayCircle>
-      </IconButton>
+      </Button>
     </div>
   );
 };

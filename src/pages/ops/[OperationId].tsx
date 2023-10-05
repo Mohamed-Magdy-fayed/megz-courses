@@ -2,7 +2,6 @@ import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/layouts/AppLayout";
 import { api } from "@/lib/api";
-import { CircularProgress } from "@mui/material";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -10,6 +9,7 @@ import UserInfoPanel from "@/components/salesOperation/UserInfoPanel";
 import OperationStatus from "@/components/salesOperation/OperationStatus";
 import OrderInfoPanel from "@/components/salesOperation/OrderInfoPanel";
 import CreateOrder from "@/components/salesOperation/CreateOrder";
+import { Loader } from "lucide-react";
 
 const OperationPage: NextPage = () => {
     const id = useRouter().query.operationId as string
@@ -32,7 +32,7 @@ const OperationPage: NextPage = () => {
         }, {
             onSettled: () => {
                 trpcUtils.salesOperations.invalidate()
-                setLoading(false)
+                    .then(() => setLoading(false))
             }
         })
     }
@@ -41,7 +41,7 @@ const OperationPage: NextPage = () => {
         <AppLayout>
             {isLoading ? (
                 <div className="w-full grid place-content-center">
-                    <CircularProgress size={100}></CircularProgress>
+                    <Loader className="animate-spin" size={100}></Loader>
                 </div>
             ) : isError ? (
                 <div className="text-error">Error!</div>
@@ -83,7 +83,9 @@ const OperationPage: NextPage = () => {
                             disabled={data.salesOperations.status !== "ongoing" || data.salesOperations.orderDetails !== null}
                             onClick={() => setOpen(true)}
                             className="ml-auto"
-                        >Add Courses</Button>
+                        >
+                            Add Courses
+                        </Button>
                     </div>
                 </>
             )}

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ImagePlus, Trash } from "lucide-react";
 import { CldUploadWidget } from "next-cloudinary";
-import { IconButton } from "@mui/material";
 import { Skeleton } from "./skeleton";
 
 interface MaterialImageUploadProps {
@@ -55,9 +54,10 @@ const MaterialImageUpload: React.FC<MaterialImageUploadProps> = ({
 
             return (
               <Button
+                variant={"outline"}
                 type="button"
                 disabled={disabled}
-                variant="secondary"
+                customeColor="primaryOutlined"
                 onClick={onClick}
               >
                 <ImagePlus className="mr-2 h-4 w-4" />

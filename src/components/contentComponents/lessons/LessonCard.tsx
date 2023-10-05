@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { api } from "@/lib/api";
 import { useToastStore } from "@/zustand/store";
-import { IconButton, Tooltip, Typography } from "@mui/material";
 import { Lesson, MaterialItem } from "@prisma/client";
-import { Edit, Edit2, Trash, X } from "lucide-react";
+import { Copy, Edit, Edit2, Trash, X } from "lucide-react";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import MaterialRow from "./MaterialRow";
+import { Typography } from "@/components/ui/Typoghraphy";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const LessonCard = ({
   lesson,
@@ -43,32 +44,42 @@ const LessonCard = ({
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-2">
             <div className="flex flex-col gap-2">
-              <Typography>{lesson.name}</Typography>
+              <Typography variant={"secondary"}>{lesson.name}</Typography>
             </div>
-            <Tooltip title="Edit Lesson">
-              <IconButton
-                onClick={() => {
-                  router.push(`/content/lessons/${lesson.id}`);
-                }}
-              >
-                <Edit2 className="h-4 w-4" />
-              </IconButton>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={"icon"}
+                  customeColor={"mutedIcon"}
+                  onClick={() => router.push(`/content/lessons/${lesson.id}`)}
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                Edit Level
+              </TooltipContent>
             </Tooltip>
           </div>
-          <Tooltip title="Delete Lesson">
-            <IconButton
-              disabled={loading}
-              className="text-error hover:bg-red-100 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-600 disabled:hover:bg-slate-200"
-              onClick={() => handleDelete(lesson.id)}
-            >
-              <Trash className="h-4 w-4" />
-            </IconButton>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={"icon"}
+                customeColor={"destructiveIcon"}
+                onClick={() => handleDelete(lesson.id)}
+              >
+                <Trash className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              Delete Level
+            </TooltipContent>
           </Tooltip>
         </div>
         <Separator />
         {lesson.materials.length === 0 && (
           <div className="p-4">
-            <Typography>No materials added yet</Typography>
+            <Typography variant={'primary'}>No materials added yet</Typography>
           </div>
         )}
         {lesson.materials.map((material, i) => (
@@ -79,8 +90,12 @@ const LessonCard = ({
         ))}
         <Separator />
         <div className="flex w-full p-4">
+          <Button customeColor="foregroundOutlined" type="button" variant={"outline"}>
+            <Copy className="h-4 w-4" />
+            <Typography>Dublicate</Typography>
+          </Button>
           <Button
-            variant="ghost"
+            customeColor="primary"
             className="ml-auto"
             onClick={() => router.push(`/content/lessons/${lesson.id}`)}
           >

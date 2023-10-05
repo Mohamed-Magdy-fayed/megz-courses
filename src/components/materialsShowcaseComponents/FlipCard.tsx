@@ -1,7 +1,5 @@
 import { FC, ReactNode, useState } from "react";
 import { cn } from "@/lib/utils";
-import Scrollbar from "../Scrollbar";
-import { ScrollArea } from "../ui/scroll-area";
 
 interface FlipCardProps {
   front: ReactNode;

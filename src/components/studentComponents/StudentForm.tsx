@@ -15,9 +15,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useParams } from "next/navigation";
-import { useRouter } from "next/router";
-import { DialogHeader } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import {
   Form,
@@ -27,6 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Typography } from "../ui/Typoghraphy";
 
 const formSchema = z.object({
   name: z.string().nonempty(),
@@ -46,12 +44,7 @@ type UsersFormValues = z.infer<typeof formSchema>;
 interface StudentFormProps {
   setIsOpen: (val: boolean) => void;
 }
-
 const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
-  const params = useParams();
-  const router = useRouter();
-
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const title = "Create User";
@@ -97,19 +90,20 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
   };
 
   return (
-    <>
+    <div>
       <div className="flex items-center justify-between p-4">
-        <div className="space-y-2">
-          <DialogHeader className="text-left text-xl font-medium">
+        <div className="space-y-2 flex-col flex">
+          <Typography className="text-left text-xl font-medium">
             {title}
-          </DialogHeader>
-          <DialogHeader className="text-left text-sm">
+          </Typography>
+          <Typography className="text-left text-sm">
             {description}
-          </DialogHeader>
+          </Typography>
         </div>
         <Button
           disabled={loading}
           variant="x"
+          customeColor={"destructive"}
           onClick={() => setIsOpen(false)}
           type="button"
         >
@@ -120,9 +114,9 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex h-[65%] w-full flex-col justify-between p-0 md:h-full"
+          className="flex w-full flex-col justify-between p-0 md:h-full"
         >
-          <div className="scrollbar-thumb-rounded-lg grid grid-cols-1 gap-4 overflow-auto px-4 pb-4 transition-all scrollbar-thin scrollbar-track-transparent scrollbar-thumb-primary/50 md:grid-cols-2 ">
+          <div className="scrollbar-thumb-rounded-lg grid grid-cols-1 gap-4 overflow-auto p-4 transition-all scrollbar-thin scrollbar-track-transparent scrollbar-thumb-primary/50 md:grid-cols-2 lg:grid-cols-3">
             <FormField
               control={form.control}
               name="image"
@@ -228,7 +222,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger className="pl-8">
+                      <SelectTrigger className="pl-8 bg-white">
                         <SelectValue
                           defaultValue={field.value}
                           placeholder="Select user type"
@@ -238,6 +232,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
                     <SelectContent>
                       <SelectItem value="student">Student</SelectItem>
                       <SelectItem value="teacher">Teacher</SelectItem>
+                      <SelectItem value="salesAgent">Sales Agent</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -322,30 +317,30 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
             />
           </div>
           <Separator></Separator>
-          <div className="flex w-full justify-end gap-4 self-end p-4">
+          <div className="flex p-4 justify-end items-center gap-4 h-full">
             <Button
               disabled={loading}
-              variant="destructive"
+              customeColor="destructive"
               onClick={() => setIsOpen(false)}
               type="button"
             >
-              Cancel
+              <Typography variant={"buttonText"}>Cancel</Typography>
             </Button>
             <Button
               disabled={loading}
-              variant="secondary"
+              customeColor="accent"
               type="reset"
               onClick={() => form.reset()}
             >
-              Reset
+              <Typography variant={"buttonText"}>Reset</Typography>
             </Button>
             <Button disabled={loading} type="submit">
-              {action}
+              <Typography variant={"buttonText"}>{action}</Typography>
             </Button>
           </div>
         </form>
       </Form>
-    </>
+    </div>
   );
 };
 

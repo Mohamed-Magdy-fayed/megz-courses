@@ -20,7 +20,7 @@ const StudentClient = ({ data }: { data: Users[] }) => {
     image: user.image || "no image",
     phone: user.phone || "no phone",
     address: user.address ? getAddress(user.address) : "no address",
-    createdAt: format(user.createdAt, "MMMM do, yyyy"),
+    createdAt: format(user.createdAt, "dd MMM yyyy"),
   }));
 
   const toast = useToastStore();

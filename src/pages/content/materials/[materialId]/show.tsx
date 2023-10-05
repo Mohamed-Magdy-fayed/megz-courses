@@ -1,5 +1,4 @@
 import AppLayout from "@/layouts/AppLayout";
-import { Typography } from "@mui/material";
 import { useDraggingStore } from "@/zustand/store";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -9,6 +8,7 @@ import ControlledPracticeContainer from "@/components/materialsShowcaseComponent
 import FirstTestContainer from "@/components/materialsShowcaseComponents/FirstTestContainer";
 import { api } from "@/lib/api";
 import { useRouter } from "next/router";
+import { Typography } from "@/components/ui/Typoghraphy";
 
 const MaterialShowcasePage = () => {
   const { submission } = useDraggingStore();
@@ -82,7 +82,7 @@ const MaterialShowcasePage = () => {
         )}
       </div>
       <div className="flex flex-col items-center p-4">
-        <Typography className="text-center text-2xl font-bold">{}</Typography>
+        <Typography className="text-center text-2xl font-bold">{ }</Typography>
         <div className="flex flex-col gap-4">
           <FirstTestContainer
             DBcards={answerCards}

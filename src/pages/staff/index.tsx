@@ -1,17 +1,14 @@
-import { TransparentButton } from "@/components/ui/Buttons";
-import { ConceptTitle } from "@/components/ui/Typoghraphy";
+import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { api } from "@/lib/api";
-import { Box, Stack, SvgIcon } from "@mui/material";
-import FileUploadOutlinedIcon from "@mui/icons-material/FileUploadOutlined";
-import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import { useState } from "react";
-import { PlusIcon } from "lucide-react";
+import { FileDown, FileUp, PlusIcon } from "lucide-react";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/layouts/AppLayout";
 import UserForm from "@/components/staffComponents/UserForm";
 import StaffClient from "@/components/staffComponents/StaffClient";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const StaffPage = () => {
   const { data, isLoading, isError } = api.users.getUsers.useQuery({
@@ -21,31 +18,39 @@ const StaffPage = () => {
 
   return (
     <AppLayout>
-      <Box component="main">
-        <Stack spacing={3}>
-          <Stack direction="row" justifyContent="space-between" spacing={4}>
-            <Stack spacing={1}>
+      <main>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col gap-2">
               <ConceptTitle>Teachers</ConceptTitle>
-              <Stack alignItems="center" direction="row" spacing={1}>
-                <TransparentButton>
-                  <SvgIcon fontSize="small">
-                    <FileDownloadOutlinedIcon />
-                  </SvgIcon>
-                  Import
-                </TransparentButton>
-                <TransparentButton>
-                  <SvgIcon fontSize="small">
-                    <FileUploadOutlinedIcon />
-                  </SvgIcon>
-                  Export
-                </TransparentButton>
-              </Stack>
-            </Stack>
-            <Button onClick={() => setIsOpen(true)}>
+              <div className="flex items-center justify-center gap-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant={"icon"} customeColor={"infoIcon"}>
+                      <FileDown />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <Typography>Import</Typography>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant={"icon"} customeColor={"infoIcon"}>
+                      <FileUp />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <Typography>Export</Typography>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
+            <Button onClick={() => setIsOpen(true)} customeColor={"primary"}>
               <PlusIcon className="mr-2"></PlusIcon>
-              Add
+              <Typography variant={"buttonText"}>Add</Typography>
             </Button>
-          </Stack>
+          </div>
           {isOpen && (
             <PaperContainer>
               <UserForm setIsOpen={setIsOpen}></UserForm>
@@ -60,8 +65,8 @@ const StaffPage = () => {
               <StaffClient data={data.users}></StaffClient>
             )}
           </PaperContainer>
-        </Stack>
-      </Box>
+        </div>
+      </main>
     </AppLayout>
   );
 };

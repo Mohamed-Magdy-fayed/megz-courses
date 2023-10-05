@@ -1,6 +1,8 @@
+import { Typography } from "@/components/ui/Typoghraphy";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { api } from "@/lib/api";
 import { useToastStore } from "@/zustand/store";
-import { IconButton, Tooltip, Typography } from "@mui/material";
 import { Level } from "@prisma/client";
 import { ArrowRight, Edit, Trash } from "lucide-react";
 import { useRouter } from "next/router";
@@ -35,7 +37,7 @@ const LevelRow = ({ level }: { level: Level }) => {
   return (
     <div className="flex items-center justify-between p-4">
       <div>
-        <Typography>{level.name}</Typography>
+        <Typography variant={"secondary"}>{level.name}</Typography>
         <Typography>{level.code}</Typography>
       </div>
       <div>
@@ -52,21 +54,31 @@ const LevelRow = ({ level }: { level: Level }) => {
         )}
       </div>
       <div className="flex items-center justify-center gap-2">
-        <Tooltip title="Edit Level">
-          <IconButton
-            onClick={() => router.push(`/content/levels/${level.id}`)}
-          >
-            <Edit className="h-4 w-4" />
-          </IconButton>
+        <Tooltip>
+          <TooltipTrigger>
+            <Button
+              variant={"icon"}
+              customeColor={"infoIcon"}
+              onClick={() => router.push(`/content/levels/${level.id}`)}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Edit Level</TooltipContent>
         </Tooltip>
-        <Tooltip title="Delete Level">
-          <IconButton
-            disabled={loading}
-            className="text-error hover:bg-red-100 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-600 disabled:hover:bg-slate-200"
-            onClick={() => handleDelete(level.id)}
-          >
-            <Trash className="h-4 w-4" />
-          </IconButton>
+        <Tooltip>
+          <TooltipTrigger>
+            <Button
+              variant={"icon"}
+              customeColor={"destructiveIcon"}
+              disabled={loading}
+              className="disabled:cursor-not-allowed"
+              onClick={() => handleDelete(level.id)}
+            >
+              <Trash className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Delete Level</TooltipContent>
         </Tooltip>
       </div>
     </div>

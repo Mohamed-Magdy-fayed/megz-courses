@@ -1,4 +1,3 @@
-import { Typography } from "@mui/material";
 import {
   useControlledPracticeMultichoiceStore,
   useToastStore,
@@ -8,6 +7,7 @@ import { Trash } from "lucide-react";
 import QuestionCard from "./QuestionCard";
 import { FC, useEffect } from "react";
 import { Question } from "@prisma/client";
+import { Typography } from "../ui/Typoghraphy";
 
 interface ControlledPracticeContainerProps {
   practiceQuestions: Question[];
@@ -28,17 +28,17 @@ const ControlledPracticeContainer: FC<ControlledPracticeContainerProps> = ({
 
     correctAnswers >= questions.length / 2
       ? toast.success(
-          `${correctAnswers} Correct answers of ${questions.length} - Score: ${(
-            (correctAnswers / questions.length) *
-            100
-          ).toFixed(0)}%`
-        )
+        `${correctAnswers} Correct answers of ${questions.length} - Score: ${(
+          (correctAnswers / questions.length) *
+          100
+        ).toFixed(0)}%`
+      )
       : toast.error(
-          `${correctAnswers} Correct answers of ${questions.length} - Score: ${(
-            (correctAnswers / questions.length) *
-            100
-          ).toFixed(0)}%`
-        );
+        `${correctAnswers} Correct answers of ${questions.length} - Score: ${(
+          (correctAnswers / questions.length) *
+          100
+        ).toFixed(0)}%`
+      );
   };
 
   useEffect(() => {
@@ -58,7 +58,7 @@ const ControlledPracticeContainer: FC<ControlledPracticeContainerProps> = ({
         </div>
         <Button
           className="w-full lg:w-fit"
-          variant="destructive"
+          customeColor="destructive"
           onClick={() => clearAnswers()}
         >
           Clear answers <Trash className="ml-2 h-4 w-4" />

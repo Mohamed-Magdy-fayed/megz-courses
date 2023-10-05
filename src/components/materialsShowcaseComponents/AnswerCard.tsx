@@ -1,4 +1,3 @@
-import { Typography } from "@mui/material";
 import {
   AnswerCard as AnswerCardType,
   useDraggingStore,
@@ -6,6 +5,7 @@ import {
 import { cn } from "@/lib/utils";
 import { FC, useEffect, useState } from "react";
 import TextToSpeech from "@/components/TextToSpeech";
+import { Typography } from "../ui/Typoghraphy";
 
 interface AnswerCardProps {
   card: AnswerCardType;

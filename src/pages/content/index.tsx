@@ -1,8 +1,7 @@
 import AppLayout from "@/layouts/AppLayout";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { ConceptTitle } from "@/components/ui/Typoghraphy";
-import { Typography } from "@mui/material";
+import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import { PaperContainer } from "@/components/ui/PaperContainers";
@@ -32,13 +31,9 @@ const ContentPage = () => {
                 total courses: {data?.courses.length}
               </Typography>
             </div>
-            <Button
-              onClick={() => {
-                setIsOpen(true);
-              }}
-            >
+            <Button onClick={() => setIsOpen(true)} customeColor={"primary"}>
               <PlusIcon className="mr-2"></PlusIcon>
-              Create a course
+              <Typography variant={"buttonText"}>Add</Typography>
             </Button>
           </div>
           {isOpen && (

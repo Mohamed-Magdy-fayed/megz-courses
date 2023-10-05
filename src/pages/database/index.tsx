@@ -1,18 +1,16 @@
-import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
-import { TransparentButton } from "@/components/ui/Buttons";
-import { ConceptTitle } from "@/components/ui/Typoghraphy";
+import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import AppLayout from "@/layouts/AppLayout";
 import { api } from "@/lib/api";
-import { SvgIcon, Typography } from "@mui/material";
 import type { NextPage } from "next";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import Spinner from "@/components/Spinner";
 import DatabaseClient from "@/components/database/DatabaseClient";
-import { useExport } from "@/zustand/exportTrigger";
+import { Button } from "@/components/ui/button";
+import { FileDown } from "lucide-react";
+import { csvMaker } from "@/lib/csvMaker";
 
 const DatabasePage: NextPage = () => {
     const { data, isLoading, isError } = api.potintialCustomers.getCustomers.useQuery();
-    const { exportTrigger } = useExport()
 
     return (
         <AppLayout>
@@ -23,12 +21,13 @@ const DatabasePage: NextPage = () => {
                             <ConceptTitle>Database</ConceptTitle>
                             <Typography>Explore the potintial customers from Facebook</Typography>
                             <div className="flex items-center gap-2">
-                                <TransparentButton onClick={() => exportTrigger()}>
-                                    <SvgIcon fontSize="small">
-                                        <FileDownloadOutlinedIcon />
-                                    </SvgIcon>
-                                    Export
-                                </TransparentButton>
+                                <Button
+                                    variant={"icon"}
+                                    customeColor={"infoIcon"}
+                                    onClick={() => data?.potintialCustomers && csvMaker(data?.potintialCustomers)}
+                                >
+                                    <FileDown />
+                                </Button>
                             </div>
                         </div>
                     </div>

@@ -2,20 +2,18 @@ import { Dispatch, FC, SetStateAction, useState } from "react";
 import { ControllerRenderProps, UseFormReturn } from "react-hook-form";
 import { MaterialsFormValues } from "../MaterialsEditForm";
 import {
-  Form,
   FormControl,
-  FormDescription,
-  FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { IconButton, Tooltip, Typography } from "@mui/material";
 import { Edit, Plus, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { uniqueId } from "lodash";
 import { cn } from "@/lib/utils";
+import { Typography } from "@/components/ui/Typoghraphy";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface AnswerCardsInputProps {
   field: ControllerRenderProps<MaterialsFormValues, "answerCards">;
@@ -45,29 +43,42 @@ const AnswerCardsInput: FC<AnswerCardsInputProps> = ({
               {card.text}
             </Typography>
             <div>
-              <Tooltip title="Edit">
-                <IconButton
-                  onClick={() => {
-                    setAnswerCardText(card.text);
-                    setEdit(card);
-                  }}
-                >
-                  <Edit className="h-4 w-4" />
-                </IconButton>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={"icon"}
+                    customeColor={"infoIcon"}
+                    onClick={() => {
+                      setAnswerCardText(card.text);
+                      setEdit(card);
+                    }}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Edit
+                </TooltipContent>
               </Tooltip>
-              <Tooltip title="Remove">
-                <IconButton
-                  onClick={() =>
-                    field.onChange(
-                      form
-                        .getValues()
-                        .answerCards.filter((c) => c.id !== card.id)
-                    )
-                  }
-                  className="text-error hover:bg-red-100"
-                >
-                  <Trash className="h-4 w-4" />
-                </IconButton>
+              <Tooltip >
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={"icon"}
+                    customeColor={"destructiveIcon"}
+                    onClick={() =>
+                      field.onChange(
+                        form
+                          .getValues()
+                          .answerCards.filter((c) => c.id !== card.id)
+                      )
+                    }
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Remove
+                </TooltipContent>
               </Tooltip>
             </div>
           </div>
@@ -103,7 +114,8 @@ const AnswerCardsInput: FC<AnswerCardsInputProps> = ({
                     setEdit({ id: "", text: "" });
                     setAnswerCardText("");
                   }}
-                  variant="secondary"
+                  customeColor="primaryOutlined"
+                  variant="outline"
                   className="whitespace-nowrap"
                 >
                   <Plus />
@@ -120,7 +132,8 @@ const AnswerCardsInput: FC<AnswerCardsInputProps> = ({
                     setSelectCards((prev) => [...prev, card]);
                     field.onChange([...field.value, card]);
                   }}
-                  variant="secondary"
+                  customeColor="primaryOutlined"
+                  variant="outline"
                   className="whitespace-nowrap"
                 >
                   <Plus />

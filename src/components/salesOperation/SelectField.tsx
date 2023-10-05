@@ -6,7 +6,7 @@ import { Input } from '../ui/input'
 import { cn } from '@/lib/utils'
 import { ScrollArea } from '../ui/scroll-area'
 import { advancedSearch } from '@/lib/advancedSearch'
-import { Typography } from '@mui/material'
+import { Typography } from '../ui/Typoghraphy'
 
 type DataType = {
     label: string
@@ -28,7 +28,7 @@ const SelectField: FC<SelectFieldProps> = ({ placeholder, listTitle, data, value
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline" className='max-w-[16rem] flex flex-wrap items-center h-fit gap-2 justify-start hover:bg-slate-50 hover:text-primary hover:border-primary'>
+                <Button variant="outline" customeColor={"foregroundOutlined"} className='max-w-[16rem] flex flex-wrap items-center h-fit gap-2 justify-start hover:bg-slate-50 hover:text-primary hover:border-primary'>
                     {values.length === 0 ? (
                         <Typography>
                             {placeholder}

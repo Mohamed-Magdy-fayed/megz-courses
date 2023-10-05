@@ -10,9 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { api } from "@/lib/api";
-import { cn } from "@/lib/utils";
 import { useToastStore } from "@/zustand/store";
-import { IconButton } from "@mui/material";
 import { X } from "lucide-react";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -61,9 +59,9 @@ const LessonForm = ({
     <div>
       <div className="flex items-center justify-between p-4">
         <div>Create lesson</div>
-        <IconButton onClick={() => setIsOpen(false)}>
+        <Button variant={"x"} onClick={() => setIsOpen(false)}>
           <X className="h-4 w-4" />
-        </IconButton>
+        </Button>
       </div>
       <Separator />
       <Form {...form}>
@@ -87,7 +85,7 @@ const LessonForm = ({
           <div className="flex w-full justify-end gap-4 self-end p-4">
             <Button
               disabled={loading}
-              variant="destructive"
+              customeColor="destructive"
               onClick={() => setIsOpen(false)}
               type="button"
             >
@@ -95,7 +93,7 @@ const LessonForm = ({
             </Button>
             <Button
               disabled={loading}
-              variant="secondary"
+              customeColor="secondary"
               type="reset"
               onClick={() => form.reset()}
             >

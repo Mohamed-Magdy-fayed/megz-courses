@@ -2,15 +2,15 @@ import { api } from "@/lib/api";
 import { getInitials } from "@/lib/getInitials";
 import { cn } from "@/lib/utils";
 import { useToastStore } from "@/zustand/store";
-import { Typography, CircularProgress, Avatar } from "@mui/material";
 import { Course, Order, SalesAgent, SalesOperation, User } from "@prisma/client";
 import { format } from "date-fns";
-import { Link } from "lucide-react";
+import { Link, Loader } from "lucide-react";
 import { useState } from "react";
 import { SeverityPill } from "@/components/overview/SeverityPill";
-import { ConceptTitle } from "@/components/ui/Typoghraphy";
+import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 const OperationStatus = ({ data }: {
     data: (SalesOperation & {
@@ -25,16 +25,16 @@ const OperationStatus = ({ data }: {
 }) => {
     const statusMap: {
         created: "primary";
-        assigned: "warning";
+        assigned: "primary";
         ongoing: "info";
         completed: "success";
-        cancelled: "error";
+        cancelled: "destructive";
     } = {
         created: "primary",
-        assigned: "warning",
+        assigned: "primary",
         ongoing: "info",
         completed: "success",
-        cancelled: "error"
+        cancelled: "destructive"
     };
 
     const [isLoading, setIsLoading] = useState(false)
@@ -69,19 +69,28 @@ const OperationStatus = ({ data }: {
             <ConceptTitle>Operation Code: {data.code}</ConceptTitle>
             <div className="flex items-center justify-between">
                 <div className="flex gap-4">
-                    <SeverityPill
-                        color={statusMap[orderStatus]}
-                        label={orderStatus}
-                    />
+                    <SeverityPill color={statusMap[orderStatus]}>
+                        {orderStatus}
+                    </SeverityPill>
                     <Typography>Latest update: {updatedAt}</Typography>
                 </div>
                 {data.status === "assigned" ? (
-                    <Button disabled={isLoading} onClick={() => handleStatusChange("ongoing")} className={cn("self-end", isLoading && "text-gray-500 border-gray-500 pointer-events-none")} variant={"outline"}>
-                        {isLoading ? <CircularProgress /> : "Start"}
+                    <Button
+                        customeColor={"primaryOutlined"}
+                        disabled={isLoading}
+                        onClick={() => handleStatusChange("ongoing")}
+                        className={cn("self-end")}
+                        variant={"outline"}>
+                        {isLoading ? <Loader className="animate-spin" /> : "Start"}
                     </Button>
                 ) : data.status === "ongoing" ? (
-                    <Button disabled={isLoading || data.orderDetails !== null} onClick={() => handleStatusChange("cancelled")} className={cn("self-end border-error text-error hover:bg-error", isLoading && "text-gray-500 border-gray-500 pointer-events-none")} variant={"outline"}>
-                        {isLoading ? <CircularProgress size={25} color="inherit" /> : "Cancel"}
+                    <Button
+                        customeColor={"destructiveOutlined"}
+                        disabled={isLoading || data.orderDetails !== null}
+                        onClick={() => handleStatusChange("cancelled")}
+                        className={cn("self-end")}
+                        variant={"outline"}>
+                        {isLoading ? <Loader className="animate-spin" size={25} color="inherit" /> : "Cancel"}
                     </Button>
                 ) : (
                     <Tooltip>
@@ -89,14 +98,20 @@ const OperationStatus = ({ data }: {
                             <Typography className="group-hover:text-primary">
                                 {data.assignee?.user.email}
                             </Typography>
-                            <Avatar src={data.assignee?.user.image as string}>
-                                {getInitials(data.assignee?.user.name)}
+                            <Avatar>
+                                <AvatarImage src={data.assignee?.user.image as string} />
+                                <AvatarFallback>
+                                    {getInitials(data.assignee?.user.name)}
+                                </AvatarFallback>
                             </Avatar>
                         </Link>
                         <TooltipTrigger className="sm:hidden">
                             <Link href={`/account/${data.assignee?.user.id}`}>
-                                <Avatar src={data.assignee?.user.image as string}>
-                                    {getInitials(data.assignee?.user.name)}
+                                <Avatar>
+                                    <AvatarImage src={data.assignee?.user.image as string} />
+                                    <AvatarFallback>
+                                        {getInitials(data.assignee?.user.name)}
+                                    </AvatarFallback>
                                 </Avatar>
                             </Link>
                         </TooltipTrigger>

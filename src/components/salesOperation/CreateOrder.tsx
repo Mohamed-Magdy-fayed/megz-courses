@@ -133,7 +133,7 @@ const CreateOrder: FC<CreateOrderProps> = ({
                     )}
                 </div>
                 <div className="space-x-2 mt-auto">
-                    <Button disabled={loading} variant={"destructive"} onClick={() => {
+                    <Button disabled={loading} variant={"outline"} customeColor={"destructiveOutlined"} onClick={() => {
                         setCourses([])
                         setEmail([])
                     }}>

@@ -1,12 +1,11 @@
+import CreateMaterialsForm from "@/components/contentComponents/materials/CreateMaterialForm";
 import MaterialCard from "@/components/contentComponents/materials/MaterialCard";
-import MaterialsForm from "@/components/contentComponents/materials/MaterialsForm";
 import CardsSkeleton from "@/components/layout/CardsSkeleton";
 import { PaperContainer } from "@/components/ui/PaperContainers";
-import { ConceptTitle } from "@/components/ui/Typoghraphy";
+import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/layouts/AppLayout";
 import { api } from "@/lib/api";
-import { Typography } from "@mui/material";
 import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
@@ -44,7 +43,7 @@ const LessonPage = () => {
         </div>
         {isOpen && (
           <PaperContainer>
-            <MaterialsForm id={id} setIsOpen={setIsOpen} />
+            <CreateMaterialsForm id={id} setIsOpen={setIsOpen} />
           </PaperContainer>
         )}
         {isLoading ? (

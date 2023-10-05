@@ -5,31 +5,30 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PotintialCustomer } from "@prisma/client";
 import { Button } from "@/components/ui/button";
-import { Copy, MoreHorizontal } from "lucide-react";
+import { CheckCircle, Copy, MoreVertical } from "lucide-react";
 import { useState } from "react";
 import { useToastStore } from "@/zustand/store";
 import { api } from "@/lib/api";
 import { AssignModal } from "../modals/AssignModal";
-import { TaskRounded } from "@mui/icons-material";
+import { Customer } from "./DatabaseColumn";
 
 interface CellActionProps {
-  data: PotintialCustomer;
+  data: Customer;
 }
 
 const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
-  
+
   const assignMutation = api.salesOperations.createSalesOperation.useMutation()
   const toast = useToastStore()
-  
+
   const onCopy = (id: string) => {
     navigator.clipboard.writeText(id);
     toast.success("Category ID copied to the clipboard");
   };
-  
+
   const onAssign = (assigneeId: string) => {
     setLoading(true)
     setOpen(false)
@@ -60,9 +59,8 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
       />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
-            <span className="sr-only">Open meny</span>
-            <MoreHorizontal className="w-4 h-4" />
+          <Button variant="outline" customeColor={"mutedOutlined"} className="h-8 w-8 p-0">
+            <MoreVertical className="w-4 h-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -72,7 +70,7 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
             Copy Id
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setOpen(true)}>
-            <TaskRounded className="w-4 h-4 mr-2" />
+            <CheckCircle className="w-4 h-4 mr-2" />
             Assign
           </DropdownMenuItem>
         </DropdownMenuContent>

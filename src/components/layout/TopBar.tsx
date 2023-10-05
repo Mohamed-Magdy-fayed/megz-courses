@@ -11,11 +11,13 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "../ui/dr
 import { Typography } from "../ui/Typoghraphy";
 import { Separator } from "../ui/separator";
 import { useCallback, useEffect, useState } from "react";
+import { Skeleton } from "../ui/skeleton";
 
 export default function MegzTopBar() {
   const session = useSession();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [isMounted, setisMounted] = useState(false);
   const navStore = useNavStore((state) => state);
   const pathname = usePathname();
 
@@ -25,6 +27,10 @@ export default function MegzTopBar() {
     }
   }, [navStore.opened]);
 
+  useEffect(() => {
+    if (!isMounted) setisMounted(true)
+  }, []);
+
   useEffect(
     () => {
       handlePathnameChange();
@@ -33,6 +39,8 @@ export default function MegzTopBar() {
     [pathname]
   );
 
+  if (!isMounted) return <Skeleton className="w-full h-full"></Skeleton>
+
   return (
     <div
       className={`relative z-50 isolate top-0 !bg-white/80 !shadow-none !backdrop-blur-sm`}
@@ -40,15 +48,16 @@ export default function MegzTopBar() {
       <div className="flex justify-between p-2">
         <div className="flex items-center gap-2">
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger asChild>
               <Button
                 variant="icon"
+                customeColor={"foregroundIcon"}
                 className={cn("lg:!hidden")}
                 onClick={() => {
                   navStore.openNav();
                 }}
               >
-                <MenuIcon className="w-5 h-5" />
+                <MenuIcon className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
           </Tooltip>
@@ -60,20 +69,20 @@ export default function MegzTopBar() {
               <AvatarImage src="/favicon.png" alt="Logo" />
               <AvatarFallback>Logo</AvatarFallback>
             </Avatar>
-            <Typography variant={"secondary"}>Courses.</Typography>
+            <Typography variant={"secondary"}>Courses</Typography>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="icon">
-            <BellIcon></BellIcon>
+          <Button variant="icon" customeColor={"primaryIcon"} >
+            <BellIcon className="w-4 h-4"></BellIcon>
           </Button>
-          <Button variant="icon">
-            <UserCircle></UserCircle>
+          <Button variant="icon" customeColor={"primaryIcon"} >
+            <UserCircle className="w-4 h-4"></UserCircle>
           </Button>
           <DropdownMenu>
-            <DropdownMenuTrigger>
-              <Tooltip>
-                <TooltipTrigger>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
                   <Button variant="icon" aria-label="menuButton" onClick={() => setOpen(true)}>
                     <Avatar
                       className="h-8 w-8 cursor-pointer outline outline-primary/30 hover:outline-primary/70"
@@ -84,12 +93,12 @@ export default function MegzTopBar() {
                       <AvatarFallback>{session.data?.user.name || "NA"}</AvatarFallback>
                     </Avatar>
                   </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  Profile Menu
-                </TooltipContent>
-              </Tooltip>
-            </DropdownMenuTrigger>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                Profile Menu
+              </TooltipContent>
+            </Tooltip>
             <DropdownMenuContent className="p-2">
               <div className="flex flex-col p-2">
                 <Typography

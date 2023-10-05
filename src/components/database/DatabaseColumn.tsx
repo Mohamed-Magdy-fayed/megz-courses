@@ -2,13 +2,21 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowUpDown, Check } from "lucide-react";
-import { Avatar, Typography } from "@mui/material";
 import { getInitials } from "@/lib/getInitials";
-import { PotintialCustomer } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import CellAction from "./cell-action";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Typography } from "../ui/Typoghraphy";
 
-export const columns: ColumnDef<PotintialCustomer>[] = [
+export type Customer = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  picture: string;
+  facebookUserId: string;
+}
+
+export const columns: ColumnDef<Customer>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -25,8 +33,11 @@ export const columns: ColumnDef<PotintialCustomer>[] = [
         aria-label="Select row"
       >
 
-        <Avatar src={`${row.original.picture}` || ""} className={cn("", row.getIsSelected() && `relative after:content-[""] after:inset-0 after:absolute after:bg-primary/40`)}>
-          {getInitials(`${row.original.firstName} ${row.original.lastName}` || "")}
+        <Avatar className={cn("", row.getIsSelected() && `relative after:content-[""] after:inset-0 after:absolute after:bg-primary/40`)}>
+          <AvatarImage src={`${row.original.picture}`} />
+          <AvatarFallback>
+            {getInitials(`${row.original.firstName} ${row.original.lastName}` || "")}
+          </AvatarFallback>
         </Avatar>
         {row.getIsSelected() && (<Check className="absolute inset-1/4 text-white" />)}
       </button >
@@ -120,9 +131,7 @@ export const columns: ColumnDef<PotintialCustomer>[] = [
   },
   {
     id: "actions",
-    header: () => (
-      <Typography>Actions</Typography>
-    ),
+    header: "Actions",
     cell: ({ row }) => <CellAction data={row.original} />,
   },
 ];

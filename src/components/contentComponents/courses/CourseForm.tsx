@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { api } from "@/lib/api";
-import { IconButton } from "@mui/material";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
@@ -57,9 +56,9 @@ const CourseForm = ({ setIsOpen }: { setIsOpen: (val: boolean) => void }) => {
     <div>
       <div className="flex items-center justify-between p-4">
         <div>Create course</div>
-        <IconButton onClick={() => setIsOpen(false)}>
+        <Button variant={"x"} onClick={() => setIsOpen(false)}>
           <X className="h-4 w-4" />
-        </IconButton>
+        </Button>
       </div>
       <Separator />
       <Form {...form}>
@@ -94,7 +93,7 @@ const CourseForm = ({ setIsOpen }: { setIsOpen: (val: boolean) => void }) => {
           <div className="flex w-full justify-end gap-4 self-end p-4">
             <Button
               disabled={loading}
-              variant="destructive"
+              customeColor="destructive"
               onClick={() => setIsOpen(false)}
               type="button"
             >
@@ -102,7 +101,7 @@ const CourseForm = ({ setIsOpen }: { setIsOpen: (val: boolean) => void }) => {
             </Button>
             <Button
               disabled={loading}
-              variant="secondary"
+              customeColor="secondary"
               type="reset"
               onClick={() => form.reset()}
             >

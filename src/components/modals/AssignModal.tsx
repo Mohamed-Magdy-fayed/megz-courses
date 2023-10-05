@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Modal from "../ui/modal";
 import { Button } from "../ui/button";
 import { api } from "@/lib/api";
-import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 interface AssignModalProps {
     isOpen: boolean;
@@ -51,7 +51,7 @@ export const AssignModal = ({
                 </SelectContent>
             </Select>
             <div className="flex w-full items-center justify-end space-x-2 pt-6">
-                <Button disabled={loading} variant="outline" onClick={onClose}>
+                <Button disabled={loading} variant="outline" customeColor={"mutedOutlined"} onClick={onClose}>
                     Cancel
                 </Button>
                 <Button disabled={loading} variant="default" onClick={() => onConfirm(assigneeId)}>

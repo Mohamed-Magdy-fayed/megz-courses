@@ -1,10 +1,11 @@
-import { Avatar, Stack, Typography } from "@mui/material";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "../ui/checkbox";
 import Link from "next/link";
 import { getInitials } from "@/lib/getInitials";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Typography } from "../ui/Typoghraphy";
 
 export type Teacher = {
   id: string;
@@ -52,22 +53,24 @@ export const columns: ColumnDef<Teacher>[] = [
     },
     cell: ({ row }) => (
       <Link className="block w-fit" href={`/account/${row.original.id}`}>
-        <Stack alignItems="center" direction="row" spacing={2}>
-          <Avatar src={`${row.original.image}` || ""}>
-            {getInitials(`${row.original.name}` || "")}
+        <div className="flex items-center gap-2" >
+          <Avatar>
+            <AvatarImage src={`${row.original.image}`} />
+            <AvatarFallback>
+              {getInitials(`${row.original.name}`)}
+            </AvatarFallback>
           </Avatar>
-          <Stack>
+          <div className="flex flex-col gap-2">
             <Typography
               className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
-              variant="subtitle2"
             >
               {row.original.name}
             </Typography>
-            <Typography className="text-sm font-normal text-slate-500">
+            <Typography variant={"secondary"} className="text-sm font-normal text-slate-500">
               {row.original.email}
             </Typography>
-          </Stack>
-        </Stack>
+          </div>
+        </div>
       </Link>
     ),
   },

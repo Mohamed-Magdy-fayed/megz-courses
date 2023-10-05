@@ -7,7 +7,7 @@ interface ScrollbarProps {
 export default function Scrollbar({ children }: ScrollbarProps) {
   return (
     <div
-      className="overflow-auto transition-all scrollbar-thin scrollbar-track-transparent scrollbar-thumb-primary scrollbar-thumb-rounded-lg"
+      className="overflow-auto transition-all scrollbar-thin scrollbar-track-accent scrollbar-thumb-secondary"
     >
       {children}
     </div>

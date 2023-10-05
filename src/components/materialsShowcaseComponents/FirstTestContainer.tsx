@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { FC, useEffect } from "react";
 import AnswerCard from "./AnswerCard";
 import AnswerArea from "./AnswerArea";
-import { Typography } from "@mui/material";
+import { Typography } from "../ui/Typoghraphy";
 
 interface FirstTestContainerProps {
   DBcards: AnswerCardType[];
@@ -66,7 +66,7 @@ const FirstTestContainer: FC<FirstTestContainerProps> = ({
 
   return (
     <>
-      <Typography className="text-center">{firstTestTitle}</Typography>
+      <Typography className="text-center" variant={"primary"}>{firstTestTitle}</Typography>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
         {cards.map((card) => (
           <div
@@ -91,7 +91,7 @@ const FirstTestContainer: FC<FirstTestContainerProps> = ({
       </div>
       <Button
         className="lg:w-fit"
-        variant="destructive"
+        customeColor="destructive"
         onClick={() => clearAnswers()}
       >
         Clear answers <Trash className="ml-2 h-4 w-4" />

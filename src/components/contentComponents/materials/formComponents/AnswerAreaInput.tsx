@@ -1,11 +1,9 @@
-import { Dispatch, FC, SetStateAction, useState } from "react";
+import { FC, useState } from "react";
 import { ControllerRenderProps, UseFormReturn } from "react-hook-form";
 import { MaterialsFormValues } from "../MaterialsEditForm";
 import {
-  Form,
   FormControl,
   FormDescription,
-  FormField,
   FormItem,
   FormLabel,
   FormMessage,
@@ -17,15 +15,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../ui/select";
-import { IconButton, Tooltip, Typography } from "@mui/material";
 import { Edit, Loader, Plus, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { uniqueId } from "lodash";
 import { cn } from "@/lib/utils";
 import MaterialImageUpload from "@/components/ui/MaterialImageUpload";
 import { AnswerCard } from "@prisma/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Typography } from "@/components/ui/Typoghraphy";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface AnswerAreaInputProps {
   field: ControllerRenderProps<MaterialsFormValues, "answerAreas">;
@@ -79,31 +76,44 @@ const AnswerAreaInput: FC<AnswerAreaInputProps> = ({
                 : area.correctAnswer}
             </Typography>
             <div>
-              <Tooltip title="Edit">
-                <IconButton
-                  onClick={() => {
-                    setEdit(area);
-                    setAnswerArea(area);
-                  }}
-                >
-                  <Edit className="h-4 w-4" />
-                </IconButton>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={"icon"}
+                    customeColor={"infoIcon"}
+                    onClick={() => {
+                      setEdit(area);
+                      setAnswerArea(area);
+                    }}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Edit
+                </TooltipContent>
               </Tooltip>
-              <Tooltip title="Delete">
-                <IconButton
-                  onClick={() =>
-                    field.onChange(
-                      form
-                        .getValues()
-                        .answerAreas.filter(
-                          (a) => a.correctAnswer !== area.correctAnswer
-                        )
-                    )
-                  }
-                  className="text-error hover:bg-red-100"
-                >
-                  <Trash className="h-4 w-4" />
-                </IconButton>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={"icon"}
+                    customeColor={"destructiveIcon"}
+                    onClick={() =>
+                      field.onChange(
+                        form
+                          .getValues()
+                          .answerAreas.filter(
+                            (a) => a.correctAnswer !== area.correctAnswer
+                          )
+                      )
+                    }
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Delete
+                </TooltipContent>
               </Tooltip>
             </div>
           </div>
@@ -165,7 +175,8 @@ const AnswerAreaInput: FC<AnswerAreaInputProps> = ({
                         correctAnswer: "",
                       });
                     }}
-                    variant="secondary"
+                    variant="outline"
+                    customeColor="primaryOutlined"
                     className="whitespace-nowrap"
                   >
                     <Plus />
@@ -184,7 +195,8 @@ const AnswerAreaInput: FC<AnswerAreaInputProps> = ({
                         correctAnswer: "",
                       });
                     }}
-                    variant="secondary"
+                    variant="outline"
+                    customeColor="primaryOutlined"
                     className="whitespace-nowrap"
                   >
                     <Plus />

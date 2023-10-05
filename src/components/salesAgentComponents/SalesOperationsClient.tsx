@@ -11,8 +11,6 @@ interface SalesOperations extends SalesOperation {
 }
 
 const SalesOperationsClient = ({ data }: { data: SalesOperations[] }) => {
-  console.log(data);
-
   const [salesOperations, setSalesOperations] = useState<SalesOperationColumn[]>([]);
   const formattedData = data.map((operation) => ({
     id: operation.id,

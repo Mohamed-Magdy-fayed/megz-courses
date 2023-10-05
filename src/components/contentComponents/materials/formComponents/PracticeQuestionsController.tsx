@@ -1,3 +1,4 @@
+import { Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import { FormItem, FormMessage, FormDescription } from "@/components/ui/form";
 import { FormLabel, FormControl } from "@/components/ui/form";
@@ -9,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { IconButton, Tooltip, Typography } from "@mui/material";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { uniqueId } from "lodash";
 import { Plus, Trash } from "lucide-react";
 import { FC, useEffect, useState } from "react";
@@ -73,18 +74,25 @@ const PracticeQuestionsController: FC<PracticeQuestionsControllerProps> = ({
                 {"- "}
                 {c}
               </Typography>
-              <Tooltip title="Delete">
-                <IconButton
-                  onClick={() =>
-                    setQuestion((prev) => ({
-                      ...prev,
-                      choices: prev.choices.filter((choice) => c !== choice),
-                    }))
-                  }
-                  className="text-error hover:bg-red-100"
-                >
-                  <Trash className="h-4 w-4" />
-                </IconButton>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={"icon"}
+                    customeColor={"infoIcon"}
+                    onClick={() =>
+                      setQuestion((prev) => ({
+                        ...prev,
+                        choices: prev.choices.filter((choice) => c !== choice),
+                      }))
+                    }
+                    className="text-error hover:bg-red-100"
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Delete
+                </TooltipContent>
               </Tooltip>
             </div>
           ))}
@@ -97,7 +105,8 @@ const PracticeQuestionsController: FC<PracticeQuestionsControllerProps> = ({
               onChange={(e) => setQuestionText(e.target.value)}
             />
             <Button
-              variant="ghost"
+              variant="outline"
+              customeColor="primaryOutlined"
               className="whitespace-nowrap"
               type="button"
               onClick={() =>
@@ -145,7 +154,8 @@ const PracticeQuestionsController: FC<PracticeQuestionsControllerProps> = ({
                   });
                   setQuestionText("");
                 }}
-                variant="secondary"
+                variant="outline"
+                customeColor="primaryOutlined"
                 className="whitespace-nowrap"
               >
                 <Plus />

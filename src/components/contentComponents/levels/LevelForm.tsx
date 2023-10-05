@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
-import { IconButton } from "@mui/material";
 import { X } from "lucide-react";
 import React, { useState } from "react";
 import { Separator } from "@/components/ui/separator";
@@ -60,9 +59,9 @@ const LevelForm = ({
     <div>
       <div className="flex items-center justify-between p-4">
         <div>Create level</div>
-        <IconButton onClick={() => setIsOpen(false)}>
+        <Button variant={"x"} onClick={() => setIsOpen(false)}>
           <X className="h-4 w-4" />
-        </IconButton>
+        </Button>
       </div>
       <Separator />
       <Form {...form}>
@@ -97,7 +96,7 @@ const LevelForm = ({
           <div className="flex w-full justify-end gap-4 self-end p-4">
             <Button
               disabled={loading}
-              variant="destructive"
+              customeColor="destructive"
               onClick={() => setIsOpen(false)}
               type="button"
             >
@@ -105,7 +104,7 @@ const LevelForm = ({
             </Button>
             <Button
               disabled={loading}
-              variant="secondary"
+              customeColor="secondary"
               type="reset"
               onClick={() => form.reset()}
             >

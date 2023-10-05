@@ -7,12 +7,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { IconButton, Tooltip, Typography } from "@mui/material";
 import { Edit, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import VocabularyCardsController, {
   VocabCard,
 } from "./VocabularyCardController";
+import { Typography } from "@/components/ui/Typoghraphy";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface VocabCardsInputProps {
   field: ControllerRenderProps<MaterialsFormValues, "vocabularyCards">;
@@ -66,41 +67,54 @@ const VocabCardsInput: FC<VocabCardsInputProps> = ({ field, form }) => {
               {vocabCard.word}
             </Typography>
             <div>
-              <Tooltip title="Edit">
-                <IconButton
-                  onClick={() => {
-                    const {
-                      context,
-                      example,
-                      word,
-                      images: { back, front },
-                    } = vocabCard;
-                    setEdit({ context, back, example, front, word });
-                    field.onChange([
-                      ...form
-                        .getValues()
-                        .vocabularyCards.filter((c) => c.word !== word),
-                    ]);
-                  }}
-                >
-                  <Edit className="h-4 w-4" />
-                </IconButton>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={"icon"}
+                    customeColor={"infoIcon"}
+                    onClick={() => {
+                      const {
+                        context,
+                        example,
+                        word,
+                        images: { back, front },
+                      } = vocabCard;
+                      setEdit({ context, back, example, front, word });
+                      field.onChange([
+                        ...form
+                          .getValues()
+                          .vocabularyCards.filter((c) => c.word !== word),
+                      ]);
+                    }}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Edit
+                </TooltipContent>
               </Tooltip>
-              <Tooltip title="Delete">
-                <IconButton
-                  onClick={() =>
-                    field.onChange(
-                      form
-                        .getValues()
-                        .vocabularyCards.filter(
-                          (c) => c.word !== vocabCard.word
-                        )
-                    )
-                  }
-                  className="text-error hover:bg-red-100"
-                >
-                  <Trash className="h-4 w-4" />
-                </IconButton>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={"icon"}
+                    customeColor={"destructiveIcon"}
+                    onClick={() =>
+                      field.onChange(
+                        form
+                          .getValues()
+                          .vocabularyCards.filter(
+                            (c) => c.word !== vocabCard.word
+                          )
+                      )
+                    }
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Delete
+                </TooltipContent>
               </Tooltip>
             </div>
           </div>

@@ -23,7 +23,7 @@ import { AlertModal } from "../modals/AlertModal";
 import { Input } from "./input";
 import { Typography } from "./Typoghraphy";
 import { Button } from "./button";
-import { ArrowLeft, ArrowRight, Delete } from "lucide-react";
+import { ArrowLeft, ArrowRight, Trash } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -99,13 +99,13 @@ export function DataTable<TData, TValue>({
       )}
       <div className="whitespace-nowrap grid">
         {table.getSelectedRowModel().rows.length > 0 && (
-          <div className="flex w-full flex-1 justify-between px-4 pb-4 text-sm text-muted-foreground">
+          <div className="flex w-full flex-1 justify-between px-4 pb-4 text-sm text-muted">
             <Typography>
               {table.getFilteredSelectedRowModel().rows.length} of{" "}
               {table.getFilteredRowModel().rows.length} row(s) selected.
             </Typography>
-            <Button variant={"icon"} onClick={handleOpen} color="warning">
-              <Delete />
+            <Button variant={"icon"} onClick={handleOpen} customeColor={"destructiveIcon"}>
+              <Trash />
             </Button>
           </div>
         )}

@@ -1,4 +1,3 @@
-import { Typography } from "@mui/material";
 import {
   useControlledPracticeMultichoiceStore,
 } from "@/zustand/store";
@@ -8,6 +7,7 @@ import TextToSpeech from "@/components/TextToSpeech";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Question } from "@prisma/client";
+import { Typography } from "../ui/Typoghraphy";
 
 const QuestionCard = ({ question }: { question: Question }) => {
   const { setAnswer, questions, submission } =

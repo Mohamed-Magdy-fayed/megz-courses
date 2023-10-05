@@ -1,17 +1,14 @@
-import { TransparentButton } from "@/components/ui/Buttons";
-import { ConceptTitle } from "@/components/ui/Typoghraphy";
+import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { api } from "@/lib/api";
-import { SvgIcon } from "@mui/material";
-import FileUploadOutlinedIcon from "@mui/icons-material/FileUploadOutlined";
-import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import { useState } from "react";
-import { PlusIcon } from "lucide-react";
+import { FileDown, FileUp, PlusIcon } from "lucide-react";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/layouts/AppLayout";
 import StudentForm from "@/components/studentComponents/StudentForm";
 import StudentClient from "@/components/studentComponents/StudentClient";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const StudentsPage = () => {
   const { data, isLoading, isError } = api.users.getUsers.useQuery({
@@ -27,23 +24,31 @@ const StudentsPage = () => {
             <div className="flex flex-col gap-2">
               <ConceptTitle>Students</ConceptTitle>
               <div className="flex items-center gap-2">
-                <TransparentButton>
-                  <SvgIcon fontSize="small">
-                    <FileDownloadOutlinedIcon />
-                  </SvgIcon>
-                  Import
-                </TransparentButton>
-                <TransparentButton>
-                  <SvgIcon fontSize="small">
-                    <FileUploadOutlinedIcon />
-                  </SvgIcon>
-                  Export
-                </TransparentButton>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant={"icon"} customeColor={"infoIcon"}>
+                      <FileDown />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <Typography>Import</Typography>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant={"icon"} customeColor={"infoIcon"}>
+                      <FileUp />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <Typography>Export</Typography>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </div>
-            <Button onClick={() => setIsOpen(true)}>
+            <Button onClick={() => setIsOpen(true)} customeColor={"primary"}>
               <PlusIcon className="mr-2"></PlusIcon>
-              Add
+              <Typography variant={"buttonText"}>Add</Typography>
             </Button>
           </div>
           {isOpen && (

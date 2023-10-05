@@ -4,6 +4,7 @@ import { Typography } from "@/components/ui/Typoghraphy";
 import { Progress } from "@/components/ui/progress";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 export default function StatesOverview() {
   const { data: salesAgents } = api.salesAgents.getSalesAgents.useQuery()
@@ -83,12 +84,7 @@ export default function StatesOverview() {
             </Typography>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
-            <Typography variant="bodyText" className={cn("!text-3xl font-bold", state.textColor)}>
-              {!state.marker?.after && state.marker?.value}
-              {state.value > 1000 ? state.value / 1000 : state.value}
-              {state.value > 1000 ? "k" : ""}
-              {state.marker?.after && state.marker?.value}
-            </Typography>
+            <Counter state={state} target={state.value}></Counter>
             {state.difference && (
               <div className="flex items-center gap-2">
                 <Typography
@@ -129,4 +125,31 @@ export default function StatesOverview() {
       ))}
     </>
   );
+}
+
+const Counter = ({ state, target }: { state: any, target: number }) => {
+  const [current, setCurrent] = useState(0)
+
+  useEffect(() => {
+    const ticker = setInterval(() => {
+      setCurrent(prev => {
+        if (prev > target) {
+          clearInterval(ticker)
+          return target
+        }
+        return target / 1000 > 1 ? prev + 1000 : prev + 10
+      })
+    }, 20)
+
+    return () => clearInterval(ticker)
+  }, [target])
+
+  return (
+    <Typography variant="bodyText" className={cn("!text-3xl font-bold", state.textColor)}>
+      {!state.marker?.after && state.marker?.value}
+      {current > 1000 ? current / 1000 : current}
+      {current > 1000 ? "k" : ""}
+      {state.marker?.after && state.marker?.value}
+    </Typography>
+  )
 }

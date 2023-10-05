@@ -1,16 +1,30 @@
-import { useState } from "react";
 import { columns } from "./DatabaseColumn";
 import { PotintialCustomer } from "@prisma/client";
-import { DatabaseTable } from "./DatabaseTable";
+import { DataTable } from "../ui/DataTable";
 
 const DatabaseClient = ({ data }: { data: PotintialCustomer[] }) => {
-  const [customers, setCustomers] = useState<PotintialCustomer[]>([]);
+
+  const formattedData = data.map(({
+    facebookUserId,
+    firstName,
+    id,
+    lastName,
+    picture,
+  }) => ({
+    id,
+    firstName,
+    lastName,
+    picture: picture || "",
+    facebookUserId,
+  }))
 
   return (
-    <DatabaseTable
+    <DataTable
       columns={columns}
-      data={data}
-      setCustomers={setCustomers}
+      data={formattedData}
+      setUsers={() => { }}
+      onDelete={() => { }}
+      search={{ key: "firstName", label: "Name" }}
     />
   );
 };

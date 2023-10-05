@@ -262,7 +262,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
           <div className="flex w-full justify-end gap-4 self-end p-4">
             <Button
               disabled={loading}
-              variant="destructive"
+              customeColor="destructive"
               onClick={() => setIsOpen(false)}
               type="button"
             >
@@ -270,7 +270,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
             </Button>
             <Button
               disabled={loading}
-              variant="secondary"
+              customeColor="secondary"
               type="reset"
               onClick={() => form.reset()}
             >

@@ -214,7 +214,7 @@ const UserForm: React.FC<UserFormProps> = ({ setIsOpen }) => {
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger className="pl-8">
+                      <SelectTrigger className="pl-8 bg-white">
                         <SelectValue
                           defaultValue={field.value}
                           placeholder="Select user type"
@@ -235,7 +235,7 @@ const UserForm: React.FC<UserFormProps> = ({ setIsOpen }) => {
           <div className="flex w-full justify-end gap-4 self-end p-4">
             <Button
               disabled={loading}
-              variant="destructive"
+              customeColor="destructive"
               onClick={() => setIsOpen(false)}
               type="button"
             >
@@ -243,7 +243,7 @@ const UserForm: React.FC<UserFormProps> = ({ setIsOpen }) => {
             </Button>
             <Button
               disabled={loading}
-              variant="secondary"
+              customeColor="secondary"
               type="reset"
               onClick={() => form.reset()}
             >

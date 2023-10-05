@@ -1,7 +1,7 @@
-import { Typography } from "@mui/material";
 import FlipCard from "./FlipCard";
 import TextToSpeech from "../TextToSpeech";
 import { FC } from "react";
+import { Typography } from "../ui/Typoghraphy";
 
 export interface VocabCard {
   word: string;

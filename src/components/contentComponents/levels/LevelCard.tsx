@@ -1,7 +1,6 @@
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
-import { IconButton, Tooltip, Typography } from "@mui/material";
 import { Copy, Edit, Edit2, Trash } from "lucide-react";
 import { useRouter } from "next/router";
 import { Separator } from "@/components/ui/separator";
@@ -9,6 +8,8 @@ import { useToastStore } from "@/zustand/store";
 import { useState } from "react";
 import CardsSkeleton from "@/components/layout/CardsSkeleton";
 import LessonRow from "./LessonRow";
+import { Typography } from "@/components/ui/Typoghraphy";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const LevelCard = ({ id }: { id: string }) => {
   const { data } = api.levels.getById.useQuery({
@@ -39,60 +40,70 @@ const LevelCard = ({ id }: { id: string }) => {
 
   return (
     <div>
-      <PaperContainer>
+      <PaperContainer className="flex flex-col h-full">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-2">
             <div className="flex flex-col gap-2">
-              <Typography>{level.name}</Typography>
+              <Typography variant={"secondary"}>{level.name}</Typography>
               <Typography className="text-xs font-bold text-primary">
                 {level.code}
               </Typography>
             </div>
-            <Tooltip title="Edit Level">
-              <IconButton
-                onClick={() => {
-                  router.push(`/content/levels/${level.id}`);
-                }}
-              >
-                <Edit2 className="h-4 w-4" />
-              </IconButton>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={"icon"}
+                  customeColor={"mutedIcon"}
+                  onClick={() => router.push(`/content/levels/${level.id}`)}
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                Edit Level
+              </TooltipContent>
             </Tooltip>
           </div>
-          <Tooltip title="Delete Level">
-            <IconButton
-              disabled={loading}
-              className="text-error hover:bg-red-100 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-600 disabled:hover:bg-slate-200"
-              onClick={() => handleDelete(level.id)}
-            >
-              <Trash className="h-4 w-4" />
-            </IconButton>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={"icon"}
+                customeColor={"destructiveIcon"}
+                onClick={() => handleDelete(level.id)}
+              >
+                <Trash className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              Delete Level
+            </TooltipContent>
           </Tooltip>
         </div>
         <Separator />
         {level.lessons.length === 0 && (
-          <div className="p-4">
-            <Typography>No lessons added yet</Typography>
+          <div className="p-4 flex-grow">
+            <Typography variant={"primary"}>No lessons added yet</Typography>
           </div>
         )}
         {level.lessons.map((lesson, i) => (
-          <>
+          <div key={lesson.id}>
             {i !== 0 && <Separator />}
             <LessonRow key={level.id} lesson={lesson} />
-          </>
+          </div>
         ))}
         <Separator />
         <div className="flex w-full p-4">
-          <Button variant="ghost" type="button">
-            <Copy className="mr-2 h-4 w-4" />
-            Dublicate
+          <Button customeColor="foregroundOutlined" type="button" variant={"outline"}>
+            <Copy className="h-4 w-4" />
+            <Typography>Dublicate</Typography>
           </Button>
           <Button
-            variant="ghost"
+            customeColor="primary"
             className="ml-auto"
             onClick={() => router.push(`/content/levels/${level.id}`)}
           >
-            <Edit className="mr-2 h-4 w-4" />
-            Configure lessons
+            <Edit className="h-4 w-4" />
+            <Typography>Configure levels</Typography>
           </Button>
         </div>
       </PaperContainer>

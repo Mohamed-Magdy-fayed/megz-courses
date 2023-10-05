@@ -1,15 +1,16 @@
 import { cn } from "@/lib/utils";
 import { VariantProps, cva } from "class-variance-authority";
-import React, { FC, HTMLProps } from "react";
 
-interface ConceptTitleProps {
+interface ConceptTitleProps extends TypographyProps {
   children: React.ReactNode;
 }
 
-export function ConceptTitle({ children }: ConceptTitleProps) {
+export function ConceptTitle({ children, className, ...rest }: ConceptTitleProps) {
   return (
     <Typography
-      className={`m-0 font-["Plus_Jakarta_Sans",_sans-serif] text-2xl font-bold leading-5 md:text-3xl lg:text-4xl`}
+      variant={"secondary"}
+      className={cn(`text-2xl font-bold leading-5 md:text-3xl lg:text-4xl`, className)}
+      {...rest}
     >
       {children}
     </Typography>

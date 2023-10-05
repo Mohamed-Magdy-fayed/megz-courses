@@ -6,13 +6,12 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Copy, MoreHorizontal, Trash } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { Copy, Trash, SearchSlash, MoreVertical } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useToastStore } from "@/zustand/store";
 import { AlertModal } from "../modals/AlertModal";
 import { api } from "@/lib/api";
-import { ViewComfy } from "@mui/icons-material";
 
 interface CellActionProps {
     id: string;
@@ -70,9 +69,8 @@ const CellAction: React.FC<CellActionProps> = ({ id, assigneeId, code }) => {
             />
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open meny</span>
-                        <MoreHorizontal className="w-4 h-4" />
+                    <Button customeColor="mutedIcon" variant={"icon"} >
+                        <MoreVertical className="w-4 h-4" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -82,7 +80,7 @@ const CellAction: React.FC<CellActionProps> = ({ id, assigneeId, code }) => {
                             router.push(`/ops/${id}`)
                         }
                     >
-                        <ViewComfy className="w-4 h-4 mr-2" />
+                        <SearchSlash className="w-4 h-4 mr-2" />
                         View
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={onCopy}>

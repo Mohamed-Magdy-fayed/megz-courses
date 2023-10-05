@@ -1,7 +1,9 @@
 import { api } from "@/lib/api"
 import { getInitials } from "@/lib/getInitials"
-import { Avatar } from "@mui/material"
 import { FC } from "react"
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
+import { Typography } from "../ui/Typoghraphy"
+import Link from "next/link"
 
 interface AssigneeCellProps {
     assigneeId: string
@@ -12,12 +14,15 @@ const AssigneeCell: FC<AssigneeCellProps> = ({ assigneeId }) => {
     return (
         <div>
             {isLoading ? <>Loading...</> : isError ? <>No Assignee</> : (
-                <div className="flex flex-row gap-4 items-center">
-                    <Avatar src={`${data.user?.image}` || ""}>
-                        {getInitials(`${data.user?.name}` || "")}
+                <Link href={`/account/${assigneeId}`} className="flex flex-row gap-4 items-center hover:text-primary">
+                    <Avatar>
+                        <AvatarImage src={`${data.user?.image}`} />
+                        <AvatarFallback>
+                            {getInitials(`${data.user?.name}`)}
+                        </AvatarFallback>
                     </Avatar>
-                    {data.user?.email}
-                </div>
+                    <Typography className="font-normal">{data.user?.email}</Typography>
+                </Link>
             )}
         </div>
     )

@@ -1,16 +1,17 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import AssigneeCell from "./AssigneeCell";
-import { Typography } from "@mui/material";
 import CellAction from "./ActionCell";
 import Link from "next/link";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { Typography } from "../ui/Typoghraphy";
+import { SeverityPill } from "../overview/SeverityPill";
 
 export type SalesOperationColumn = {
   id: string,
   assignee: string,
   code: string,
-  status: string,
+  status: "created" | "assigned" | "ongoing" | "completed" | "cancelled",
   lastAction: string,
 }
 
@@ -38,14 +39,14 @@ export const columns: ColumnDef<SalesOperationColumn>[] = [
     accessorKey: "code",
     header: "Code",
     cell: ({ row }) => (
-        <Tooltip>
-          <TooltipTrigger>
-            <Link className="in-table-link" href={`/ops/${row.original.id}`}>{row.original.code}</Link>
-          </TooltipTrigger>
-          <TooltipContent className="bg-primary/20">
-            Process operation
-          </TooltipContent>
-        </Tooltip>
+      <Tooltip>
+        <TooltipTrigger>
+          <Link className="in-table-link" href={`/ops/${row.original.id}`}>{row.original.code}</Link>
+        </TooltipTrigger>
+        <TooltipContent>
+          Process operation
+        </TooltipContent>
+      </Tooltip>
     )
   },
   {
@@ -56,6 +57,30 @@ export const columns: ColumnDef<SalesOperationColumn>[] = [
   {
     accessorKey: "status",
     header: "Status",
+    cell: ({ row }) => {
+      const color = () => {
+        switch (row.original.status) {
+          case "assigned":
+            return "secondary";
+          case "cancelled":
+            return "destructive";
+          case "completed":
+            return "success";
+          case "created":
+            return "primary";
+          case "ongoing":
+            return "info";
+          default:
+            return "muted";
+        }
+      }
+
+      return (
+        <SeverityPill className="w-full" color={`${color()}`}>
+          {row.original.status}
+        </SeverityPill>
+      )
+    }
   },
   {
     accessorKey: "lastAction",
@@ -64,7 +89,7 @@ export const columns: ColumnDef<SalesOperationColumn>[] = [
   {
     id: "actions",
     header: () => (
-      <Typography>Actions</Typography>
+      <Typography variant={"secondary"}>Actions</Typography>
     ),
     cell: ({ row }) => <CellAction
       id={row.original.id}

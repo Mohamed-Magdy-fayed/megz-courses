@@ -1,13 +1,14 @@
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
-import { IconButton, Tooltip, Typography } from "@mui/material";
 import { Edit, Edit2, Trash, X } from "lucide-react";
 import { useRouter } from "next/router";
 import { MaterialItem } from "@prisma/client";
 import { useToastStore } from "@/zustand/store";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
+import { Typography } from "@/components/ui/Typoghraphy";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const MaterialCard = ({ material }: { material: MaterialItem }) => {
   const deleteMaterialMutation =
@@ -39,30 +40,43 @@ const MaterialCard = ({ material }: { material: MaterialItem }) => {
             <div className="flex flex-col gap-2">
               <Typography>{material.title}</Typography>
             </div>
-            <Tooltip title="Edit Material">
-              <IconButton
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={"icon"}
+                  customeColor={"mutedIcon"}
+                  onClick={() => router.push(`/content/materials/${material.id}`)}
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                Edit Material
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={"icon"}
+                customeColor={"destructiveIcon"}
                 onClick={() => {
                   router.push(`/content/materials/${material.id}`);
                 }}
               >
-                <Edit2 className="h-4 w-4" />
-              </IconButton>
-            </Tooltip>
-          </div>
-          <Tooltip title="Delete Material">
-            <IconButton
-              disabled={loading}
-              className="text-error hover:bg-red-100 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-600 disabled:hover:bg-slate-200"
-              onClick={() => handleDelete(material.id)}
-            >
-              <Trash className="h-4 w-4" />
-            </IconButton>
+                <Trash className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              Delete Material
+            </TooltipContent>
           </Tooltip>
         </div>
         <Separator />
         <div className="flex w-full p-4">
           <Button
-            variant="ghost"
+            variant="outline"
+            customeColor="foregroundOutlined"
             onClick={() =>
               router.push(`/content/materials/${material.id}/show`)
             }
@@ -71,7 +85,7 @@ const MaterialCard = ({ material }: { material: MaterialItem }) => {
             Showcase
           </Button>
           <Button
-            variant="ghost"
+            customeColor="primary"
             className="ml-auto"
             onClick={() => router.push(`/content/materials/${material.id}`)}
           >
