@@ -16,8 +16,8 @@ import {
 } from "@/components/ui/popover"
 import { Dispatch, FC, SetStateAction, useState } from "react"
 import { api } from "@/lib/api"
-import { CircularProgress } from "@mui/material"
 import { ScrollArea } from "./ui/scroll-area"
+import Spinner from "./Spinner"
 
 interface MultiSelectProps {
     loading: boolean
@@ -58,7 +58,7 @@ const MultiSelectCourses: FC<MultiSelectProps> = ({ courses, setCourses, loading
                         <ScrollArea>
                             {isLoading ? (
                                 <div className="grid place-content-center">
-                                    <CircularProgress></CircularProgress>
+                                    <Spinner></Spinner>
                                 </div>
                             ) : isError ? (
                                 <>Error!</>

@@ -18,6 +18,7 @@ export default function CustomInput({
   value,
   smallGrid,
   label,
+  error,
   ...rest
 }: CustomInputProps & InputProps) {
   return (
@@ -33,7 +34,7 @@ export default function CustomInput({
         {...rest}
       />
       {error && <Typography>{error}</Typography>}
-      
+
     </div>
   );
 }

@@ -7,8 +7,8 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "../ui/button";
 import { SkipForward } from "lucide-react";
-import { Typography } from "@mui/material";
 import { useTutorialStore } from "@/zustand/store";
+import { Typography } from "../ui/Typoghraphy";
 
 interface TutorialPopoverProps {
   isopen: boolean;
@@ -30,7 +30,7 @@ const TutorialPopover: FC<TutorialPopoverProps> = ({
         className={cn(
           "",
           isopen &&
-            `relative before:absolute before:top-[10%] before:aspect-square before:h-[80%] before:animate-ping before:rounded-full before:bg-secondary/20 before:content-[""] after:absolute after:top-[10%] after:aspect-square after:h-[80%] after:animate-spin after:rounded-full after:border-2 after:border-b-0 after:border-r-0 after:border-t-0 after:border-primary after:bg-secondary/20 after:content-[""]`
+          `relative before:absolute before:top-[10%] before:aspect-square before:h-[80%] before:animate-ping before:rounded-full before:bg-secondary/20 before:content-[""] after:absolute after:top-[10%] after:aspect-square after:h-[80%] after:animate-spin after:rounded-full after:border-2 after:border-b-0 after:border-r-0 after:border-t-0 after:border-primary after:bg-secondary/20 after:content-[""]`
         )}
       >
         {children}

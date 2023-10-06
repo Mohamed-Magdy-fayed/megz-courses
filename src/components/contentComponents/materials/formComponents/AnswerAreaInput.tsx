@@ -1,6 +1,5 @@
 import { FC, useState } from "react";
 import { ControllerRenderProps, UseFormReturn } from "react-hook-form";
-import { MaterialsFormValues } from "../MaterialsEditForm";
 import {
   FormControl,
   FormDescription,
@@ -23,6 +22,7 @@ import { AnswerCard } from "@prisma/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { MaterialsFormValues } from "../MaterialsForm";
 
 interface AnswerAreaInputProps {
   field: ControllerRenderProps<MaterialsFormValues, "answerAreas">;

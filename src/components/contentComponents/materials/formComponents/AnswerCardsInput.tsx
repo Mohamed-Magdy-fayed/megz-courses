@@ -1,6 +1,5 @@
 import { Dispatch, FC, SetStateAction, useState } from "react";
 import { ControllerRenderProps, UseFormReturn } from "react-hook-form";
-import { MaterialsFormValues } from "../MaterialsEditForm";
 import {
   FormControl,
   FormItem,
@@ -14,6 +13,7 @@ import { uniqueId } from "lodash";
 import { cn } from "@/lib/utils";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { MaterialsFormValues } from "../MaterialsForm";
 
 interface AnswerCardsInputProps {
   field: ControllerRenderProps<MaterialsFormValues, "answerCards">;
