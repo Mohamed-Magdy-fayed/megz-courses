@@ -47,7 +47,7 @@ export const LatestCourseOverview = () => {
                     </Typography>
                   </div>
                 </div>
-                <Button variant={"icon"} >
+                <Button variant={"icon"} customeColor={"mutedIcon"} >
                   <MoreVertical />
                 </Button>
               </div>

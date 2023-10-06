@@ -1,13 +1,12 @@
 import React from "react";
 import { Typography } from "./ui/Typoghraphy";
 import Link from "next/link";
+import { Button } from "./ui/button";
 
 export default function Copyright(props: any) {
   return (
     <Typography
-      variant="body2"
-      color="text.secondary"
-      align="center"
+      className="text-center w-full"
       {...props}
     >
       {"Copyright © "}
@@ -15,7 +14,7 @@ export default function Copyright(props: any) {
         target="_blank"
         href="https://portfolio-2-iota-brown.vercel.app/"
       >
-        Megz
+        <Button variant={"link"}>Megz</Button>
       </Link>{" "}
       {new Date().getFullYear()}
       {"."}

@@ -259,7 +259,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
             />
           </div>
           <Separator></Separator>
-          <div className="flex w-full justify-end gap-4 self-end p-4">
+          <div className="flex w-full justify-end gap-4 self-end p-4 h-12">
             <Button
               disabled={loading}
               customeColor="destructive"

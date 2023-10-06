@@ -1,5 +1,5 @@
 import { api } from "@/lib/api";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ImageUpload from "@/components/ui/ImageUpload";
@@ -72,6 +72,24 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
   const toast = useToastStore();
   const addUserMutation = api.users.createUser.useMutation();
   const trpcUtils = api.useContext();
+
+
+  // useEffect(() => {
+  //   const data: UsersFormValues[] = []
+  //   for (let i = 0; i < 30; i++) {
+  //     data.push({
+  //       email: `mail${i}@email.com`,
+  //       name: `student${i}`,
+  //       password: "1234",
+  //       userType: "student",
+  //     })
+  //   }
+
+  //   data.map(d => {
+  //     addUserMutation.mutate(d)
+  //     return "done"
+  //   })
+  // }, [])
 
   const onSubmit = (data: UsersFormValues) => {
     setLoading(true);

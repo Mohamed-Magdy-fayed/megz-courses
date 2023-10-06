@@ -185,16 +185,11 @@ model Order {
     createdAt        DateTime       @default(now())
 }
 
-model Address {
-    id        String   @id @default(auto()) @map("_id") @db.ObjectId
-    city      String?
-    country   String?
-    state     String?
-    street    String?
-    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-    userId    String   @unique @db.ObjectId
-    updatedAt DateTime @updatedAt
-    createdAt DateTime @default(now())
+type Address {
+    city    String?
+    country String?
+    state   String?
+    street  String?
 }
 
 enum SalesOperationStatus {

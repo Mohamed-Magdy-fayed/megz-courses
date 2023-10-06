@@ -19,7 +19,6 @@ export const usersRouter = createTRPCRouter({
           userType,
         },
         include: {
-          address: true,
           orders: true,
         },
       });
@@ -35,7 +34,7 @@ export const usersRouter = createTRPCRouter({
     .query(async ({ ctx, input: { id } }) => {
       const user = await ctx.prisma.user.findUnique({
         where: { id },
-        include: { address: true, orders: true },
+        include: { orders: true },
       });
       return { user };
     }),
@@ -50,7 +49,7 @@ export const usersRouter = createTRPCRouter({
         where: {
           email,
         },
-        include: { address: true, orders: true },
+        include: { orders: true },
       });
 
       return { user };
@@ -89,17 +88,12 @@ export const usersRouter = createTRPCRouter({
           phone: input.phone,
           image: input.image,
           address: {
-            create: {
-              state: input.state,
-              street: input.street,
-              city: input.city,
-              country: input.country,
-            },
+            state: input.state,
+            street: input.street,
+            city: input.city,
+            country: input.country,
           },
           userType: input.userType,
-        },
-        include: {
-          address: true,
         },
       });
 
@@ -121,9 +115,6 @@ export const usersRouter = createTRPCRouter({
         },
         data: {
           image: url,
-        },
-        include: {
-          address: true,
         },
       });
 
@@ -155,16 +146,11 @@ export const usersRouter = createTRPCRouter({
             email,
             phone,
             address: {
-              update: {
-                state,
-                country,
-                street,
-                city,
-              },
+              state,
+              country,
+              street,
+              city,
             },
-          },
-          include: {
-            address: true,
           },
         });
 

@@ -12,11 +12,13 @@ import { Typography } from "../ui/Typoghraphy";
 import { Separator } from "../ui/separator";
 import { useCallback, useEffect, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
+import Spinner from "../Spinner";
 
 export default function MegzTopBar() {
   const session = useSession();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [isMounted, setisMounted] = useState(false);
   const navStore = useNavStore((state) => state);
   const pathname = usePathname();
@@ -26,6 +28,11 @@ export default function MegzTopBar() {
       navStore.closeNav();
     }
   }, [navStore.opened]);
+
+  const handleLogout = () => {
+    setLoading(true)
+    signOut()
+  }
 
   useEffect(() => {
     if (!isMounted) setisMounted(true)
@@ -111,8 +118,9 @@ export default function MegzTopBar() {
                 </Typography>
               </div>
               <Separator></Separator>
-              <Button onClick={() => signOut()} className="m-2 min-w-[10rem]">
-                <Typography variant={"buttonText"}>Sign out</Typography>
+              <Button disabled={loading} onClick={handleLogout} className="m-2 min-w-[10rem] relative">
+                {loading && <Spinner className="w-6 h-6 absolute" />}
+                <Typography className={cn(loading && "opacity-0")} variant={"buttonText"}>Sign out</Typography>
               </Button>
             </DropdownMenuContent>
           </DropdownMenu>

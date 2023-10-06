@@ -1,11 +1,13 @@
-import { Button, Grid, Link, Typography } from "@mui/material";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import RegisterForm from "@/components/RegisterForm";
-import GoogleIcon from "@mui/icons-material/Google";
-import LoginForm from "@/components/LoginForm";
 import Copyright from "@/components/Copyright";
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Typography } from "@/components/ui/Typoghraphy";
+import { Button } from "@/components/ui/button";
+import AuthForm from "@/components/authComponents/AuthForm";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ImageIcon } from "lucide-react";
 
 const AuthenticationPage = () => {
   const [variant, setVariant] = useState<"login" | "register">("login");
@@ -17,46 +19,52 @@ const AuthenticationPage = () => {
   }, [session.status]);
 
   return (
-    <main className="min-h-screen bg-slate-50 p-4">
-      {variant === "register" ? (
-        <RegisterForm></RegisterForm>
-      ) : (
-        <LoginForm></LoginForm>
-      )}
-      <Grid container>
-        <Grid item xs>
-          <Link href="#" variant="body2">
-            Forgot password?
-          </Link>
-        </Grid>
-        <Grid item className="flex items-center gap-2">
-          <Typography variant="body2">
-            {variant === "login"
-              ? "Don't have an account?"
-              : "Already have an account?"}
-          </Typography>
+    <main className="min-h-screen bg-background p-4 grid gap-8 grid-cols-1 lg:grid-cols-2">
+      <div className="space-y-4 min-w-[24rem] mx-auto">
+        {variant === "register" ? (
+          <AuthForm authType="register"></AuthForm>
+        ) : (
+          <AuthForm authType="login"></AuthForm>
+        )}
+        <div className="grid place-content-center gap-2">
           <Button
-            disableRipple
-            className="bg-transparent normal-case underline decoration-primary/30 hover:bg-transparent hover:underline hover:decoration-primary/70"
-            onClick={() =>
-              setVariant(variant === "login" ? "register" : "login")
-            }
+            variant={"outline"}
+            customeColor={"destructiveOutlined"}
+            onClick={() => signIn("google")}
           >
-            <Typography variant="body2">
-              {variant === "login" ? "Sign Up" : "Sign In"}
-            </Typography>
+            Sign in with Google
           </Button>
-        </Grid>
-      </Grid>
-      <Copyright sx={{ mt: 8, mb: 4 }} />
-      <div className="mt-8 grid place-content-center border-t border-t-slate-700 pt-8">
-        <Button
-          className="flex items-center gap-4 bg-slate-200 normal-case text-slate-700 hover:bg-slate-300"
-          onClick={() => signIn("google")}
-        >
-          <GoogleIcon className="text-[#DB4437]"></GoogleIcon>
-          Sign in with Google
-        </Button>
+          <div>
+            <Link href="/">
+              Forgot password?
+            </Link>
+          </div>
+          <div className="flex items-center">
+            <Typography>
+              {variant === "login"
+                ? "Don't have an account?"
+                : "Already have an account?"}
+            </Typography>
+            <Button
+              variant="link"
+              onClick={() =>
+                setVariant(variant === "login" ? "register" : "login")
+              }
+            >
+              <Typography >
+                {variant === "login" ? "Sign Up" : "Sign In"}
+              </Typography>
+            </Button>
+          </div>
+        </div>
+      </div>
+      <Skeleton className="w-full h-full lg:grid place-content-center hidden" >
+        <ImageIcon size={200}></ImageIcon>
+      </Skeleton>
+      <div className="lg:col-span-2">
+        <div className="grid place-content-center border-t border-t-slate-700 pt-8">
+          <Copyright />
+        </div>
       </div>
     </main>
   );

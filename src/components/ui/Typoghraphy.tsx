@@ -22,6 +22,7 @@ const typographyVariants = cva(
   {
     variants: {
       variant: {
+        default: "",
         primary: "md:text-4xl text-2xl font-extrabold leading-loose tracking-wide",
         secondary: "lg:text-1xl md:text-lg text-base font-semibold leading-tight tracking-wide",
         menuButton: "lg:text-xl md:text-lg text-base font-medium leading-4 tracking-tight uppercase",
@@ -30,7 +31,7 @@ const typographyVariants = cva(
       },
     },
     defaultVariants: {
-      variant: "bodyText",
+      variant: "default",
     },
   }
 )
