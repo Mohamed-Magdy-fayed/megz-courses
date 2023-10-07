@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Badge, BadgeProps } from "../ui/badge";
 import { cn } from "@/lib/utils";
 
-interface SeverityPillProps extends BadgeProps {
+export interface SeverityPillProps extends BadgeProps {
   color: "primary" | "secondary" | "destructive" | "info" | "success" | "background" | "foreground" | "muted";
   children: ReactNode;
 }

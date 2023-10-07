@@ -34,7 +34,7 @@ const SelectField: FC<SelectFieldProps> = ({ placeholder, listTitle, data, value
                             {placeholder}
                         </Typography>
                     ) : data.filter(entry => values.includes(entry.value)).map(item => (
-                        <Typography className='bg-primary/10 whitespace-nowrap truncate rounded-full px-2 text-sm'>
+                        <Typography key={item.label} className='bg-primary/10 whitespace-nowrap truncate rounded-full px-2 text-sm'>
                             {item.label}
                         </Typography>
                     ))}
@@ -48,7 +48,6 @@ const SelectField: FC<SelectFieldProps> = ({ placeholder, listTitle, data, value
                         value={searchQuery}
                         onChange={(e) => {
                             setSearchQuery(e.target.value)
-                            console.log(data.map(item => item.label));
                             const filteredLabels = advancedSearch(e.target.value, data.map(item => item.label))
 
                             setFilteredData(

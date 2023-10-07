@@ -25,6 +25,10 @@ export const env = createEnv({
     GOOGLE_CLIENT_SECRET: z.string(),
     GMAIL_EMAIL: z.string().email(),
     GMAIL_PASS: z.string(),
+    STRIPE_WEBHOOK_SECRET: z.string(),
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string(),
+    STRIPE_SECRET_KEY: z.string(),
+    STRIPE_PAYMENT_DESCRIPTION: z.string(),
   },
 
   /**
@@ -49,6 +53,10 @@ export const env = createEnv({
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     GMAIL_EMAIL: process.env.GMAIL_EMAIL,
     GMAIL_PASS: process.env.GMAIL_PASS,
+    STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+    STRIPE_PAYMENT_DESCRIPTION: process.env.STRIPE_PAYMENT_DESCRIPTION,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.

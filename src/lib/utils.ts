@@ -19,5 +19,5 @@ export const orderCodeGenerator = () => {
 }
 
 export const formatPrice = (price: number) => {
-  return `$${(price / 100).toFixed(2)}`
+  return `EGP${(price / 100).toFixed(2)}`
 }

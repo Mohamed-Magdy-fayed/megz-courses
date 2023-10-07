@@ -1,6 +1,14 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { orderCodeGenerator } from "@/lib/utils";
+import { CURRENCY } from "@/config";
+import { TRPCError } from "@trpc/server";
+import Stripe from 'stripe'
+import { formatAmountForStripe } from "@/lib/stripeHelpers";
+import { env } from "@/env.mjs";
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: '2023-08-16',
+})
 
 export const ordersRouter = createTRPCRouter({
     getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -49,10 +57,34 @@ export const ordersRouter = createTRPCRouter({
                 return accumulator + value;
             }, 0);
 
+            // Create Checkout Sessions from body params.
+            const params: Stripe.Checkout.SessionCreateParams = {
+                submit_type: 'pay',
+                payment_method_types: ['card'],
+                line_items: coursesPrice.map(course => ({
+                    price_data: {
+                        currency: CURRENCY,
+                        unit_amount: formatAmountForStripe(course.price, CURRENCY),
+                        product_data: {
+                            name: course.name,
+                        },
+                    },
+                    quantity: 1
+                })),
+                mode: 'payment',
+                success_url: `${env.NEXTAUTH_URL}/payment_success?session_id={CHECKOUT_SESSION_ID}`,
+                cancel_url: `${env.NEXTAUTH_URL}/payment_fail`,
+            }
+            const checkoutSession: Stripe.Checkout.Session =
+                await stripe.checkout.sessions.create(params)
+
+            if (!checkoutSession) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "checkoutSession failed" })
+
             const order = await ctx.prisma.order.create({
                 data: {
                     amount: totalPrice,
                     orderNumber: orderCodeGenerator(),
+                    paymentId: checkoutSession.id,
                     courses: { connect: courses.map(c => ({ id: c })) },
                     salesOperation: { connect: { id: salesOperationId } },
                     user: { connect: { email } },
@@ -66,7 +98,34 @@ export const ordersRouter = createTRPCRouter({
 
             return {
                 order,
+                sessionId: checkoutSession.id,
             };
+        }),
+    payOrder: protectedProcedure
+        .input(
+            z.object({
+                sessionId: z.string(),
+            })
+        )
+        .mutation(async ({ ctx, input: { sessionId } }) => {
+            const order = await ctx.prisma.order.findFirst({
+                where: {
+                    paymentId: sessionId
+                },
+            })
+
+            if (!order?.id) throw new TRPCError({ code: "BAD_REQUEST", message: "incorrect information" })
+
+            const updatedOrder = await ctx.prisma.order.update({
+                where: {
+                    id: order.id
+                },
+                data: {
+                    status: "paid",
+                }
+            })
+
+            return { updatedOrder }
         }),
     editOrder: protectedProcedure
         .input(
