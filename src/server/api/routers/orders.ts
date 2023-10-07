@@ -72,8 +72,8 @@ export const ordersRouter = createTRPCRouter({
                     quantity: 1
                 })),
                 mode: 'payment',
-                success_url: `${env.NEXTAUTH_URL}/payment_success?session_id={CHECKOUT_SESSION_ID}`,
-                cancel_url: `${env.NEXTAUTH_URL}/payment_fail`,
+                success_url: `${process.env.NEXTAUTH_URL}/payment_success?session_id={CHECKOUT_SESSION_ID}`,
+                cancel_url: `${process.env.NEXTAUTH_URL}/payment_fail`,
             }
             const checkoutSession: Stripe.Checkout.Session =
                 await stripe.checkout.sessions.create(params)
