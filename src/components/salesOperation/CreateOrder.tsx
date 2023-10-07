@@ -53,14 +53,14 @@ const CreateOrder: FC<CreateOrderProps> = ({
             email: email[0],
             salesOperationId
         }, {
-            onSuccess: ({ order: { id, amount, orderNumber, user, courses, createdAt }, sessionId }) => {
+            onSuccess: ({ order: { id, amount, orderNumber, user, courses, createdAt }, paymentLink }) => {
                 const message = render(
                     <Email
                         orderCreatedAt={format(createdAt, "dd MMM yyyy")}
                         userEmail={user.email}
                         orderAmount={`$${(amount / 100).toFixed(2)}`}
                         orderNumber={orderNumber}
-                        paymentLink={`${process.env.NEXTAUTH_URL}/payments?sessionId=${sessionId}`}
+                        paymentLink={paymentLink}
                         customerName={user.name}
                         courses={courses.map(course => ({ courseName: course.name, coursePrice: `$${(course.price / 100).toFixed(2)}` }))}
                     />, { pretty: true }

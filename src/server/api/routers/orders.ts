@@ -98,7 +98,7 @@ export const ordersRouter = createTRPCRouter({
 
             return {
                 order,
-                sessionId: checkoutSession.id,
+                paymentLink: `${process.env.NEXTAUTH_URL}/payments?sessionId=${checkoutSession.id}`
             };
         }),
     payOrder: protectedProcedure

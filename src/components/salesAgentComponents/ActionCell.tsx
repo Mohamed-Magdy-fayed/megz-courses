@@ -89,7 +89,7 @@ const CellAction: React.FC<CellActionProps> = ({ id, assigneeId, code }) => {
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem
                         onClick={() =>
-                            router.push(`/ops/${id}`)
+                            router.push(`/operation/${id}`)
                         }
                     >
                         <SearchSlash className="w-4 h-4 mr-2" />

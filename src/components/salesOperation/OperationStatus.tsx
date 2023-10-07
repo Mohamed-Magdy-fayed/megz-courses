@@ -3,7 +3,7 @@ import { getInitials } from "@/lib/getInitials";
 import { cn } from "@/lib/utils";
 import { Course, Order, SalesAgent, SalesOperation, User } from "@prisma/client";
 import { format } from "date-fns";
-import { Link, Loader } from "lucide-react";
+import { Loader } from "lucide-react";
 import { useState } from "react";
 import { SeverityPill } from "@/components/overview/SeverityPill";
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useToast } from "@/components/ui/use-toast";
+import Link from "next/link";
 
 const OperationStatus = ({ data }: {
     data: (SalesOperation & {
@@ -96,7 +97,7 @@ const OperationStatus = ({ data }: {
                         variant={"outline"}>
                         {isLoading ? <Loader className="animate-spin" size={25} color="inherit" /> : "Cancel"}
                     </Button>
-                ) : (
+                ) : data.status === "completed" ? (
                     <Tooltip>
                         <Link className="group hidden sm:flex items-center gap-4" href={`/account/${data.assignee?.user.id}`}>
                             <Typography className="group-hover:text-primary">
@@ -123,7 +124,7 @@ const OperationStatus = ({ data }: {
                             {data.assignee?.user.email}
                         </TooltipContent>
                     </Tooltip>
-                )}
+                ) : <></>}
             </div>
         </div>
     )
