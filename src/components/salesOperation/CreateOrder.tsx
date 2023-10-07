@@ -8,7 +8,6 @@ import { render } from "@react-email/render"
 import Email from "../email/Email"
 import { format } from "date-fns"
 import { useToast } from "../ui/use-toast"
-import { env } from "@/env.mjs"
 
 interface CreateOrderProps {
     loading: boolean
@@ -61,7 +60,7 @@ const CreateOrder: FC<CreateOrderProps> = ({
                         userEmail={user.email}
                         orderAmount={`$${(amount / 100).toFixed(2)}`}
                         orderNumber={orderNumber}
-                        paymentLink={`${env.NEXTAUTH_URL}/payments?sessionId=${sessionId}`}
+                        paymentLink={`${process.env.NEXTAUTH_URL}/payments?sessionId=${sessionId}`}
                         customerName={user.name}
                         courses={courses.map(course => ({ courseName: course.name, coursePrice: `$${(course.price / 100).toFixed(2)}` }))}
                     />, { pretty: true }
