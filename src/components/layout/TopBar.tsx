@@ -15,6 +15,7 @@ import { Skeleton } from "../ui/skeleton";
 import Spinner from "../Spinner";
 import Modal from "../ui/modal";
 import { DarkModeToggle } from "../dark-mode-toggle";
+import Link from "next/link";
 
 export default function MegzTopBar() {
   const session = useSession();
@@ -82,12 +83,16 @@ export default function MegzTopBar() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="icon" customeColor={"primaryIcon"} >
-            <BellIcon className="w-4 h-4"></BellIcon>
-          </Button>
-          <Button variant="icon" customeColor={"primaryIcon"} >
-            <UserCircle className="w-4 h-4"></UserCircle>
-          </Button>
+          <Link href={`/database`}>
+            <Button variant="icon" customeColor={"primaryIcon"} >
+              <BellIcon className="w-4 h-4"></BellIcon>
+            </Button>
+          </Link>
+          <Link href={`/account`}>
+            <Button variant="icon" customeColor={"primaryIcon"} >
+              <UserCircle className="w-4 h-4"></UserCircle>
+            </Button>
+          </Link>
           <DropdownMenu>
             <Tooltip>
               <TooltipTrigger asChild>
