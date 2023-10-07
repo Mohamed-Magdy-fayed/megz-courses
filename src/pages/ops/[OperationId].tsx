@@ -1,7 +1,6 @@
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
-import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import UserInfoPanel from "@/components/salesOperation/UserInfoPanel";
@@ -11,7 +10,7 @@ import CreateOrder from "@/components/salesOperation/CreateOrder";
 import { Loader } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 
-const OperationPage: NextPage = () => {
+const OperationPage = () => {
     const router = useRouter()
     const id = router.query.operationId as string
     const { data, isLoading, isError } = api.salesOperations.getById.useQuery({ id })
