@@ -12,7 +12,7 @@ import AppLayout from "@/components/layout/AppLayout";
 
 const OperationPage = () => {
     const router = useRouter()
-    const id = router.query.operationId as string
+    const id = router.pathname.split("/ops/")[1] as string
     const { data, isLoading, isError } = api.salesOperations.getById.useQuery({ id })
     const { data: coursesData } = api.courses.getAll.useQuery()
     const { data: usersData } = api.users.getUsers.useQuery({ userType: "student" })
