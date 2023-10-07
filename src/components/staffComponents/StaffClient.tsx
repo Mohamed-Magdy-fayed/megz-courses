@@ -2,9 +2,9 @@ import { api } from "@/lib/api";
 import { useState } from "react";
 import { Address, User } from "@prisma/client";
 import { format } from "date-fns";
-import { useToastStore } from "@/zustand/store";
 import { DataTable } from "../ui/DataTable";
 import { Teacher, columns } from "./StaffColumns";
+import { useToast } from "../ui/use-toast";
 
 export interface Users extends User {
   address: Address | null;
@@ -21,7 +21,7 @@ const StaffClient = ({ data }: { data: Users[] }) => {
     createdAt: format(user.createdAt, "MMMM do, yyyy"),
   }));
 
-  const toast = useToastStore();
+  const { toast } = useToast();
   const deleteMutation = api.users.deleteUser.useMutation();
   const trpcUtils = api.useContext();
 
@@ -30,11 +30,17 @@ const StaffClient = ({ data }: { data: Users[] }) => {
       users.map((user) => user.id),
       {
         onSuccess: () => {
-          toast.info("User(s) deleted");
+          toast({
+            description: "User(s) deleted",
+            variant: 'success'
+          });
           trpcUtils.users.invalidate();
         },
         onError: () => {
-          toast.error("somthing went wrong");
+          toast({
+            description: "somthing went wrong",
+            variant: "destructive"
+          });
         },
       }
     );

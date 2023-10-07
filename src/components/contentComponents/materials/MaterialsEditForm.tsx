@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { useState } from "react";
-import { useToastStore } from "@/zustand/store";
 import { Separator } from "@/components/ui/separator";
 import { useForm } from "react-hook-form";
 import { ArrowLeft } from "lucide-react";
@@ -9,6 +8,7 @@ import { useRouter } from "next/router";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import MaterialsForm, { MaterialsFormValues } from "./MaterialsForm";
 import { Typography } from "@/components/ui/Typoghraphy";
+import { useToast } from "@/components/ui/use-toast";
 
 const EditMaterialsForm = ({ materialId }: { materialId: string }) => {
   const { data } = api.materials.getById.useQuery({ id: materialId });
@@ -42,7 +42,7 @@ const EditMaterialsForm = ({ materialId }: { materialId: string }) => {
   const editMaterialMutation = api.materials.editMaterialItem.useMutation();
   const trpcUtils = api.useContext();
   const router = useRouter();
-  const toast = useToastStore();
+  const { toast } = useToast();
 
   const onSubmit = (data: MaterialsFormValues) => {
     setLoading(true);
@@ -51,13 +51,17 @@ const EditMaterialsForm = ({ materialId }: { materialId: string }) => {
       { ...data, id: materialId },
       {
         onSuccess: ({ updatedmaterialItem }) => {
-          toast.success(
-            `Your material (${updatedmaterialItem.title}) is updated!`
-          );
+          toast({
+            description: `Your material (${updatedmaterialItem.title}) is updated!`,
+            variant: "success"
+          });
           trpcUtils.materials.invalidate().then(() => setLoading(false));
         },
         onError: () => {
-          toast.error("somthing went wrong!");
+          toast({
+            description: "somthing went wrong!",
+            variant: "destructive"
+          });
           setLoading(false);
         },
       }

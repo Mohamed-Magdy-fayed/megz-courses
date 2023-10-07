@@ -10,8 +10,8 @@ import SalesAgentsClient from "@/components/salesAgentComponents/SalesAgentsClie
 import SalesAgentForm from "@/components/salesAgentComponents/SalesAgentForm";
 import SalesOperationsClient from "@/components/salesAgentComponents/SalesOperationsClient";
 import { AssignModal } from "@/components/modals/AssignModal";
-import { useToastStore } from "@/zustand/store";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useToast } from "@/components/ui/use-toast";
 
 const SalesAgentsPage = () => {
   const salesAgents = api.salesAgents.getSalesAgents.useQuery();
@@ -20,7 +20,7 @@ const SalesAgentsPage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [assignIsOpen, setAssingIsOpen] = useState(false);
 
-  const toast = useToastStore()
+  const { toast } = useToast()
   const trpcUtils = api.useContext()
   const createOperationMutation = api.salesOperations.createSalesOperation.useMutation()
   const handleCreateOperation = (assigneeId: string) => {
@@ -29,10 +29,16 @@ const SalesAgentsPage = () => {
       { assigneeId, status: "assigned" },
       {
         onSuccess: (data) => {
-          toast.success(`Operation ID: ${data.salesOperations.code}`)
+          toast({
+            variant: "success",
+            description: `Operation ID: ${data.salesOperations.code}`
+          })
         },
         onError: (error) => {
-          toast.error(`an error occured ${error}`)
+          toast({
+            variant: "destructive",
+            description: `an error occured ${error}`
+          })
         },
         onSettled: () => {
           trpcUtils.invalidate()

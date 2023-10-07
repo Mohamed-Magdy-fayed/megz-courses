@@ -2,11 +2,11 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { X } from "lucide-react";
 import { useState } from "react";
-import { useToastStore } from "@/zustand/store";
 import { Separator } from "@/components/ui/separator";
 import { useForm } from "react-hook-form";
 import { Typography } from "@/components/ui/Typoghraphy";
 import MaterialsForm, { MaterialsFormValues } from "./MaterialsForm";
+import { useToast } from "@/components/ui/use-toast";
 
 const CreateMaterialsForm = ({
     setIsOpen,
@@ -33,7 +33,7 @@ const CreateMaterialsForm = ({
 
     const createMaterialMutation = api.materials.createMaterialItem.useMutation();
     const trpcUtils = api.useContext();
-    const toast = useToastStore();
+    const { toast } = useToast();
 
     const onSubmit = (data: MaterialsFormValues) => {
         setLoading(true);
@@ -42,12 +42,18 @@ const CreateMaterialsForm = ({
             { ...data, lessonId: id },
             {
                 onSuccess: ({ materialItem }) => {
-                    toast.success(`Your new material (${materialItem.title}) is ready!`);
+                    toast({
+                        variant: "success",
+                        description: `Your new material (${materialItem.title}) is ready!`
+                    });
                     trpcUtils.lessons.invalidate();
                     setLoading(false);
                 },
                 onError: () => {
-                    toast.error("somthing went wrong!");
+                    toast({
+                        variant: "destructive",
+                        description: "somthing went wrong!"
+                    });
                     setLoading(false);
                 },
             }

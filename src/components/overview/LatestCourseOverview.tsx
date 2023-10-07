@@ -27,16 +27,16 @@ export const LatestCourseOverview = () => {
               <div className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-4">
                   <div>
-                    {course.image ? (
+                    {/* {course.image ? (
                       <Image
                         width={48}
                         height={48}
                         src={course.image}
                         alt="image"
                         className="rounded" />
-                    ) : (
-                      <Skeleton className="rounded bg-muted h-12 w-12" />
-                    )}
+                    ) : ( */}
+                    <Skeleton className="rounded bg-muted h-12 w-12" />
+                    {/* )} */}
                   </div>
                   <div className="flex flex-col gap-2">
                     <Typography variant={"secondary"}>

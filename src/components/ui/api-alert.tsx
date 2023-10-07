@@ -1,7 +1,8 @@
 import { Copy, Server } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "./alert";
 import { Button } from "./button";
-import { useToastStore } from "@/zustand/store";
+import { } from "@/zustand/store";
+import { useToast } from "./use-toast";
 
 interface ApiAlertProps {
   title: string;
@@ -12,10 +13,13 @@ export const ApiAlert: React.FC<ApiAlertProps> = ({
   description,
   title,
 }) => {
-  const toast = useToastStore()
+  const { toast } = useToast()
   const onCopy = () => {
     navigator.clipboard.writeText(description);
-    toast.success("API route copied to the clipboard");
+    toast({
+      description: "API route copied to the clipboard",
+      variant: "info"
+    });
   };
   return (
     <Alert className="mt-4">

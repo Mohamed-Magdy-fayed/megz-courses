@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useToastStore } from "@/zustand/store";
 import {
   Select,
   SelectContent,
@@ -25,6 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Typography } from "../ui/Typoghraphy";
+import { useToast } from "../ui/use-toast";
 
 const formSchema = z.object({
   name: z.string().nonempty(),
@@ -69,39 +69,27 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
     defaultValues,
   });
 
-  const toast = useToastStore();
   const addUserMutation = api.users.createUser.useMutation();
   const trpcUtils = api.useContext();
-
-
-  // useEffect(() => {
-  //   const data: UsersFormValues[] = []
-  //   for (let i = 0; i < 30; i++) {
-  //     data.push({
-  //       email: `mail${i}@email.com`,
-  //       name: `student${i}`,
-  //       password: "1234",
-  //       userType: "student",
-  //     })
-  //   }
-
-  //   data.map(d => {
-  //     addUserMutation.mutate(d)
-  //     return "done"
-  //   })
-  // }, [])
+  const { toast } = useToast()
 
   const onSubmit = (data: UsersFormValues) => {
     setLoading(true);
     addUserMutation.mutate(data, {
       onSuccess: (data) => {
         trpcUtils.invalidate();
-        toast.success(`User created with email: ${data.user.email}`);
+        toast({
+          variant: "success",
+          description: `User created with email: ${data.user.email}`
+        })
         setIsOpen(false);
         setLoading(false);
       },
       onError: () => {
-        toast.error("Something went wrong.");
+        toast({
+          variant: "destructive",
+          description: "Something went wrong."
+        })
         setLoading(false);
       },
     });

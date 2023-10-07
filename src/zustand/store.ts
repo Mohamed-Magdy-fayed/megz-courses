@@ -1,27 +1,6 @@
-import type { AlertColor } from "@mui/material";
 import { Question } from "@prisma/client";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-
-interface ToastState {
-  open: boolean;
-  msg: string;
-  type: AlertColor;
-  success: (msg: string) => void;
-  error: (msg: string) => void;
-  info: (msg: string) => void;
-  close: () => void;
-}
-
-export const useToastStore = create<ToastState>()((set) => ({
-  open: false,
-  msg: "",
-  type: "info",
-  success: (msg) => set((state) => ({ open: true, msg, type: "success" })),
-  error: (msg) => set((state) => ({ open: true, msg, type: "error" })),
-  info: (msg) => set((state) => ({ open: true, msg, type: "info" })),
-  close: () => set(() => ({ open: false })),
-}));
 
 export type ActiveLinkType =
   | ""

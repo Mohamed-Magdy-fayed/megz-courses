@@ -2,7 +2,6 @@ import {
   AnswerArea as AnswerAreaType,
   AnswerCard as AnswerCardType,
   useDraggingStore,
-  useToastStore,
 } from "@/zustand/store";
 import { useStore } from "zustand";
 import { Button } from "@/components/ui/button";
@@ -13,6 +12,7 @@ import { FC, useEffect } from "react";
 import AnswerCard from "./AnswerCard";
 import AnswerArea from "./AnswerArea";
 import { Typography } from "../ui/Typoghraphy";
+import { useToast } from "@/components/ui/use-toast";
 
 interface FirstTestContainerProps {
   DBcards: AnswerCardType[];
@@ -38,24 +38,25 @@ const FirstTestContainer: FC<FirstTestContainerProps> = ({
     clearAnswers,
     submit,
   } = useStore(useDraggingStore);
-  const toast = useToastStore();
+  const { toast } = useToast()
 
   const handleTestSubmit = () => {
     submit();
     const correctAnswers = areas.filter(
       (area) => area.card?.text === area.correctAnswer
     ).length;
+
     correctAnswers < areas.length / 2
-      ? toast.error(
-          `Correct answers: ${correctAnswers} out of ${
-            areas.length
+      ? toast({
+        variant: "destructive",
+        description: `Correct answers: ${correctAnswers} out of ${areas.length
           } - Score: ${((correctAnswers / areas.length) * 100).toFixed(0)}%`
-        )
-      : toast.success(
-          `Correct answers: ${correctAnswers} out of ${
-            areas.length
+      })
+      : toast({
+        variant: "success",
+        description: `Correct answers: ${correctAnswers} out of ${areas.length
           } -  Score: ${((correctAnswers / areas.length) * 100).toFixed(0)}%`
-        );
+      });
   };
 
   useEffect(() => {

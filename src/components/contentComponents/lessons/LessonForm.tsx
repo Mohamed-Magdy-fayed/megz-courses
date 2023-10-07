@@ -10,11 +10,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { api } from "@/lib/api";
-import { useToastStore } from "@/zustand/store";
 import { X } from "lucide-react";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useToast } from "@/components/ui/use-toast";
 
 const formSchema = z.object({
   name: z.string().nonempty(),
@@ -34,7 +34,7 @@ const LessonForm = ({
   const form = useForm({ defaultValues: { name: "" } });
   const createLessonMutation = api.lessons.createLesson.useMutation();
   const trpcUtils = api.useContext();
-  const toast = useToastStore();
+  const { toast } = useToast()
 
   const onSubmit = (data: LessonFormValues) => {
     setLoading(true);
@@ -43,12 +43,18 @@ const LessonForm = ({
       { ...data, levelId: id },
       {
         onSuccess: ({ lesson }) => {
-          toast.success(`Your new lesson (${lesson.name}) is ready!`);
+          toast({
+            variant: "success",
+            description: `Your new lesson (${lesson.name}) is ready!`
+          })
           trpcUtils.levels.invalidate();
           setLoading(false);
         },
         onError: () => {
-          toast.error("somthing went wrong!");
+          toast({
+            variant: "destructive",
+            description: "an error occured!"
+          })
           setLoading(false);
         },
       }

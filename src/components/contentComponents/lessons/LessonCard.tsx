@@ -2,14 +2,14 @@ import { PaperContainer } from "@/components/ui/PaperContainers";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { api } from "@/lib/api";
-import { useToastStore } from "@/zustand/store";
 import { Lesson, MaterialItem } from "@prisma/client";
-import { Copy, Edit, Edit2, Trash, X } from "lucide-react";
+import { Copy, Edit, Edit2, Trash } from "lucide-react";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import MaterialRow from "./MaterialRow";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useToast } from "@/components/ui/use-toast";
 
 const LessonCard = ({
   lesson,
@@ -18,21 +18,30 @@ const LessonCard = ({
 }) => {
   const deleteLessonsMutation = api.lessons.deleteLessons.useMutation();
   const trpcUtils = api.useContext();
-  const toast = useToastStore();
+  const { toast } = useToast();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const handleDelete = (id: string) => {
     if (id === "64d370ceb84ac3b8c1093819")
-      return toast.error(`don't delete that please! ^_^`);
+      return toast({
+        description: `don't delete that please! ^_^`,
+        variant: "destructive"
+      });
     setLoading(true);
     deleteLessonsMutation.mutate([id], {
       onSuccess: () => {
-        toast.success(`Deleted!`);
+        toast({
+          description: `Deleted!`,
+          variant: "success"
+        });
         trpcUtils.levels.invalidate().then(() => setLoading(false));
       },
       onError: () => {
-        toast.error("an error occured!");
+        toast({
+          description: "an error occured!",
+          variant: "destructive"
+        });
         setLoading(false);
       },
     });

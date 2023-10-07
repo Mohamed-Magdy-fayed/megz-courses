@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Copy, Trash, SearchSlash, MoreVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useToastStore } from "@/zustand/store";
 import { AlertModal } from "../modals/AlertModal";
 import { api } from "@/lib/api";
+import { useToast } from "../ui/use-toast";
 
 interface CellActionProps {
     id: string;
@@ -20,7 +20,7 @@ interface CellActionProps {
 }
 
 const CellAction: React.FC<CellActionProps> = ({ id, assigneeId, code }) => {
-    const toast = useToastStore();
+    const { toast } = useToast();
     const router = useRouter();
 
     const [loading, setLoading] = useState(false);
@@ -28,7 +28,10 @@ const CellAction: React.FC<CellActionProps> = ({ id, assigneeId, code }) => {
 
     const onCopy = () => {
         navigator.clipboard.writeText(code);
-        toast.success("Category ID copied to the clipboard");
+        toast({
+            description: "Category ID copied to the clipboard",
+            variant: "info"
+        });
     };
 
     const deleteMutation = api.salesOperations.deleteSalesOperations.useMutation()
@@ -43,16 +46,25 @@ const CellAction: React.FC<CellActionProps> = ({ id, assigneeId, code }) => {
                 [id],
                 {
                     onSuccess: () => {
-                        toast.info("Operation(s) deleted");
+                        toast({
+                            description: "Operation(s) deleted",
+                            variant: "success"
+                        });
                         trpcUtils.salesOperations.invalidate();
                     },
                     onError: () => {
-                        toast.error("somthing went wrong");
+                        toast({
+                            description: "somthing went wrong",
+                            variant: "destructive"
+                        });
                     },
                 }
             );
         } catch (error: any) {
-            toast.error("an error occured");
+            toast({
+                description: "an error occured",
+                variant: "destructive"
+            });
         } finally {
             setLoading(false);
             setOpen(false);

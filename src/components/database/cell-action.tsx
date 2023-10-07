@@ -8,10 +8,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Copy, MoreVertical } from "lucide-react";
 import { useState } from "react";
-import { useToastStore } from "@/zustand/store";
 import { api } from "@/lib/api";
 import { AssignModal } from "../modals/AssignModal";
 import { Customer } from "./DatabaseColumn";
+import { useToast } from "@/components/ui/use-toast";
 
 interface CellActionProps {
   data: Customer;
@@ -22,11 +22,14 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const [open, setOpen] = useState(false);
 
   const assignMutation = api.salesOperations.createSalesOperation.useMutation()
-  const toast = useToastStore()
+  const { toast } = useToast()
 
   const onCopy = (id: string) => {
     navigator.clipboard.writeText(id);
-    toast.success("Category ID copied to the clipboard");
+    toast({
+      variant: "success",
+      description: "Category ID copied to the clipboard"
+    })
   };
 
   const onAssign = (assigneeId: string) => {
@@ -36,13 +39,17 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
       { assigneeId, status: "assigned" },
       {
         onSuccess: (data) => {
-          toast.success(`Operation ID: ${data.salesOperations.code}`)
-          console.log(data);
+          toast({
+            variant: "success",
+            description: `Operation ID: ${data.salesOperations.code}`
+          })
           setLoading(false)
         },
         onError: (error) => {
-          toast.error(`an error occured`)
-          console.log(error);
+          toast({
+            variant: "destructive",
+            description: "Something went wrong."
+          })
           setLoading(false)
         },
       }

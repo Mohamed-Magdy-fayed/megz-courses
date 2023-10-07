@@ -59,7 +59,6 @@ export const authRouter = createTRPCRouter({
           hashedPassword,
         },
         include: {
-          address: true,
           orders: true,
         },
       });

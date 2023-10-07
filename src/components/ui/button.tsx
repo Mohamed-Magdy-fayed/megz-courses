@@ -41,6 +41,10 @@ const buttonVariants = cva(
                 destructiveIcon: "text-destructive hover:bg-destructive/20 border-destructive",
                 successIcon: "text-success hover:bg-success/20 border-success",
                 infoIcon: "text-info border-info hover:bg-info/20",
+                toastPrimary: "border bg-accent text-accent-foreground hover:bg-accent-hover border-accent-foreground",
+                toastDestructive: "border bg-destructive text-destructive-foreground hover:bg-destructive-hover border-destructive-foreground",
+                toastSuccess: "border bg-success text-success-foreground hover:bg-success-hover border-success-foreground",
+                toastInfo: "border bg-info text-info-foreground hover:bg-info-hover border-info-foreground",
             },
             variant: {
                 default: "",

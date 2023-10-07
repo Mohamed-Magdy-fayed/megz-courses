@@ -1,10 +1,10 @@
 import { api } from "@/lib/api";
 import { useState } from "react";
-import { useToastStore } from "@/zustand/store";
 import { format } from "date-fns";
 import { DataTable } from "@/components/ui/DataTable";
 import { SalesAgentsColumn, columns } from "./SalesAgentColumn";
 import { SalesAgent, SalesOperation, User } from "@prisma/client";
+import { useToast } from "../ui/use-toast";
 
 interface Users extends User {
   salesAgent: (SalesAgent & {
@@ -26,7 +26,7 @@ const SalesAgentClient = ({ data }: { data: Users[] }) => {
     createdAt: format(user.createdAt, "MMMM do, yyyy"),
   }));
 
-  const toast = useToastStore();
+  const { toast } = useToast();
   const deleteMutation = api.users.deleteUser.useMutation();
   const trpcUtils = api.useContext();
 
@@ -35,11 +35,17 @@ const SalesAgentClient = ({ data }: { data: Users[] }) => {
       salesAgents.map((salesAgent) => salesAgent.id),
       {
         onSuccess: () => {
-          toast.info("User(s) deleted");
+          toast({
+            variant: "success",
+            description: "User(s) deleted"
+          });
           trpcUtils.users.invalidate();
         },
         onError: () => {
-          toast.error("somthing went wrong");
+          toast({
+            variant: "destructive",
+            description: "somthing went wrong"
+          });
         },
       }
     );

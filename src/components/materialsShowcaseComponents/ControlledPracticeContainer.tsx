@@ -1,6 +1,5 @@
 import {
   useControlledPracticeMultichoiceStore,
-  useToastStore,
 } from "@/zustand/store";
 import { Button } from "@/components/ui/button";
 import { Trash } from "lucide-react";
@@ -8,6 +7,7 @@ import QuestionCard from "./QuestionCard";
 import { FC, useEffect } from "react";
 import { Question } from "@prisma/client";
 import { Typography } from "../ui/Typoghraphy";
+import { useToast } from "../ui/use-toast";
 
 interface ControlledPracticeContainerProps {
   practiceQuestions: Question[];
@@ -19,7 +19,7 @@ const ControlledPracticeContainer: FC<ControlledPracticeContainerProps> = ({
   const { clearAnswers, questions, submit, setQuestions } =
     useControlledPracticeMultichoiceStore();
 
-  const toast = useToastStore();
+  const { toast } = useToast();
   const handleSubmit = () => {
     submit();
     const correctAnswers = questions.filter(
@@ -27,18 +27,20 @@ const ControlledPracticeContainer: FC<ControlledPracticeContainerProps> = ({
     ).length;
 
     correctAnswers >= questions.length / 2
-      ? toast.success(
-        `${correctAnswers} Correct answers of ${questions.length} - Score: ${(
+      ? toast({
+        variant: "destructive",
+        description: `${correctAnswers} Correct answers of ${questions.length} - Score: ${(
           (correctAnswers / questions.length) *
           100
         ).toFixed(0)}%`
-      )
-      : toast.error(
-        `${correctAnswers} Correct answers of ${questions.length} - Score: ${(
+      })
+      : toast({
+        description: `${correctAnswers} Correct answers of ${questions.length} - Score: ${(
           (correctAnswers / questions.length) *
           100
-        ).toFixed(0)}%`
-      );
+        ).toFixed(0)}%`,
+        variant: "success"
+      });
   };
 
   useEffect(() => {

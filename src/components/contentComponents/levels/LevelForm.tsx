@@ -3,7 +3,6 @@ import { api } from "@/lib/api";
 import { X } from "lucide-react";
 import React, { useState } from "react";
 import { Separator } from "@/components/ui/separator";
-import { useToastStore } from "@/zustand/store";
 import {
   Form,
   FormControl,
@@ -15,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
+import { useToast } from "@/components/ui/use-toast";
 
 const formSchema = z.object({
   name: z.string().nonempty(),
@@ -35,7 +35,7 @@ const LevelForm = ({
   const form = useForm({ defaultValues: { name: "", code: "" } });
   const createlevelMutation = api.levels.createLevel.useMutation();
   const trpcUtils = api.useContext();
-  const toast = useToastStore();
+  const { toast } = useToast()
 
   const onSubmit = (data: LevelFormValues) => {
     setLoading(true);
@@ -43,12 +43,18 @@ const LevelForm = ({
       { ...data, courseId: id },
       {
         onSuccess: ({ level }) => {
-          toast.success(`Your new level (${level.name}) is ready!`);
+          toast({
+            variant: "success",
+            description: `Your new level (${level.name}) is ready!`
+          })
           trpcUtils.courses.invalidate();
           setLoading(false);
         },
         onError: () => {
-          toast.error("somthing went wrong!");
+          toast({
+            variant: "destructive",
+            description: "somthing went wrong!"
+          })
           setLoading(false);
         },
       }

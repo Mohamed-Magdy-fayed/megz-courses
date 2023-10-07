@@ -3,13 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Copy, Edit, Edit2, Trash } from "lucide-react";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import { Separator } from "@/components/ui/separator";
-import { useToastStore } from "@/zustand/store";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import LevelRow from "./LevelRow";
 import CardsSkeleton from "@/components/layout/CardsSkeleton";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useToast } from "@/components/ui/use-toast";
 
 const CourseCard = ({ id }: { id: string }) => {
   const { data } = api.courses.getById.useQuery({
@@ -18,19 +18,25 @@ const CourseCard = ({ id }: { id: string }) => {
   const course = data?.course;
   const deleteCourseMutation = api.courses.deleteCourses.useMutation();
   const trpcUtils = api.useContext();
-  const toast = useToastStore();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast()
 
   const handleDelete = (id: string) => {
     setLoading(true);
     deleteCourseMutation.mutate([id], {
       onSuccess: () => {
-        toast.success(`Deleted!`);
+        toast({
+          variant: "success",
+          description: `Deleted!`
+        })
         trpcUtils.courses.invalidate().then(() => setLoading(false));
       },
       onError: () => {
-        toast.error("an error occured!");
+        toast({
+          variant: "destructive",
+          description: "an error occured!"
+        })
         setLoading(false);
       },
     });

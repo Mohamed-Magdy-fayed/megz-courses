@@ -4,29 +4,35 @@ import { api } from "@/lib/api";
 import { Edit, Edit2, Trash, X } from "lucide-react";
 import { useRouter } from "next/router";
 import { MaterialItem } from "@prisma/client";
-import { useToastStore } from "@/zustand/store";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useToast } from "@/components/ui/use-toast";
 
 const MaterialCard = ({ material }: { material: MaterialItem }) => {
   const deleteMaterialMutation =
     api.materials.deleteMaterialItems.useMutation();
   const trpcUtils = api.useContext();
-  const toast = useToastStore();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast()
 
   const handleDelete = (id: string) => {
     setLoading(true);
     deleteMaterialMutation.mutate([id], {
       onSuccess: () => {
-        toast.success(`Deleted!`);
+        toast({
+          variant: "success",
+          description: `Deleted!`
+        })
         trpcUtils.lessons.invalidate().then(() => setLoading(false));
       },
       onError: () => {
-        toast.error("an error occured!");
+        toast({
+          variant: "destructive",
+          description: "an error occured!"
+        })
         setLoading(false);
       },
     });

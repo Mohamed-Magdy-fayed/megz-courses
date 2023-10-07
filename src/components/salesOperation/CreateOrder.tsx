@@ -3,11 +3,11 @@ import Modal from "../ui/modal"
 import SelectField from "./SelectField"
 import { Address, Course, Level, Order, User } from "@prisma/client"
 import { Button } from "../ui/button"
-import { useToastStore } from "@/zustand/store"
 import { api } from "@/lib/api"
 import { render } from "@react-email/render"
 import Email from "../email/Email"
 import { format } from "date-fns"
+import { useToast } from "../ui/use-toast"
 
 interface CreateOrderProps {
     loading: boolean
@@ -36,13 +36,16 @@ const CreateOrder: FC<CreateOrderProps> = ({
     const [email, setEmail] = useState<string[]>([])
     const [courses, setCourses] = useState<string[]>([])
 
-    const toast = useToastStore()
+    const { toast } = useToast()
     const trpcUtils = api.useContext()
     const createOrderMutation = api.orders.createOrder.useMutation()
     const sendEmailMutation = api.comms.sendEmail.useMutation()
 
     const handleAddCourses = () => {
-        if (!email[0] || courses.length === 0) return toast.error(`missing some info here!`)
+        if (!email[0] || courses.length === 0) return toast({
+            description: `missing some info here!`,
+            variant: "destructive"
+        })
 
         setLoading(true)
         createOrderMutation.mutate({

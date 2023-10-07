@@ -1,6 +1,5 @@
 import ImageUploadButton from "@/components/students/ImageUploadButton";
 import { api } from "@/lib/api";
-import { useToastStore } from "@/zustand/store";
 import { Address, User } from "@prisma/client";
 import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
 import { getInitials } from "@/lib/getInitials";
@@ -9,6 +8,7 @@ import { Typography } from "../../ui/Typoghraphy";
 import { Separator } from "../../ui/separator";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import ChangePassword from "../UserDataForm/ChangePasswordForm";
+import { useToast } from "@/components/ui/use-toast";
 
 export const Account = ({
   user,
@@ -18,6 +18,7 @@ export const Account = ({
     address: Address | null;
   };
 }) => {
+  const { toast } = useToast()
   const trpcUtils = api.useContext();
 
   const editUserImage = api.users.editUserImage.useMutation({
@@ -29,9 +30,8 @@ export const Account = ({
   const isLoading = editUserImage.isLoading;
   const isSuccess = editUserImage.isSuccess;
 
-  const toast = useToastStore((state) => state);
   const handleChange = (url: string) => {
-    if (!user?.email) return toast.error("no email");
+    if (!user?.email) return toast({ variant: "destructive", description: "no email" });
     editUserImage.mutate({ url, email: user.email });
   };
 

@@ -17,7 +17,6 @@ import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useToastStore } from "@/zustand/store";
 import {
   Select,
   SelectContent,
@@ -25,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/components/ui/use-toast";
 
 const formSchema = z.object({
   name: z.string().nonempty(),
@@ -62,21 +62,27 @@ const UserForm: React.FC<UserFormProps> = ({ setIsOpen }) => {
     defaultValues,
   });
 
-  const toast = useToastStore();
   const addUserMutation = api.users.createUser.useMutation();
   const trpcUtils = api.useContext();
+  const { toast } = useToast()
 
   const onSubmit = (data: UsersFormValues) => {
     setLoading(true);
     addUserMutation.mutate(data, {
       onSuccess: (data) => {
         trpcUtils.invalidate();
-        toast.success(`User created with email: ${data.user.email}`);
+        toast({
+          variant: "success",
+          description: `User created with email: ${data.user.email}`
+        })
         setIsOpen(false);
         setLoading(false);
       },
       onError: () => {
-        toast.error("Something went wrong.");
+        toast({
+          variant: "success",
+          description: "Something went wrong."
+        })
         setLoading(false);
       },
     });

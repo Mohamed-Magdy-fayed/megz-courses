@@ -2,11 +2,11 @@ import { Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { api } from "@/lib/api";
-import { useToastStore } from "@/zustand/store";
 import { Level } from "@prisma/client";
 import { ArrowRight, Edit, Trash } from "lucide-react";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 
 const LevelRow = ({ level }: { level: Level }) => {
   const { data, isLoading, isError } = api.lessons.getByLevelId.useQuery({
@@ -14,21 +14,27 @@ const LevelRow = ({ level }: { level: Level }) => {
   });
   const deleteLevelMutation = api.levels.deleteLevels.useMutation();
   const trpcUtils = api.useContext();
-  const toast = useToastStore();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast()
 
   const handleDelete = (id: string) => {
     if (id === "64d35d5eb84ac3b8c1093813")
-      return toast.error(`don't delete that please! ^_^`);
+      return //toast.error(`don't delete that please! ^_^`);
     setLoading(true);
     deleteLevelMutation.mutate([id], {
       onSuccess: () => {
-        toast.success(`Deleted!`);
+        toast({
+          variant: "success",
+          description: `Deleted!`
+        })
         trpcUtils.courses.invalidate().then(() => setLoading(false));
       },
       onError: () => {
-        toast.error("an error occured!");
+        toast({
+          variant: "destructive",
+          description: "an error occured!"
+        })
         setLoading(false);
       },
     });

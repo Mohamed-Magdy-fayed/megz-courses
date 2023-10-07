@@ -14,8 +14,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
-import { useToastStore } from "@/zustand/store";
 import { z } from "zod";
+import { useToast } from "@/components/ui/use-toast";
 
 const formSchema = z.object({
   name: z.string().nonempty(),
@@ -30,7 +30,7 @@ const CourseForm = ({ setIsOpen }: { setIsOpen: (val: boolean) => void }) => {
   const form = useForm({ defaultValues: { name: "", price: "" } });
   const createCourseMutation = api.courses.createCourse.useMutation();
   const trpcUtils = api.useContext();
-  const toast = useToastStore();
+  const { toast } = useToast();
 
   const onSubmit = (data: CoursesFormValues) => {
     const dataWithNumber = {
@@ -41,12 +41,18 @@ const CourseForm = ({ setIsOpen }: { setIsOpen: (val: boolean) => void }) => {
     setLoading(true);
     createCourseMutation.mutate(dataWithNumber, {
       onSuccess: ({ course }) => {
-        toast.success(`Your new course (${course.name}) is ready!`);
+        toast({
+          variant: "success",
+          description: `Your new course (${course.name}) is ready!`
+        });
         trpcUtils.courses.invalidate();
         setLoading(false);
       },
       onError: () => {
-        toast.error("somthing went wrong!");
+        toast({
+          variant: "destructive",
+          description: "somthing went wrong!"
+        });
         setLoading(false);
       },
     });

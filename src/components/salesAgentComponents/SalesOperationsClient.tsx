@@ -1,10 +1,10 @@
 import { api } from "@/lib/api";
 import { useState } from "react";
-import { useToastStore } from "@/zustand/store";
 import { DataTable } from "@/components/ui/DataTable";
 import { SalesAgent, SalesOperation } from "@prisma/client";
 import { SalesOperationColumn, columns } from "./SalesOperationColumn";
 import { format } from "date-fns";
+import { useToast } from "@/components/ui/use-toast";
 
 interface SalesOperations extends SalesOperation {
   assignee: SalesAgent | null;
@@ -20,20 +20,26 @@ const SalesOperationsClient = ({ data }: { data: SalesOperations[] }) => {
     lastAction: format(operation.updatedAt, "MMMM do, yyyy"),
   }));
 
-  const toast = useToastStore();
   const deleteMutation = api.salesOperations.deleteSalesOperations.useMutation();
   const trpcUtils = api.useContext();
+  const { toast } = useToast()
 
   const onDelete = () => {
     deleteMutation.mutate(
       salesOperations.map((salesOperation) => salesOperation.id),
       {
         onSuccess: () => {
-          toast.info("User(s) deleted");
+          toast({
+            variant: "success",
+            description: "User(s) deleted"
+          })
           trpcUtils.users.invalidate();
         },
         onError: () => {
-          toast.error("somthing went wrong");
+          toast({
+            variant: "destructive",
+            description: "somthing went wrong"
+          })
         },
       }
     );
