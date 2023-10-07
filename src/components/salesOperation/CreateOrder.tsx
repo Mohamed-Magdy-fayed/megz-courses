@@ -60,7 +60,7 @@ const CreateOrder: FC<CreateOrderProps> = ({
                         userEmail={user.email}
                         orderAmount={`$${(amount / 100).toFixed(2)}`}
                         orderNumber={orderNumber}
-                        paymentLink={`http://localhost:3000/payments?sessionId=${sessionId}`}
+                        paymentLink={`${process.env.NEXTAUTH_URL}/payments?sessionId=${sessionId}`}
                         customerName={user.name}
                         courses={courses.map(course => ({ courseName: course.name, coursePrice: `$${(course.price / 100).toFixed(2)}` }))}
                     />, { pretty: true }
