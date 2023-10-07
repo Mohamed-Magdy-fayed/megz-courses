@@ -4,12 +4,14 @@ import {
   getServerSession,
   type NextAuthOptions,
   type DefaultSession,
+  DefaultUser,
 } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { env } from "@/env.mjs";
 import { prisma } from "@/server/db";
 import bcrypt from "bcrypt";
+import { UserType } from "@prisma/client";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -21,15 +23,16 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
+      userType: UserType;
       // ...other properties
-      // role: UserRole;
     } & DefaultSession["user"];
   }
 
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
+  interface User extends DefaultUser {
+    id: string;
+    userType: UserType;
+    // ...other properties
+  }
 }
 
 /**
@@ -82,6 +85,28 @@ export const authOptions: NextAuthOptions = {
      * @see https://next-auth.js.org/providers/github
      */
   ],
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        return { ...token, userType: user.userType }
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (token.userType) {
+        return {
+          ...session,
+          user: {
+            ...session.user,
+            userType:
+              token.userType,
+            id: token.sub
+          }
+        }
+      }
+      return session
+    },
+  },
   debug: env.NODE_ENV === "development",
   session: { strategy: "jwt" },
   secret: env.NEXTAUTH_SECRET,

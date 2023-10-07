@@ -1,6 +1,6 @@
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
-import AppLayout from "@/layouts/AppLayout";
+import AppLayout from "@/components/layout/AppLayout";
 import { api } from "@/lib/api";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";

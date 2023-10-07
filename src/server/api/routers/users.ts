@@ -3,8 +3,12 @@ import {
   createTRPCRouter,
   publicProcedure,
   protectedProcedure,
+  adminProcedure,
 } from "@/server/api/trpc";
 import bcrypt from "bcrypt";
+import { getServerSession } from "next-auth";
+import { TRPCError } from "@trpc/server";
+import { Prisma } from "@prisma/client";
 
 export const usersRouter = createTRPCRouter({
   getUsers: protectedProcedure
@@ -38,7 +42,7 @@ export const usersRouter = createTRPCRouter({
       });
       return { user };
     }),
-  getUserByEmail: publicProcedure
+  getUserByEmail: protectedProcedure
     .input(
       z.object({
         email: z.string(),
@@ -109,6 +113,11 @@ export const usersRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input: { url, email } }) => {
+      if (ctx.session.user.userType !== "admin"
+        && ctx.session.user.email !== email) {
+        throw new TRPCError({ code: "UNAUTHORIZED" })
+      }
+
       const updatedUser = await ctx.prisma.user.update({
         where: {
           email,
@@ -125,6 +134,8 @@ export const usersRouter = createTRPCRouter({
       z.object({
         name: z.string(),
         email: z.string().email(),
+        password: z.string().optional(),
+        userType: z.enum(["admin", "student", "teacher", "salesAgent"]).optional(),
         phone: z.string().optional(),
         state: z.string().optional(),
         country: z.string().optional(),
@@ -135,9 +146,14 @@ export const usersRouter = createTRPCRouter({
     .mutation(
       async ({
         ctx,
-        input: { name, email, phone, state, country, street, city },
+        input: { name, email, password, userType, phone, state, country, street, city },
       }) => {
-        const updatedUser = await ctx.prisma.user.update({
+        if (ctx.session.user.userType !== "admin"
+          && ctx.session.user.email !== email) {
+          throw new TRPCError({ code: "UNAUTHORIZED" })
+        }
+
+        const updateOptions: Prisma.UserUpdateArgs = {
           where: {
             email: email,
           },
@@ -152,12 +168,23 @@ export const usersRouter = createTRPCRouter({
               city,
             },
           },
-        });
+        }
+
+        if (ctx.session.user.userType === "admin" && password) {
+          const hashedPassword = await bcrypt.hash(password, 10)
+          updateOptions.data.hashedPassword = hashedPassword
+        }
+
+        if (ctx.session.user.userType === "admin" && userType) {
+          updateOptions.data.userType = userType
+        }
+
+        const updatedUser = await ctx.prisma.user.update(updateOptions);
 
         return { updatedUser };
       }
     ),
-  deleteUser: protectedProcedure
+  deleteUser: adminProcedure
     .input(z.array(z.string()))
     .mutation(async ({ input, ctx }) => {
       const deletedUsers = await ctx.prisma.user.deleteMany({

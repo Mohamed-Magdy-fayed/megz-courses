@@ -1,4 +1,4 @@
-import AppLayout from "@/layouts/AppLayout";
+import AppLayout from "@/components/layout/AppLayout";
 import { useDraggingStore } from "@/zustand/store";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";

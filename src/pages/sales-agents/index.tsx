@@ -5,7 +5,7 @@ import { FileDown, FileUp, PlusIcon } from "lucide-react";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
-import AppLayout from "@/layouts/AppLayout";
+import AppLayout from "@/components/layout/AppLayout";
 import SalesAgentsClient from "@/components/salesAgentComponents/SalesAgentsClient";
 import SalesAgentForm from "@/components/salesAgentComponents/SalesAgentForm";
 import SalesOperationsClient from "@/components/salesAgentComponents/SalesOperationsClient";

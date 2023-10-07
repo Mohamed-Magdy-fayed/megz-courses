@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Button } from "../ui/button";
-import { MenuIcon, BellIcon, UserCircle } from "lucide-react";
+import { MenuIcon, BellIcon, UserCircle, Lightbulb } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Typography } from "../ui/Typoghraphy";
@@ -13,6 +13,8 @@ import { Separator } from "../ui/separator";
 import { useCallback, useEffect, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
 import Spinner from "../Spinner";
+import Modal from "../ui/modal";
+import { DarkModeToggle } from "../dark-mode-toggle";
 
 export default function MegzTopBar() {
   const session = useSession();
@@ -50,7 +52,7 @@ export default function MegzTopBar() {
 
   return (
     <div
-      className={`relative z-50 isolate top-0 !bg-white/80 !shadow-none !backdrop-blur-sm`}
+      className={`relative z-50 isolate top-0 !bg-background/80 !shadow-none !backdrop-blur-sm`}
     >
       <div className="flex justify-between p-2">
         <div className="flex items-center gap-2">
@@ -116,6 +118,10 @@ export default function MegzTopBar() {
                 <Typography color="GrayText">
                   {session.data?.user.name}
                 </Typography>
+              </div>
+              <Separator></Separator>
+              <div className="p-2">
+                <DarkModeToggle />
               </div>
               <Separator></Separator>
               <Button disabled={loading} onClick={handleLogout} className="m-2 min-w-[10rem] relative">

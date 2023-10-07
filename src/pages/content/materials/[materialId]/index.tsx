@@ -1,6 +1,6 @@
 import Spinner from "@/components/Spinner";
 import MaterialsEditForm from "@/components/contentComponents/materials/MaterialsEditForm";
-import AppLayout from "@/layouts/AppLayout";
+import AppLayout from "@/components/layout/AppLayout";
 import { api } from "@/lib/api";
 import { useRouter } from "next/router";
 

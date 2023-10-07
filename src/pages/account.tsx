@@ -3,7 +3,7 @@ import { useSession } from "next-auth/react";
 import { Account } from "@/components/users/accountComponents/Account";
 import { AccountDetails } from "@/components/users/accountComponents/AccountDetails";
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
-import AppLayout from "@/layouts/AppLayout";
+import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { ArrowLeftFromLine, Loader } from "lucide-react";
 import { useRouter } from "next/router";

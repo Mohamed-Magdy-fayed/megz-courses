@@ -4,7 +4,7 @@ import CardsSkeleton from "@/components/layout/CardsSkeleton";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
-import AppLayout from "@/layouts/AppLayout";
+import AppLayout from "@/components/layout/AppLayout";
 import { api } from "@/lib/api";
 import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/router";

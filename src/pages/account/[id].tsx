@@ -3,21 +3,17 @@ import { AccountDetails } from "@/components/users/accountComponents/AccountDeta
 import { api } from "@/lib/api";
 import { useRouter } from "next/router";
 import React from "react";
-import AppLayout from "@/layouts/AppLayout";
+import AppLayout from "@/components/layout/AppLayout";
 import { ArrowLeftFromLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import Spinner from "@/components/Spinner";
-import { useSession } from "next-auth/react";
 
 export default function Page() {
   const router = useRouter();
   const id = router.query.id as string;
 
   const { data, isLoading } = api.users.getUserById.useQuery({ id });
-  const session = useSession()
-
-  console.log(session.data);
 
   return (
     <AppLayout>

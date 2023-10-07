@@ -1,5 +1,5 @@
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
-import AppLayout from "@/layouts/AppLayout";
+import AppLayout from "@/components/layout/AppLayout";
 import { api } from "@/lib/api";
 import type { NextPage } from "next";
 import { PaperContainer } from "@/components/ui/PaperContainers";

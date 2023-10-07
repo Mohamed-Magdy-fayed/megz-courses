@@ -41,7 +41,7 @@ export const authRouter = createTRPCRouter({
         user,
       };
     }),
-  resetPassword: protectedProcedure
+  resetPassword: publicProcedure
     .input(
       z.object({
         newPassword: z.string(),
@@ -54,6 +54,44 @@ export const authRouter = createTRPCRouter({
       const updated = await ctx.prisma.user.update({
         where: {
           email,
+        },
+        data: {
+          hashedPassword,
+        },
+        include: {
+          orders: true,
+        },
+      });
+
+      return { updated };
+    }),
+  changePassword: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        oldPassword: z.string(),
+        newPassword: z.string(),
+        newPasswordConfirmation: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input: { id, oldPassword, newPassword, newPasswordConfirmation } }) => {
+      if (newPassword !== newPasswordConfirmation) {
+        throw new Error(`passwords don't match`)
+      }
+      const user = await ctx.prisma.user.findUnique({
+        where: { id }
+      })
+
+      const checkOldPassword = await bcrypt.compare(oldPassword, user?.hashedPassword!)
+      if (!checkOldPassword) {
+        throw new Error(`incorrect old password`)
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      const updated = await ctx.prisma.user.update({
+        where: {
+          id,
         },
         data: {
           hashedPassword,

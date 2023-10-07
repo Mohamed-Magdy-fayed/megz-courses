@@ -5,7 +5,7 @@ import { FileDown, FileUp, PlusIcon } from "lucide-react";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
-import AppLayout from "@/layouts/AppLayout";
+import AppLayout from "@/components/layout/AppLayout";
 import UserForm from "@/components/staffComponents/UserForm";
 import StaffClient from "@/components/staffComponents/StaffClient";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";

@@ -7,6 +7,8 @@ import { Separator } from "../ui/separator";
 import { Typography } from "../ui/Typoghraphy";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
+import { Button } from "../ui/button";
 
 export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
   const pathname = usePathname();
@@ -52,7 +54,9 @@ export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
     },
     {
       label: "Login or Register",
-      url: "login",
+      onClick: () => {
+        signOut()
+      },
     },
     {
       label: "Error",
@@ -78,22 +82,36 @@ export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
       <Separator />
       <ScrollArea className="w-min h-screen">
         <div className="flex flex-col items-center gap-2">
-          {links.map((link) => (
-            <Link
-              key={link.url}
-              onClick={() => {
-                navStore.closeNav();
-              }}
-              className={cn(
-                "whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-muted-foreground/80 hover:text-muted",
-                pathname && pathname.split("/")[1] === link.url &&
-                "bg-muted-foreground text-muted"
-              )}
-              href={`/${link.url}`}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {links.map((link) => {
+            if (link.onClick) {
+              return (
+                <button
+                  key={link.label}
+                  onClick={link.onClick}
+                  className={cn("whitespace-nowrap text-left w-full rounded-lg bg-transparent p-2 font-bold hover:bg-muted-foreground/80 hover:text-muted")}
+                >
+                  {link.label}
+                </button>
+              )
+            }
+
+            return (
+              <Link
+                key={link.url}
+                onClick={() => {
+                  navStore.closeNav();
+                }}
+                className={cn(
+                  "whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-muted-foreground/80 hover:text-muted",
+                  pathname && pathname.split("/")[1] === link.url &&
+                  "bg-muted-foreground text-muted"
+                )}
+                href={`/${link.url}`}
+              >
+                {link.label}
+              </Link>
+            )
+          })}
         </div>
       </ScrollArea>
       <Separator />

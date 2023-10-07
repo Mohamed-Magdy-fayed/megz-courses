@@ -10,6 +10,9 @@ import { Loader, Lock } from 'lucide-react'
 import { FC, useState } from "react";
 import { Card, CardFooter, CardHeader } from "@/components/ui/card";
 import Spinner from "@/components/Spinner";
+import { api } from "@/lib/api";
+import { useSession } from "next-auth/react";
+import { useToast } from "@/components/ui/use-toast";
 
 const passwordFormSchema = z.object({
     oldPassword: z.string().nonempty("Please enter your old password"),
@@ -32,6 +35,10 @@ type PasswordFormValues = z.infer<typeof passwordFormSchema>
 
 const ChangePassword = () => {
     const [loading, setLoading] = useState(false)
+    const session = useSession()
+    console.log(session.data);
+
+    const { toast } = useToast()
 
     const passwordDefaultValues: z.infer<typeof passwordFormSchema> = {
         oldPassword: "",
@@ -44,12 +51,26 @@ const ChangePassword = () => {
         defaultValues: passwordDefaultValues,
     });
 
-    const handlePasswordChange = (data: PasswordFormValues) => {
+    const changePasswordMutation = api.auth.changePassword.useMutation()
+
+    const handlePasswordChange = ({ newPassword, newPasswordConfirmation, oldPassword }: PasswordFormValues) => {
         setLoading(true)
-        setTimeout(() => {
-            setLoading(false)
-        }, 1000);
-        console.log(data);
+        changePasswordMutation.mutate({
+            id: session.data?.user.id!,
+            newPassword,
+            newPasswordConfirmation,
+            oldPassword,
+        }, {
+            onSuccess: () => toast({
+                description: "password changed successfull!",
+                variant: "success"
+            }),
+            onError: (e) => toast({
+                description: e.message,
+                variant: "destructive"
+            }),
+            onSettled: () => setLoading(false)
+        })
     }
 
     return (

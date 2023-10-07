@@ -1,5 +1,6 @@
 import { Address, User } from "@prisma/client";
 import UserDataForm, { UserDataFormValues } from "../UserDataForm/UserDataForm";
+import { useSession } from "next-auth/react";
 
 export const AccountDetails = ({ user }: {
   user:
@@ -7,6 +8,7 @@ export const AccountDetails = ({ user }: {
     address: Address | null;
   })
 }) => {
+  const session = useSession()
   const formattedUser: UserDataFormValues = {
     email: user.email,
     id: user.id,
@@ -22,6 +24,6 @@ export const AccountDetails = ({ user }: {
   }
 
   return (
-    <UserDataForm title="Edit your account" initialData={formattedUser} />
+    <UserDataForm withPassword={session.data?.user.userType === "admin"} title="Edit your account" initialData={formattedUser} />
   );
 };

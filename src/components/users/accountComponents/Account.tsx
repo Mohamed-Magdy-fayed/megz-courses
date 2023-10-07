@@ -9,6 +9,8 @@ import { Separator } from "../../ui/separator";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import ChangePassword from "../UserDataForm/ChangePasswordForm";
 import { useToast } from "@/components/ui/use-toast";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 
 export const Account = ({
   user,
@@ -19,6 +21,8 @@ export const Account = ({
   };
 }) => {
   const { toast } = useToast()
+  const session = useSession()
+  const isOwnAccount = useRouter().pathname === "/account"
   const trpcUtils = api.useContext();
 
   const editUserImage = api.users.editUserImage.useMutation({
@@ -58,16 +62,20 @@ export const Account = ({
             {user?.address?.country}
           </Typography>
         </CardContent>
-        <Separator />
-        <CardFooter className="flex items-center justify-center p-4">
-          <ImageUploadButton
-            isAccount
-            loading={isLoading}
-            handleChange={handleChange}
-          />
-        </CardFooter>
+        {(session.data?.user.userType === "admin" || isOwnAccount) && (
+          <>
+            <Separator />
+            <CardFooter className="flex items-center justify-center p-4">
+              <ImageUploadButton
+                isAccount
+                loading={isLoading}
+                handleChange={handleChange}
+              />
+            </CardFooter>
+          </>
+        )}
       </Card>
-      <ChangePassword />
+      {(isOwnAccount) && <ChangePassword />}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import AppLayout from "@/layouts/AppLayout";
+import AppLayout from "@/components/layout/AppLayout";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";

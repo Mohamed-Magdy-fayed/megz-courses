@@ -8,6 +8,7 @@ import Script from "next/script";
 import { useEffect } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from "next-themes";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -24,7 +25,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
       });
     };
   }, [])
-  
+
   return (
     <SessionProvider session={session}>
       <Head>
@@ -37,7 +38,9 @@ const MyApp: AppType<{ session: Session | null }> = ({
       </Head>
       <Toaster />
       <TooltipProvider>
-        <Component {...pageProps} />
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <Component {...pageProps} />
+        </ThemeProvider>
       </TooltipProvider>
       <Script async defer crossOrigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js" />
     </SessionProvider>
