@@ -1,6 +1,5 @@
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
-import AppLayout from "@/components/layout/AppLayout";
 import { api } from "@/lib/api";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -10,9 +9,11 @@ import OperationStatus from "@/components/salesOperation/OperationStatus";
 import OrderInfoPanel from "@/components/salesOperation/OrderInfoPanel";
 import CreateOrder from "@/components/salesOperation/CreateOrder";
 import { Loader } from "lucide-react";
+import AppLayout from "@/components/layout/AppLayout";
 
 const OperationPage: NextPage = () => {
-    const id = useRouter().query.operationId as string
+    const router = useRouter()
+    const id = router.query.operationId as string
     const { data, isLoading, isError } = api.salesOperations.getById.useQuery({ id })
     const { data: coursesData } = api.courses.getAll.useQuery()
     const { data: usersData } = api.users.getUsers.useQuery({ userType: "student" })
