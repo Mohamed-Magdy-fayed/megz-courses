@@ -14,8 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useParams } from "next/navigation";
-import { useRouter } from "next/router";
 import { DialogHeader } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -27,6 +25,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useToast } from "@/components/ui/use-toast";
+import { Card, CardContent, CardFooter } from "../ui/card";
 
 const formSchema = z.object({
   name: z.string().nonempty(),
@@ -35,7 +34,6 @@ const formSchema = z.object({
   image: z.string().optional(),
   phone: z.string().optional(),
   salary: z.string(),
-  userType: z.enum(["student", "teacher", "salesAgent"]),
 });
 
 type UsersFormValues = z.infer<typeof formSchema>;
@@ -45,10 +43,6 @@ interface StudentFormProps {
 }
 
 const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
-  const params = useParams();
-  const router = useRouter();
-
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const title = "Create User";
@@ -62,7 +56,6 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
     image: "",
     phone: "",
     salary: "",
-    userType: "student",
   };
 
   const form = useForm<UsersFormValues>({
@@ -70,21 +63,21 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
     defaultValues,
   });
 
-  const addUserMutation = api.salesAgents.createSalesAgent.useMutation();
+  const createSalesAgentMutation = api.salesAgents.createSalesAgent.useMutation();
   const trpcUtils = api.useContext();
   const { toast } = useToast()
 
   const onSubmit = (data: UsersFormValues) => {
     setLoading(true);
-    addUserMutation.mutate(data, {
+    createSalesAgentMutation.mutate(data, {
       onSuccess: (data) => {
-        trpcUtils.invalidate();
-        toast({
-          variant: "success",
-          description: `Sales Agent account created with email: ${data.user.email}`
-        })
-        setIsOpen(false);
-        setLoading(false);
+        trpcUtils.invalidate().then(() => {
+          toast({
+            variant: "success",
+            description: `Sales Agent account created with email: ${data.user.email}`
+          })
+          setLoading(false);
+        });
       },
       onError: () => {
         toast({
@@ -97,7 +90,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
   };
 
   return (
-    <>
+    <Card>
       <div className="flex items-center justify-between p-4">
         <div className="space-y-2">
           <DialogHeader className="text-left text-xl font-medium">
@@ -120,14 +113,14 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex h-[65%] w-full flex-col justify-between p-0 md:h-full"
+          className="flex w-full flex-col justify-between p-0"
         >
-          <div className="scrollbar-thumb-rounded-lg grid grid-cols-1 gap-4 overflow-auto px-4 pb-4 transition-all scrollbar-thin scrollbar-track-transparent scrollbar-thumb-primary/50 md:grid-cols-2 ">
+          <CardContent className="grid grid-cols-12 gap-4 p-4">
             <FormField
               control={form.control}
               name="image"
               render={({ field }) => (
-                <FormItem className="md:col-span-2">
+                <FormItem className="col-span-12 lg:col-span-8">
                   <FormControl>
                     <ImageUpload
                       value={field.value}
@@ -142,9 +135,27 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
             />
             <FormField
               control={form.control}
+              name="salary"
+              render={({ field }) => (
+                <FormItem className="col-span-12 md:col-span-6 lg:col-span-4">
+                  <FormLabel>Salary</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      disabled={loading}
+                      placeholder="$12000"
+                      {...field}
+
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="name"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="col-span-12 md:col-span-6 xl:col-span-4">
                   <FormLabel>Name</FormLabel>
                   <FormControl>
                     <Input
@@ -162,7 +173,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
               control={form.control}
               name="email"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="col-span-12 md:col-span-6 xl:col-span-4">
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
@@ -181,7 +192,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
               control={form.control}
               name="password"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="col-span-12 md:col-span-6 xl:col-span-4">
                   <FormLabel>Password</FormLabel>
                   <FormControl>
                     <Input
@@ -200,7 +211,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
               control={form.control}
               name="phone"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="col-span-12 md:col-span-6 xl:col-span-4">
                   <FormLabel>Phone</FormLabel>
                   <FormControl>
                     <Input
@@ -214,58 +225,9 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="salary"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Salary</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      disabled={loading}
-                      placeholder="$12000"
-                      {...field}
-
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="userType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>User Type</FormLabel>
-                  <Select
-                    disabled={loading}
-                    // @ts-ignore
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger >
-                        <SelectValue
-                          defaultValue={field.value}
-                          placeholder="Select user type"
-                        />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="student">Student</SelectItem>
-                      <SelectItem value="teacher">Teacher</SelectItem>
-                      <SelectItem value="salesAgent">Sales Agent</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          </CardContent>
           <Separator></Separator>
-          <div className="flex w-full justify-end gap-4 self-end p-4 h-12">
+          <CardFooter className="flex w-full justify-end gap-4 p-4">
             <Button
               disabled={loading}
               customeColor="destructive"
@@ -285,10 +247,10 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
             <Button disabled={loading} type="submit">
               {action}
             </Button>
-          </div>
+          </CardFooter>
         </form>
       </Form>
-    </>
+    </Card>
   );
 };
 

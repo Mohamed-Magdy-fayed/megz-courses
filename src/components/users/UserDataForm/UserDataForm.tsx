@@ -31,14 +31,14 @@ const userDataFormSchema = z.object({
 
 export type UserDataFormValues = z.infer<typeof userDataFormSchema>;
 
-interface UserDateFormProps {
+interface UserDataFormProps {
     title: string;
     withPassword: boolean;
     setIsOpen?: (val: boolean) => void;
     initialData: UserDataFormValues;
 }
 
-const UserDateForm: React.FC<UserDateFormProps> = ({ title, withPassword, setIsOpen, initialData }) => {
+const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsOpen, initialData }) => {
     const isOwnAccount = useRouter().pathname === "/account"
     const session = useSession()
 
@@ -321,4 +321,4 @@ const UserDateForm: React.FC<UserDateFormProps> = ({ title, withPassword, setIsO
     );
 };
 
-export default UserDateForm;
+export default UserDataForm;

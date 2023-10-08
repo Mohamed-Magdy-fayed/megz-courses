@@ -58,7 +58,9 @@ const StudentsPage = () => {
           )}
           <PaperContainer>
             {isLoading ? (
-              <Spinner></Spinner>
+              <div className="w-full h-full grid place-content-center">
+                <Spinner></Spinner>
+              </div>
             ) : isError ? (
               <>Error</>
             ) : (

@@ -4,7 +4,7 @@ import { Typography } from "@/components/ui/Typoghraphy";
 import { Progress } from "@/components/ui/progress";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 export default function StatesOverview() {
   const { data: salesAgents } = api.salesAgents.getSalesAgents.useQuery()
@@ -36,26 +36,25 @@ export default function StatesOverview() {
   const states = [
     {
       title: "Budget",
-      value: totalSalaries,
-      marker: { after: false, value: "$" },
-      difference: { increased: true, value: 12 },
+      target: totalSalaries,
+      style: "currency",
       icon: <CircleDollarSign className="text-background"></CircleDollarSign>,
       textColor: "text-red-500",
       backgroundColor: "bg-red-500",
     },
     {
       title: "Total students",
-      value: totalStudents,
-      difference: { increased: false, value: 16 },
+      target: totalStudents,
       icon: <Users2 className="text-background"></Users2>,
+      style: "",
       textColor: "text-green-500",
       backgroundColor: "bg-green-500",
     },
     {
       title: "Tasks progress",
-      value: Number((progress * 100).toFixed(2)),
+      target: progress,
       icon: <ListTodo className="text-background"></ListTodo>,
-      marker: { after: true, value: "%" },
+      style: "percent",
       progress: true,
       textColor: "text-orange-500",
       backgroundColor: "bg-orange-500",
@@ -63,8 +62,8 @@ export default function StatesOverview() {
     {
       title: "Total Income",
       totalOrders,
-      value: Number(totalIncome.toFixed()),
-      marker: { after: false, value: "$" },
+      target: totalIncome,
+      style: "currency",
       icon: <CircleDollarSign className="text-background"></CircleDollarSign>,
       textColor: "text-indigo-500",
       backgroundColor: "bg-indigo-500",
@@ -84,31 +83,12 @@ export default function StatesOverview() {
             </Typography>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
-            <Counter state={state} target={state.value}></Counter>
-            {state.difference && (
-              <div className="flex items-center gap-2">
-                <Typography
-                  className={
-                    state.difference.increased
-                      ? "text-success"
-                      : "text-error"
-                  }
-                >
-                  {state.difference.increased ? (
-                    <MoveUpRight></MoveUpRight>
-                  ) : (
-                    <MoveDownLeft></MoveDownLeft>
-                  )}{" "}
-                  {state.difference.value}%
-                </Typography>{" "}
-                <Typography variant={"bodyText"} className="">since last month</Typography>
-              </div>
-            )}
+            <Counter state={state}></Counter>
             {state.progress && (
               <Progress
                 indicatorColor="bg-primary"
                 className="bg-accent"
-                value={state.value}
+                value={state.target * 100}
               >
               </Progress>
             )}
@@ -127,7 +107,28 @@ export default function StatesOverview() {
   );
 }
 
-const Counter = ({ state, target }: { state: any, target: number }) => {
+interface CounterProps {
+  state: {
+    title: string;
+    totalOrders?: number;
+    target: number;
+    style: string;
+    icon: JSX.Element;
+    textColor: string;
+    backgroundColor: string;
+    progress?: boolean
+  }
+}
+
+const Counter: FC<CounterProps> = ({ state: {
+  backgroundColor,
+  icon,
+  style,
+  textColor,
+  title,
+  target,
+  totalOrders
+} }) => {
   const [current, setCurrent] = useState(0)
 
   useEffect(() => {
@@ -140,16 +141,22 @@ const Counter = ({ state, target }: { state: any, target: number }) => {
         return target / 1000 > 1 ? prev + 1000 : prev + 10
       })
     }, 20)
-
+    console.log("inputs", {
+      backgroundColor,
+      icon,
+      style,
+      textColor,
+      title,
+      target,
+      totalOrders
+    });
     return () => clearInterval(ticker)
   }, [target])
 
   return (
-    <Typography variant="bodyText" className={cn("!text-3xl font-bold", state.textColor)}>
-      {!state.marker?.after && state.marker?.value}
-      {current > 1000 ? current / 1000 : current}
-      {current > 1000 ? "k" : ""}
-      {state.marker?.after && state.marker?.value}
+    <Typography variant="bodyText" className={cn("!text-3xl font-bold", textColor)}>
+      {current > 1000 ? new Intl.NumberFormat("en-US", { style, currency: "EGP", maximumFractionDigits: 2 }).format(current / 1000) : new Intl.NumberFormat("en-US", { style: style === "currency" ? "currency" : style === "percent" ? "percent" : undefined, currency: "EGP", maximumFractionDigits: 2 }).format(current)}
+      {current > 1000 && "K"}
     </Typography>
   )
 }

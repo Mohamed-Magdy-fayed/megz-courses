@@ -96,10 +96,11 @@ const CreateOrder: FC<CreateOrderProps> = ({
             orderId,
             salesOperationId,
         }, {
-            onSuccess: () => {
-
-            },
-            onError: (e) => console.log(e),
+            onError: (e) => toast({
+                description: e.message,
+                variant: "destructive",
+                title: "Error"
+            }),
             onSettled: () => {
                 trpcUtils.salesOperations.invalidate()
                 setOpen(false)

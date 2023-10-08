@@ -112,9 +112,15 @@ export const ordersRouter = createTRPCRouter({
                 where: {
                     paymentId: sessionId
                 },
+                include: {
+                    courses: true,
+                    salesOperation: true,
+                    user: true,
+                }
             })
 
             if (!order?.id) throw new TRPCError({ code: "BAD_REQUEST", message: "incorrect information" })
+            if (order.status === "paid" || order.status === "done") return ({ updatedOrder: order, alreadyUpdated: true })
 
             const updatedOrder = await ctx.prisma.order.update({
                 where: {
@@ -122,6 +128,11 @@ export const ordersRouter = createTRPCRouter({
                 },
                 data: {
                     status: "paid",
+                },
+                include: {
+                    courses: true,
+                    salesOperation: true,
+                    user: true,
                 }
             })
 

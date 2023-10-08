@@ -85,9 +85,7 @@ const SalesAgentsPage = () => {
             </Button>
           </div>
           {isOpen && (
-            <PaperContainer>
-              <SalesAgentForm setIsOpen={setIsOpen}></SalesAgentForm>
-            </PaperContainer>
+            <SalesAgentForm setIsOpen={setIsOpen}></SalesAgentForm>
           )}
 
           <PaperContainer>

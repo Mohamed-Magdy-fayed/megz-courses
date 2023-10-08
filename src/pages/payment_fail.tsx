@@ -15,7 +15,7 @@ const FailedPaymentPage = () => {
             description: 'payment unsuccessful please try again, or contact support if you need help.'
         })
         router.push(`/`)
-    }, [])
+    }, [router])
 
     return (
         <AppLayout>

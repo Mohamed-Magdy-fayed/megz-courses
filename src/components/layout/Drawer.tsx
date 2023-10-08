@@ -21,6 +21,10 @@ export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
       url: "",
     },
     {
+      label: "Orders",
+      url: "orders",
+    },
+    {
       label: "Students",
       url: "students",
     },
