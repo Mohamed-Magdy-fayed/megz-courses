@@ -120,7 +120,13 @@ export const ordersRouter = createTRPCRouter({
             })
 
             if (!order?.id) throw new TRPCError({ code: "BAD_REQUEST", message: "incorrect information" })
-            if (order.status === "paid" || order.status === "done") return ({ updatedOrder: order, alreadyUpdated: true })
+            const courseLink = `${process.env.NEXTAUTH_URL}my_courses/${order.user.id}`
+
+            if (order.status === "paid" || order.status === "done")
+                return ({
+                    updatedOrder: order,
+                    courseLink: null
+                })
 
             const updatedOrder = await ctx.prisma.order.update({
                 where: {
@@ -136,7 +142,8 @@ export const ordersRouter = createTRPCRouter({
                 }
             })
 
-            return { updatedOrder }
+
+            return { courseLink, updatedOrder }
         }),
     editOrder: protectedProcedure
         .input(

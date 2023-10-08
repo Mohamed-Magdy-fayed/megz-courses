@@ -6,6 +6,7 @@ import Link from "next/link";
 import { getInitials } from "@/lib/getInitials";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Typography } from "../ui/Typoghraphy";
+import CellAction from "./ActionCell";
 
 export type Student = {
   id: string;
@@ -38,7 +39,7 @@ export const columns: ColumnDef<Student>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "name",
+    accessorKey: "email",
     header: ({ column }) => {
       return (
         <div className="flex items-center justify-between">
@@ -98,5 +99,14 @@ export const columns: ColumnDef<Student>[] = [
         </div>
       );
     },
+  },
+  {
+    id: "actions",
+    header: () => (
+      <Typography variant={"secondary"}>Actions</Typography>
+    ),
+    cell: ({ row }) => <CellAction
+      id={row.original.id}
+    />,
   },
 ];

@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Button } from "../ui/button";
-import { MenuIcon, BellIcon, UserCircle, Lightbulb } from "lucide-react";
+import { MenuIcon, BellIcon, UserCircle, Lightbulb, GraduationCap } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Typography } from "../ui/Typoghraphy";
@@ -83,9 +83,10 @@ export default function MegzTopBar() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Link href={`/database`}>
-            <Button variant="icon" customeColor={"primaryIcon"} >
-              <BellIcon className="w-4 h-4"></BellIcon>
+          <Link href={`/my_courses/${session.data?.user.id}`}>
+            <Button variant="outline" customeColor={"mutedOutlined"} >
+              <GraduationCap className="w-4 h-4"></GraduationCap>
+              <Typography>My Courses</Typography>
             </Button>
           </Link>
           <Link href={`/account`}>

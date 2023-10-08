@@ -21,3 +21,7 @@ export const orderCodeGenerator = () => {
 export const formatPrice = (price: number) => {
   return `EGP${(price / 100).toFixed(2)}`
 }
+
+export const formatPercentage = (value: number) => {
+  return new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 }).format(value / 100)
+}

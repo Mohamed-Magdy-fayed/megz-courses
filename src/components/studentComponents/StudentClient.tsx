@@ -54,6 +54,7 @@ const StudentClient = ({ data }: { data: Users[] }) => {
       data={formattedData}
       setUsers={setUsers}
       onDelete={onDelete}
+      search={{ key: "email", label: "Email" }}
     />
   );
 };

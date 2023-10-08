@@ -22,10 +22,24 @@ const OperationPage = () => {
 
     const trpcUtils = api.useContext()
     const updateSalesOperationMutation = api.salesOperations.editSalesOperations.useMutation()
-
+    const createPlacementTestMutation = api.placementTests.startCourses.useMutation()
 
     const handleCompleteOperation = () => {
         setLoading(true)
+        if (!data?.salesOperations?.orderDetails) return
+        createPlacementTestMutation.mutate({
+            userId: data?.salesOperations?.orderDetails?.userId,
+            courseIds: data?.salesOperations?.orderDetails?.courseIds,
+        }, {
+            onSuccess: (data) => {
+                console.log(data);
+
+            },
+            onError: (e) => {
+                console.log(e);
+
+            },
+        })
         updateSalesOperationMutation.mutate({
             id,
             status: "completed"

@@ -107,7 +107,7 @@ const OrderReceipt: FC<OrderReceiptProps> = ({ orderId, adminView }) => {
                             </TableCell>
                         </TableRow>
                         {data.order.courses.map(course => (
-                            <TableRow>
+                            <TableRow key={course.id}>
                                 <TableCell className="whitespace-nowrap">{course.name}</TableCell>
                                 <TableCell className="text-right">
                                     {formatPrice(course.price)}

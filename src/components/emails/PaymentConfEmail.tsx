@@ -15,31 +15,34 @@ import {
     Tailwind,
     Text,
 } from '@react-email/components';
+import { GetServerSideProps } from 'next';
 import * as React from 'react';
 
-interface EmailProps {
+interface PaymentConfEmailProps {
     customerName: string;
     userEmail: string;
     orderNumber: string;
-    paymentLink: string;
+    courseLink: string;
     orderAmount: string;
     orderCreatedAt: string;
     courses: {
         courseName: string;
         coursePrice: string;
-    }[]
+    }[];
+    orderUpdatedAt: string;
 }
 
-export const Email = ({
+export const PaymentConfEmail = ({
     customerName,
     userEmail,
     orderNumber,
-    paymentLink,
+    courseLink,
     orderAmount,
     orderCreatedAt,
     courses,
-}: EmailProps) => {
-    const previewText = `Thanks for your order ${orderNumber}`;
+    orderUpdatedAt,
+}: PaymentConfEmailProps) => {
+    const previewText = `Payment successfull ${orderNumber}`;
 
     return (
         <Html>
@@ -59,18 +62,20 @@ export const Email = ({
                         </Section>
                         <Heading className="text-black text-[24px] font-normal text-center p-0 my-[30px] mx-0 bg-primary">
                             <Row>
-                                <strong>Thanks</strong> for your order{" "}
+                                <strong>Payment successful</strong>{" "}
                             </Row>
                             <Row>
-                                <strong>{orderNumber}</strong>
+                                <p>{orderNumber}</p>
+                            </Row>
+                            <Row>
+                                <strong>{orderAmount}</strong>
                             </Row>
                         </Heading>
                         <Text className="text-black text-[14px] leading-[24px]">
                             Hello {customerName},
                         </Text>
                         <Text className="text-black text-[14px] leading-[24px]">
-                            Your order <strong>{orderNumber}</strong> is pending payment now{' '}
-                            <strong>{orderAmount}</strong>.
+                            Your can now access the content through our <Link href={`http://localhost:3000/`}>website</Link>{' '}
                         </Text>
                         <Section style={informationTable}>
                             <Row style={informationTableRow}>
@@ -95,10 +100,17 @@ export const Email = ({
                                             <Text style={informationTableLabel}>Invoice Date</Text>
                                             <Text style={informationTableValue}>{orderCreatedAt}</Text>
                                         </Column>
+                                        <Column style={informationTableColumn}>
+                                            <Text style={informationTableLabel}>Payment Date</Text>
+                                            <Text style={informationTableValue}>{orderUpdatedAt}</Text>
+                                        </Column>
                                     </Row>
 
                                     <Row align='left'>
-                                        <Column style={informationTableColumn}>
+                                        <Column style={{
+                                            ...informationTableColumn,
+
+                                        }}>
                                             <Text style={informationTableLabel}>Order Number</Text>
                                             <Link
                                                 style={{
@@ -130,8 +142,8 @@ export const Email = ({
                         <Section style={productTitleTable}>
                             <Text style={productsTitle}>Courses</Text>
                         </Section>
-                        {courses.map(({ courseName, coursePrice }) => (
-                            <Section>
+                        {courses.map(({ courseName, coursePrice }, i) => (
+                            <Section key={`pmcid${i}`}>
                                 <Column style={{ paddingLeft: '22px', paddingBottom: "22px" }}>
                                     <Text style={productTitle}>{courseName}</Text>
                                     <Link
@@ -173,28 +185,21 @@ export const Email = ({
                                 pX={20}
                                 pY={12}
                                 className="bg-[#000000] rounded text-white text-[12px] font-semibold no-underline text-center"
-                                href={paymentLink}
+                                href={courseLink}
                             >
-                                Proceed to payment
+                                Start learning
                             </Button>
                         </Section>
                         <Text className="text-black text-[14px] leading-[24px]">
                             or copy and paste this URL into your browser:{' '}
                             <Link
-                                href={paymentLink}
+                                href={courseLink}
                                 className="text-blue-600 no-underline"
                             >
-                                {paymentLink}
+                                {courseLink}
                             </Link>
                         </Text>
                         <Hr className="border border-solid border-[#eaeaea] my-[26px] mx-0 w-full" />
-                        <Text className="text-[#666666] text-[12px] leading-[24px]">
-                            This email was intended for{' '}
-                            <span className="text-black">{customerName} </span>. If you were not
-                            expecting this email, you can ignore this email. If you are
-                            concerned about your account's safety, please reply to this email to
-                            get in touch with us.
-                        </Text>
                     </Container>
                 </Body>
             </Tailwind>
@@ -327,4 +332,4 @@ const productPriceLargeWrapper = { display: 'table-cell', width: '90px' };
 
 const productPriceLineBottom = { margin: '0 0 75px 0' };
 
-export default Email;
+export default PaymentConfEmail;

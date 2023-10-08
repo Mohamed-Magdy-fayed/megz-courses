@@ -47,23 +47,38 @@ enum UserType {
     salesAgent
 }
 
+enum CoursStatuses {
+    waiting
+    ongoing
+    completed
+}
+
+type CoursStatus {
+    courseId String        @db.ObjectId
+    state    CoursStatuses
+}
+
 model User {
-    id             String      @id @default(auto()) @map("_id") @db.ObjectId
+    id             String          @id @default(auto()) @map("_id") @db.ObjectId
     name           String
-    email          String      @unique
+    email          String          @unique
     emailVerified  DateTime?
     image          String?
     hashedPassword String?
     phone          String?
-    userType       UserType    @default(student)
+    userType       UserType        @default(student)
     accounts       Account[]
     sessions       Session[]
     orders         Order[]
+    courseStatus   CoursStatus[]
     address        Address?
-    salesAgent     SalesAgent? @relation("UserToSalesAgent")
-    updatedAt      DateTime    @updatedAt
-    createdAt      DateTime    @default(now())
-    salesAgentId   String?     @db.ObjectId
+    placementTests PlacementTest[]
+    trainer        Trainer?        @relation("UserToTrainer")
+    trainerId      String?         @db.ObjectId
+    salesAgent     SalesAgent?     @relation("UserToSalesAgent")
+    salesAgentId   String?         @db.ObjectId
+    updatedAt      DateTime        @updatedAt
+    createdAt      DateTime        @default(now())
 }
 
 model VerificationToken {
@@ -75,15 +90,51 @@ model VerificationToken {
     @@unique([identifier, token])
 }
 
+enum TrainerRole {
+    teacher
+    tester
+}
+
+type TestTstatus {
+    form Int?
+    oral Int?
+}
+
+model PlacementTest {
+    id            String      @id @default(auto()) @map("_id") @db.ObjectId
+    student       User        @relation(fields: [studentUserId], references: [id])
+    studentUserId String      @db.ObjectId
+    course        Course      @relation(fields: [courseId], references: [id])
+    courseId      String      @db.ObjectId
+    testStatus    TestTstatus
+    trainer       Trainer?    @relation(fields: [trainerId], references: [id])
+    trainerId     String?     @db.ObjectId
+    updatedAt     DateTime    @updatedAt
+    createdAt     DateTime    @default(now())
+}
+
+model Trainer {
+    id            String          @id @default(auto()) @map("_id") @db.ObjectId
+    role          TrainerRole
+    assignedTests PlacementTest[]
+    user          User            @relation("UserToTrainer", fields: [userId], references: [id])
+    userId        String          @unique @db.ObjectId
+    updatedAt     DateTime        @updatedAt
+    createdAt     DateTime        @default(now())
+}
+
 model Course {
-    id        String   @id @default(auto()) @map("_id") @db.ObjectId
-    name      String
-    price     Int
-    levels    Level[]
-    orders    Order[]  @relation(fields: [orderIds], references: [id])
-    orderIds  String[] @db.ObjectId
-    updatedAt DateTime @updatedAt
-    createdAt DateTime @default(now())
+    id             String          @id @default(auto()) @map("_id") @db.ObjectId
+    name           String
+    price          Int
+    form           String
+    oralTest       String
+    placementTests PlacementTest[]
+    levels         Level[]
+    orders         Order[]         @relation(fields: [orderIds], references: [id])
+    orderIds       String[]        @db.ObjectId
+    updatedAt      DateTime        @updatedAt
+    createdAt      DateTime        @default(now())
 }
 
 model Level {

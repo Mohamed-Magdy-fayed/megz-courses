@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { TRPCError } from "@trpc/server";
 
 export const coursesRouter = createTRPCRouter({
   getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -11,6 +12,38 @@ export const coursesRouter = createTRPCRouter({
 
     return { courses };
   }),
+  getStudentCourses: protectedProcedure
+    .input(z.object({
+      userId: z.string(),
+    }))
+    .query(async ({ ctx, input: { userId } }) => {
+      const user = await ctx.prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+          orders: true,
+          placementTests: true,
+        },
+      });
+
+      if (!user) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No user found" })
+
+      const courses = await ctx.prisma.course.findMany({
+        where: {
+          id: {
+            in: user.courseStatus.map(item => item.courseId),
+          }
+        },
+        include: {
+          levels: {
+            include: {
+              lessons: true,
+            },
+          },
+        },
+      });
+
+      return { courses, user };
+    }),
   getById: protectedProcedure
     .input(
       z.object({
@@ -35,13 +68,22 @@ export const coursesRouter = createTRPCRouter({
       z.object({
         name: z.string(),
         price: z.number(),
+        form: z.string(),
+        oralTest: z.string(),
       })
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: {
+      form,
+      name,
+      oralTest,
+      price
+    }, ctx }) => {
       const course = await ctx.prisma.course.create({
         data: {
-          name: input.name,
-          price: input.price,
+          name,
+          price,
+          form,
+          oralTest,
         },
         include: {
           levels: true,
@@ -57,15 +99,19 @@ export const coursesRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         name: z.string(),
+        form: z.string(),
+        oralTest: z.string(),
       })
     )
-    .mutation(async ({ ctx, input: { name, id } }) => {
+    .mutation(async ({ ctx, input: { name, id, form, oralTest } }) => {
       const updatedCourse = await ctx.prisma.course.update({
         where: {
           id,
         },
         data: {
           name,
+          form,
+          oralTest,
         },
         include: {
           levels: true,

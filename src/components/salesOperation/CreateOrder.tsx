@@ -5,9 +5,10 @@ import { Address, Course, Level, Order, User } from "@prisma/client"
 import { Button } from "../ui/button"
 import { api } from "@/lib/api"
 import { render } from "@react-email/render"
-import Email from "../email/Email"
+import Email from "../emails/Email"
 import { format } from "date-fns"
 import { useToast } from "../ui/use-toast"
+import { formatPrice } from "@/lib/utils"
 
 interface CreateOrderProps {
     loading: boolean
@@ -58,11 +59,11 @@ const CreateOrder: FC<CreateOrderProps> = ({
                     <Email
                         orderCreatedAt={format(createdAt, "dd MMM yyyy")}
                         userEmail={user.email}
-                        orderAmount={`$${(amount / 100).toFixed(2)}`}
+                        orderAmount={formatPrice(amount / 100)}
                         orderNumber={orderNumber}
                         paymentLink={paymentLink}
                         customerName={user.name}
-                        courses={courses.map(course => ({ courseName: course.name, coursePrice: `$${(course.price / 100).toFixed(2)}` }))}
+                        courses={courses.map(course => ({ courseName: course.name, coursePrice: formatPrice(course.price / 100) }))}
                     />, { pretty: true }
                 )
                 handleSendEmail({
@@ -95,6 +96,7 @@ const CreateOrder: FC<CreateOrderProps> = ({
             message,
             orderId,
             salesOperationId,
+            alreadyUpdated: false
         }, {
             onError: (e) => toast({
                 description: e.message,

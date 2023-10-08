@@ -20,6 +20,8 @@ import { useToast } from "@/components/ui/use-toast";
 const formSchema = z.object({
   name: z.string().nonempty(),
   price: z.string().nonempty(),
+  form: z.string().nonempty(),
+  oralTest: z.string().nonempty(),
 });
 
 type CoursesFormValues = z.infer<typeof formSchema>;
@@ -27,19 +29,31 @@ type CoursesFormValues = z.infer<typeof formSchema>;
 const CourseForm = ({ setIsOpen }: { setIsOpen: (val: boolean) => void }) => {
   const [loading, setLoading] = useState(false);
 
-  const form = useForm({ defaultValues: { name: "", price: "" } });
+  const form = useForm({
+    defaultValues: {
+      name: "",
+      price: "",
+      form: "",
+      oralTest: "",
+    }
+  });
   const createCourseMutation = api.courses.createCourse.useMutation();
   const trpcUtils = api.useContext();
   const { toast } = useToast();
 
-  const onSubmit = (data: CoursesFormValues) => {
+  const onSubmit = ({ form, name, oralTest, price }: CoursesFormValues) => {
     const dataWithNumber = {
-      name: data.name,
-      price: Number(data.price)
+      name: name,
+      price: Number(price),
     }
 
     setLoading(true);
-    createCourseMutation.mutate(dataWithNumber, {
+    createCourseMutation.mutate({
+      name: name,
+      price: Number(price),
+      form,
+      oralTest
+    }, {
       onSuccess: ({ course }) => {
         toast({
           variant: "success",
@@ -90,6 +104,32 @@ const CourseForm = ({ setIsOpen }: { setIsOpen: (val: boolean) => void }) => {
                 <FormLabel>Course Price</FormLabel>
                 <FormControl>
                   <Input type="number" placeholder="EX. 9999 is EGP 99.99" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="form"
+            render={({ field }) => (
+              <FormItem className="p-4">
+                <FormLabel>Placement test form embedder</FormLabel>
+                <FormControl>
+                  <Input placeholder={`<iframe src="url"></iframe>`} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="oralTest"
+            render={({ field }) => (
+              <FormItem className="p-4">
+                <FormLabel>Oral test questions doc</FormLabel>
+                <FormControl>
+                  <Input placeholder="doc url" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

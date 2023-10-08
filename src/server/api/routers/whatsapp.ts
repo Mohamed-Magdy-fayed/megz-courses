@@ -40,6 +40,7 @@ export const commsRouter = createTRPCRouter({
             subject: z.string(),
             orderId: z.string(),
             salesOperationId: z.string(),
+            alreadyUpdated: z.boolean(),
         })
     ).mutation(async ({
         ctx,
@@ -49,30 +50,8 @@ export const commsRouter = createTRPCRouter({
             subject,
             orderId,
             salesOperationId,
+            alreadyUpdated,
         } }) => {
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-                user: env.GMAIL_EMAIL,
-                pass: env.GMAIL_PASS,
-            },
-        });
-
-        const mailOptions = {
-            from: env.GMAIL_EMAIL,
-            to: email,
-            subject: subject,
-            html: message,
-        };
-
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                return { error: "unable to send mail!" };
-            }
-            console.log(info);
-            return info
-        });
-
         const order = await ctx.prisma.order.findUnique({
             where: {
                 id: orderId,
@@ -89,6 +68,31 @@ export const commsRouter = createTRPCRouter({
                 user: true,
             }
         })
+
+        if (!alreadyUpdated) {
+            const transporter = nodemailer.createTransport({
+                service: "gmail",
+                auth: {
+                    user: env.GMAIL_EMAIL,
+                    pass: env.GMAIL_PASS,
+                },
+            });
+
+            const mailOptions = {
+                from: env.GMAIL_EMAIL,
+                to: email,
+                subject: subject,
+                html: message,
+            };
+
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    return { error: "unable to send mail!" };
+                }
+                console.log(info);
+                return info
+            });
+        }
 
         const updatedSalesOperations = await ctx.prisma.salesOperation.update({
             where: {
@@ -112,6 +116,6 @@ export const commsRouter = createTRPCRouter({
             },
         });
 
-        return {order, updatedSalesOperations}
+        return { order, updatedSalesOperations, alreadyUpdated }
     })
 });
