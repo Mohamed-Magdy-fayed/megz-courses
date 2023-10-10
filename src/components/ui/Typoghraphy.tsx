@@ -24,8 +24,8 @@ const typographyVariants = cva(
       variant: {
         default: "",
         primary: "md:text-4xl text-2xl font-extrabold leading-loose tracking-wide",
-        secondary: "lg:text-1xl md:text-lg text-base font-semibold leading-tight tracking-wide",
-        menuButton: "lg:text-xl md:text-lg text-base font-medium leading-4 tracking-tight uppercase",
+        secondary: "lg:text-xl md:text-lg text-base font-semibold leading-tight tracking-wide",
+        menuButton: "lg:text-2xl md:text-xl text-lg font-medium leading-4 tracking-tight uppercase",
         bodyText: "lg:text-lg md:text-base text-sm font-light tracking-tighter",
         buttonText: "lg:text-lg md:text-base text-sm font-medium leading-4 tracking-wide uppercase",
       },

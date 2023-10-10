@@ -8,65 +8,65 @@ import { Typography } from "../ui/Typoghraphy";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { Button } from "../ui/button";
+
+export const mainNavLinks = [
+  {
+    label: "Dashboard",
+    url: "dashboard",
+  },
+  {
+    label: "Orders",
+    url: "orders",
+  },
+  {
+    label: "Students",
+    url: "students",
+  },
+  {
+    label: "Staff",
+    url: "staff",
+  },
+  {
+    label: "Sales Team",
+    url: "sales-agents",
+  },
+  {
+    label: "Content Management",
+    url: "content",
+  },
+  {
+    label: "Database",
+    url: "database",
+  },
+  {
+    label: "Configurations",
+    url: "config",
+  },
+  {
+    label: "Account",
+    url: "account",
+  },
+  {
+    label: "Settings",
+    url: "settings",
+  },
+  {
+    label: "Login or Register",
+    onClick: () => {
+      signOut()
+    },
+  },
+  {
+    label: "Error",
+    url: "404",
+  },
+];
 
 export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
   const pathname = usePathname();
 
   const navStore = useNavStore();
 
-  const links = [
-    {
-      label: "Overview",
-      url: "",
-    },
-    {
-      label: "Orders",
-      url: "orders",
-    },
-    {
-      label: "Students",
-      url: "students",
-    },
-    {
-      label: "Staff",
-      url: "staff",
-    },
-    {
-      label: "Sales Team",
-      url: "sales-agents",
-    },
-    {
-      label: "Content Management",
-      url: "content",
-    },
-    {
-      label: "Database",
-      url: "database",
-    },
-    {
-      label: "Configurations",
-      url: "config",
-    },
-    {
-      label: "Account",
-      url: "account",
-    },
-    {
-      label: "Settings",
-      url: "settings",
-    },
-    {
-      label: "Login or Register",
-      onClick: () => {
-        signOut()
-      },
-    },
-    {
-      label: "Error",
-      url: "404",
-    },
-  ];
 
   const [isMounted, setIsMounted] = useState(false);
 
@@ -86,7 +86,7 @@ export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
       <Separator />
       <ScrollArea className="w-min h-screen">
         <div className="flex flex-col items-center gap-2">
-          {links.map((link) => {
+          {mainNavLinks.map((link) => {
             if (link.onClick) {
               return (
                 <button

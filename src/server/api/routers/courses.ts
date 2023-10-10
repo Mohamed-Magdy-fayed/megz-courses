@@ -1,8 +1,41 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 
 export const coursesRouter = createTRPCRouter({
+  getLatest: publicProcedure
+    .query(async ({ ctx }) => {
+      const courses = await ctx.prisma.course.findMany({
+        orderBy: {
+          createdAt: "asc",
+        },
+        take: 10,
+        select: {
+          _count: true,
+          id: true,
+          name: true,
+          price: true,
+          createdAt: true,
+          updatedAt: true,
+          orders: true,
+        }
+      });
+
+      return { courses };
+    }),
+  query: publicProcedure
+    .input(z.object({ query: z.string() }))
+    .query(async ({ ctx, input: { query } }) => {
+      const courses = await ctx.prisma.course.findMany({
+        where: {
+          name: {
+            contains: query,
+          },
+        },
+      });
+
+      return { courses };
+    }),
   getAll: protectedProcedure.query(async ({ ctx }) => {
     const courses = await ctx.prisma.course.findMany({
       include: {
