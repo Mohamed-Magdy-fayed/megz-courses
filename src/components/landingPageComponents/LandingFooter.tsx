@@ -1,5 +1,5 @@
-import { mainNavLinks } from '../Drawer'
-import { LogoPrimary } from '../Logo'
+import { mainNavLinks } from '../layout/Drawer'
+import { LogoPrimary } from '../layout/Logo'
 import Link from 'next/link'
 import FooterCourseSearchBar from './FooterCourseSearchBar'
 import { Linkedin, Instagram, Youtube, Facebook } from 'lucide-react'

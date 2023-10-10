@@ -1,5 +1,5 @@
 import { Typography } from '../ui/Typoghraphy'
-import FooterCourseSearchBar from '../layout/landingLayoutComponents/FooterCourseSearchBar'
+import FooterCourseSearchBar from './FooterCourseSearchBar'
 import Image from 'next/image'
 import hero_image from "../../../public/svgs/hero_image.svg"
 

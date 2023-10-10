@@ -15,16 +15,16 @@ const MyApp: AppType<{ session: Session | null }> = ({
   pageProps: { session, ...pageProps },
 }) => {
 
-  useEffect(() => {
-    window.fbAsyncInit = function () {
-      window.FB.init({
-        appId: process.env.FACEBOOK_APP_ID,
-        autoLogAppEvents: true,
-        xfbml: true,
-        version: 'v18.0'
-      });
-    };
-  }, [])
+  // useEffect(() => {
+  //   window.fbAsyncInit = function () {
+  //     window.FB.init({
+  //       appId: process.env.FACEBOOK_APP_ID,
+  //       autoLogAppEvents: true,
+  //       xfbml: true,
+  //       version: 'v18.0'
+  //     });
+  //   };
+  // }, [])
 
   return (
     <SessionProvider session={session}>
@@ -42,7 +42,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
           <Toaster />
         </ThemeProvider>
       </TooltipProvider>
-      <Script async defer crossOrigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js" />
+      {/* <Script async defer crossOrigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js" /> */}
     </SessionProvider>
   );
 };

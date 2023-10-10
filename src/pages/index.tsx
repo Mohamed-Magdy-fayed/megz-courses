@@ -1,4 +1,4 @@
-import LandingLayout from "@/components/layout/LandingLayout";
+import LandingLayout from "@/components/landingPageComponents/LandingLayout";
 import HeroSection from "@/components/landingPageComponents/HeroSection";
 import { Star } from "lucide-react";
 import ContactSection from "@/components/landingPageComponents/ContactSection";

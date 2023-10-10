@@ -4,18 +4,19 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useNavStore } from "@/zustand/store";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/router";
-import { ReactNode, useEffect } from "react";
+import { ReactNode } from "react";
+import Spinner from "../Spinner";
 
 const AppLayout = ({ children }: { children: ReactNode }) => {
   const { opened, openNav, closeNav } = useNavStore();
 
-  const session = useSession();
-  const router = useRouter();
+  const { data: session, status } = useSession({ required: true })
 
-  useEffect(() => {
-    if (session.status === "unauthenticated") router.push("/authentication");
-  }, [session.status]);
+  if (status === "loading" || !session.user) return (
+    <div className="grid place-content-center w-screen h-screen">
+      <Spinner />
+    </div>
+  )
 
   return (
     <div className="flex">

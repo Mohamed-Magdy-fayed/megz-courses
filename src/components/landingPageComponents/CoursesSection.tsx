@@ -13,6 +13,7 @@ const CoursesSection = () => {
         <div className="grid grid-cols-12">
             {data?.courses && data.courses.map((t, i) => (
                 <div
+                    key={t.id}
                     className="col-span-12 p-4 md:col-span-6 lg:col-span-4"
                 >
                     <Card className="">

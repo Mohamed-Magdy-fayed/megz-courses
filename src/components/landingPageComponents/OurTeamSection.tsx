@@ -9,6 +9,7 @@ const OurTeamSection = () => {
         <div className="grid grid-cols-12">
             {["course", "course", "course"].map((t, i) => (
                 <div
+                    key={`otsids${i}`}
                     className="col-span-12 p-4 md:col-span-6 lg:col-span-4"
                 >
                     <Card className="">

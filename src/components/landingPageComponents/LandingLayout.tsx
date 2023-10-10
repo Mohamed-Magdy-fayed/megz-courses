@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
 import { api } from '@/lib/api'
-import { LandingNavigationMenu } from './landingLayoutComponents/LandingNavMenu'
-import LandingFooter from './landingLayoutComponents/LandingFooter'
+import { LandingNavigationMenu } from './LandingNavMenu'
+import LandingFooter from './LandingFooter'
 
 const LandingLayout = ({ children }: { children: ReactNode }) => {
     const { data: courses } = api.courses.getLatest.useQuery()
