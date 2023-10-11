@@ -6,6 +6,7 @@ import { useNavStore } from "@/zustand/store";
 import { useSession } from "next-auth/react";
 import { ReactNode } from "react";
 import Spinner from "../Spinner";
+import UnauthorizedAccess from "./UnauthorizedAccess";
 
 const AppLayout = ({ children }: { children: ReactNode }) => {
   const { opened, openNav, closeNav } = useNavStore();
@@ -18,6 +19,8 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
     </div>
   )
 
+  if (session.user.userType === "student") return <UnauthorizedAccess />
+
   return (
     <div className="flex">
       <Sheet
@@ -25,7 +28,7 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
         onOpenChange={() => opened ? closeNav() : openNav()}
       >
         <SheetContent side="left" className="p-0 w-min">
-          <MegzDrawer mobile />
+          <MegzDrawer />
         </SheetContent>
       </Sheet>
       <div className="hidden lg:block p-0 w-min">

@@ -1,13 +1,12 @@
-import Scrollbar from "@/components/Scrollbar"
 import Spinner from "@/components/Spinner"
-import AppLayout from "@/components/layout/AppLayout"
+import LandingLayout from "@/components/landingPageComponents/LandingLayout"
 import FormIfram from "@/components/placementTest/FormIfram"
-import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy"
+import { ConceptTitle } from "@/components/ui/Typoghraphy"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { api } from "@/lib/api"
 import { useRouter } from "next/router"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 
 const CoursePlacementTestPage = () => {
     const router = useRouter()
@@ -22,7 +21,7 @@ const CoursePlacementTestPage = () => {
     if (!data?.course) return <div className="w-full h-full grid place-content-center"><Spinner /></div>
 
     return (
-        <AppLayout>
+        <LandingLayout>
             <ConceptTitle className="mb-8">Placement Test (form)</ConceptTitle>
             <div className="w-full grid justify-items-center gap-4 grid-cols-12">
                 <FormIfram className="col-span-12 xl:col-span-8" src={data.course.form.split(`src="`)[1]?.split(`" width`)[0]} />
@@ -38,7 +37,7 @@ const CoursePlacementTestPage = () => {
                     </CardFooter>
                 </Card>
             </div>
-        </AppLayout >
+        </LandingLayout >
     )
 }
 

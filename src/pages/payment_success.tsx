@@ -1,6 +1,6 @@
 import Spinner from "@/components/Spinner"
 import PaymentConfEmail from "@/components/emails/PaymentConfEmail"
-import AppLayout from "@/components/layout/AppLayout"
+import LandingLayout from "@/components/landingPageComponents/LandingLayout"
 import OrderReceipt from "@/components/orders/OrderReceipt"
 import { ConceptTitle } from "@/components/ui/Typoghraphy"
 import { useToast } from "@/components/ui/use-toast"
@@ -114,15 +114,15 @@ const SuccessfullPaymentPage = () => {
 
 
     if (loading) return (
-        <AppLayout>
+        <LandingLayout>
             <div className="w-full h-full grid place-content-center">
                 <Spinner />
             </div>
-        </AppLayout>
+        </LandingLayout>
     )
 
     return (
-        <AppLayout>
+        <LandingLayout>
             <ConceptTitle className="mb-4">Payment Successfull</ConceptTitle>
             {!orderData?.id ? (
                 <div className="w-full h-full grid place-content-center">
@@ -131,7 +131,7 @@ const SuccessfullPaymentPage = () => {
             ) : (
                 <OrderReceipt adminView={false} orderId={orderData.id} />
             )}
-        </AppLayout>
+        </LandingLayout>
     )
 }
 

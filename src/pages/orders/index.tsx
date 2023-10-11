@@ -11,6 +11,7 @@ import OrdersClient from "@/components/orders/OrdersClient";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { formatPrice } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const OrderPage: NextPage = () => {
     const { data, isLoading, isError } = api.orders.getAll.useQuery();
@@ -19,7 +20,7 @@ const OrderPage: NextPage = () => {
         <AppLayout>
             <main className="flex">
                 <div className="flex w-full flex-col gap-4">
-                    <div className="flex justify-between">
+                    <div className="flex justify-between gap-4">
                         <div className="flex flex-col gap-2">
                             <ConceptTitle>Orders</ConceptTitle>
                             <div className="flex items-center gap-2">
@@ -32,12 +33,12 @@ const OrderPage: NextPage = () => {
                                 </Button>
                             </div>
                         </div>
-                        <Card className="flex">
+                        <Card className="flex flex-col lg:flex-row flex-grow w-80">
                             <CardHeader>
                                 All Orders States
                             </CardHeader>
-                            <Separator orientation="vertical" />
-                            <CardContent className="flex items-center justify-between p-4 gap-4">
+                            <Separator orientation="vertical" className="hidden lg:block" />
+                            <CardContent className="flex items-center w-full justify-between p-4 gap-4 overflow-auto transition-all scrollbar-thin scrollbar-track-accent scrollbar-thumb-secondary">
                                 <Typography>
                                     Count: {data?.orders.length}
                                 </Typography>
@@ -58,7 +59,7 @@ const OrderPage: NextPage = () => {
                                     Fullfilled: {data?.orders.filter(order => order.status === "done").length}
                                 </Typography>
                             </CardContent>
-                            <Separator orientation="vertical" />
+                            <Separator orientation="vertical" className="hidden lg:block" />
                             <CardFooter className="p-4">
                                 Total Revenue: {formatPrice(data?.orders.map(order => order.status === "paid" ? order.amount : 0).reduce((a, b) => a + b, 0)!)}
                             </CardFooter>

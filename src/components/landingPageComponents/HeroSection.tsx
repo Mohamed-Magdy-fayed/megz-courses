@@ -1,7 +1,6 @@
 import { Typography } from '../ui/Typoghraphy'
-import FooterCourseSearchBar from './FooterCourseSearchBar'
-import Image from 'next/image'
-import hero_image from "../../../public/svgs/hero_image.svg"
+import CourseSearchBar from './CourseSearchBar'
+import HeroSvg from '../svgs/HeroSvg'
 
 const HeroSection = () => {
     return (
@@ -9,7 +8,7 @@ const HeroSection = () => {
             <div className="grid grid-cols-12 p-4 xl:gap-8">
                 <div className="col-span-12 lg:col-span-6">
                     <div>
-                        <Image src={hero_image} alt="image" />
+                        <HeroSvg />
                     </div>
                 </div>
                 <div className="col-span-12 lg:col-span-6 grid p-4 place-content-center">
@@ -21,7 +20,7 @@ const HeroSection = () => {
                             Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus expedita nam dignissimos facere quia eius.
                         </Typography>
                         <div className="w-max">
-                            <FooterCourseSearchBar />
+                            <CourseSearchBar />
                         </div>
                     </div>
                 </div>

@@ -7,16 +7,11 @@ export const coursesRouter = createTRPCRouter({
     .query(async ({ ctx }) => {
       const courses = await ctx.prisma.course.findMany({
         orderBy: {
-          createdAt: "asc",
+          createdAt: "desc",
         },
         take: 10,
-        select: {
-          _count: true,
-          id: true,
-          name: true,
-          price: true,
-          createdAt: true,
-          updatedAt: true,
+        include: {
+          levels: true,
           orders: true,
         }
       });
@@ -30,6 +25,7 @@ export const coursesRouter = createTRPCRouter({
         where: {
           name: {
             contains: query,
+            mode: "insensitive"
           },
         },
       });
@@ -100,6 +96,8 @@ export const coursesRouter = createTRPCRouter({
     .input(
       z.object({
         name: z.string(),
+        image: z.string(),
+        description: z.string(),
         price: z.number(),
         form: z.string(),
         oralTest: z.string(),
@@ -108,12 +106,16 @@ export const coursesRouter = createTRPCRouter({
     .mutation(async ({ input: {
       form,
       name,
+      image,
+      description,
       oralTest,
       price
     }, ctx }) => {
       const course = await ctx.prisma.course.create({
         data: {
           name,
+          image,
+          description,
           price,
           form,
           oralTest,

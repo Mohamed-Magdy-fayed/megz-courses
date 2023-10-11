@@ -6,13 +6,13 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu"
-import { Order, Prisma } from "@prisma/client"
+import { Course, Order } from "@prisma/client"
 import Spinner from "@/components/Spinner"
 import { Button } from "@/components/ui/button"
 import { Typography } from "@/components/ui/Typoghraphy"
 import { BookOpen, LayoutDashboard, LogIn, Menu, UserPlus } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { FC, useState } from "react"
+import { FC, useEffect, useState } from "react"
 import { LogoForeground } from "../layout/Logo"
 import { signOut, useSession } from "next-auth/react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
@@ -20,30 +20,25 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
 import { Separator } from "../ui/separator"
 import { DarkModeToggle } from "../dark-mode-toggle"
 import { cn } from "@/lib/utils"
+import { api } from "@/lib/api"
+import { ScrollArea } from "../ui/scroll-area"
 
-interface LandingNavigationMenuProps {
-  data: {
-    courses: {
-      name: string;
-      id: string;
-      updatedAt: Date;
-      createdAt: Date;
-      orders: Order[];
-      price: number;
-      _count: Prisma.CourseCountOutputType;
-    }[];
-  } | undefined
-}
+export const LandingNavigationMenu = () => {
+  const latestCoursesQuery = api.courses.getLatest.useQuery(undefined, {
+    enabled: false,
 
-export const LandingNavigationMenu: React.FC<LandingNavigationMenuProps> = ({
-  data,
-}) => {
+  })
+
+  useEffect(() => {
+    latestCoursesQuery.refetch()
+  }, [])
+
   const session = useSession()
 
   return (
     <div className="w-full z-10 py-2 px-4 md:px-8 md:py-4 max-w-7xl lg:mx-auto">
       <div className="grid items-center grid-cols-12 border-b border-primary">
-        <DesktopNavMenu data={data} />
+        <DesktopNavMenu courses={latestCoursesQuery.data?.courses} />
         {/* Logo and home link */}
         <div className="col-span-6 flex items-center justify-center">
           <Link href={'/'} className="flex items-center gap-1 justify-center w-fit">
@@ -72,7 +67,11 @@ export const LandingNavigationMenu: React.FC<LandingNavigationMenuProps> = ({
   )
 }
 
-const DesktopNavMenu: FC<LandingNavigationMenuProps> = ({ data }) => {
+const DesktopNavMenu = ({ courses }: {
+  courses: (Course & {
+    orders: Order[]
+  })[] | undefined
+}) => {
   return (
     <NavigationMenu className="col-span-3">
       <NavigationMenuList>
@@ -81,20 +80,22 @@ const DesktopNavMenu: FC<LandingNavigationMenuProps> = ({ data }) => {
             Courses
           </NavigationMenuTrigger>
           <NavigationMenuContent>
-            <ul className="flex flex-col items-start p-0">
-              {!data?.courses ? <Spinner /> : data.courses.map((course) => (
+            <ScrollArea className="max-h-96 flex flex-col gap-2">
+              {!courses ? <Spinner /> : courses.map((course) => (
                 <Link
                   key={course.id}
                   href={`/courses/${course.id}`}
-                  className="hover:bg-primary whitespace-nowrap w-full transition-colors hover:text-primary-foreground p-4"
+                  className=" whitespace-nowrap border-b border-muted"
                 >
-                  <Typography variant={"secondary"}>{course.name}</Typography>
-                  <p className="whitespace-nowrap">
-                    {course.orders.length} Enrollments
-                  </p>
+                  <div className="py-2 px-4 hover:bg-primary/20">
+                    <Typography className="" variant={"secondary"}>{course.name}</Typography>
+                    <Typography className="whitespace-nowrap">
+                      {course.orders.length} Enrollments
+                    </Typography>
+                  </div>
                 </Link>
               ))}
-            </ul>
+            </ScrollArea>
           </NavigationMenuContent>
         </NavigationMenuItem>
         <NavigationMenuItem className="hidden md:inline-flex">
@@ -106,8 +107,8 @@ const DesktopNavMenu: FC<LandingNavigationMenuProps> = ({ data }) => {
               {["Join as a teacher", "Join as a sales agent", "Join as a project manager"].map((item) => (
                 <Link
                   key={item}
-                  href={`/careers/${item}`}
-                  className="hover:bg-primary whitespace-nowrap w-full transition-colors hover:text-primary-foreground p-4"
+                  href={`/comming_soon`}
+                  className="hover:bg-primary/20 whitespace-nowrap w-full transition-colors p-4"
                 >
                   <Typography variant={"secondary"}>{item}</Typography>
                 </Link>
@@ -182,14 +183,14 @@ const DesktopAuthenticatedProfileMenu = () => {
 
   const handleLogout = () => {
     setLoading(true)
-    signOut()
+    signOut({callbackUrl: `/`})
   }
 
   return (
     <div className="hidden md:flex col-span-3 items-center gap-4 justify-end">
       {/* Authenticated Users (Students) */}
       {session.data?.user.userType === "student" ? (
-        <Link href={`/courses/${session.data?.user.id}`}>
+        <Link href={`/my_courses/${session.data?.user.id}`}>
           <Button customeColor={"primaryIcon"}>
             <Typography className="text-foreground whitespace-nowrap">My courses</Typography>
             <BookOpen />
@@ -256,7 +257,7 @@ const MobileAuthenticatedProfileMenu = () => {
 
   const handleLogout = () => {
     setLoading(true)
-    signOut()
+    signOut({callbackUrl: `/`})
   }
 
   return (
@@ -298,7 +299,7 @@ const MobileAuthenticatedProfileMenu = () => {
           </div>
           <Separator></Separator>
           {session.data?.user.userType === "student" ? (
-            <Link href={`/courses/${session.data?.user.id}`}>
+            <Link href={`/my_courses/${session.data?.user.id}`}>
               <Button customeColor={"primaryIcon"} className="w-full my-2">
                 <Typography className="text-foreground">My courses</Typography>
                 <BookOpen />

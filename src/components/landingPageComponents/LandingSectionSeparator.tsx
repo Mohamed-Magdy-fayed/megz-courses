@@ -20,7 +20,7 @@ const LandingSectionSeparator: FC<LandingSectionSeparatorProps> = ({ images, sub
                 </div>
             </div>
             <div>
-                <div className={cn(`relative bg-cover bg-center  w-full h-40 bg-fixed`, images)}>
+                <div className={cn(`relative bg-cover bg-center w-full h-40 bg-fixed`, images)}>
                     <div className="grid place-content-center absolute inset-0 bg-accent/50">
                         <Typography
                             variant={"primary"}

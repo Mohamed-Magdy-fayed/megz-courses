@@ -5,9 +5,9 @@ import { useEffect, useState } from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
 import { Typography } from "../ui/Typoghraphy";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { LogoForeground } from "./Logo";
 
 export const mainNavLinks = [
   {
@@ -47,13 +47,9 @@ export const mainNavLinks = [
     url: "account",
   },
   {
-    label: "Settings",
-    url: "settings",
-  },
-  {
     label: "Login or Register",
     onClick: () => {
-      signOut()
+      signOut({ callbackUrl: `/authentication` })
     },
   },
   {
@@ -62,7 +58,7 @@ export const mainNavLinks = [
   },
 ];
 
-export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
+export default function MegzDrawer() {
   const pathname = usePathname();
 
   const navStore = useNavStore();
@@ -78,7 +74,9 @@ export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
 
   return (
     <div className="sticky left-0 top-0 flex items-center h-screen flex-col gap-4 overflow-auto bg-muted text-muted-foreground p-4">
-      <Image src="/favicon.png" width={80} height={80} alt="logo" />
+      <div>
+        <LogoForeground className='bg-muted-foreground' />
+      </div>
       <div className="rounded-lg bg-muted-foreground/50 p-4 w-full text-foreground">
         <Typography variant={"secondary"} >Megz</Typography>
         <Typography>Development</Typography>

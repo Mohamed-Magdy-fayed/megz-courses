@@ -70,7 +70,7 @@ export const Email = ({
                         </Text>
                         <Text className="text-black text-[14px] leading-[24px]">
                             Your order <strong>{orderNumber}</strong> is pending payment now{' '}
-                            <strong>{orderAmount}</strong>.
+                            <strong>{orderAmount}</strong>
                         </Text>
                         <Section style={informationTable}>
                             <Row style={informationTableRow}>

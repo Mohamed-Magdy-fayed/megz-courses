@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Dispatch, FC, SetStateAction, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
@@ -12,6 +12,9 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { useRouter } from "next/router";
+import useDebounce from "@/hooks/useDebounce";
+import { Course } from "@prisma/client";
+import { api } from "@/lib/api";
 
 const formSchema = z.object({
     query: z.string(),
@@ -19,10 +22,11 @@ const formSchema = z.object({
 
 type CourseSearchQuery = z.infer<typeof formSchema>;
 
-const FooterCourseSearchBar = () => {
+const CourseSearchBar: FC<{ setData?: Dispatch<SetStateAction<Course[]>> }> = ({
+    setData
+}) => {
     const [loading, setLoading] = useState(false);
     const router = useRouter()
-
     const defaultValues: z.infer<typeof formSchema> = {
         query: "",
     };
@@ -33,8 +37,7 @@ const FooterCourseSearchBar = () => {
     });
 
     const onSubmit = (data: CourseSearchQuery) => {
-        console.log(data);
-        if (data.query.length === 0) router.push('/search-courses')
+        router.push(`/search-courses?query=${data.query}`)
     };
 
     return (
@@ -71,4 +74,4 @@ const FooterCourseSearchBar = () => {
     );
 }
 
-export default FooterCourseSearchBar
+export default CourseSearchBar

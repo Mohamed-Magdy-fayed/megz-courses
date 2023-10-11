@@ -126,6 +126,8 @@ model Trainer {
 model Course {
     id             String          @id @default(auto()) @map("_id") @db.ObjectId
     name           String
+    description    String?
+    image          String?
     price          Int
     form           String
     oralTest       String

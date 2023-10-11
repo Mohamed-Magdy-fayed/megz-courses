@@ -105,13 +105,14 @@ export const authOptions: NextAuthOptions = {
         }
       }
       return session
-    },
+    }
   },
   debug: env.NODE_ENV === "development",
   session: { strategy: "jwt" },
   secret: env.NEXTAUTH_SECRET,
   pages: {
     signIn: '/authentication',
+    signOut: '/authentication',
   }
 };
 

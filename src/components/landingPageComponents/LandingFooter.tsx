@@ -1,15 +1,15 @@
 import { mainNavLinks } from '../layout/Drawer'
 import { LogoPrimary } from '../layout/Logo'
 import Link from 'next/link'
-import FooterCourseSearchBar from './FooterCourseSearchBar'
+import FooterCourseSearchBar from './CourseSearchBar'
 import { Linkedin, Instagram, Youtube, Facebook } from 'lucide-react'
 import Copyright from '@/components/Copyright'
 
 const socialIcons = [
-    { id: "soic1", icon: <Linkedin className='text-[#0072b1]' />, url: "/", hover: "hover:bg-[#0072b1]" },
-    { id: "soic2", icon: <Instagram className='text-[#9b6954]' />, url: "/", hover: "hover:bg-[#9b6954]" },
-    { id: "soic3", icon: <Youtube className='text-[#c4302b]' />, url: "/", hover: "hover:bg-[#c4302b]" },
-    { id: "soic4", icon: <Facebook className='text-[#4267B2]' />, url: "/", hover: "hover:bg-[#4267B2]" },
+    { id: "soic1", icon: <Linkedin className='text-[#0072b1]' />, url: "https://www.linkedin.com/in/mohamed-magdy-fayed/", hover: "hover:bg-[#0072b1]" },
+    { id: "soic2", icon: <Instagram className='text-[#9b6954]' />, url: "https://www.instagram.com/", hover: "hover:bg-[#9b6954]" },
+    { id: "soic3", icon: <Youtube className='text-[#c4302b]' />, url: "https://www.youtube.com/", hover: "hover:bg-[#c4302b]" },
+    { id: "soic4", icon: <Facebook className='text-[#4267B2]' />, url: "https://www.facebook.com/bm.mohamed.magdi", hover: "hover:bg-[#4267B2]" },
 ]
 
 const LandingFooter = () => {
@@ -48,7 +48,7 @@ const LandingFooter = () => {
                         })}
                     </div>
                     <div className='col-span-12 lg:col-span-3 flex items-center justify-center p-4 md:justify-end lg:justify-center'>
-                        <FooterCourseSearchBar />
+                        <FooterCourseSearchBar  />
                     </div>
                 </div>
             </div>
