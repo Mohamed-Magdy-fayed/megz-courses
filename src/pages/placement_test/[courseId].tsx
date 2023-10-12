@@ -12,11 +12,6 @@ const CoursePlacementTestPage = () => {
     const router = useRouter()
     const id = router.query.courseId as string
     const { data } = api.courses.getById.useQuery({ id })
-    const { data: sheetData } = api.googleSheets.getSheetData.useQuery({ url: `https://docs.google.com/spreadsheets/d/1JjqwgAiCG0aguecp-ganKADc1tr-IPbC-L6p03-eVyY/edit?resourcekey#gid=1718928846` })
-
-    useEffect(() => {
-        console.log(sheetData);
-    }, [sheetData])
 
     if (!data?.course) return <div className="w-full h-full grid place-content-center"><Spinner /></div>
 
