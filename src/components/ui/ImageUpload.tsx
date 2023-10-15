@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ImageOff, ImagePlus, Trash } from "lucide-react";
 import Image from "next/image";
@@ -13,6 +13,7 @@ interface ImageUploadProps {
   onChange: (value: string) => void;
   onRemove: () => void;
   value?: string;
+  customeImage?: ReactNode;
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -20,6 +21,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   onRemove,
   value,
   disabled,
+  customeImage,
 }) => {
   const [isMounted, setIsMounted] = useState(false);
 
@@ -38,12 +40,14 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       <div className="flex items-center justify-between gap-4 py-4">
         {value && value.length > 0 ? (
           <div className="flex gap-4 rounded-md items-center">
-            <Avatar className="w-20 h-20">
-              <AvatarImage alt="user image" src={value} />
-              <AvatarFallback>
-                <Skeleton className="w-full h-full rounded-full" />
-              </AvatarFallback>
-            </Avatar>
+            {customeImage ? customeImage : (
+              <Avatar className="w-20 h-20">
+                <AvatarImage alt="user image" src={value} />
+                <AvatarFallback>
+                  <Skeleton className="w-full h-full rounded-full" />
+                </AvatarFallback>
+              </Avatar>
+            )}
             <div className="">
               <Button
                 variant={"icon"}
@@ -55,7 +59,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               </Button>
             </div>
           </div>
-        ) : (
+        ) : customeImage ? customeImage : (
           <div className="rounded-md w-20 h-20">
             <Skeleton className="w-full h-full rounded-full grid place-content-center">
               <ImageOff></ImageOff>

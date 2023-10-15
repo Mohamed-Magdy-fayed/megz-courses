@@ -6,12 +6,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Copy, MoreVertical } from "lucide-react";
+import { CheckCircle, Copy, MoreVertical, Trash } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/lib/api";
-import { AssignModal } from "../modals/AssignModal";
 import { OrderRow } from "./OrdersColumn";
 import { useToast } from "@/components/ui/use-toast";
+import { AlertModal } from "../modals/AlertModal";
 
 interface CellActionProps {
   data: OrderRow;
@@ -21,34 +21,38 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const assignMutation = api.salesOperations.createSalesOperation.useMutation()
+  const trpcUtils = api.useContext()
+  const deleteMutation = api.orders.deleteOrders.useMutation()
   const { toast } = useToast()
 
-  const onCopy = (id: string) => {
-    navigator.clipboard.writeText(id);
+  const onCopy = (orderNumber: string) => {
+    navigator.clipboard.writeText(orderNumber);
     toast({
       variant: "success",
-      description: "Category ID copied to the clipboard"
+      description: "Order number copied to the clipboard"
     })
   };
 
-  const onAssign = (assigneeId: string) => {
+  const onDelete = () => {
     setLoading(true)
-    setOpen(false)
-    assignMutation.mutate(
-      { assigneeId, status: "assigned" },
+    deleteMutation.mutate(
+      [data.id],
       {
         onSuccess: (data) => {
           toast({
             variant: "success",
-            description: `Operation ID: ${data.salesOperations.code}`
+            description: `Deleted ${data.deletedOrders.count} order(s)`
           })
-          setLoading(false)
+          trpcUtils.orders.invalidate()
+            .then(() => {
+              setLoading(false)
+              setOpen(false)
+            })
         },
-        onError: (error) => {
+        onError: (e) => {
           toast({
             variant: "destructive",
-            description: "Something went wrong."
+            description: e.message
           })
           setLoading(false)
         },
@@ -58,11 +62,11 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
 
   return (
     <>
-      <AssignModal
+      <AlertModal
         isOpen={open}
         loading={loading}
         onClose={() => setOpen(false)}
-        onConfirm={onAssign}
+        onConfirm={onDelete}
       />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -72,13 +76,13 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => onCopy(data.id)}>
+          <DropdownMenuItem onClick={() => onCopy(data.orderNumber)}>
             <Copy className="w-4 h-4 mr-2" />
             Copy Id
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setOpen(true)}>
-            <CheckCircle className="w-4 h-4 mr-2" />
-            Assign
+            <Trash className="w-4 h-4 mr-2" />
+            Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

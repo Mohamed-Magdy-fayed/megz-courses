@@ -1,8 +1,37 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 
 export const coursesRouter = createTRPCRouter({
+  getLatest: publicProcedure
+    .query(async ({ ctx }) => {
+      const courses = await ctx.prisma.course.findMany({
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 10,
+        include: {
+          levels: true,
+          orders: true,
+        }
+      });
+
+      return { courses };
+    }),
+  query: publicProcedure
+    .input(z.object({ query: z.string() }))
+    .query(async ({ ctx, input: { query } }) => {
+      const courses = await ctx.prisma.course.findMany({
+        where: {
+          name: {
+            contains: query,
+            mode: "insensitive"
+          },
+        },
+      });
+
+      return { courses };
+    }),
   getAll: protectedProcedure.query(async ({ ctx }) => {
     const courses = await ctx.prisma.course.findMany({
       include: {
@@ -67,6 +96,8 @@ export const coursesRouter = createTRPCRouter({
     .input(
       z.object({
         name: z.string(),
+        image: z.string(),
+        description: z.string(),
         price: z.number(),
         form: z.string(),
         oralTest: z.string(),
@@ -75,12 +106,16 @@ export const coursesRouter = createTRPCRouter({
     .mutation(async ({ input: {
       form,
       name,
+      image,
+      description,
       oralTest,
       price
     }, ctx }) => {
       const course = await ctx.prisma.course.create({
         data: {
           name,
+          image,
+          description,
           price,
           form,
           oralTest,

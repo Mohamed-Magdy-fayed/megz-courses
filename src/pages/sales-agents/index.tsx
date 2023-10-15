@@ -41,7 +41,7 @@ const SalesAgentsPage = () => {
           })
         },
         onSettled: () => {
-          trpcUtils.invalidate()
+          trpcUtils.salesAgents.invalidate()
           setAssingIsOpen(false)
           setLoading(false)
         }

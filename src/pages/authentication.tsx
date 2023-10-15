@@ -10,7 +10,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ImageIcon } from "lucide-react";
 
 const AuthenticationPage = () => {
-  const [variant, setVariant] = useState<"login" | "register">("login");
+  const defaultVariant = useRouter().query.variant as "login" | "register"
+  const [variant, setVariant] = useState<"login" | "register">(defaultVariant || "login");
   const session = useSession();
   const router = useRouter();
 

@@ -11,7 +11,7 @@ import { salesAgentsRouter } from "./routers/salesAgents";
 import { ordersRouter } from "./routers/orders";
 import { commsRouter } from "./routers/whatsapp";
 import { placementTestsRouter } from "./routers/placementTests";
-import { googleSheetsRouter } from "./routers/googleSheets";
+import { selfServeRouter } from "./routers/selfServe";
 
 /**
  * This is the primary router for your server.
@@ -31,7 +31,7 @@ export const appRouter = createTRPCRouter({
   orders: ordersRouter,
   comms: commsRouter,
   placementTests: placementTestsRouter,
-  googleSheets: googleSheetsRouter,
+  selfServe: selfServeRouter,
 });
 
 // export type definition of API

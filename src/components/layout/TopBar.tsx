@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Button } from "../ui/button";
-import { MenuIcon, BellIcon, UserCircle, Lightbulb, GraduationCap } from "lucide-react";
+import { MenuIcon, UserCircle, GraduationCap } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Typography } from "../ui/Typoghraphy";
@@ -13,9 +13,9 @@ import { Separator } from "../ui/separator";
 import { useCallback, useEffect, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
 import Spinner from "../Spinner";
-import Modal from "../ui/modal";
 import { DarkModeToggle } from "../dark-mode-toggle";
 import Link from "next/link";
+import { LogoForeground } from "./Logo";
 
 export default function MegzTopBar() {
   const session = useSession();
@@ -34,7 +34,7 @@ export default function MegzTopBar() {
 
   const handleLogout = () => {
     setLoading(true)
-    signOut()
+    signOut({ callbackUrl: `/` })
   }
 
   useEffect(() => {
@@ -71,30 +71,47 @@ export default function MegzTopBar() {
               </Button>
             </TooltipTrigger>
           </Tooltip>
-          <div
-            className="flex items-center cursor-pointer gap-2 font-sans text-slate-500"
-            onClick={() => router.push("/")}
-          >
-            <Avatar className="h-6 w-6" >
-              <AvatarImage src="/favicon.png" alt="Logo" />
-              <AvatarFallback>Logo</AvatarFallback>
-            </Avatar>
-            <Typography variant={"secondary"}>Courses</Typography>
+          <div className="col-span-6 flex items-center justify-center">
+            <Link href={'/'} className="flex items-center gap-2 justify-center w-fit">
+              <LogoForeground className="w-12 h-12" />
+              <Typography variant={"primary"} className="!text-lg !leading-none !font-extrabold text-primary">
+                Megz
+              </Typography>
+              <Typography variant={"primary"} className="!text-lg !leading-none !font-extrabold text-primary">
+                Learning
+              </Typography>
+            </Link>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Link href={`/my_courses/${session.data?.user.id}`}>
-            <Button variant="outline" customeColor={"mutedOutlined"} >
-              <GraduationCap className="w-4 h-4"></GraduationCap>
-              <Typography>My Courses</Typography>
-            </Button>
-          </Link>
-          <Link href={`/account`}>
-            <Button variant="icon" customeColor={"primaryIcon"} >
-              <UserCircle className="w-4 h-4"></UserCircle>
-            </Button>
-          </Link>
-          <DropdownMenu>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link href={`/my_courses/${session.data?.user.id}`}>
+                <Button variant="icon" customeColor={"mutedIcon"} >
+                  <GraduationCap className="w-4 h-4"></GraduationCap>
+                </Button>
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>
+              My courses
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link href={`/account`}>
+                <Button variant="icon" customeColor={"primaryIcon"} >
+                  <UserCircle className="w-4 h-4"></UserCircle>
+                </Button>
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>
+              My Account
+            </TooltipContent>
+          </Tooltip>
+          <DropdownMenu
+            open={open}
+            onOpenChange={(val) => setOpen(val)}
+          >
             <Tooltip>
               <TooltipTrigger asChild>
                 <DropdownMenuTrigger asChild>

@@ -1,162 +1,158 @@
-import { CircleDollarSign, ListTodo, MoveDownLeft, MoveUpRight, Users2 } from "lucide-react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Typography } from "@/components/ui/Typoghraphy";
-import { Progress } from "@/components/ui/progress";
+import { CircleDollarSign, ListTodo, Users2 } from "lucide-react";
 import { api } from "@/lib/api";
-import { cn } from "@/lib/utils";
-import { FC, useEffect, useState } from "react";
+import { getDifferenceMargin, getLastWeekDate } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import StateCard from "./StateCard";
+
+export type StateOverview = {
+  title: string
+  target: number
+  style: "currency" | "percent" | ""
+  icon: JSX.Element
+  textColor: string
+  backgroundColor: string
+  sinceLastWeek: number
+  isLiability: boolean
+  progress?: boolean
+  totalOrders?: number
+}
 
 export default function StatesOverview() {
-  const { data: salesAgents } = api.salesAgents.getSalesAgents.useQuery()
-  const { data: students } = api.users.getUsers.useQuery({ userType: "student" })
-  const { data: operations } = api.salesOperations.getAll.useQuery()
-  const { data: ordersTotal } = api.orders.getAll.useQuery()
+  const salesAgentsQuery = api.salesAgents.getSalesAgents.useQuery(undefined, {
+    enabled: false
+  })
+  const studentsQuery = api.users.getUsers.useQuery({ userType: "student" }, {
+    enabled: false
+  })
+  const operationsQuery = api.salesOperations.getAll.useQuery(undefined, {
+    enabled: false
+  })
+  const ordersQuery = api.orders.getAll.useQuery(undefined, {
+    enabled: false
+  })
 
-  const totalSalaries = salesAgents?.salesAgents
-    .map(agent => agent.salesAgent?.salary)
-    .filter(i => i && i)
-    .reduce((prev, curr) => {
-      return prev + Number(curr)
-    }, 0) || 0
-  const totalStudents = students?.users.length || 0
-  const progress = operations?.salesOperations
-    ? operations?.salesOperations
-      .filter(op => op.status === "completed")
-      .length / operations?.salesOperations.length
-    : 0
-  const totalOrders = ordersTotal?.orders.length
-  const totalIncome = ordersTotal?.orders
-    ? ordersTotal.orders
-      .map(order => order.amount)
-      .reduce((prev, curr) => {
-        return prev + Number(curr)
-      }, 0) / 100
-    : 0
+  const [budget, setBudget] = useState<StateOverview>({
+    title: "Budget",
+    target: 0,
+    style: "currency",
+    icon: <CircleDollarSign className="text-background"></CircleDollarSign>,
+    textColor: "text-red-500",
+    backgroundColor: "bg-red-500",
+    sinceLastWeek: 0,
+    isLiability: true
+  })
+  const [students, setStudents] = useState<StateOverview>({
+    title: "Total students",
+    target: 0,
+    style: "",
+    icon: <Users2 className="text-background"></Users2>,
+    textColor: "text-green-500",
+    backgroundColor: "bg-green-500",
+    sinceLastWeek: 0,
+    isLiability: false
+  })
+  const [tasks, setTasks] = useState<StateOverview>({
+    title: "Tasks progress",
+    target: 0,
+    style: "percent",
+    icon: <ListTodo className="text-background"></ListTodo>,
+    progress: true,
+    textColor: "text-orange-500",
+    backgroundColor: "bg-orange-500",
+    sinceLastWeek: 0,
+    isLiability: false,
+  })
+  const [income, setIncome] = useState<StateOverview>({
+    title: "Total Income",
+    target: 0,
+    style: "currency",
+    icon: <CircleDollarSign className="text-background"></CircleDollarSign>,
+    textColor: "text-indigo-500",
+    backgroundColor: "bg-indigo-500",
+    sinceLastWeek: 0,
+    isLiability: false,
+  })
 
-  const states = [
-    {
-      title: "Budget",
-      target: totalSalaries,
-      style: "currency",
-      icon: <CircleDollarSign className="text-background"></CircleDollarSign>,
-      textColor: "text-red-500",
-      backgroundColor: "bg-red-500",
-    },
-    {
-      title: "Total students",
-      target: totalStudents,
-      icon: <Users2 className="text-background"></Users2>,
-      style: "",
-      textColor: "text-green-500",
-      backgroundColor: "bg-green-500",
-    },
-    {
-      title: "Tasks progress",
-      target: progress,
-      icon: <ListTodo className="text-background"></ListTodo>,
-      style: "percent",
-      progress: true,
-      textColor: "text-orange-500",
-      backgroundColor: "bg-orange-500",
-    },
-    {
-      title: "Total Income",
-      totalOrders,
-      target: totalIncome,
-      style: "currency",
-      icon: <CircleDollarSign className="text-background"></CircleDollarSign>,
-      textColor: "text-indigo-500",
-      backgroundColor: "bg-indigo-500",
-    },
-  ];
+  const dataLoader = () => {
+    salesAgentsQuery.refetch()
+      .then(({ data }) => {
+        const {
+          differenceMargin: salariesSinceLastWeek,
+          total: currentTotalSalaries
+        } = data?.salesAgents.map
+            ? getDifferenceMargin(data?.salesAgents, "salary")
+            : { differenceMargin: 0, total: 0 }
+
+        setBudget(prev => ({
+          ...prev,
+          target: currentTotalSalaries,
+          sinceLastWeek: salariesSinceLastWeek,
+        }))
+      })
+
+    studentsQuery.refetch()
+      .then(({ data }) => {
+        const totalStudents = data?.users.length || 0
+        const lastWeekStudents = data?.users
+          .filter(a => new Date(a.createdAt) > getLastWeekDate()).length || 0
+        const studentsSinceLastWeek = (totalStudents - lastWeekStudents) / lastWeekStudents
+
+        setStudents(prev => ({
+          ...prev,
+          target: totalStudents,
+          sinceLastWeek: studentsSinceLastWeek,
+        }))
+      })
+
+    operationsQuery.refetch()
+      .then(({ data }) => {
+        const progress = data?.salesOperations
+          ? data?.salesOperations
+            .filter(op => op.status === "completed")
+            .length / data?.salesOperations.length
+          : 0
+        const lastWeekProgress = data?.salesOperations
+          ? data?.salesOperations
+            .filter(op => op.status === "completed" && new Date(op.updatedAt) < getLastWeekDate())
+            .length / data?.salesOperations
+              .filter(op => new Date(op.createdAt) < getLastWeekDate()).length
+          : 0
+        const progressSinceLastWeek = (progress - lastWeekProgress) * 100
+
+        setTasks(prev => ({
+          ...prev,
+          target: progress,
+          sinceLastWeek: progressSinceLastWeek,
+        }))
+      })
+
+    ordersQuery.refetch()
+      .then(({ data }) => {
+        const totalOrders = data?.orders.length
+        const {
+          differenceMargin: totalIncomeSinceLastWeek,
+          total: totalIncome
+        } = data?.orders
+            ? getDifferenceMargin(data.orders, "amount")
+            : { differenceMargin: 0, total: 0 }
+
+        setIncome(prev => ({
+          ...prev,
+          target: totalIncome,
+          sinceLastWeek: totalIncomeSinceLastWeek,
+          totalOrders,
+        }))
+      })
+  }
+
+  useEffect(dataLoader, [])
 
   return (
     <>
-      {states.map((state) => (
-        <Card
-          key={state.title}
-          className="col-span-12 rounded-2xl bg-white p-2 shadow relative md:col-span-6 xl:col-span-3"
-        >
-          <CardHeader>
-            <Typography variant="secondary" className="!text-xl xl:tracking-tighter xl:!text-lg">
-              {state.title}
-            </Typography>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <Counter state={state}></Counter>
-            {state.progress && (
-              <Progress
-                indicatorColor="bg-primary"
-                className="bg-accent"
-                value={state.target * 100}
-              >
-              </Progress>
-            )}
-            {state.totalOrders && (
-              <Typography variant="bodyText" className="text-error">{state.totalOrders} Orders</Typography>
-            )}
-            <div
-              className={`absolute right-4 top-4 rounded-full p-4 ${state.backgroundColor}`}
-            >
-              {state.icon}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+      <StateCard state={budget} />
+      <StateCard state={students} />
+      <StateCard state={tasks} />
+      <StateCard state={income} />
     </>
   );
-}
-
-interface CounterProps {
-  state: {
-    title: string;
-    totalOrders?: number;
-    target: number;
-    style: string;
-    icon: JSX.Element;
-    textColor: string;
-    backgroundColor: string;
-    progress?: boolean
-  }
-}
-
-const Counter: FC<CounterProps> = ({ state: {
-  backgroundColor,
-  icon,
-  style,
-  textColor,
-  title,
-  target,
-  totalOrders
-} }) => {
-  const [current, setCurrent] = useState(0)
-
-  useEffect(() => {
-    const ticker = setInterval(() => {
-      setCurrent(prev => {
-        if (prev > target) {
-          clearInterval(ticker)
-          return target
-        }
-        return target / 1000 > 1 ? prev + 1000 : prev + 10
-      })
-    }, 20)
-    console.log("inputs", {
-      backgroundColor,
-      icon,
-      style,
-      textColor,
-      title,
-      target,
-      totalOrders
-    });
-    return () => clearInterval(ticker)
-  }, [target])
-
-  return (
-    <Typography variant="bodyText" className={cn("!text-3xl font-bold", textColor)}>
-      {current > 1000 ? new Intl.NumberFormat("en-US", { style, currency: "EGP", maximumFractionDigits: 2 }).format(current / 1000) : new Intl.NumberFormat("en-US", { style: style === "currency" ? "currency" : style === "percent" ? "percent" : undefined, currency: "EGP", maximumFractionDigits: 2 }).format(current)}
-      {current > 1000 && "K"}
-    </Typography>
-  )
 }

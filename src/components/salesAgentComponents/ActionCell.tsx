@@ -12,6 +12,7 @@ import { useState } from "react";
 import { AlertModal } from "../modals/AlertModal";
 import { api } from "@/lib/api";
 import { useToast } from "../ui/use-toast";
+import Link from "next/link";
 
 interface CellActionProps {
     id: string;
@@ -87,13 +88,11 @@ const CellAction: React.FC<CellActionProps> = ({ id, assigneeId, code }) => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem
-                        onClick={() =>
-                            router.push(`/operation/${id}`)
-                        }
-                    >
-                        <SearchSlash className="w-4 h-4 mr-2" />
-                        View
+                    <DropdownMenuItem>
+                        <Link className="flex" href={`/operation/${id}`}>
+                            <SearchSlash className="w-4 h-4 mr-2" />
+                            View
+                        </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={onCopy}>
                         <Copy className="w-4 h-4 mr-2" />

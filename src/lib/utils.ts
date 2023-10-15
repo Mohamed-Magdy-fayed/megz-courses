@@ -25,3 +25,42 @@ export const formatPrice = (price: number) => {
 export const formatPercentage = (value: number) => {
   return new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 }).format(value / 100)
 }
+
+export const getLastWeekDate = (now = new Date()) => {
+  return new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() - 7,
+  );
+}
+
+export const isGoodState = (difference: number, isLiability: boolean) => {
+  return (isLiability && difference < 0) || (!isLiability && difference > 0)
+}
+
+export const getDifferenceMargin = <T extends { createdAt: Date }>(data: T[], accessor: keyof typeof data[0]) => {
+  const currentTotal = data
+    .map(item => item[accessor])
+    .reduce((prev, curr) => {
+      return prev + Number(curr)
+    }, 0)
+
+  const lastWeekTotal = data
+    .filter(item => new Date(item.createdAt) > getLastWeekDate())
+    .map(item => item[accessor])
+    .reduce((prev, curr) => {
+      return prev + Number(curr)
+    }, 0)
+
+  const secondLastWeekTotal = data
+    .filter(item => new Date(item.createdAt) > getLastWeekDate(getLastWeekDate()) && new Date(item.createdAt) < getLastWeekDate())
+    .map(item => item[accessor])
+    .reduce((prev, curr) => {
+      return prev + Number(curr)
+    }, 0)
+
+  return {
+    differenceMargin: lastWeekTotal / secondLastWeekTotal * 100,
+    total: currentTotal
+  }
+}

@@ -5,68 +5,64 @@ import { useEffect, useState } from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
 import { Typography } from "../ui/Typoghraphy";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { Button } from "../ui/button";
+import { LogoForeground } from "./Logo";
 
-export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
+export const mainNavLinks = [
+  {
+    label: "Dashboard",
+    url: "dashboard",
+  },
+  {
+    label: "Orders",
+    url: "orders",
+  },
+  {
+    label: "Students",
+    url: "students",
+  },
+  {
+    label: "Staff",
+    url: "staff",
+  },
+  {
+    label: "Sales Team",
+    url: "sales-agents",
+  },
+  {
+    label: "Content Management",
+    url: "content",
+  },
+  {
+    label: "Database",
+    url: "database",
+  },
+  {
+    label: "Configurations",
+    url: "config",
+  },
+  {
+    label: "Account",
+    url: "account",
+  },
+  {
+    label: "Login or Register",
+    onClick: () => {
+      signOut({ callbackUrl: `/authentication` })
+    },
+  },
+  {
+    label: "Error",
+    url: "404",
+  },
+];
+
+export default function MegzDrawer() {
   const pathname = usePathname();
 
   const navStore = useNavStore();
 
-  const links = [
-    {
-      label: "Overview",
-      url: "",
-    },
-    {
-      label: "Orders",
-      url: "orders",
-    },
-    {
-      label: "Students",
-      url: "students",
-    },
-    {
-      label: "Staff",
-      url: "staff",
-    },
-    {
-      label: "Sales Team",
-      url: "sales-agents",
-    },
-    {
-      label: "Content Management",
-      url: "content",
-    },
-    {
-      label: "Database",
-      url: "database",
-    },
-    {
-      label: "Configurations",
-      url: "config",
-    },
-    {
-      label: "Account",
-      url: "account",
-    },
-    {
-      label: "Settings",
-      url: "settings",
-    },
-    {
-      label: "Login or Register",
-      onClick: () => {
-        signOut()
-      },
-    },
-    {
-      label: "Error",
-      url: "404",
-    },
-  ];
 
   const [isMounted, setIsMounted] = useState(false);
 
@@ -78,7 +74,9 @@ export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
 
   return (
     <div className="sticky left-0 top-0 flex items-center h-screen flex-col gap-4 overflow-auto bg-muted text-muted-foreground p-4">
-      <Image src="/favicon.png" width={80} height={80} alt="logo" />
+      <div>
+        <LogoForeground className='bg-muted-foreground' />
+      </div>
       <div className="rounded-lg bg-muted-foreground/50 p-4 w-full text-foreground">
         <Typography variant={"secondary"} >Megz</Typography>
         <Typography>Development</Typography>
@@ -86,7 +84,7 @@ export default function MegzDrawer({ mobile }: { mobile?: boolean }) {
       <Separator />
       <ScrollArea className="w-min h-screen">
         <div className="flex flex-col items-center gap-2">
-          {links.map((link) => {
+          {mainNavLinks.map((link) => {
             if (link.onClick) {
               return (
                 <button

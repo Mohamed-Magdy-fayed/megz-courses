@@ -9,6 +9,7 @@ import { Typography } from "../ui/Typoghraphy";
 import { api } from "@/lib/api";
 import Spinner from "../Spinner";
 import LatestOrdersClient from "./ordersOverviewComponents/OrdersOverviewClient";
+import Link from "next/link";
 
 export const LatestOrdersOverview = () => {
   const { data: orders } = api.orders.getAll.useQuery()
@@ -24,10 +25,12 @@ export const LatestOrdersOverview = () => {
       </CardContent>
       <Separator />
       <CardFooter className="justify-end p-4 mt-auto">
-        <Button>
-          <ArrowRight />
-          <Typography variant={"buttonText"}>View all</Typography>
-        </Button>
+        <Link href={`/orders`}>
+          <Button>
+            <ArrowRight />
+            <Typography variant={"buttonText"}>View all</Typography>
+          </Button>
+        </Link>
       </CardFooter>
     </Card>
   );

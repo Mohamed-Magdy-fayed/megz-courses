@@ -10,6 +10,7 @@ import { Course, Order } from "@prisma/client";
 import Link from "next/link";
 import { SeverityPill, SeverityPillProps } from "../overview/SeverityPill";
 import { format } from "date-fns";
+import { Checkbox } from "../ui/checkbox";
 
 export type OrderRow = {
   id: string;
@@ -27,6 +28,25 @@ export type OrderRow = {
 }
 
 export const columns: ColumnDef<OrderRow>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={table.getIsAllPageRowsSelected()}
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
   {
     accessorKey: "orderNumber",
     header: ({ column }) => {
@@ -166,6 +186,13 @@ export const columns: ColumnDef<OrderRow>[] = [
       <Typography>
         {row.original.status === "pending" || row.original.status === "cancelled" ? "NA" : format(row.original.updatedAt, "do MMM yy")}
       </Typography>
+    ),
+  },
+  {
+    id: "action",
+    header: "Actions",
+    cell: ({ row }) => (
+      <CellAction data={row.original} />
     ),
   },
 ];

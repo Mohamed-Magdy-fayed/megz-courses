@@ -1,5 +1,5 @@
 import Spinner from "@/components/Spinner"
-import AppLayout from "@/components/layout/AppLayout"
+import LandingLayout from "@/components/landingPageComponents/LandingLayout"
 import { useToast } from "@/components/ui/use-toast"
 import { useRouter } from "next/router"
 import { useEffect } from "react"
@@ -18,11 +18,11 @@ const FailedPaymentPage = () => {
     }, [router])
 
     return (
-        <AppLayout>
+        <LandingLayout>
             <div className="w-full h-full grid place-content-center">
                 <Spinner />
             </div>
-        </AppLayout>
+        </LandingLayout>
     )
 }
 

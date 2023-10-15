@@ -32,7 +32,7 @@ export const salesOperationsRouter = createTRPCRouter({
     createSalesOperation: protectedProcedure
         .input(
             z.object({
-                assigneeId: z.string(),
+                assigneeId: z.string().optional(),
                 status: z.enum(["created", "assigned", "ongoing", "completed", "cancelled"]),
             })
         )
@@ -45,6 +45,7 @@ export const salesOperationsRouter = createTRPCRouter({
                 },
                 include: {
                     assignee: true,
+                    orderDetails: true,
                 },
             });
 

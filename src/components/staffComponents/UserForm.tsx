@@ -78,10 +78,10 @@ const UserForm: React.FC<UserFormProps> = ({ setIsOpen }) => {
         setIsOpen(false);
         setLoading(false);
       },
-      onError: () => {
+      onError: (e) => {
         toast({
           variant: "success",
-          description: "Something went wrong."
+          description: e.message
         })
         setLoading(false);
       },

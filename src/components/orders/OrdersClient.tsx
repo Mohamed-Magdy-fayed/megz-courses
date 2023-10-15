@@ -1,6 +1,9 @@
-import { columns } from "./OrdersColumn";
+import { OrderRow, columns } from "./OrdersColumn";
 import { Course, Order, SalesAgent, SalesOperation, User } from "@prisma/client";
 import { DataTable } from "../ui/DataTable";
+import { useToast } from "../ui/use-toast";
+import { api } from "@/lib/api";
+import { useState } from "react";
 
 const OrdersClient = ({ data }: {
   data: (Order & {
@@ -11,6 +14,7 @@ const OrdersClient = ({ data }: {
     courses: Course[];
   })[]
 }) => {
+  const [orders, setOrders] = useState<OrderRow[]>([])
 
   const formattedData = data.map(({
     amount,
@@ -37,12 +41,37 @@ const OrdersClient = ({ data }: {
     updatedAt,
   }))
 
+  const trpcUtils = api.useContext()
+  const deleteMutation = api.orders.deleteOrders.useMutation()
+  const { toast } = useToast()
+
+  const onDelete = () => {
+    deleteMutation.mutate(
+      orders.map(or => or.id),
+      {
+        onSuccess: (data) => {
+          toast({
+            variant: "success",
+            description: `Deleted ${data.deletedOrders.count} order(s)`
+          })
+          trpcUtils.orders.invalidate()
+        },
+        onError: (e) => {
+          toast({
+            variant: "destructive",
+            description: e.message
+          })
+        },
+      }
+    )
+  };
+
   return (
     <DataTable
       columns={columns}
       data={formattedData}
-      setUsers={() => { }}
-      onDelete={() => { }}
+      setUsers={setOrders}
+      onDelete={onDelete}
       search={{ key: "orderNumber", label: "Order Number" }}
     />
   );

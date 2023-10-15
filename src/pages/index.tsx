@@ -1,29 +1,38 @@
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/router";
-import { useEffect } from "react";
-import Dashboard from "@/components/overview/Dashboard";
-import AppLayout from "@/components/layout/AppLayout";
-import { Skeleton } from "@/components/ui/skeleton";
-import Spinner from "@/components/Spinner";
+import LandingLayout from "@/components/landingPageComponents/LandingLayout";
+import HeroSection from "@/components/landingPageComponents/HeroSection";
+import { Star } from "lucide-react";
+import ContactSection from "@/components/landingPageComponents/ContactSection";
+import CoursesSection from "@/components/landingPageComponents/CoursesSection";
+import LandingSectionSeparator from "@/components/landingPageComponents/LandingSectionSeparator";
+import OurTeamSection from "@/components/landingPageComponents/OurTeamSection";
 
 const Page = () => {
-  const session = useSession();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (session.status === "unauthenticated") router.push("/authentication");
-  }, [session.status]);
-
-  if (session.status === "loading") return (
-    <Skeleton className="w-screen h-screen grid place-content-center">
-      <Spinner></Spinner>
-    </Skeleton>
-  );
 
   return (
-    <AppLayout>
-      <Dashboard></Dashboard>
-    </AppLayout>
+    <LandingLayout>
+      <HeroSection />
+      <LandingSectionSeparator
+        images={`lg:bg-[url('../../public/courses_horiz.png')] bg-[url('../../public/courses_vert.png')]`}
+        title="Latest Courses"
+        subTitle="Discover what's new!"
+        titleIcons={<Star />}
+      />
+      <CoursesSection />
+      <LandingSectionSeparator
+        images={`lg:bg-[url('../../public/team_section_large.png')] bg-[url('../../public/team_section_small.png')]`}
+        title="Our Team"
+        subTitle="Meet the instructors!"
+        titleIcons={<Star />}
+      />
+      <OurTeamSection />
+      <LandingSectionSeparator
+        images={`lg:bg-[url('../../public/contact_us_large.png')] bg-[url('../../public/contact_us_small.png')]`}
+        title="Contact Us"
+        subTitle="Need help?"
+        titleIcons={<Star />}
+      />
+      <ContactSection />
+    </LandingLayout>
   );
 };
 
