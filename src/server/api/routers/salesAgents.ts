@@ -11,7 +11,8 @@ export const salesAgentsRouter = createTRPCRouter({
         .query(async ({ ctx }) => {
             const salesAgents = await ctx.prisma.salesAgent.findMany({
                 include: {
-                    user: true
+                    user: true,
+                    tasks: true,
                 },
             });
 
