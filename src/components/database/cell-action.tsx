@@ -45,10 +45,10 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
           })
           setLoading(false)
         },
-        onError: (error) => {
+        onError: (e) => {
           toast({
             variant: "destructive",
-            description: "Something went wrong."
+            description: e.message
           })
           setLoading(false)
         },

@@ -84,18 +84,34 @@ export default function MegzTopBar() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Link href={`/my_courses/${session.data?.user.id}`}>
-            <Button variant="outline" customeColor={"mutedOutlined"} >
-              <GraduationCap className="w-4 h-4"></GraduationCap>
-              <Typography>My Courses</Typography>
-            </Button>
-          </Link>
-          <Link href={`/account`}>
-            <Button variant="icon" customeColor={"primaryIcon"} >
-              <UserCircle className="w-4 h-4"></UserCircle>
-            </Button>
-          </Link>
-          <DropdownMenu>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link href={`/my_courses/${session.data?.user.id}`}>
+                <Button variant="icon" customeColor={"mutedIcon"} >
+                  <GraduationCap className="w-4 h-4"></GraduationCap>
+                </Button>
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>
+              My courses
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link href={`/account`}>
+                <Button variant="icon" customeColor={"primaryIcon"} >
+                  <UserCircle className="w-4 h-4"></UserCircle>
+                </Button>
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>
+              My Account
+            </TooltipContent>
+          </Tooltip>
+          <DropdownMenu
+            open={open}
+            onOpenChange={(val) => setOpen(val)}
+          >
             <Tooltip>
               <TooltipTrigger asChild>
                 <DropdownMenuTrigger asChild>

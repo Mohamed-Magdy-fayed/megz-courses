@@ -29,8 +29,11 @@ export const env = createEnv({
    * Specify your client-side environment variables schema here. This way you can ensure the app
    * isn't built with invalid env vars. To expose them to the client, prefix them with
    * `NEXT_PUBLIC_`.
-   */
+  */
   client: {
+    NEXT_PUBLIC_PUSHER_KEY: z.string(),
+    NEXT_PUBLIC_PUSHER_APP_ID: z.string(),
+    NEXT_PUBLIC_PUSHER_SECRET: z.string(),
     // NEXT_PUBLIC_CLIENTVAR: z.string().min(1),
   },
 
@@ -51,6 +54,9 @@ export const env = createEnv({
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_PAYMENT_DESCRIPTION: process.env.STRIPE_PAYMENT_DESCRIPTION,
+    NEXT_PUBLIC_PUSHER_KEY: process.env.NEXT_PUBLIC_PUSHER_KEY,
+    NEXT_PUBLIC_PUSHER_APP_ID: process.env.NEXT_PUBLIC_PUSHER_APP_ID,
+    NEXT_PUBLIC_PUSHER_SECRET: process.env.NEXT_PUBLIC_PUSHER_SECRET,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.

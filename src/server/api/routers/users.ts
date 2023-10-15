@@ -97,7 +97,7 @@ export const usersRouter = createTRPCRouter({
             city: input.city,
             country: input.country,
           },
-          userType: input.userType,
+          userType: input.userType || "student",
         },
       });
 

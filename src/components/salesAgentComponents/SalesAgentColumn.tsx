@@ -6,6 +6,7 @@ import Link from "next/link";
 import { getInitials } from "@/lib/getInitials";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Typography } from "../ui/Typoghraphy";
+import AgentCellAction from "./AgentActionCell";
 
 export type SalesAgentsColumn = {
   id: string
@@ -114,4 +115,13 @@ export const columns: ColumnDef<SalesAgentsColumn>[] = [
       );
     },
   },
+  {
+    id: "action",
+    header: "Actions",
+    cell: ({ row }) => {
+      return (
+        <AgentCellAction id={row.original.id} />
+      )
+    }
+  }
 ];

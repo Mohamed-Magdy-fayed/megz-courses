@@ -5,6 +5,7 @@ import { DataTable } from "@/components/ui/DataTable";
 import { SalesAgentsColumn, columns } from "./SalesAgentColumn";
 import { SalesAgent, SalesOperation, User } from "@prisma/client";
 import { useToast } from "../ui/use-toast";
+import { Typography } from "../ui/Typoghraphy";
 
 interface Users extends User {
   salesAgent: (SalesAgent & {
@@ -37,14 +38,19 @@ const SalesAgentClient = ({ data }: { data: Users[] }) => {
         onSuccess: () => {
           toast({
             variant: "success",
-            description: "User(s) deleted"
+            description: "Agent(s) deleted"
           });
-          trpcUtils.users.invalidate();
+          trpcUtils.salesAgents.invalidate();
         },
-        onError: () => {
+        onError: (e) => {
           toast({
             variant: "destructive",
-            description: "somthing went wrong"
+            description: (
+              <div>
+                <Typography>somthing went wrong</Typography>
+                <Typography>{e.message}</Typography>
+              </div>
+            ),
           });
         },
       }

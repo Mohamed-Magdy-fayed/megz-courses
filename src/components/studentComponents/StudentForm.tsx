@@ -36,7 +36,6 @@ const formSchema = z.object({
   street: z.string().optional(),
   city: z.string().optional(),
   country: z.string().optional(),
-  userType: z.enum(["student", "teacher"]),
 });
 
 type UsersFormValues = z.infer<typeof formSchema>;
@@ -61,7 +60,6 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
     street: "",
     city: "",
     country: "",
-    userType: "student",
   };
 
   const form = useForm<UsersFormValues>({
@@ -85,10 +83,10 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
         setIsOpen(false);
         setLoading(false);
       },
-      onError: () => {
+      onError: (e) => {
         toast({
           variant: "destructive",
-          description: "Something went wrong."
+          description: e.message
         })
         setLoading(false);
       },
@@ -211,37 +209,6 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
                       className="pl-8"
                     />
                   </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="userType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>User Type</FormLabel>
-                  <Select
-                    disabled={loading}
-                    // @ts-ignore
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="pl-8 bg-white">
-                        <SelectValue
-                          defaultValue={field.value}
-                          placeholder="Select user type"
-                        />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="student">Student</SelectItem>
-                      <SelectItem value="teacher">Teacher</SelectItem>
-                      <SelectItem value="salesAgent">Sales Agent</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
                 </FormItem>
               )}
             />

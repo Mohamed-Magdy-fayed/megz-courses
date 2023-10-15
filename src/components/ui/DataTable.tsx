@@ -80,8 +80,10 @@ export function DataTable<TData, TValue>({
         isOpen={open}
         onClose={() => setOpen(false)}
         onConfirm={() => {
+          setLoading(true)
           onDelete();
           setOpen(false);
+          table.toggleAllPageRowsSelected()
         }}
         loading={loading}
       />

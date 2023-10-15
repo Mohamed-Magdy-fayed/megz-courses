@@ -9,12 +9,9 @@ import bcrypt from "bcrypt";
 export const salesAgentsRouter = createTRPCRouter({
     getSalesAgents: protectedProcedure
         .query(async ({ ctx }) => {
-            const salesAgents = await ctx.prisma.user.findMany({
-                where: {
-                    userType: "salesAgent"
-                },
+            const salesAgents = await ctx.prisma.salesAgent.findMany({
                 include: {
-                    salesAgent: { include: { tasks: true } }
+                    user: true
                 },
             });
 

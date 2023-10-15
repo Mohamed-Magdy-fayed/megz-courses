@@ -6,7 +6,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Copy, Trash, SearchSlash, MoreVertical } from "lucide-react";
+import { Trash, SearchSlash, MoreVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AlertModal } from "../modals/AlertModal";
@@ -14,44 +14,31 @@ import { api } from "@/lib/api";
 import { useToast } from "../ui/use-toast";
 import Link from "next/link";
 
-interface CellActionProps {
+interface AgentCellActionProps {
     id: string;
-    assigneeId: string;
-    code: string;
 }
 
-const CellAction: React.FC<CellActionProps> = ({ id, assigneeId, code }) => {
+const AgentCellAction: React.FC<AgentCellActionProps> = ({ id }) => {
     const { toast } = useToast();
-    const router = useRouter();
 
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
 
-    const onCopy = () => {
-        navigator.clipboard.writeText(code);
-        toast({
-            description: "Category ID copied to the clipboard",
-            variant: "info"
-        });
-    };
-
-    const deleteMutation = api.salesOperations.deleteSalesOperations.useMutation()
+    const deleteMutation = api.salesAgents.deleteSalesAgent.useMutation()
     const trpcUtils = api.useContext()
 
     const onDelete = async () => {
         try {
-            console.log(id);
-
             setLoading(true);
             deleteMutation.mutate(
                 [id],
                 {
                     onSuccess: () => {
                         toast({
-                            description: "Operation(s) deleted",
+                            description: "Agent(s) deleted",
                             variant: "success"
                         });
-                        trpcUtils.salesOperations.invalidate();
+                        trpcUtils.salesAgents.invalidate();
                     },
                     onError: () => {
                         toast({
@@ -89,14 +76,10 @@ const CellAction: React.FC<CellActionProps> = ({ id, assigneeId, code }) => {
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem>
-                        <Link className="flex" href={`/operation/${id}`}>
+                        <Link className="flex items-center" href={`/sales-agents/${id}`}>
                             <SearchSlash className="w-4 h-4 mr-2" />
                             View
                         </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={onCopy}>
-                        <Copy className="w-4 h-4 mr-2" />
-                        Copy Code
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setOpen(true)}>
                         <Trash className="w-4 h-4 mr-2" />
@@ -108,4 +91,4 @@ const CellAction: React.FC<CellActionProps> = ({ id, assigneeId, code }) => {
     );
 };
 
-export default CellAction;
+export default AgentCellAction;

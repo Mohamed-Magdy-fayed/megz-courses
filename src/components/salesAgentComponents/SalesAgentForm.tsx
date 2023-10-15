@@ -7,13 +7,6 @@ import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { DialogHeader } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -45,8 +38,8 @@ interface StudentFormProps {
 const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
   const [loading, setLoading] = useState(false);
 
-  const title = "Create User";
-  const description = "Add a new User";
+  const title = "Sales Operator";
+  const description = "Create Sales Operator Account";
   const action = "Create";
 
   const defaultValues: z.infer<typeof formSchema> = {
@@ -77,12 +70,14 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
             description: `Sales Agent account created with email: ${data.user.email}`
           })
           setLoading(false);
+          form.reset()
+          setIsOpen(false)
         });
       },
-      onError: () => {
+      onError: (e) => {
         toast({
           variant: "destructive",
-          description: "Something went wrong."
+          description: e.message
         })
         setLoading(false);
       },
