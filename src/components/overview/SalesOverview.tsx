@@ -97,7 +97,17 @@ const useChartOptions = () => {
       },
       labels: {
         offsetX: -5,
-        formatter: (value: any) => (value > 1000 ? `${value / 1000}K` : `${value}`),
+        formatter: (value: number) => {
+          const formatter = new Intl.NumberFormat('en-US', {
+            maximumFractionDigits: 2,
+          });
+
+          if (value > 1000) {
+            return formatter.format(value / 1000) + 'K';
+          } else {
+            return formatter.format(value);
+          }
+        },
         style: {
           colors: "hsl(var(--foreground))",
         },
@@ -108,15 +118,16 @@ const useChartOptions = () => {
 
 interface SalsesOverviewProps {
   chartSeries: any[];
+  sync: () => void
 }
 
-export const SalesOverview = ({ chartSeries }: SalsesOverviewProps) => {
+export const SalesOverview = ({ chartSeries, sync }: SalsesOverviewProps) => {
   const chartOptions = useChartOptions();
 
   return (
     <Card className="col-span-12 xl:col-span-8">
-      <CardHeader>
-        <Button variant={"default"}>
+      <CardHeader className="flex items-center justify-start gap-4 flex-row space-y-0">
+        <Button variant={"default"} onClick={() => sync()}>
           <RefreshCcw />
           <Typography variant={"buttonText"}>Sync</Typography>
         </Button>
@@ -131,12 +142,6 @@ export const SalesOverview = ({ chartSeries }: SalsesOverviewProps) => {
         />
       </CardContent>
       <Separator />
-      <CardFooter className="flex items-center justify-end p-4">
-        <Button variant={"default"}>
-          <MoveRight />
-          <Typography variant={"buttonText"}>Overview</Typography>
-        </Button>
-      </CardFooter>
     </Card >
   );
 };

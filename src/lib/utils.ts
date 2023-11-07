@@ -38,29 +38,42 @@ export const isGoodState = (difference: number, isLiability: boolean) => {
   return (isLiability && difference < 0) || (!isLiability && difference > 0)
 }
 
-export const getDifferenceMargin = <T extends { createdAt: Date }>(data: T[], accessor: keyof typeof data[0]) => {
-  const currentTotal = data
-    .map(item => item[accessor])
-    .reduce((prev, curr) => {
-      return prev + Number(curr)
-    }, 0)
+type DataObject = {
+  createdAt: Date;
+  [key: string]: any;
+};
 
-  const lastWeekTotal = data
-    .filter(item => new Date(item.createdAt) > getLastWeekDate())
-    .map(item => item[accessor])
-    .reduce((prev, curr) => {
-      return prev + Number(curr)
-    }, 0)
+export const getDifferenceMargin = <T extends DataObject>(
+  data: T[],
+  accessor: keyof T,
+): {
+  differenceMargin: number,
+  total: number
+} => {
+  const now = new Date();
+  const lastWeekDate = new Date(now);
+  lastWeekDate.setDate(now.getDate() - 7);
 
-  const secondLastWeekTotal = data
-    .filter(item => new Date(item.createdAt) > getLastWeekDate(getLastWeekDate()) && new Date(item.createdAt) < getLastWeekDate())
-    .map(item => item[accessor])
-    .reduce((prev, curr) => {
-      return prev + Number(curr)
-    }, 0)
+  let currentWeekTotal = 0;
+  let lastWeekTotal = 0;
+
+  for (const item of data) {
+    const itemDate = new Date(item.createdAt);
+    const value = Number(item[accessor]);
+
+    if (itemDate.getTime() < lastWeekDate.getTime()) {
+      currentWeekTotal += accessor === 'id' ? 1 : value;
+    }
+
+    if (itemDate.getTime() >= lastWeekDate.getTime()) {
+      lastWeekTotal += accessor === 'id' ? 1 : value;
+    }
+  }
+
+  const percentageChange = (lastWeekTotal / (currentWeekTotal - lastWeekTotal)) * 100;
 
   return {
-    differenceMargin: lastWeekTotal / secondLastWeekTotal * 100,
-    total: currentTotal
-  }
+    differenceMargin: percentageChange,
+    total: currentWeekTotal
+  };
 }

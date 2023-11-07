@@ -19,7 +19,13 @@ const StateCard = ({ state }: { state: StateOverview | undefined }) => {
                 </Typography>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
-                <Counter state={state}></Counter>
+                <Counter
+                    target={state.target}
+                    color={state.textColor}
+                    currency={state.style === 'currency' ? "EGP" : undefined}
+                    label={state.style === "" ? "Students" : undefined}
+                    percentage={state.style === "percent"}
+                />
                 {state.progress && (
                     <Progress
                         indicatorColor="bg-primary"

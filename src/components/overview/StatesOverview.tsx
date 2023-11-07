@@ -79,7 +79,7 @@ export default function StatesOverview() {
         const {
           differenceMargin: salariesSinceLastWeek,
           total: currentTotalSalaries
-        } = data?.salesAgents.map
+        } = data?.salesAgents
             ? getDifferenceMargin(data?.salesAgents, "salary")
             : { differenceMargin: 0, total: 0 }
 
@@ -92,10 +92,12 @@ export default function StatesOverview() {
 
     studentsQuery.refetch()
       .then(({ data }) => {
-        const totalStudents = data?.users.length || 0
-        const lastWeekStudents = data?.users
-          .filter(a => new Date(a.createdAt) > getLastWeekDate()).length || 0
-        const studentsSinceLastWeek = (totalStudents - lastWeekStudents) / lastWeekStudents
+        const {
+          differenceMargin: studentsSinceLastWeek,
+          total: totalStudents
+        } = data?.users
+            ? getDifferenceMargin(data?.users, "id")
+            : { differenceMargin: 0, total: 0 }
 
         setStudents(prev => ({
           ...prev,
@@ -106,22 +108,16 @@ export default function StatesOverview() {
 
     operationsQuery.refetch()
       .then(({ data }) => {
-        const progress = data?.salesOperations
-          ? data?.salesOperations
-            .filter(op => op.status === "completed")
-            .length / data?.salesOperations.length
-          : 0
-        const lastWeekProgress = data?.salesOperations
-          ? data?.salesOperations
-            .filter(op => op.status === "completed" && new Date(op.updatedAt) < getLastWeekDate())
-            .length / data?.salesOperations
-              .filter(op => new Date(op.createdAt) < getLastWeekDate()).length
-          : 0
-        const progressSinceLastWeek = (progress - lastWeekProgress) * 100
+        const {
+          differenceMargin: progressSinceLastWeek,
+          total: progress
+        } = data?.salesOperations
+            ? getDifferenceMargin(data?.salesOperations.filter(op => op.status === "completed").map(op => ({ ...op, createdAt: op.updatedAt })), "id")
+            : { differenceMargin: 0, total: 0 }
 
         setTasks(prev => ({
           ...prev,
-          target: progress,
+          target: progress / (data?.salesOperations.length || 1),
           sinceLastWeek: progressSinceLastWeek,
         }))
       })
