@@ -54,10 +54,10 @@ export const authOptions: NextAuthOptions = {
         email: { label: "email", type: "text" },
         password: { label: "password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials.password) return null;
 
-        const user = await prisma.user.findUnique({
+        let user = await prisma.user.findUnique({
           where: {
             email: credentials.email,
           },
@@ -71,6 +71,21 @@ export const authOptions: NextAuthOptions = {
         );
 
         if (!checkPassword) return null;
+
+        const userAgent = req.headers!['user-agent'];
+        // Determine device type manually based on common patterns
+        const isMobile = /Mobi|Android/i.test(userAgent);
+        const isTablet = /Tablet|iPad/i.test(userAgent);
+
+        // Update the device information for the user
+        user = await prisma.user.update({
+          where: {
+            id: user.id,
+          },
+          data: {
+            device: isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop',
+          },
+        });
 
         return user;
       },

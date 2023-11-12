@@ -5,6 +5,7 @@ import OrderReceipt from "@/components/orders/OrderReceipt"
 import { ConceptTitle } from "@/components/ui/Typoghraphy"
 import { useToast } from "@/components/ui/use-toast"
 import { api } from "@/lib/api"
+import { formatPrice } from "@/lib/utils"
 import { Course, Order, SalesOperation, User } from "@prisma/client"
 import { render } from "@react-email/render"
 import { format } from "date-fns"
@@ -82,11 +83,11 @@ const SuccessfullPaymentPage = () => {
                         orderCreatedAt={format(data.updatedOrder.createdAt, "dd MMM yyyy")}
                         orderUpdatedAt={format(data.updatedOrder.updatedAt, "dd MMM yyyy")}
                         userEmail={data.updatedOrder.user.email}
-                        orderAmount={`$${(data.updatedOrder.amount / 100).toFixed(2)}`}
+                        orderAmount={formatPrice(data.updatedOrder.amount)}
                         orderNumber={data.updatedOrder.orderNumber}
                         courseLink={data.courseLink ? data.courseLink : ""}
                         customerName={data.updatedOrder.user.name}
-                        courses={data.updatedOrder.courses.map(course => ({ courseName: course.name, coursePrice: `$${(course.price / 100).toFixed(2)}` }))}
+                        courses={data.updatedOrder.courses.map(course => ({ courseName: course.name, coursePrice: formatPrice(course.price) }))}
                     />, { pretty: true }
                 )
                 handleSendEmail({

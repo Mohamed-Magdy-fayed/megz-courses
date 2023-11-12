@@ -19,14 +19,18 @@ export function formatAmountForStripe(
         currency: currency,
         currencyDisplay: 'symbol',
     })
-    const parts = numberFormat.formatToParts(amount / 100)
+    const parts = numberFormat.formatToParts(amount)
     let zeroDecimalCurrency: boolean = true
     for (let part of parts) {
+        console.log(part);
+
         if (part.type === 'decimal') {
             zeroDecimalCurrency = false
         }
     }
-    return zeroDecimalCurrency ? amount / 100 : Math.round(amount)
+    console.log(zeroDecimalCurrency, "zeroDecimalCurrency");
+
+    return zeroDecimalCurrency ? amount * 100 : Math.round(amount * 100)
 }
 
 export function formatAmountFromStripe(
@@ -45,5 +49,5 @@ export function formatAmountFromStripe(
             zeroDecimalCurrency = false
         }
     }
-    return zeroDecimalCurrency ? amount : Math.round(amount / 100)
+    return zeroDecimalCurrency ? amount : Math.round(amount)
 }

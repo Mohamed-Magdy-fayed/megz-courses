@@ -4,13 +4,26 @@ import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Typography } from "@/components/ui/Typoghraphy";
-import { ArrowRight, Loader2, MoreVertical } from "lucide-react";
+import { ArrowRight, Eye, Edit, MoreVertical } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { api } from "@/lib/api";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import Spinner from "../Spinner";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 
 export const LatestCourseOverview = () => {
-  const { data } = api.courses.getAll.useQuery()
+  const { data, refetch } = api.courses.getLatest.useQuery(undefined, { enabled: false })
+
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const handleMenuToggle = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  useEffect(() => {
+    refetch()
+  }, [])
 
   return (
     <Card className="col-span-12 md:col-span-6 xl:col-span-4 h-full flex flex-col">
@@ -18,7 +31,7 @@ export const LatestCourseOverview = () => {
         <Typography variant={"secondary"}>Latest courses</Typography>
       </CardHeader>
       <div className="flex flex-col">
-        {!data?.courses ? <Loader2 className="animate-spin" /> : data.courses.slice(0, 7).map((course, index) => {
+        {!data?.courses ? <Spinner className="animate-spin w-full" /> : data.courses.slice(0, 7).map((course, index) => {
           const hasDivider = index < data.courses.length - 1;
           const ago = formatDistanceToNow(course.updatedAt);
 
@@ -27,16 +40,16 @@ export const LatestCourseOverview = () => {
               <div className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-4">
                   <div>
-                    {/* {course.image ? (
+                    {course.image ? (
                       <Image
                         width={48}
                         height={48}
                         src={course.image}
                         alt="image"
                         className="rounded" />
-                    ) : ( */}
-                    <Skeleton className="rounded bg-muted h-12 w-12" />
-                    {/* )} */}
+                    ) : (
+                      <Skeleton className="rounded bg-muted h-12 w-12" />
+                    )}
                   </div>
                   <div className="flex flex-col gap-2">
                     <Typography variant={"secondary"}>
@@ -47,17 +60,36 @@ export const LatestCourseOverview = () => {
                     </Typography>
                   </div>
                 </div>
-                <Button variant={"icon"} customeColor={"mutedIcon"} >
-                  <MoreVertical />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant={"icon"} customeColor={"mutedIcon"} onClick={handleMenuToggle}>
+                      <MoreVertical />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <Link href={`/courses/${course.id}`}>
+                      <DropdownMenuItem>
+                        <Eye />
+                        <Typography>View</Typography>
+                      </DropdownMenuItem>
+                    </Link>
+                    <Link href={`/content/courses/${course.id}`}>
+                      <DropdownMenuItem>
+                        <Edit />
+                        <Typography>Edit</Typography>
+                      </DropdownMenuItem>
+                    </Link>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
               </div>
               {hasDivider && (<Separator />)}
             </div>
           );
         })}
       </div>
-      <Separator />
-      <CardFooter className="p-4 justify-end mt-auto">
+      <Separator className="mt-auto" />
+      <CardFooter className="p-4 justify-end">
         <Link href="/content">
           <Button>
             <ArrowRight />

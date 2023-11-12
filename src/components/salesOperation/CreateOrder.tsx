@@ -59,11 +59,11 @@ const CreateOrder: FC<CreateOrderProps> = ({
                     <Email
                         orderCreatedAt={format(createdAt, "dd MMM yyyy")}
                         userEmail={user.email}
-                        orderAmount={formatPrice(amount / 100)}
+                        orderAmount={formatPrice(amount)}
                         orderNumber={orderNumber}
                         paymentLink={paymentLink}
                         customerName={user.name}
-                        courses={courses.map(course => ({ courseName: course.name, coursePrice: formatPrice(course.price / 100) }))}
+                        courses={courses.map(course => ({ courseName: course.name, coursePrice: formatPrice(course.price) }))}
                     />, { pretty: true }
                 )
                 handleSendEmail({

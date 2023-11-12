@@ -12,6 +12,7 @@ import { ordersRouter } from "./routers/orders";
 import { commsRouter } from "./routers/whatsapp";
 import { placementTestsRouter } from "./routers/placementTests";
 import { selfServeRouter } from "./routers/selfServe";
+import { analyticsRouter } from "./routers/analytics";
 
 /**
  * This is the primary router for your server.
@@ -32,6 +33,7 @@ export const appRouter = createTRPCRouter({
   comms: commsRouter,
   placementTests: placementTestsRouter,
   selfServe: selfServeRouter,
+  analytics: analyticsRouter,
 });
 
 // export type definition of API

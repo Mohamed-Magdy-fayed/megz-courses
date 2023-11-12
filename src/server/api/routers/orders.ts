@@ -22,6 +22,21 @@ export const ordersRouter = createTRPCRouter({
 
         return { orders };
     }),
+    getLatest: protectedProcedure.query(async ({ ctx }) => {
+        const orders = await ctx.prisma.order.findMany({
+            orderBy: {
+                createdAt: "desc",
+            },
+            take: 10,
+            include: {
+                courses: true,
+                user: true,
+                salesOperation: { include: { assignee: true } }
+            },
+        });
+
+        return { orders };
+    }),
     getById: protectedProcedure
         .input(
             z.object({

@@ -31,9 +31,9 @@ const SalesOperationsClient = ({ data }: { data: SalesOperations[] }) => {
         onSuccess: () => {
           toast({
             variant: "success",
-            description: "User(s) deleted"
+            description: "operation(s) deleted"
           })
-          trpcUtils.users.invalidate();
+          trpcUtils.salesOperations.invalidate();
         },
         onError: () => {
           toast({

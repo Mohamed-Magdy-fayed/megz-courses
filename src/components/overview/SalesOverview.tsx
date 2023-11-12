@@ -1,7 +1,7 @@
 import { Chart } from "@/components/overview/Chart";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MoveRight, RefreshCcw } from "lucide-react";
+import { RefreshCcw } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Typography } from "../ui/Typoghraphy";
 

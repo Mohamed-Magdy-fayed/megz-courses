@@ -53,6 +53,12 @@ enum CoursStatuses {
     completed
 }
 
+enum Devices {
+    mobile
+    tablet
+    desktop
+}
+
 type CoursStatus {
     courseId String        @db.ObjectId
     state    CoursStatuses
@@ -77,6 +83,7 @@ model User {
     trainerId      String?         @db.ObjectId
     salesAgent     SalesAgent?     @relation("UserToSalesAgent")
     salesAgentId   String?         @db.ObjectId
+    device         Devices
     updatedAt      DateTime        @updatedAt
     createdAt      DateTime        @default(now())
 }
@@ -231,7 +238,7 @@ model Order {
     courseIds        String[]       @db.ObjectId
     status           OrderStatus    @default(pending)
     paymentId        String?
-    salesOperation   SalesOperation @relation("OrderToSalesOperation", fields: [salesOperationId], references: [id])
+    salesOperation   SalesOperation @relation("OrderToSalesOperation", fields: [salesOperationId], references: [id], onDelete: Cascade)
     salesOperationId String         @unique @db.ObjectId
     user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId           String         @db.ObjectId

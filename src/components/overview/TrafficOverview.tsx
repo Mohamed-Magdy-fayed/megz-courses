@@ -1,5 +1,5 @@
 import { Chart } from "@/components/overview/Chart";
-import { Laptop, Smartphone, Tablet } from 'lucide-react'
+import { Laptop, Smartphone } from 'lucide-react'
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Typography } from "@/components/ui/Typoghraphy";
 
@@ -9,7 +9,7 @@ const useChartOptions = (labels: string[]) => {
       background: "transparent",
     },
     dataLabels: {
-      enabled: false,
+      enabled: false
     },
     labels,
     legend: {
@@ -46,9 +46,6 @@ const useChartOptions = (labels: string[]) => {
 const iconMap = {
   Desktop: (
     <Laptop />
-  ),
-  Tablet: (
-    <Tablet />
   ),
   Phone: (
     <Smartphone />

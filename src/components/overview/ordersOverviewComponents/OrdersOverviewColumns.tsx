@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { Typography } from "@/components/ui/Typoghraphy";
+import { SeverityPill, SeverityPillProps } from "../SeverityPill";
 
 export type OrderColmun = {
   userId: string;
@@ -22,7 +23,7 @@ export const columns: ColumnDef<OrderColmun>[] = [
       );
     },
     cell: ({ row }) => (
-      <Link className="block w-fit" href={`/order/${row.original.orderId}`}>
+      <Link className="block w-fit" href={`/orders/${row.original.orderId}`}>
         <Typography
           className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
         >
@@ -39,7 +40,7 @@ export const columns: ColumnDef<OrderColmun>[] = [
       );
     },
     cell: ({ row }) => (
-      <Link className="block w-fit" href={`/order/${row.original.userId}`}>
+      <Link className="block w-fit" href={`/account/${row.original.userId}`}>
         <Typography
           className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
         >
@@ -78,6 +79,19 @@ export const columns: ColumnDef<OrderColmun>[] = [
           </Button>
         </div>
       );
+    },
+    cell: ({ row }) => {
+      const status = row.original.status
+      const color: SeverityPillProps["color"] =
+        status === "cancelled" ? "destructive"
+          : status === "done" ? "success"
+            : status === "paid" ? "success"
+              : status === "pending" ? "destructive" : "muted"
+      return (
+        <SeverityPill color={color}>
+          {status}
+        </SeverityPill>
+      )
     },
   },
 ];

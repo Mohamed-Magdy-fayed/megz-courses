@@ -1,7 +1,6 @@
-import { useState } from "react";
 import { Course, SalesAgent, SalesOperation, User, Order } from "@prisma/client";
 import { format } from "date-fns";
-import { OrderColmun, columns } from "./OrdersOverviewColumns";
+import { columns } from "./OrdersOverviewColumns";
 import { DataTable } from "@/components/ui/DataTable";
 
 export interface Orders extends Order {
@@ -14,7 +13,6 @@ export interface Orders extends Order {
 
 
 const LatestOrdersClient = ({ data }: { data: Orders[] }) => {
-  const [users, setUsers] = useState<OrderColmun[]>([]);
   const formattedData = data.map((order) => ({
     orderId: order.id,
     userId: order.user.id,
@@ -30,7 +28,7 @@ const LatestOrdersClient = ({ data }: { data: Orders[] }) => {
     <DataTable
       columns={columns}
       data={formattedData}
-      setUsers={setUsers}
+      setUsers={() => { }}
       onDelete={onDelete}
       search={{
         key: "orderNumber",
