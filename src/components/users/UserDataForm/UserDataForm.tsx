@@ -26,7 +26,7 @@ const userDataFormSchema = z.object({
     street: z.string().optional(),
     city: z.string().optional(),
     country: z.string().optional(),
-    userType: z.enum(["student", "teacher", "salesAgent"]),
+    userType: z.enum(["student", "teacher", "salesAgent", "chatAgent"]),
 });
 
 export type UserDataFormValues = z.infer<typeof userDataFormSchema>;
