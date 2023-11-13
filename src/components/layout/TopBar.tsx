@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Button } from "../ui/button";
-import { MenuIcon, UserCircle, GraduationCap } from "lucide-react";
+import { MenuIcon, UserCircle, GraduationCap, MessagesSquare } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Typography } from "../ui/Typoghraphy";
@@ -84,18 +84,20 @@ export default function MegzTopBar() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link href={`/my_courses/${session.data?.user.id}`}>
-                <Button variant="icon" customeColor={"mutedIcon"} >
-                  <GraduationCap className="w-4 h-4"></GraduationCap>
-                </Button>
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent>
-              My courses
-            </TooltipContent>
-          </Tooltip>
+          {session.data?.user.userType === "chatAgent" && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href={`/chats`}>
+                  <Button variant="icon" customeColor={"mutedIcon"} >
+                    <MessagesSquare className="w-4 h-4"></MessagesSquare>
+                  </Button>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                My chats
+              </TooltipContent>
+            </Tooltip>
+          )}
           <Tooltip>
             <TooltipTrigger asChild>
               <Link href={`/account`}>

@@ -17,7 +17,9 @@ const HeroSection = () => {
                             Megz Learning
                         </Typography>
                         <Typography>
-                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus expedita nam dignissimos facere quia eius.
+                            Dive into a world of English language excellence with Megz Courses. Elevate your
+                            language skills and unlock new opportunities. Join us in the journey of learning,
+                            where every lesson takes you a step closer to linguistic mastery.
                         </Typography>
                         <div className="w-max">
                             <CourseSearchBar />

@@ -45,6 +45,7 @@ enum UserType {
     teacher
     student
     salesAgent
+    chatAgent
 }
 
 enum CoursStatuses {
@@ -82,6 +83,8 @@ model User {
     trainer        Trainer?        @relation("UserToTrainer")
     trainerId      String?         @db.ObjectId
     salesAgent     SalesAgent?     @relation("UserToSalesAgent")
+    chatAgent      ChatAgent?      @relation("UserToChatAgent")
+    supportChat    SupportChat?    @relation("UserToChat")
     salesAgentId   String?         @db.ObjectId
     device         Devices?
     updatedAt      DateTime        @updatedAt
@@ -290,4 +293,34 @@ model PotintialCustomer {
     picture        String?
     updatedAt      DateTime @updatedAt
     createdAt      DateTime @default(now())
+}
+
+model Message {
+    id            String       @id @default(auto()) @map("_id") @db.ObjectId
+    text          String
+    sender        String
+    supportChat   SupportChat? @relation(fields: [supportChatId], references: [id], onDelete: Cascade)
+    supportChatId String?      @db.ObjectId
+    updatedAt     DateTime     @updatedAt
+    createdAt     DateTime     @default(now())
+}
+
+model SupportChat {
+    id        String     @id @default(auto()) @map("_id") @db.ObjectId
+    user      User?      @relation("UserToChat", fields: [userId], references: [id], onDelete: Cascade)
+    userId    String?    @unique @db.ObjectId
+    agent     ChatAgent? @relation(fields: [agentId], references: [id], onDelete: Cascade)
+    agentId   String?    @db.ObjectId
+    messages  Message[]
+    updatedAt DateTime   @updatedAt
+    createdAt DateTime   @default(now())
+}
+
+model ChatAgent {
+    id        String        @id @default(auto()) @map("_id") @db.ObjectId
+    user      User          @relation("UserToChatAgent", fields: [userId], references: [id], onDelete: Cascade)
+    userId    String        @unique @db.ObjectId
+    chats     SupportChat[]
+    updatedAt DateTime      @updatedAt
+    createdAt DateTime      @default(now())
 }

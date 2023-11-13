@@ -1,8 +1,11 @@
 import { ReactNode } from 'react'
 import { LandingNavigationMenu } from './LandingNavMenu'
 import LandingFooter from './LandingFooter'
+import ChatWithUs from './ChatWithUs'
 
 const LandingLayout = ({ children }: { children: ReactNode }) => {
+
+
     return (
         <div className='flex flex-col items-center h-screen bg-background'>
             <LandingNavigationMenu />
@@ -11,6 +14,7 @@ const LandingLayout = ({ children }: { children: ReactNode }) => {
                     {children}
                 </div>
                 <LandingFooter />
+                <ChatWithUs />
             </div>
         </div>
     )

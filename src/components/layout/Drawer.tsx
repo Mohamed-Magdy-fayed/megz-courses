@@ -31,6 +31,10 @@ export const mainNavLinks = [
     url: "sales-agents",
   },
   {
+    label: "Chat Team",
+    url: "chat-agents",
+  },
+  {
     label: "Content Management",
     url: "content",
   },
