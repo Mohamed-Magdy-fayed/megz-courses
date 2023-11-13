@@ -83,7 +83,7 @@ model User {
     trainerId      String?         @db.ObjectId
     salesAgent     SalesAgent?     @relation("UserToSalesAgent")
     salesAgentId   String?         @db.ObjectId
-    device         Devices
+    device         Devices?
     updatedAt      DateTime        @updatedAt
     createdAt      DateTime        @default(now())
 }
