@@ -165,9 +165,11 @@ const ChatForm: FC<ChatFormProps> = ({ setMessages, myChatData, refetchMyChat, o
                 <Button disabled={loading} type="submit" className='float-right'>
                     <Typography>Submit</Typography>
                 </Button>
-                <Button customeColor={"destructiveIcon"} onClick={handleEndChat} disabled={loading} type="button">
-                    <Typography>End Chat</Typography>
-                </Button>
+                {myChatData?.chat && (
+                    <Button customeColor={"destructiveIcon"} onClick={handleEndChat} disabled={loading} type="button">
+                        <Typography>End Chat</Typography>
+                    </Button>
+                )}
             </form>
         </Form>
     )

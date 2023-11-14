@@ -1,8 +1,13 @@
 import { api } from "@/lib/api"
 import LandingCourseCard from "../courses/LandingCourseCard"
+import { useEffect } from "react"
 
 const CoursesSection = () => {
-    const { data } = api.courses.getLatest.useQuery()
+    const { data, refetch } = api.courses.getLatest.useQuery(undefined, { enabled: false })
+
+    useEffect(() => {
+        refetch()
+    }, [])
 
     return (
         <div className="grid grid-cols-12">
@@ -15,6 +20,5 @@ const CoursesSection = () => {
         </div>
     )
 }
-
 
 export default CoursesSection

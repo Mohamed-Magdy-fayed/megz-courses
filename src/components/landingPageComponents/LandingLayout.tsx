@@ -4,8 +4,6 @@ import LandingFooter from './LandingFooter'
 import ChatWithUs from './ChatWithUs'
 
 const LandingLayout = ({ children }: { children: ReactNode }) => {
-
-
     return (
         <div className='flex flex-col items-center h-screen bg-background'>
             <LandingNavigationMenu />

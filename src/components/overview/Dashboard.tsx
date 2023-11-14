@@ -48,8 +48,8 @@ export default function Dashboard() {
       const mobileUsers = analyticsData.data?.data.filter((item) => item.device === "mobile").length;
       const desktopUsers = analyticsData.data?.data.filter((item) => item.device === "desktop").length;
 
-      setMobilePercentage((mobileUsers / totalUsers) * 100);
-      setDesktopPercentage((desktopUsers / totalUsers) * 100);
+      setMobilePercentage(Number(((mobileUsers / totalUsers) * 100).toFixed()));
+      setDesktopPercentage(Number(((desktopUsers / totalUsers) * 100).toFixed()));
     } catch (error) {
       console.error("Error fetching data: ", error);
     }

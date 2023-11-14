@@ -26,14 +26,27 @@ import { ScrollArea } from "../ui/scroll-area"
 export const LandingNavigationMenu = () => {
   const latestCoursesQuery = api.courses.getLatest.useQuery(undefined, {
     enabled: false,
-
   })
+  const editUserQuery = api.users.editUser.useMutation()
+  const session = useSession()
 
   useEffect(() => {
     latestCoursesQuery.refetch()
   }, [])
 
-  const session = useSession()
+  useEffect(() => {
+    if (!session.data?.user) return
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    const isTablet = /Tablet|iPad/i.test(navigator.userAgent);
+    const getDevice = () => isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop'
+
+    if (session.data.user.device === (getDevice())) return
+    editUserQuery.mutate({
+      name: session.data?.user.name || "",
+      email: session.data?.user.email || "",
+      device: getDevice(),
+    })
+  }, [session.data?.user])
 
   return (
     <div className="w-full z-10 py-2 px-4 md:px-8 md:py-4 max-w-7xl lg:mx-auto">
@@ -183,7 +196,7 @@ const DesktopAuthenticatedProfileMenu = () => {
 
   const handleLogout = () => {
     setLoading(true)
-    signOut({callbackUrl: `/`})
+    signOut({ callbackUrl: `/` })
   }
 
   return (
@@ -257,7 +270,7 @@ const MobileAuthenticatedProfileMenu = () => {
 
   const handleLogout = () => {
     setLoading(true)
-    signOut({callbackUrl: `/`})
+    signOut({ callbackUrl: `/` })
   }
 
   return (

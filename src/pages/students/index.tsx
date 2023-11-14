@@ -1,6 +1,6 @@
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { api } from "@/lib/api";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FileDown, FileUp, PlusIcon } from "lucide-react";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import Spinner from "@/components/Spinner";
@@ -11,10 +11,16 @@ import StudentClient from "@/components/studentComponents/StudentClient";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const StudentsPage = () => {
-  const { data, isLoading, isError } = api.users.getUsers.useQuery({
+  const { data, isLoading, isError, refetch } = api.users.getUsers.useQuery({
     userType: "student",
+  }, {
+    enabled: false
   });
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    refetch()
+  }, [])
 
   return (
     <AppLayout>

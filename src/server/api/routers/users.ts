@@ -1,12 +1,10 @@
 import { z } from "zod";
 import {
   createTRPCRouter,
-  publicProcedure,
   protectedProcedure,
   adminProcedure,
 } from "@/server/api/trpc";
 import bcrypt from "bcrypt";
-import { getServerSession } from "next-auth";
 import { TRPCError } from "@trpc/server";
 import { Prisma } from "@prisma/client";
 
@@ -21,6 +19,9 @@ export const usersRouter = createTRPCRouter({
       const users = await ctx.prisma.user.findMany({
         where: {
           userType,
+        },
+        orderBy: {
+          id: "desc"
         },
         include: {
           orders: true,
@@ -141,12 +142,13 @@ export const usersRouter = createTRPCRouter({
         country: z.string().optional(),
         street: z.string().optional(),
         city: z.string().optional(),
+        device: z.enum(["mobile", "desktop", "tablet"]).optional(),
       })
     )
     .mutation(
       async ({
         ctx,
-        input: { name, email, password, userType, phone, state, country, street, city },
+        input: { name, email, password, userType, phone, state, country, street, city, device },
       }) => {
         if (ctx.session.user.userType !== "admin"
           && ctx.session.user.email !== email) {
@@ -167,6 +169,7 @@ export const usersRouter = createTRPCRouter({
               street,
               city,
             },
+            device,
           },
         }
 

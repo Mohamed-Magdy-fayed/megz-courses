@@ -82,6 +82,6 @@ export const getDifferenceMargin = <T extends DataObject>(
 
   return {
     differenceMargin: percentageChange,
-    total: currentWeekTotal
+    total: currentWeekTotal + lastWeekTotal
   };
 }

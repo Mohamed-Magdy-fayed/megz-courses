@@ -11,7 +11,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { env } from "@/env.mjs";
 import { prisma } from "@/server/db";
 import bcrypt from "bcrypt";
-import { UserType } from "@prisma/client";
+import { Devices, UserType } from "@prisma/client";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -24,6 +24,7 @@ declare module "next-auth" {
     user: {
       id: string;
       userType: UserType;
+      device: Devices | null;
       // ...other properties
     } & DefaultSession["user"];
   }
@@ -31,6 +32,7 @@ declare module "next-auth" {
   interface User extends DefaultUser {
     id: string;
     userType: UserType;
+    device: Devices | null;
     // ...other properties
   }
 }
@@ -72,21 +74,6 @@ export const authOptions: NextAuthOptions = {
 
         if (!checkPassword) return null;
 
-        const userAgent = req.headers!['user-agent'];
-        // Determine device type manually based on common patterns
-        const isMobile = /Mobi|Android/i.test(userAgent);
-        const isTablet = /Tablet|iPad/i.test(userAgent);
-
-        // Update the device information for the user
-        user = await prisma.user.update({
-          where: {
-            id: user.id,
-          },
-          data: {
-            device: isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop',
-          },
-        });
-
         return user;
       },
     }),
@@ -103,7 +90,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        return { ...token, userType: user.userType }
+        return { ...token, userType: user.userType, device: user.device }
       }
       return token
     },
@@ -113,9 +100,9 @@ export const authOptions: NextAuthOptions = {
           ...session,
           user: {
             ...session.user,
-            userType:
-              token.userType,
-            id: token.sub
+            userType: token.userType,
+            device: token.device,
+            id: token.sub,
           }
         }
       }
