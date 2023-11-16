@@ -39,8 +39,8 @@ type ChatFormProps = {
             messages: Message[];
         }) | null;
     }>>
-    channelSubscription: Channel | undefined
-    setUnreadMessages: Dispatch<SetStateAction<Message[]>>
+    channelSubscription?: Channel
+    setUnreadMessages?: Dispatch<SetStateAction<Message[]>>
 }
 
 const ChatForm: FC<ChatFormProps> = ({ setMessages, channelSubscription, setUnreadMessages, myChatData, refetchMyChat, onOpenChange }) => {
@@ -87,9 +87,9 @@ const ChatForm: FC<ChatFormProps> = ({ setMessages, channelSubscription, setUnre
                             channelSubscription?.bind(res.data?.chat?.id!, (data: Message & { supportChat: SupportChat | null }) => {
                                 refetchMyChat().then((res) => {
                                     setMessages(res.data?.chat?.messages || []);
-                                    if (data.sender === sesstionData?.user.name) return setUnreadMessages([]);
+                                    if (data.sender === sesstionData?.user.name) return setUnreadMessages!([]);
                                     notificationSound.play();
-                                    setUnreadMessages((prev) => (!open ? [...prev, data] : []));
+                                    setUnreadMessages!((prev) => (!open ? [...prev, data] : []));
                                 });
                             });
                         })
