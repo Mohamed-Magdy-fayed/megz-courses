@@ -1,4 +1,4 @@
-import { ConceptTitle } from "@/components/ui/Typoghraphy";
+import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { useRouter } from "next/router";
@@ -9,6 +9,9 @@ import OrderInfoPanel from "@/components/salesOperation/OrderInfoPanel";
 import CreateOrder from "@/components/salesOperation/CreateOrder";
 import { Loader } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
+import { useSession } from "next-auth/react";
+import Spinner from "@/components/Spinner";
+import { cn } from "@/lib/utils";
 
 const OperationPage = () => {
     const router = useRouter()
@@ -20,6 +23,7 @@ const OperationPage = () => {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
 
+    const session = useSession()
     const trpcUtils = api.useContext()
     const updateSalesOperationMutation = api.salesOperations.editSalesOperations.useMutation()
     const createPlacementTestMutation = api.placementTests.startCourses.useMutation()
@@ -86,19 +90,33 @@ const OperationPage = () => {
                         )}
                         {data.salesOperations.orderDetails !== null && (
                             <Button
-                                disabled={loading || data.salesOperations.status === "completed"}
+                                disabled={
+                                    loading
+                                    || data.salesOperations.status === "completed"
+                                    || (
+                                        session.data?.user.id !== data.salesOperations.salesAgentId
+                                        && session.data?.user.userType !== "admin"
+                                    )
+                                }
                                 onClick={handleCompleteOperation}
                                 className="bg-success hover:bg-success/90"
                             >
-                                Complete
+                                <Typography className={cn("", loading && "opacity-0")}>Complete</Typography>
+                                {loading && <Spinner className="w-4 h-4 absolute" />}
                             </Button>
                         )}
                         <Button
-                            disabled={data.salesOperations.status !== "ongoing" || data.salesOperations.orderDetails !== null}
+                            disabled={
+                                data.salesOperations.status !== "ongoing"
+                                || data.salesOperations.orderDetails !== null
+                                || session.data?.user.id !== data.salesOperations.id
+                                || session.data?.user.id !== data.salesOperations.salesAgentId
+                            }
                             onClick={() => setOpen(true)}
                             className="ml-auto"
                         >
-                            Add Courses
+                            <Typography className={cn("", loading && "opacity-0")}>Add Courses</Typography>
+                            {loading && <Spinner className="w-4 h-4 absolute" />}
                         </Button>
                     </div>
                 </>

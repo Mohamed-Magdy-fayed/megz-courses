@@ -3,7 +3,6 @@ import { getInitials } from "@/lib/getInitials";
 import { cn } from "@/lib/utils";
 import { Course, Order, SalesAgent, SalesOperation, User } from "@prisma/client";
 import { format } from "date-fns";
-import { Loader } from "lucide-react";
 import { useState } from "react";
 import { SeverityPill } from "@/components/overview/SeverityPill";
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
@@ -12,6 +11,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useToast } from "@/components/ui/use-toast";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import Spinner from "../Spinner";
 
 const OperationStatus = ({ data }: {
     data: (SalesOperation & {
@@ -45,6 +46,7 @@ const OperationStatus = ({ data }: {
 
     const editMutation = api.salesOperations.editSalesOperations.useMutation()
     const trpcUtils = api.useContext()
+    const sesstion = useSession()
     const { toast } = useToast()
 
     const handleStatusChange = (status: "created" | "assigned" | "ongoing" | "completed" | "cancelled") => {
@@ -79,39 +81,36 @@ const OperationStatus = ({ data }: {
                     </SeverityPill>
                     <Typography>Latest update: {updatedAt}</Typography>
                 </div>
-                {data.status === "assigned" ? (
-                    <Button
-                        customeColor={"primaryOutlined"}
-                        disabled={isLoading}
-                        onClick={() => handleStatusChange("ongoing")}
-                        className={cn("self-end")}
-                        variant={"outline"}>
-                        {isLoading ? <Loader className="animate-spin" /> : "Start"}
-                    </Button>
-                ) : data.status === "ongoing" ? (
-                    <Button
-                        customeColor={"destructiveOutlined"}
-                        disabled={isLoading || data.orderDetails !== null}
-                        onClick={() => handleStatusChange("cancelled")}
-                        className={cn("self-end")}
-                        variant={"outline"}>
-                        {isLoading ? <Loader className="animate-spin" size={25} color="inherit" /> : "Cancel"}
-                    </Button>
-                ) : data.status === "completed" ? (
-                    <Tooltip>
-                        <Link className="group hidden sm:flex items-center gap-4" href={`/account/${data.assignee?.user.id}`}>
-                            <Typography className="group-hover:text-primary">
-                                {data.assignee?.user.email}
-                            </Typography>
-                            <Avatar>
-                                <AvatarImage src={data.assignee?.user.image as string} />
-                                <AvatarFallback>
-                                    {getInitials(data.assignee?.user.name)}
-                                </AvatarFallback>
-                            </Avatar>
-                        </Link>
-                        <TooltipTrigger className="sm:hidden">
-                            <Link href={`/account/${data.assignee?.user.id}`}>
+                <div className="flex gap-4 items-center ">
+                    {data.status !== "cancelled" && data.status !== "completed" && (sesstion.data?.user.id === data.salesAgentId
+                        || sesstion.data?.user.userType === "admin") && (
+                            <Button
+                                customeColor={"destructive"}
+                                disabled={isLoading}
+                                onClick={() => handleStatusChange("cancelled")}
+                            >
+                                <Typography className={cn(isLoading && "opacity-0")}>Cancel</Typography>
+                                {isLoading && <Spinner className="w-6 h-6 absolute" />}
+                            </Button>
+                        )}
+                    {data.status === "assigned"
+                        && (sesstion.data?.user.id === data.salesAgentId
+                            || sesstion.data?.user.userType === "admin") ? (
+                        <Button
+                            customeColor={"primaryOutlined"}
+                            disabled={isLoading}
+                            onClick={() => handleStatusChange("ongoing")}
+                            className={cn("self-end")}
+                            variant={"outline"}>
+                            <Typography className={cn(isLoading && "opacity-0")}>Start</Typography>
+                            {isLoading && <Spinner className="w-6 h-6 absolute" />}
+                        </Button>
+                    ) : data.status === "completed" ? (
+                        <Tooltip>
+                            <Link className="group hidden sm:flex items-center gap-4" href={`/account/${data.assignee?.user.id}`}>
+                                <Typography className="group-hover:text-primary">
+                                    {data.assignee?.user.email}
+                                </Typography>
                                 <Avatar>
                                     <AvatarImage src={data.assignee?.user.image as string} />
                                     <AvatarFallback>
@@ -119,12 +118,22 @@ const OperationStatus = ({ data }: {
                                     </AvatarFallback>
                                 </Avatar>
                             </Link>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            {data.assignee?.user.email}
-                        </TooltipContent>
-                    </Tooltip>
-                ) : <></>}
+                            <TooltipTrigger className="sm:hidden">
+                                <Link href={`/account/${data.assignee?.user.id}`}>
+                                    <Avatar>
+                                        <AvatarImage src={data.assignee?.user.image as string} />
+                                        <AvatarFallback>
+                                            {getInitials(data.assignee?.user.name)}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                </Link>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                {data.assignee?.user.email}
+                            </TooltipContent>
+                        </Tooltip>
+                    ) : <></>}
+                </div>
             </div>
         </div>
     )

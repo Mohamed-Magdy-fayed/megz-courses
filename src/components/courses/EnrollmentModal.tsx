@@ -7,11 +7,13 @@ import { Checkbox } from '../ui/checkbox'
 import { Label } from '../ui/label'
 import { Button } from '../ui/button'
 import { CreditCard } from 'lucide-react'
-import Link from 'next/link'
 import Spinner from '../Spinner'
 import { useSession } from 'next-auth/react'
 import { api } from '@/lib/api'
 import { Course } from '@prisma/client'
+import ChatWithUs from '../landingPageComponents/ChatWithUs'
+import { useRouter } from 'next/router'
+import { useToast } from '../ui/use-toast'
 
 interface EnrollmentModalProps {
     setOpen: Dispatch<SetStateAction<boolean>>
@@ -29,6 +31,8 @@ const EnrollmentModal: FC<EnrollmentModalProps> = ({
     setOpen,
 }) => {
     const enrollCourseMutation = api.selfServe.enrollCourse.useMutation()
+    const { toast } = useToast()
+    const router = useRouter()
     const session = useSession()
     const [checkedAgreement, setcheckedAgreement] = useState(false)
 
@@ -41,8 +45,11 @@ const EnrollmentModal: FC<EnrollmentModalProps> = ({
             customerName: session.data.user.name,
             email: session.data.user.email,
         }, {
-            onSuccess: (data) => console.log(data),
-            onError: (e) => console.log(e),
+            onSuccess: (data) => router.push(data.paymentLink),
+            onError: (e) => toast({
+                description: e.message,
+                variant: "destructive"
+            }),
             onSettled: () => {
                 setLoading(false)
                 setOpen(false)
@@ -99,12 +106,8 @@ const EnrollmentModal: FC<EnrollmentModalProps> = ({
                         <CreditCard className={cn("", loading && "opacity-0")} />
                         {loading && <Spinner className="w-4 h-4 absolute" />}
                     </Button>
-                    <Typography>
-                        Need help?
-                        <Link className="text-info" href={'/'}>
-                            contact support
-                        </Link>
-                    </Typography>
+                    <Separator className='my-4' />
+                    <ChatWithUs />
                 </div>
             </div>
         </Modal>

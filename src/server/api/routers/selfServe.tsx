@@ -23,6 +23,25 @@ export const selfServeRouter = createTRPCRouter({
             courseId: z.string(),
         }))
         .mutation(async ({ input: { courseId, email, customerName }, ctx }) => {
+            const user = await ctx.prisma.user.findUnique({
+                where: {
+                    email
+                },
+            })
+
+            let foundMatchingCourse = false;
+
+            if (user?.courseStatus.some((status) => status.courseId === courseId)) {
+                foundMatchingCourse = true;
+            }
+
+            if (foundMatchingCourse) {
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: 'This course is already in progress or completed by the user.',
+                });
+            }
+
             const salesOperation = await ctx.prisma.salesOperation.create({
                 data: {
                     code: salesOperationCodeGenerator(),

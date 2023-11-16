@@ -6,13 +6,14 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Copy, Trash, SearchSlash, MoreVertical } from "lucide-react";
+import { Copy, Trash, SearchSlash, MoreVertical, Workflow } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AlertModal } from "../modals/AlertModal";
 import { api } from "@/lib/api";
 import { useToast } from "../ui/use-toast";
 import Link from "next/link";
+import { AssignModal } from "../modals/AssignModal";
 
 interface CellActionProps {
     id: string;
@@ -72,6 +73,35 @@ const CellAction: React.FC<CellActionProps> = ({ id, assigneeId, code }) => {
         }
     };
 
+    const [assignIsOpen, setAssingIsOpen] = useState(false);
+
+    const assignOperationMutation = api.salesOperations.assignSalesOperation.useMutation()
+    const handleCreateOperation = (assigneeId: string) => {
+        setLoading(true)
+        assignOperationMutation.mutate(
+            { id, assigneeId },
+            {
+                onSuccess: (data) => {
+                    toast({
+                        variant: "success",
+                        description: `Assigned successfully to ${data.salesOperations.assignee?.user.email}`
+                    })
+                },
+                onError: (error) => {
+                    toast({
+                        variant: "destructive",
+                        description: `an error occured ${error}`
+                    })
+                },
+                onSettled: () => {
+                    trpcUtils.salesOperations.invalidate()
+                    setAssingIsOpen(false)
+                    setLoading(false)
+                }
+            }
+        )
+    }
+
     return (
         <>
             <AlertModal
@@ -88,8 +118,21 @@ const CellAction: React.FC<CellActionProps> = ({ id, assigneeId, code }) => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={(e) => {
+                        e.preventDefault()
+                        setAssingIsOpen(true)
+                    }}>
+                        <AssignModal
+                            isOpen={assignIsOpen}
+                            loading={loading}
+                            onClose={() => setAssingIsOpen(false)}
+                            onConfirm={handleCreateOperation}
+                        />
+                        <Workflow className="w-4 h-4 mr-2" />
+                        Assign
+                    </DropdownMenuItem>
                     <DropdownMenuItem>
-                        <Link className="flex" href={`/operation/${id}`}>
+                        <Link className="flex gap-2" href={`/operation/${id}`}>
                             <SearchSlash className="w-4 h-4 mr-2" />
                             View
                         </Link>

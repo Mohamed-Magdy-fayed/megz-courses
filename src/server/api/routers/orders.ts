@@ -63,6 +63,27 @@ export const ordersRouter = createTRPCRouter({
             })
         )
         .mutation(async ({ input: { courses, salesOperationId, email }, ctx }) => {
+            const user = await ctx.prisma.user.findUnique({
+                where: {
+                    email
+                },
+            })
+
+            let foundMatchingCourse = false;
+
+            courses.forEach((courseId) => {
+                if (user?.courseStatus.some((status) => status.courseId === courseId)) {
+                    foundMatchingCourse = true;
+                }
+            });
+
+            if (foundMatchingCourse) {
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: 'One or more courses are already in progress or completed by the user.',
+                });
+            }
+
             const coursesPrice = await ctx.prisma.course.findMany({
                 where: {
                     id: { in: courses }

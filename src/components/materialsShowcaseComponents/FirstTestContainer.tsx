@@ -68,7 +68,7 @@ const FirstTestContainer: FC<FirstTestContainerProps> = ({
   return (
     <>
       <Typography className="text-center" variant={"primary"}>{firstTestTitle}</Typography>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {cards.map((card) => (
           <div
             key={card.id}
@@ -97,7 +97,7 @@ const FirstTestContainer: FC<FirstTestContainerProps> = ({
       >
         Clear answers <Trash className="ml-2 h-4 w-4" />
       </Button>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 [&>*]:cursor-pointer [&>*]:rounded-md [&>*]:border [&>*]:text-xl [&>*]:transition-all [&>*]:duration-300 hover:[&>*]:scale-105">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 [&>*]:cursor-pointer [&>*]:rounded-md [&>*]:border [&>*]:text-xl [&>*]:transition-all [&>*]:duration-300 hover:[&>*]:scale-105">
         {areas.map((area) => (
           <AnswerArea key={area.img} isCard={false} answerAreaImage={area.img}>
             {area.card &&

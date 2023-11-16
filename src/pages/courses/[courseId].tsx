@@ -1,4 +1,5 @@
 import Spinner from "@/components/Spinner"
+import MaterialShowcase from "@/components/contentComponents/materials/MaterialShowcase"
 import EnrollmentModal from "@/components/courses/EnrollmentModal"
 import LandingLayout from "@/components/landingPageComponents/LandingLayout"
 import { Typography } from "@/components/ui/Typoghraphy"
@@ -7,7 +8,8 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { api } from "@/lib/api"
 import { cn, formatPrice } from "@/lib/utils"
 import { format } from "date-fns"
-import { BookPlus } from "lucide-react"
+import { BookOpenCheck, BookPlus } from "lucide-react"
+import Link from "next/link"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 
@@ -26,6 +28,9 @@ const CoursePage = () => {
     const courseQuery = api.courses.getById.useQuery({ id }, {
         enabled: false,
     })
+    const userQuery = api.users.getCurrentUser.useQuery(undefined, {
+        enabled: false,
+    })
     const course = courseQuery.data?.course
 
     const [open, setOpen] = useState(false)
@@ -34,6 +39,7 @@ const CoursePage = () => {
     useEffect(() => {
         if (!id) return
         courseQuery.refetch()
+        userQuery.refetch()
     }, [id])
 
     if (!course) return (
@@ -46,7 +52,7 @@ const CoursePage = () => {
         <LandingLayout>
             <div className="grid grid-cols-12 md:gap-4">
                 <div className="col-span-12 md:col-span-4 md:order-1 lg:col-span-4 md:p-4">
-                    <Card className="overflow-hidden">
+                    <Card className="overflow-hidden sticky top-4">
                         <CardHeader className="p-0">
                             <div
                                 style={{ backgroundImage: `url("${course.image}")` || "" }}
@@ -61,14 +67,14 @@ const CoursePage = () => {
                                 <div>{course.description}</div>
                             </div>
                             <div>
-                                <Typography variant={"secondary"}>Example Content</Typography>
+                                <Typography variant={"secondary"}>Levels</Typography>
                                 <div>{course.levels.length === 0 ? (
                                     <Typography>No content yet</Typography>
                                 ) : course.levels.map(level => {
 
                                     return (
-                                        <div>
-                                            asd
+                                        <div key={level.id}>
+                                            {level.name}
                                         </div>
                                     )
                                 })}
@@ -76,23 +82,36 @@ const CoursePage = () => {
                             </div>
                         </CardContent>
                         <CardFooter className="flex gap-4 items-center justify-between flex-wrap p-4">
-                            <EnrollmentModal
-                                course={course}
-                                loading={loading}
-                                open={open}
-                                setLoading={setLoading}
-                                setOpen={setOpen}
-                            />
-                            <Button
-                                disabled={loading}
-                                onClick={() => setOpen(true)}
-                            >
-                                <Typography className={cn("", loading && "opacity-0")}>
-                                    Endoll Now!
-                                </Typography>
-                                <BookPlus className={cn("", loading && "opacity-0")} />
-                                {loading && <Spinner className="w-4 h-4 absolute" />}
-                            </Button>
+                            {userQuery.data?.user?.courseStatus.some(status => status.courseId === course.id) ? (
+                                <Link href={`/my_courses/${userQuery.data?.user.id}`}>
+                                    <Button>
+                                        <Typography>
+                                            Go to courses
+                                        </Typography>
+                                        <BookOpenCheck />
+                                    </Button>
+                                </Link>
+                            ) : (
+                                <>
+                                    <EnrollmentModal
+                                        course={course}
+                                        loading={loading}
+                                        open={open}
+                                        setLoading={setLoading}
+                                        setOpen={setOpen}
+                                    />
+                                    <Button
+                                        disabled={loading}
+                                        onClick={() => setOpen(true)}
+                                    >
+                                        <Typography className={cn("", loading && "opacity-0")}>
+                                            Endoll Now!
+                                        </Typography>
+                                        <BookPlus className={cn("", loading && "opacity-0")} />
+                                        {loading && <Spinner className="w-4 h-4 absolute" />}
+                                    </Button>
+                                </>
+                            )}
                             <Typography variant={"secondary"} className="text-success">{formatPrice(course.price)}</Typography>
                         </CardFooter>
                     </Card>
@@ -102,10 +121,19 @@ const CoursePage = () => {
                         <Typography variant={"secondary"}>{course.name}</Typography>
                         <Typography>Added on {format(course.createdAt, "do MMM yyyy")}</Typography>
                     </div>
-                    <div className="p-4">
-                        <Typography>Lesson 1 of Level 1</Typography>
-                    </div>
-                    <div className="max-w-3xl self-center grid place-content-center">
+                    {course.levels[0]?.lessons[0] ? (
+                        <div className="p-4 space-x-4">
+                            <Typography>{course.levels[0].name}</Typography>
+                            <Typography>-</Typography>
+                            <Typography>
+                                {course.levels[0].lessons[0].name || "No lessons"}
+                            </Typography>
+                        </div>
+                    ) : (<Spinner />)}
+                    {course?.levels[0]?.lessons[0]?.materials[0] ? (
+                        <MaterialShowcase materialItem={course.levels[0].lessons[0]?.materials[0]} />
+                    ) : (<Spinner />)}
+                    {/* <div className="max-w-3xl self-center grid place-content-center">
                         <video controls className="p-4 rounded-3xl " >
                             <source src={exampleVideo.sources[0]} type="video/mp4" />
                         </video>
@@ -122,7 +150,7 @@ const CoursePage = () => {
                             <li>point 7</li>
                             <li>point 8</li>
                         </ul>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </LandingLayout>

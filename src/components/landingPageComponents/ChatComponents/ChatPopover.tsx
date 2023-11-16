@@ -10,6 +10,7 @@ import { ChatAgent, Message, SupportChat, User } from "@prisma/client"
 import { RefetchOptions, RefetchQueryFilters, QueryObserverResult } from "@tanstack/react-query"
 import Spinner from "@/components/Spinner"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Channel } from "pusher-js"
 
 type ChatPopoverProps = {
     isLoading: boolean
@@ -36,9 +37,11 @@ type ChatPopoverProps = {
         }) | null;
     }>>
     setMessages: Dispatch<SetStateAction<Message[]>>
+    channelSubscription: Channel | undefined
+    setUnreadMessages: Dispatch<SetStateAction<Message[]>>
 }
 
-const ChatPopover: FC<ChatPopoverProps> = ({ onOpenChange, isLoading, open, messages, unreadMessages, myChatData, refetchMyChat, setMessages }) => {
+const ChatPopover: FC<ChatPopoverProps> = ({ onOpenChange, setUnreadMessages, channelSubscription, isLoading, open, messages, unreadMessages, myChatData, refetchMyChat, setMessages }) => {
     return (
         <Popover
             onOpenChange={onOpenChange}
@@ -60,7 +63,14 @@ const ChatPopover: FC<ChatPopoverProps> = ({ onOpenChange, isLoading, open, mess
                         <SupportChatMessages myChatData={myChatData} messages={messages} />
                     )}
                 </ScrollArea>
-                <ChatForm onOpenChange={onOpenChange} myChatData={myChatData} refetchMyChat={refetchMyChat} setMessages={setMessages} />
+                <ChatForm
+                    onOpenChange={onOpenChange}
+                    myChatData={myChatData}
+                    refetchMyChat={refetchMyChat}
+                    setMessages={setMessages}
+                    channelSubscription={channelSubscription}
+                    setUnreadMessages={setUnreadMessages}
+                />
             </PopoverContent>
         </Popover >
     )

@@ -43,6 +43,15 @@ export const usersRouter = createTRPCRouter({
       });
       return { user };
     }),
+  getCurrentUser: protectedProcedure
+    .query(async ({ ctx }) => {
+      const id = ctx.session.user.id
+      const user = await ctx.prisma.user.findUnique({
+        where: { id },
+        include: { orders: true },
+      });
+      return { user };
+    }),
   getUserByEmail: protectedProcedure
     .input(
       z.object({

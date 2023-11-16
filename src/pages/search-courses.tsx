@@ -1,5 +1,4 @@
 import Spinner from "@/components/Spinner"
-import EnrollmentModal from "@/components/courses/EnrollmentModal"
 import LandingCourseCard from "@/components/courses/LandingCourseCard"
 import LandingLayout from "@/components/landingPageComponents/LandingLayout"
 import { Button } from "@/components/ui/button"

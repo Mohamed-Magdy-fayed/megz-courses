@@ -53,6 +53,32 @@ export const salesOperationsRouter = createTRPCRouter({
                 salesOperations,
             };
         }),
+    assignSalesOperation: protectedProcedure
+        .input(
+            z.object({
+                id: z.string(),
+                assigneeId: z.string(),
+            })
+        )
+        .mutation(async ({ input: { id, assigneeId }, ctx }) => {
+            const salesOperations = await ctx.prisma.salesOperation.update({
+                where: {
+                    id
+                },
+                data: {
+                    assignee: { connect: { userId: assigneeId } },
+                    status: "assigned",
+                },
+                include: {
+                    assignee: { include: { user: true } },
+                    orderDetails: true,
+                },
+            });
+
+            return {
+                salesOperations,
+            };
+        }),
     editSalesOperations: protectedProcedure
         .input(
             z.object({

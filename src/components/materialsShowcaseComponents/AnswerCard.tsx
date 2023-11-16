@@ -36,7 +36,7 @@ const AnswerCard: FC<AnswerCardProps> = ({ card, isInArea, isSelected }) => {
       className={cn(
         "flex select-none items-center justify-center p-1",
         isInArea
-          ? "cursor-default rounded-t bg-slate-300"
+          ? "cursor-default rounded-t bg-slate-300 absolute"
           : "cursor-pointer rounded bg-slate-100 hover:bg-blue-200",
         isSelected ? "bg-blue-200" : "",
         isUsed ? "cursor-not-allowed text-primary hover:bg-slate-100" : "",
@@ -49,7 +49,7 @@ const AnswerCard: FC<AnswerCardProps> = ({ card, isInArea, isSelected }) => {
           : ""
       )}
     >
-      <TextToSpeech text={card.text}>
+      <TextToSpeech text={card.text} className="mt-auto">
         <Typography className={cn("relative")}>{card.text}</Typography>
       </TextToSpeech>
     </div>

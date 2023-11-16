@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 import { Typography } from "../ui/Typoghraphy";
-import { User } from "@prisma/client";
+import { CoursStatuses } from "@prisma/client";
 import Link from "next/link";
 import { SeverityPill, SeverityPillProps } from "../overview/SeverityPill";
 import { formatPercentage } from "@/lib/utils";
@@ -12,7 +12,7 @@ export type CourseRow = {
   name: string;
   formTestStatus?: number | null | undefined;
   oralTestStatus?: number | null | undefined;
-  courseStatus: User["courseStatus"][number]["state"]
+  courseStatus: CoursStatuses
 }
 
 export const columns: ColumnDef<CourseRow>[] = [

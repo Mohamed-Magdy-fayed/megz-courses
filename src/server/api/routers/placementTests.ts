@@ -30,7 +30,14 @@ export const placementTestsRouter = createTRPCRouter({
                 },
                 data: {
                     courseStatus: {
-                        push: { courseId, state: "waiting" }
+                        updateMany: {
+                            where: {
+                                courseId,
+                            },
+                            data: {
+                                state: "waiting"
+                            }
+                        }
                     }
                 },
             });
@@ -79,7 +86,26 @@ export const placementTestsRouter = createTRPCRouter({
                 },
                 data: {
                     testStatus: {
-                        form: Math.round(score),
+                        update: { form: Math.round(score) }
+                    }
+                }
+            })
+
+            return { updatedPlacementTest };
+        }),
+    updatePlacementOralTestScore: protectedProcedure
+        .input(z.object({
+            score: z.number(),
+            testId: z.string(),
+        }))
+        .mutation(async ({ input: { score, testId }, ctx }) => {
+            const updatedPlacementTest = await ctx.prisma.placementTest.update({
+                where: {
+                    id: testId,
+                },
+                data: {
+                    testStatus: {
+                        update: { oral: Math.round(score) }
                     }
                 }
             })

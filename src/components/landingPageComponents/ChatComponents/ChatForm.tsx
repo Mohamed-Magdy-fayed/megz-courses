@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { SupportChat, ChatAgent, User, Message } from '@prisma/client';
 import { QueryObserverResult, RefetchOptions, RefetchQueryFilters } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
+import { Channel } from 'pusher-js';
 import { Dispatch, FC, SetStateAction, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -38,9 +39,11 @@ type ChatFormProps = {
             messages: Message[];
         }) | null;
     }>>
+    channelSubscription: Channel | undefined
+    setUnreadMessages: Dispatch<SetStateAction<Message[]>>
 }
 
-const ChatForm: FC<ChatFormProps> = ({ setMessages, myChatData, refetchMyChat, onOpenChange }) => {
+const ChatForm: FC<ChatFormProps> = ({ setMessages, channelSubscription, setUnreadMessages, myChatData, refetchMyChat, onOpenChange }) => {
     const defaultValues: z.infer<typeof formSchema> = {
         message: "",
     };
@@ -71,12 +74,24 @@ const ChatForm: FC<ChatFormProps> = ({ setMessages, myChatData, refetchMyChat, o
         }])
         form.reset()
 
+        const notificationSound = new Howl({
+            src: ['/sounds/message-pop-alert.mp3'],
+        });
+
         if (!myChatData?.chat) {
             createChatMutation.mutate({ message: data.message }, {
                 onSuccess() {
                     refetchMyChat()
                         .then(res => {
                             setMessages(res.data?.chat?.messages || [])
+                            channelSubscription?.bind(res.data?.chat?.id!, (data: Message & { supportChat: SupportChat | null }) => {
+                                refetchMyChat().then((res) => {
+                                    setMessages(res.data?.chat?.messages || []);
+                                    if (data.sender === sesstionData?.user.name) return setUnreadMessages([]);
+                                    notificationSound.play();
+                                    setUnreadMessages((prev) => (!open ? [...prev, data] : []));
+                                });
+                            });
                         })
                 },
                 onError(e) {

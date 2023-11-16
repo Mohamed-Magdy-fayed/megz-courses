@@ -85,9 +85,15 @@ export const coursesRouter = createTRPCRouter({
         include: {
           levels: {
             include: {
-              lessons: true,
+              lessons: {
+                include: {
+                  materials: true
+                }
+              },
             },
           },
+          orders: { include: { user: true } },
+          placementTests: { include: { student: true, trainer: { include: { user: true } } } }
         },
       });
       return { course };

@@ -6,11 +6,13 @@ import { pusherClient } from '@/lib/pusher'
 import { Howl } from 'howler';
 import { useToast } from '../ui/use-toast'
 import ChatPopover from './ChatComponents/ChatPopover'
+import { Channel } from 'pusher-js'
 
 const ChatWithUs = () => {
     const [open, setOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([]);
     const [unreadMessages, setUnreadMessages] = useState<Message[]>([]);
+    const [channelSubscription, setChannelSubscription] = useState<Channel>();
 
     const { toast } = useToast()
     const { data: sessionData } = useSession()
@@ -35,6 +37,7 @@ const ChatWithUs = () => {
 
     useEffect(() => {
         const channelSubscription = pusherClient.subscribe('SUPPORT_CHAT');
+        setChannelSubscription(channelSubscription)
         const deleteSubscription = pusherClient.subscribe('DELETE_CHAT');
         const notificationSound = new Howl({
             src: ['/sounds/message-pop-alert.mp3'],
@@ -81,6 +84,8 @@ const ChatWithUs = () => {
             refetchMyChat={refetchMyChat}
             setMessages={setMessages}
             isLoading={isLoading}
+            channelSubscription={channelSubscription}
+            setUnreadMessages={setUnreadMessages}
         />
     )
 }

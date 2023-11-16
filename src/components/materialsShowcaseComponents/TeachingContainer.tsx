@@ -24,7 +24,7 @@ const TeachingContainer: FC<TeachingContainerProps> = ({ vocabularyCards }) => {
           </Typography>
         </div>
       </div>
-      <div className="grid auto-rows-fr grid-cols-1 gap-4 text-slate-50 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid auto-rows-fr grid-cols-1 gap-4 text-slate-50 lg:grid-cols-2">
         {vocabularyCards.map((card) => (
           <FlipCard
             key={card.word}
