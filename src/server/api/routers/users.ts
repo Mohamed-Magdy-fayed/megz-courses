@@ -7,12 +7,13 @@ import {
 import bcrypt from "bcrypt";
 import { TRPCError } from "@trpc/server";
 import { Prisma } from "@prisma/client";
+import { validDeviceTypes, validUserTypes } from "@/lib/enumsTypes";
 
 export const usersRouter = createTRPCRouter({
   getUsers: protectedProcedure
     .input(
       z.object({
-        userType: z.enum(["admin", "student", "teacher", "salesAgent"]),
+        userType: z.enum(validUserTypes),
       })
     )
     .query(async ({ ctx, input: { userType } }) => {
@@ -80,7 +81,7 @@ export const usersRouter = createTRPCRouter({
         country: z.string().optional(),
         street: z.string().optional(),
         city: z.string().optional(),
-        userType: z.enum(["admin", "student", "teacher"]).optional(),
+        userType: z.enum(validUserTypes).optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -145,13 +146,13 @@ export const usersRouter = createTRPCRouter({
         name: z.string(),
         email: z.string().email(),
         password: z.string().optional(),
-        userType: z.enum(["admin", "student", "teacher", "salesAgent", "chatAgent"]).optional(),
+        userType: z.enum(validUserTypes).optional(),
         phone: z.string().optional(),
         state: z.string().optional(),
         country: z.string().optional(),
         street: z.string().optional(),
         city: z.string().optional(),
-        device: z.enum(["mobile", "desktop", "tablet"]).optional(),
+        device: z.enum(validDeviceTypes).optional(),
       })
     )
     .mutation(

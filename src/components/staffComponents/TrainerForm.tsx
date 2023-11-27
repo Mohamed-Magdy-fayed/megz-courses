@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import { validTrainerRoles } from "@/lib/enumsTypes";
 
 const formSchema = z.object({
   name: z.string().nonempty(),
@@ -32,20 +33,20 @@ const formSchema = z.object({
   password: z.string().min(4),
   image: z.string().optional(),
   phone: z.string().optional(),
-  userType: z.enum(["student", "teacher"]),
+  trainerRole: z.enum(validTrainerRoles),
 });
 
 type UsersFormValues = z.infer<typeof formSchema>;
 
-interface UserFormProps {
+interface TrainerFormProps {
   setIsOpen: (val: boolean) => void;
 }
 
-const UserForm: React.FC<UserFormProps> = ({ setIsOpen }) => {
+const TrainerForm: React.FC<TrainerFormProps> = ({ setIsOpen }) => {
   const [loading, setLoading] = useState(false);
 
-  const title = "Create User";
-  const description = "Add a new User";
+  const title = "Create";
+  const description = "Add a new Trainer";
   const action = "Create";
 
   const defaultValues: z.infer<typeof formSchema> = {
@@ -54,7 +55,7 @@ const UserForm: React.FC<UserFormProps> = ({ setIsOpen }) => {
     password: "",
     image: "",
     phone: "",
-    userType: "student",
+    trainerRole: "teacher",
   };
 
   const form = useForm<UsersFormValues>({
@@ -62,21 +63,23 @@ const UserForm: React.FC<UserFormProps> = ({ setIsOpen }) => {
     defaultValues,
   });
 
-  const addUserMutation = api.users.createUser.useMutation();
+  const createTrainerMutation = api.trainers.createTrainer.useMutation();
   const trpcUtils = api.useContext();
   const { toast } = useToast()
 
   const onSubmit = (data: UsersFormValues) => {
     setLoading(true);
-    addUserMutation.mutate(data, {
+    createTrainerMutation.mutate(data, {
       onSuccess: (data) => {
-        trpcUtils.invalidate();
-        toast({
-          variant: "success",
-          description: `User created with email: ${data.user.email}`
-        })
-        setIsOpen(false);
-        setLoading(false);
+        trpcUtils.trainers.invalidate()
+          .then(() => {
+            toast({
+              variant: "success",
+              description: `Trainer created with email: ${data.trainer.email}`
+            })
+            setIsOpen(false);
+            setLoading(false);
+          });
       },
       onError: (e) => {
         toast({
@@ -208,10 +211,10 @@ const UserForm: React.FC<UserFormProps> = ({ setIsOpen }) => {
             />
             <FormField
               control={form.control}
-              name="userType"
+              name="trainerRole"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>User Type</FormLabel>
+                  <FormLabel>Trainer Role</FormLabel>
                   <Select
                     disabled={loading}
                     // @ts-ignore
@@ -223,12 +226,12 @@ const UserForm: React.FC<UserFormProps> = ({ setIsOpen }) => {
                       <SelectTrigger className="pl-8 bg-white">
                         <SelectValue
                           defaultValue={field.value}
-                          placeholder="Select user type"
+                          placeholder="Select trainer role"
                         />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="student">Student</SelectItem>
+                      <SelectItem value="tester">Tester</SelectItem>
                       <SelectItem value="teacher">Teacher</SelectItem>
                     </SelectContent>
                   </Select>
@@ -265,4 +268,4 @@ const UserForm: React.FC<UserFormProps> = ({ setIsOpen }) => {
   );
 };
 
-export default UserForm;
+export default TrainerForm;

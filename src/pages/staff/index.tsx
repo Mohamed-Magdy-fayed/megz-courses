@@ -1,20 +1,22 @@
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { api } from "@/lib/api";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FileDown, FileUp, PlusIcon } from "lucide-react";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
-import UserForm from "@/components/staffComponents/UserForm";
+import TrainerForm from "@/components/staffComponents/TrainerForm";
 import StaffClient from "@/components/staffComponents/StaffClient";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const StaffPage = () => {
-  const { data, isLoading, isError } = api.users.getUsers.useQuery({
-    userType: "teacher",
-  });
+  const { data, isLoading, isError, refetch } = api.trainers.getTrainers.useQuery(undefined, { enabled: false });
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    refetch();
+  }, []);
 
   return (
     <AppLayout>
@@ -53,7 +55,7 @@ const StaffPage = () => {
           </div>
           {isOpen && (
             <PaperContainer>
-              <UserForm setIsOpen={setIsOpen}></UserForm>
+              <TrainerForm setIsOpen={setIsOpen}></TrainerForm>
             </PaperContainer>
           )}
           <PaperContainer>
@@ -62,7 +64,7 @@ const StaffPage = () => {
             ) : isError ? (
               <>Error</>
             ) : (
-              <StaffClient data={data.users}></StaffClient>
+              <StaffClient data={data.trainers}></StaffClient>
             )}
           </PaperContainer>
         </div>

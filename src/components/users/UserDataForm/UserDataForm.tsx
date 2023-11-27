@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { validUserTypes } from "@/lib/enumsTypes";
 
 const userDataFormSchema = z.object({
     id: z.string().nonempty(),
@@ -26,7 +27,7 @@ const userDataFormSchema = z.object({
     street: z.string().optional(),
     city: z.string().optional(),
     country: z.string().optional(),
-    userType: z.enum(["student", "teacher", "salesAgent", "chatAgent"]),
+    userType: z.enum(validUserTypes),
 });
 
 export type UserDataFormValues = z.infer<typeof userDataFormSchema>;

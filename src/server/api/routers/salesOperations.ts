@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { SalesOperationStatus } from "@prisma/client";
 import { orderCodeGenerator, salesOperationCodeGenerator } from "@/lib/utils";
+import { validOperationStatus } from "@/lib/enumsTypes";
 
 export const salesOperationsRouter = createTRPCRouter({
     getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -33,7 +34,7 @@ export const salesOperationsRouter = createTRPCRouter({
         .input(
             z.object({
                 assigneeId: z.string().optional(),
-                status: z.enum(["created", "assigned", "ongoing", "completed", "cancelled"]),
+                status: z.enum(validOperationStatus),
             })
         )
         .mutation(async ({ input: { assigneeId, status }, ctx }) => {
@@ -85,7 +86,7 @@ export const salesOperationsRouter = createTRPCRouter({
                 id: z.string(),
                 email: z.string().email().optional(),
                 amount: z.number().optional(),
-                status: z.enum(["created", "assigned", "ongoing", "completed", "cancelled"]).optional(),
+                status: z.enum(validOperationStatus).optional(),
             })
         )
         .mutation(async ({ ctx, input: { id, status, amount, email } }) => {

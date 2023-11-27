@@ -7,16 +7,17 @@ import { getInitials } from "@/lib/getInitials";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Typography } from "../ui/Typoghraphy";
 
-export type Teacher = {
+export type TrainerColumn = {
   id: string;
   name: string;
   email: string;
   image?: string;
   phone?: string;
+  role: string;
   createdAt: string;
 };
 
-export const columns: ColumnDef<Teacher>[] = [
+export const columns: ColumnDef<TrainerColumn>[] = [
   {
     id: "select",
     header: ({ table }) => (
