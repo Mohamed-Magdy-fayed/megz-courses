@@ -22,24 +22,18 @@ const SalesOperationsClient = ({ data }: { data: SalesOperations[] }) => {
 
   const deleteMutation = api.salesOperations.deleteSalesOperations.useMutation();
   const trpcUtils = api.useContext();
-  const { toast } = useToast()
+  const { toastError, toastSuccess } = useToast()
 
   const onDelete = () => {
     deleteMutation.mutate(
       salesOperations.map((salesOperation) => salesOperation.id),
       {
         onSuccess: () => {
-          toast({
-            variant: "success",
-            description: "operation(s) deleted"
-          })
+          toastSuccess("operation(s) deleted")
           trpcUtils.salesOperations.invalidate();
         },
-        onError: () => {
-          toast({
-            variant: "destructive",
-            description: "somthing went wrong"
-          })
+        onError: (error) => {
+          toastError(error.message)
         },
       }
     );

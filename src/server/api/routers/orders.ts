@@ -218,6 +218,7 @@ export const ordersRouter = createTRPCRouter({
     deleteOrders: protectedProcedure
         .input(z.array(z.string()))
         .mutation(async ({ input, ctx }) => {
+            if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
             const deletedOrders = await ctx.prisma.order.deleteMany({
                 where: {
                     id: {

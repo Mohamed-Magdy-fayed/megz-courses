@@ -14,7 +14,7 @@ const ChatWithUs = () => {
     const [unreadMessages, setUnreadMessages] = useState<Message[]>([]);
     const [channelSubscription, setChannelSubscription] = useState<Channel>();
 
-    const { toast } = useToast()
+    const { toastInfo } = useToast()
     const { data: sessionData } = useSession()
     const { data: myChatData, refetch: refetchMyChat, isLoading } = api.chat.getMyChat.useQuery(undefined, { enabled: false })
 
@@ -58,10 +58,7 @@ const ChatWithUs = () => {
                     onOpenChange(false);
                     setMessages(res.data?.chat?.messages || []);
                     setUnreadMessages([]);
-                    toast({
-                        description: 'Chat has ended',
-                        variant: 'info',
-                    });
+                    toastInfo('Chat has ended');
                 });
             });
         });

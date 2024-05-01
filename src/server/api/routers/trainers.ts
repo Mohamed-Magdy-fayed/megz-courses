@@ -66,6 +66,7 @@ export const trainersRouter = createTRPCRouter({
           email: input.email,
           hashedPassword,
           phone: input.phone,
+          userType: "teacher",
           trainer: {
             create: {
               role: input.trainerRoll || "teacher",
@@ -81,6 +82,7 @@ export const trainersRouter = createTRPCRouter({
   deleteTrainer: adminProcedure
     .input(z.array(z.string()))
     .mutation(async ({ input, ctx }) => {
+      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
       const deletedTrainers = await ctx.prisma.user.deleteMany({
         where: {
           id: {

@@ -13,13 +13,10 @@ export const ApiAlert: React.FC<ApiAlertProps> = ({
   description,
   title,
 }) => {
-  const { toast } = useToast()
+  const { toastInfo } = useToast()
   const onCopy = () => {
     navigator.clipboard.writeText(description);
-    toast({
-      description: "API route copied to the clipboard",
-      variant: "info"
-    });
+    toastInfo("API route copied to the clipboard");
   };
   return (
     <Alert className="mt-4">

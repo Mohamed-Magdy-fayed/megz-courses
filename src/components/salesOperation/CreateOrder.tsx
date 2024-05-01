@@ -37,16 +37,13 @@ const CreateOrder: FC<CreateOrderProps> = ({
     const [email, setEmail] = useState<string[]>([])
     const [courses, setCourses] = useState<string[]>([])
 
-    const { toast } = useToast()
+    const { toastError, toastSuccess } = useToast()
     const trpcUtils = api.useContext()
     const createOrderMutation = api.orders.createOrder.useMutation()
     const sendEmailMutation = api.comms.sendEmail.useMutation()
 
     const handleAddCourses = () => {
-        if (!email[0] || courses.length === 0) return toast({
-            description: `missing some info here!`,
-            variant: "destructive"
-        })
+        if (!email[0] || courses.length === 0) return toastError(`missing some info here!`)
 
         setLoading(true)
         createOrderMutation.mutate({
@@ -98,11 +95,7 @@ const CreateOrder: FC<CreateOrderProps> = ({
             salesOperationId,
             alreadyUpdated: false
         }, {
-            onError: (e) => toast({
-                description: e.message,
-                variant: "destructive",
-                title: "Error"
-            }),
+            onError: (e) => toastError(e.message),
             onSettled: () => {
                 trpcUtils.salesOperations.invalidate()
                 setOpen(false)

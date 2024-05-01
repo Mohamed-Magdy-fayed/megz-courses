@@ -65,7 +65,7 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
         defaultValues,
     });
 
-    const { toast } = useToast()
+    const { toastSuccess } = useToast()
     const trpcUrils = api.useContext();
     const editUser = api.users.editUser.useMutation();
 
@@ -75,9 +75,7 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
             { ...data },
             {
                 onSuccess: (data) => {
-                    toast({
-                        description: `User with the email: ${data.updatedUser.email} has been updated`
-                    })
+                    toastSuccess(`User with the email: ${data.updatedUser.email} has been updated`)
                 },
                 onSettled() {
                     trpcUrils.users.invalidate()

@@ -16,28 +16,19 @@ const LessonRow = ({ lesson }: { lesson: Lesson }) => {
   const trpcUtils = api.useContext();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast()
+  const { toastError, toastSuccess } = useToast()
 
   const handleDelete = (id: string) => {
     if (id === "64d370ceb84ac3b8c1093819")
-      return toast({
-        variant: "destructive",
-        description: `don't delete that please! ^_^`,
-      });
+      return toastError(`don't delete that please! ^_^`);
     setLoading(true);
     deleteLessonMutation.mutate([id], {
       onSuccess: () => {
-        toast({
-          variant: "success",
-          description: `Deleted!`
-        })
+        toastSuccess(`Deleted!`)
         trpcUtils.levels.invalidate().then(() => setLoading(false));
       },
-      onError: () => {
-        toast({
-          variant: "success",
-          description: "an error occured!"
-        })
+      onError: (error) => {
+        toastError(error.message)
         setLoading(false);
       },
     });

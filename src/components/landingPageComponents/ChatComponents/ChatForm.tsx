@@ -53,7 +53,7 @@ const ChatForm: FC<ChatFormProps> = ({ setMessages, channelSubscription, setUnre
         defaultValues,
     });
 
-    const { toast } = useToast()
+    const { toastError, toastSuccess } = useToast()
     const { data: sesstionData } = useSession()
     const createChatMutation = api.chat.createChat.useMutation()
     const sendMessageMutation = api.chat.sendMessage.useMutation()
@@ -95,10 +95,7 @@ const ChatForm: FC<ChatFormProps> = ({ setMessages, channelSubscription, setUnre
                         })
                 },
                 onError(e) {
-                    toast({
-                        description: e.message,
-                        variant: "destructive"
-                    })
+                    toastError(e.message)
                 },
             })
         }
@@ -111,10 +108,7 @@ const ChatForm: FC<ChatFormProps> = ({ setMessages, channelSubscription, setUnre
                     })
             },
             onError(e) {
-                toast({
-                    description: e.message,
-                    variant: "destructive"
-                })
+                toastError(e.message)
             },
         })
     };
@@ -130,10 +124,7 @@ const ChatForm: FC<ChatFormProps> = ({ setMessages, channelSubscription, setUnre
                     })
                 },
                 onError(e) {
-                    toast({
-                        description: e.message,
-                        variant: "destructive"
-                    })
+                    toastError(e.message)
                     setLoading(false)
                 },
             })
@@ -147,10 +138,7 @@ const ChatForm: FC<ChatFormProps> = ({ setMessages, channelSubscription, setUnre
                 })
             },
             onError(e) {
-                toast({
-                    description: e.message,
-                    variant: "destructive"
-                })
+                toastError(e.message)
                 setLoading(false)
             },
         })

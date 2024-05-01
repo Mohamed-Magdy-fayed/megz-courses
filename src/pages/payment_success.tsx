@@ -14,7 +14,7 @@ import { useEffect, useState } from "react"
 
 const SuccessfullPaymentPage = () => {
     const sessionId = useRouter().query.session_id
-    const { toast } = useToast()
+    const { toast, toastError } = useToast()
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(true)
     const [orderData, setOrderData] = useState<Order & {
@@ -53,11 +53,7 @@ const SuccessfullPaymentPage = () => {
             salesOperationId: updatedOrder.salesOperationId,
             alreadyUpdated,
         }, {
-            onError: (e) => toast({
-                description: e.message,
-                variant: "destructive",
-                title: "Error"
-            }),
+            onError: (e) => toastError(e.message),
             onSettled: (data) => {
                 if (!data?.alreadyUpdated) {
                     toast({

@@ -32,7 +32,7 @@ interface DataTableProps<TData, TValue> {
   onDelete: () => void;
   search?: {
     label: string
-    key: string
+    key: Extract<keyof TData, string>
   }
 }
 
@@ -80,7 +80,6 @@ export function DataTable<TData, TValue>({
         isOpen={open}
         onClose={() => setOpen(false)}
         onConfirm={() => {
-          setLoading(true)
           onDelete();
           setOpen(false);
           table.toggleAllPageRowsSelected()

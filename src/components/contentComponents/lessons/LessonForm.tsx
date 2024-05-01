@@ -34,7 +34,7 @@ const LessonForm = ({
   const form = useForm({ defaultValues: { name: "" } });
   const createLessonMutation = api.lessons.createLesson.useMutation();
   const trpcUtils = api.useContext();
-  const { toast } = useToast()
+  const { toastError, toastSuccess } = useToast()
 
   const onSubmit = (data: LessonFormValues) => {
     setLoading(true);
@@ -43,18 +43,12 @@ const LessonForm = ({
       { ...data, levelId: id },
       {
         onSuccess: ({ lesson }) => {
-          toast({
-            variant: "success",
-            description: `Your new lesson (${lesson.name}) is ready!`
-          })
+          toastSuccess(`Your new lesson (${lesson.name}) is ready!`)
           trpcUtils.levels.invalidate();
           setLoading(false);
         },
-        onError: () => {
-          toast({
-            variant: "destructive",
-            description: "an error occured!"
-          })
+        onError: (error) => {
+          toastError(error.message)
           setLoading(false);
         },
       }

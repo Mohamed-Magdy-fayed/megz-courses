@@ -19,7 +19,7 @@ const ControlledPracticeContainer: FC<ControlledPracticeContainerProps> = ({
   const { clearAnswers, questions, submit, setQuestions } =
     useControlledPracticeMultichoiceStore();
 
-  const { toast } = useToast();
+  const { toastError, toastSuccess } = useToast();
   const handleSubmit = () => {
     submit();
     const correctAnswers = questions.filter(
@@ -27,20 +27,14 @@ const ControlledPracticeContainer: FC<ControlledPracticeContainerProps> = ({
     ).length;
 
     correctAnswers >= questions.length / 2
-      ? toast({
-        variant: "destructive",
-        description: `${correctAnswers} Correct answers of ${questions.length} - Score: ${(
-          (correctAnswers / questions.length) *
-          100
-        ).toFixed(0)}%`
-      })
-      : toast({
-        description: `${correctAnswers} Correct answers of ${questions.length} - Score: ${(
-          (correctAnswers / questions.length) *
-          100
-        ).toFixed(0)}%`,
-        variant: "success"
-      });
+      ? toastError(`${correctAnswers} Correct answers of ${questions.length} - Score: ${(
+        (correctAnswers / questions.length) *
+        100
+      ).toFixed(0)}%`)
+      : toastSuccess(`${correctAnswers} Correct answers of ${questions.length} - Score: ${(
+        (correctAnswers / questions.length) *
+        100
+      ).toFixed(0)}%`);
   };
 
   useEffect(() => {

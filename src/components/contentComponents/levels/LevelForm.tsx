@@ -35,7 +35,7 @@ const LevelForm = ({
   const form = useForm({ defaultValues: { name: "", code: "" } });
   const createlevelMutation = api.levels.createLevel.useMutation();
   const trpcUtils = api.useContext();
-  const { toast } = useToast()
+  const { toastError, toastSuccess } = useToast()
 
   const onSubmit = (data: LevelFormValues) => {
     setLoading(true);
@@ -43,18 +43,12 @@ const LevelForm = ({
       { ...data, courseId: id },
       {
         onSuccess: ({ level }) => {
-          toast({
-            variant: "success",
-            description: `Your new level (${level.name}) is ready!`
-          })
+          toastSuccess(`Your new level (${level.name}) is ready!`)
           trpcUtils.courses.invalidate();
           setLoading(false);
         },
-        onError: () => {
-          toast({
-            variant: "destructive",
-            description: "somthing went wrong!"
-          })
+        onError: (error) => {
+          toastError(error.message)
           setLoading(false);
         },
       }

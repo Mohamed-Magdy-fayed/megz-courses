@@ -10,7 +10,7 @@ export interface Users extends User {
   trainer: Trainer | null;
 }
 
-const StaffClient = ({ data }: { data: Users[] }) => {
+const TrainersClient = ({ data }: { data: Users[] }) => {
   const [trainers, setTraiers] = useState<TrainerColumn[]>([]);
   const formattedData: TrainerColumn[] = data.map((user) => ({
     id: user.id,
@@ -22,7 +22,7 @@ const StaffClient = ({ data }: { data: Users[] }) => {
     createdAt: format(user.createdAt, "MMMM do, yyyy"),
   }));
 
-  const { toast } = useToast();
+  const { toastError, toastSuccess } = useToast();
   const deleteMutation = api.trainers.deleteTrainer.useMutation();
   const trpcUtils = api.useContext();
 
@@ -31,17 +31,10 @@ const StaffClient = ({ data }: { data: Users[] }) => {
       trainers.map((user) => user.id),
       {
         onSuccess: () => {
-          toast({
-            description: "Trainer(s) deleted",
-            variant: 'success'
-          });
-          trpcUtils.users.invalidate();
+          trpcUtils.trainers.invalidate().then(() => toastSuccess("Trainer(s) deleted"));
         },
-        onError: () => {
-          toast({
-            description: "somthing went wrong",
-            variant: "destructive"
-          });
+        onError: (error) => {
+          toastError(error.message)
         },
       }
     );
@@ -53,8 +46,12 @@ const StaffClient = ({ data }: { data: Users[] }) => {
       data={formattedData}
       setUsers={setTraiers}
       onDelete={onDelete}
+      search={{
+        key: "email",
+        label: "Email"
+      }}
     />
   );
 };
 
-export default StaffClient;
+export default TrainersClient;

@@ -16,8 +16,12 @@ const AuthenticationPage = () => {
   const router = useRouter();
 
   useEffect(() => {
-    if (session.status === "authenticated") router.push("/");
+    if (session.status === "authenticated") session.data.user.userType === "student" ? router.push("/") : router.push("/dashboard");
   }, [session.status]);
+
+  useEffect(() => {
+    setVariant(defaultVariant)
+  }, [defaultVariant]);
 
   return (
     <main className="min-h-screen bg-background p-4 grid gap-8 grid-cols-1 lg:grid-cols-2">
@@ -48,8 +52,10 @@ const AuthenticationPage = () => {
             </Typography>
             <Button
               variant="link"
-              onClick={() =>
+              onClick={() => {
                 setVariant(variant === "login" ? "register" : "login")
+                router.push(variant === "login" ? "authentication?variant=register" : "authentication?variant=login")
+              }
               }
             >
               <Typography >

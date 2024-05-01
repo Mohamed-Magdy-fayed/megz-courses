@@ -3,6 +3,7 @@ import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { SalesOperationStatus } from "@prisma/client";
 import { orderCodeGenerator, salesOperationCodeGenerator } from "@/lib/utils";
 import { validOperationStatus } from "@/lib/enumsTypes";
+import { TRPCError } from "@trpc/server";
 
 export const salesOperationsRouter = createTRPCRouter({
     getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -118,6 +119,7 @@ export const salesOperationsRouter = createTRPCRouter({
     deleteSalesOperations: protectedProcedure
         .input(z.array(z.string()))
         .mutation(async ({ input, ctx }) => {
+            if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
             const deletedSalesOperation = await ctx.prisma.salesOperation.deleteMany({
                 where: {
                     id: {

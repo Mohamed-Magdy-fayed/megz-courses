@@ -16,25 +16,17 @@ const LevelRow = ({ level }: { level: Level }) => {
   const trpcUtils = api.useContext();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast()
+  const { toastError, toastSuccess } = useToast()
 
   const handleDelete = (id: string) => {
-    if (id === "64d35d5eb84ac3b8c1093813")
-      return //toast.error(`don't delete that please! ^_^`);
     setLoading(true);
     deleteLevelMutation.mutate([id], {
       onSuccess: () => {
-        toast({
-          variant: "success",
-          description: `Deleted!`
-        })
+        toastSuccess(`Deleted!`)
         trpcUtils.courses.invalidate().then(() => setLoading(false));
       },
-      onError: () => {
-        toast({
-          variant: "destructive",
-          description: "an error occured!"
-        })
+      onError: (error) => {
+        toastError(error.message)
         setLoading(false);
       },
     });
@@ -61,7 +53,7 @@ const LevelRow = ({ level }: { level: Level }) => {
       </div>
       <div className="flex items-center justify-center gap-2">
         <Tooltip>
-          <TooltipTrigger>
+          <TooltipTrigger asChild>
             <Button
               variant={"icon"}
               customeColor={"infoIcon"}
@@ -73,7 +65,7 @@ const LevelRow = ({ level }: { level: Level }) => {
           <TooltipContent>Edit Level</TooltipContent>
         </Tooltip>
         <Tooltip>
-          <TooltipTrigger>
+          <TooltipTrigger asChild>
             <Button
               variant={"icon"}
               customeColor={"destructiveIcon"}

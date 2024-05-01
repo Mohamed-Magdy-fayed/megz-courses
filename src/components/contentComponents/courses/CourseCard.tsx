@@ -20,23 +20,17 @@ const CourseCard = ({ id }: { id: string }) => {
   const trpcUtils = api.useContext();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast()
+  const { toastError, toastSuccess } = useToast()
 
   const handleDelete = (id: string) => {
     setLoading(true);
     deleteCourseMutation.mutate([id], {
       onSuccess: () => {
-        toast({
-          variant: "success",
-          description: `Deleted!`
-        })
+        toastSuccess(`Deleted!`)
         trpcUtils.courses.invalidate().then(() => setLoading(false));
       },
-      onError: () => {
-        toast({
-          variant: "destructive",
-          description: "an error occured!"
-        })
+      onError: (error) => {
+        toastError(error.message)
         setLoading(false);
       },
     });

@@ -18,18 +18,10 @@ export type StateOverview = {
 }
 
 export default function StatesOverview() {
-  const salesAgentsQuery = api.salesAgents.getSalesAgents.useQuery(undefined, {
-    enabled: false
-  })
-  const studentsQuery = api.users.getUsers.useQuery({ userType: "student" }, {
-    enabled: false
-  })
-  const operationsQuery = api.salesOperations.getAll.useQuery(undefined, {
-    enabled: false
-  })
-  const ordersQuery = api.orders.getAll.useQuery(undefined, {
-    enabled: false
-  })
+  const salesAgentsQuery = api.salesAgents.getSalesAgents.useQuery()
+  const studentsQuery = api.users.getUsers.useQuery({ userType: "student" })
+  const operationsQuery = api.salesOperations.getAll.useQuery()
+  const ordersQuery = api.orders.getAll.useQuery()
 
   const [budget, setBudget] = useState<StateOverview>({
     title: "Budget",
@@ -77,11 +69,11 @@ export default function StatesOverview() {
     salesAgentsQuery.refetch()
       .then(({ data }) => {
         const {
-          differenceMargin: salariesSinceLastWeek,
+          difference: salariesSinceLastWeek,
           total: currentTotalSalaries
         } = data?.salesAgents
             ? getDifferenceMargin(data?.salesAgents, "salary")
-            : { differenceMargin: 0, total: 0 }
+            : { difference: 0, total: 0 }
 
         setBudget(prev => ({
           ...prev,
@@ -93,11 +85,11 @@ export default function StatesOverview() {
     studentsQuery.refetch()
       .then(({ data }) => {
         const {
-          differenceMargin: studentsSinceLastWeek,
+          difference: studentsSinceLastWeek,
           total: totalStudents
         } = data?.users
             ? getDifferenceMargin(data?.users, "id")
-            : { differenceMargin: 0, total: 0 }
+            : { difference: 0, total: 0 }
 
         setStudents(prev => ({
           ...prev,
@@ -109,11 +101,11 @@ export default function StatesOverview() {
     operationsQuery.refetch()
       .then(({ data }) => {
         const {
-          differenceMargin: progressSinceLastWeek,
+          difference: progressSinceLastWeek,
           total: progress
         } = data?.salesOperations
             ? getDifferenceMargin(data?.salesOperations.filter(op => op.status === "completed").map(op => ({ ...op, createdAt: op.updatedAt })), "id")
-            : { differenceMargin: 0, total: 0 }
+            : { difference: 0, total: 0 }
 
         setTasks(prev => ({
           ...prev,
@@ -124,13 +116,14 @@ export default function StatesOverview() {
 
     ordersQuery.refetch()
       .then(({ data }) => {
+
         const totalOrders = data?.orders.length
         const {
-          differenceMargin: totalIncomeSinceLastWeek,
+          difference: totalIncomeSinceLastWeek,
           total: totalIncome
         } = data?.orders
             ? getDifferenceMargin(data.orders, "amount")
-            : { differenceMargin: 0, total: 0 }
+            : { difference: 0, total: 0 }
 
         setIncome(prev => ({
           ...prev,

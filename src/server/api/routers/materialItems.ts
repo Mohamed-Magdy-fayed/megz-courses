@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { TRPCError } from "@trpc/server";
 
 export const materialItemsRouter = createTRPCRouter({
   getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -207,7 +208,8 @@ export const materialItemsRouter = createTRPCRouter({
   deleteMaterialItems: protectedProcedure
     .input(z.array(z.string()))
     .mutation(async ({ input, ctx }) => {
-      const deletedMaterialItems = await ctx.prisma.materialItem.deleteMany({
+      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+        const deletedMaterialItems = await ctx.prisma.materialItem.deleteMany({
         where: {
           id: {
             in: input,

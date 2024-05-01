@@ -42,7 +42,7 @@ const EditMaterialsForm = ({ materialId }: { materialId: string }) => {
   const editMaterialMutation = api.materials.editMaterialItem.useMutation();
   const trpcUtils = api.useContext();
   const router = useRouter();
-  const { toast } = useToast();
+  const { toastError, toastSuccess } = useToast();
 
   const onSubmit = (data: MaterialsFormValues) => {
     setLoading(true);
@@ -51,17 +51,11 @@ const EditMaterialsForm = ({ materialId }: { materialId: string }) => {
       { ...data, id: materialId },
       {
         onSuccess: ({ updatedmaterialItem }) => {
-          toast({
-            description: `Your material (${updatedmaterialItem.title}) is updated!`,
-            variant: "success"
-          });
+          toastSuccess(`Your material (${updatedmaterialItem.title}) is updated!`);
           trpcUtils.materials.invalidate().then(() => setLoading(false));
         },
-        onError: () => {
-          toast({
-            description: "somthing went wrong!",
-            variant: "destructive"
-          });
+        onError: (error) => {
+          toastError(error.message);
           setLoading(false);
         },
       }

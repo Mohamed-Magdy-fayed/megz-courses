@@ -13,7 +13,7 @@ export const AccountDetails = ({ user }: {
     email: user.email,
     id: user.id,
     name: user.name,
-    userType: user?.userType === "admin" ? "student" : user?.userType,
+    userType: user?.userType === "admin" ? user?.userType : "student",
     city: user.address?.city || "",
     country: user.address?.country || "",
     state: user.address?.state || "",

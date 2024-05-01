@@ -196,7 +196,7 @@ const DesktopAuthenticatedProfileMenu = () => {
 
   const handleLogout = () => {
     setLoading(true)
-    signOut({ callbackUrl: `/` })
+    signOut({ callbackUrl: `/authentication` })
   }
 
   return (
@@ -270,7 +270,7 @@ const MobileAuthenticatedProfileMenu = () => {
 
   const handleLogout = () => {
     setLoading(true)
-    signOut({ callbackUrl: `/` })
+    signOut({ callbackUrl: `/authentication` })
   }
 
   return (

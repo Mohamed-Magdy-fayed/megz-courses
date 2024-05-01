@@ -58,27 +58,21 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
 
   const createSalesAgentMutation = api.salesAgents.createSalesAgent.useMutation();
   const trpcUtils = api.useContext();
-  const { toast } = useToast()
+  const { toastError, toastSuccess } = useToast()
 
   const onSubmit = (data: UsersFormValues) => {
     setLoading(true);
     createSalesAgentMutation.mutate(data, {
       onSuccess: (data) => {
         trpcUtils.invalidate().then(() => {
-          toast({
-            variant: "success",
-            description: `Sales Agent account created with email: ${data.user.email}`
-          })
+          toastSuccess(`Sales Agent account created with email: ${data.user.email}`)
           setLoading(false);
           form.reset()
           setIsOpen(false)
         });
       },
-      onError: (e) => {
-        toast({
-          variant: "destructive",
-          description: e.message
-        })
+      onError: (error) => {
+        toastError(error.message)
         setLoading(false);
       },
     });

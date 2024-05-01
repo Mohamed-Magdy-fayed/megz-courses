@@ -69,25 +69,19 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
 
   const addUserMutation = api.users.createUser.useMutation();
   const trpcUtils = api.useContext();
-  const { toast } = useToast()
+  const { toastError, toastSuccess } = useToast()
 
   const onSubmit = (data: UsersFormValues) => {
     setLoading(true);
     addUserMutation.mutate(data, {
       onSuccess: (data) => {
         trpcUtils.invalidate();
-        toast({
-          variant: "success",
-          description: `User created with email: ${data.user.email}`
-        })
+        toastSuccess(`User created with email: ${data.user.email}`)
         setIsOpen(false);
         setLoading(false);
       },
-      onError: (e) => {
-        toast({
-          variant: "destructive",
-          description: e.message
-        })
+      onError: (error) => {
+        toastError(error.message)
         setLoading(false);
       },
     });

@@ -19,10 +19,10 @@ const OperationPage = () => {
     const { data, isLoading, isError } = api.salesOperations.getById.useQuery({ id })
     const { data: coursesData } = api.courses.getAll.useQuery()
     const { data: usersData } = api.users.getUsers.useQuery({ userType: "student" })
-
+    
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
-
+    
     const session = useSession()
     const trpcUtils = api.useContext()
     const updateSalesOperationMutation = api.salesOperations.editSalesOperations.useMutation()
@@ -37,11 +37,9 @@ const OperationPage = () => {
         }, {
             onSuccess: (data) => {
                 console.log(data);
-
             },
-            onError: (e) => {
-                console.log(e);
-
+            onError: (error) => {
+                console.log(error);
             },
         })
         updateSalesOperationMutation.mutate({
@@ -94,7 +92,7 @@ const OperationPage = () => {
                                     loading
                                     || data.salesOperations.status === "completed"
                                     || (
-                                        session.data?.user.id !== data.salesOperations.salesAgentId
+                                        session.data?.user.id !== data.salesOperations.assignee?.userId
                                         && session.data?.user.userType !== "admin"
                                     )
                                 }
@@ -109,8 +107,8 @@ const OperationPage = () => {
                             disabled={
                                 data.salesOperations.status !== "ongoing"
                                 || data.salesOperations.orderDetails !== null
-                                || session.data?.user.id !== data.salesOperations.id
-                                || session.data?.user.id !== data.salesOperations.salesAgentId
+                                || !(session.data?.user.id === data.salesOperations.assignee?.userId
+                                    || session.data?.user.userType === "admin")
                             }
                             onClick={() => setOpen(true)}
                             className="ml-auto"

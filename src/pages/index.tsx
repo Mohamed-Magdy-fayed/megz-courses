@@ -7,7 +7,6 @@ import LandingSectionSeparator from "@/components/landingPageComponents/LandingS
 import OurTeamSection from "@/components/landingPageComponents/OurTeamSection";
 
 const Page = () => {
-
   return (
     <LandingLayout>
       <HeroSection />

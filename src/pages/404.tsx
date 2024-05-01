@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 export default function Page() {
-  (
+  return (
     <main className="items-center justify-center flex flex-grow min-h-screen w-screen"  >
       <div>
         <div className="flex flex-col items-center p-8">

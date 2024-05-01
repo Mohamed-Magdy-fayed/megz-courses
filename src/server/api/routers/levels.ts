@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { TRPCError } from "@trpc/server";
 
 export const levelsRouter = createTRPCRouter({
   getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -83,7 +84,8 @@ export const levelsRouter = createTRPCRouter({
   deleteLevels: protectedProcedure
     .input(z.array(z.string()))
     .mutation(async ({ input, ctx }) => {
-      const deletedLevels = await ctx.prisma.level.deleteMany({
+      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+        const deletedLevels = await ctx.prisma.level.deleteMany({
         where: {
           id: {
             in: input,

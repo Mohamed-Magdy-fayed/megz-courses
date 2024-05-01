@@ -200,6 +200,7 @@ export const usersRouter = createTRPCRouter({
   deleteUser: adminProcedure
     .input(z.array(z.string()))
     .mutation(async ({ input, ctx }) => {
+      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
       const deletedUsers = await ctx.prisma.user.deleteMany({
         where: {
           id: {

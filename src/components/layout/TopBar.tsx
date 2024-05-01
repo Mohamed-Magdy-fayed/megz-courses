@@ -34,7 +34,7 @@ export default function MegzTopBar() {
 
   const handleLogout = () => {
     setLoading(true)
-    signOut({ callbackUrl: `/` })
+    signOut({ callbackUrl: `/authentication` })
   }
 
   useEffect(() => {

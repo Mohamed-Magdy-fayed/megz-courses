@@ -50,15 +50,15 @@ const Counter: React.FC<CounterProps> = ({ target, label, percentage, currency, 
 
     const formatOutput = (number: number) => {
         if (number >= 1000000) {
-            return `${(number / 1000000).toFixed(2)}m`;
+            return `${formatNumber(number / 1000000, 2)}m`;
         } else if (number >= 1000) {
-            return `${(number / 1000).toFixed(2)}k`;
+            return `${formatNumber(number / 1000, 2)}k`;
         } else if (label) {
             return `${formatNumber(number, 0)} ${label}`;
         } else if (percentage) {
             return formatNumber(number, 2);
         } else {
-            return "0"
+            return formatNumber(number, 2)
         }
     };
 

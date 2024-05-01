@@ -22,14 +22,11 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const [open, setOpen] = useState(false);
 
   const assignMutation = api.salesOperations.createSalesOperation.useMutation()
-  const { toast } = useToast()
+  const { toastError, toastSuccess } = useToast()
 
   const onCopy = (id: string) => {
     navigator.clipboard.writeText(id);
-    toast({
-      variant: "success",
-      description: "Category ID copied to the clipboard"
-    })
+    toastSuccess("Category ID copied to the clipboard")
   };
 
   const onAssign = (assigneeId: string) => {
@@ -39,17 +36,11 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
       { assigneeId, status: "assigned" },
       {
         onSuccess: (data) => {
-          toast({
-            variant: "success",
-            description: `Operation ID: ${data.salesOperations.code}`
-          })
+          toastSuccess(`Operation ID: ${data.salesOperations.code}`)
           setLoading(false)
         },
-        onError: (e) => {
-          toast({
-            variant: "destructive",
-            description: e.message
-          })
+        onError: (error) => {
+          toastError(error.message)
           setLoading(false)
         },
       }

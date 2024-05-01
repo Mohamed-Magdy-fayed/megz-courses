@@ -45,8 +45,8 @@ export default function Dashboard() {
       setMonthlyTotalsLastYear(monthlyTotalsLastYear);
 
       const totalUsers = analyticsData.data?.data.length;
-      const mobileUsers = analyticsData.data?.data.filter((item) => item.device === "mobile").length;
       const desktopUsers = analyticsData.data?.data.filter((item) => item.device === "desktop").length;
+      const mobileUsers = totalUsers - desktopUsers;
 
       setMobilePercentage(Number(((mobileUsers / totalUsers) * 100).toFixed()));
       setDesktopPercentage(Number(((desktopUsers / totalUsers) * 100).toFixed()));

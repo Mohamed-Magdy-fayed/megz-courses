@@ -1,6 +1,6 @@
 import React from 'react'
 import { Card, CardContent, CardFooter, CardHeader } from '../ui/card'
-import { isGoodState, formatPercentage } from '@/lib/utils'
+import { formatNumbers, formatPercentage, isGoodState } from '@/lib/utils'
 import { Scale, MoveUpRight, MoveDownLeft } from 'lucide-react'
 import { Typography } from '../ui/Typoghraphy'
 import { Progress } from '../ui/progress'
@@ -56,7 +56,7 @@ const StateCard = ({ state }: { state: StateOverview | undefined }) => {
                             <div className="flex gap-2 flex-wrap">
                                 {state.sinceLastWeek > 0 && <MoveUpRight className="text-success" />}
                                 {state.sinceLastWeek < 0 && <MoveDownLeft className="text-success" />}
-                                <Typography className="text-success">{formatPercentage(state.sinceLastWeek)}</Typography>
+                                <Typography className="text-success">{state.progress ? state.sinceLastWeek : formatPercentage(state.sinceLastWeek / state.target * 100)}</Typography>
                                 <Typography>Since last week</Typography>
                             </div>
                         )
@@ -64,7 +64,7 @@ const StateCard = ({ state }: { state: StateOverview | undefined }) => {
                             <div className="flex gap-2 flex-wrap">
                                 {state.sinceLastWeek < 0 && <MoveDownLeft className="text-destructive" />}
                                 {state.sinceLastWeek > 0 && <MoveUpRight className="text-destructive" />}
-                                <Typography className="text-destructive">{formatPercentage(state.sinceLastWeek)}</Typography>
+                                <Typography className="text-destructive">{formatPercentage(state.sinceLastWeek / state.target * 100) }</Typography>
                                 <Typography>since last week</Typography>
                             </div>
                         )

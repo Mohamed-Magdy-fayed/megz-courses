@@ -5,7 +5,7 @@ import { api } from "@/lib/api";
 import { Lesson, MaterialItem } from "@prisma/client";
 import { Copy, Edit, Edit2, Trash } from "lucide-react";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import MaterialRow from "./MaterialRow";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -18,30 +18,19 @@ const LessonCard = ({
 }) => {
   const deleteLessonsMutation = api.lessons.deleteLessons.useMutation();
   const trpcUtils = api.useContext();
-  const { toast } = useToast();
+  const { toastError, toastSuccess } = useToast();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const handleDelete = (id: string) => {
-    if (id === "64d370ceb84ac3b8c1093819")
-      return toast({
-        description: `don't delete that please! ^_^`,
-        variant: "destructive"
-      });
     setLoading(true);
     deleteLessonsMutation.mutate([id], {
       onSuccess: () => {
-        toast({
-          description: `Deleted!`,
-          variant: "success"
-        });
+        toastSuccess(`Deleted!`);
         trpcUtils.levels.invalidate().then(() => setLoading(false));
       },
-      onError: () => {
-        toast({
-          description: "an error occured!",
-          variant: "destructive"
-        });
+      onError: (error) => {
+        toastError(error.message)
         setLoading(false);
       },
     });
@@ -92,10 +81,10 @@ const LessonCard = ({
           </div>
         )}
         {lesson.materials.map((material, i) => (
-          <>
+          <Fragment key={material.id}>
             {i !== 0 && <Separator />}
             <MaterialRow key={material.id} material={material} />
-          </>
+          </Fragment>
         ))}
         <Separator />
         <div className="flex w-full p-4">

@@ -19,7 +19,7 @@ interface AgentCellActionProps {
 }
 
 const AgentCellAction: React.FC<AgentCellActionProps> = ({ id }) => {
-    const { toast } = useToast();
+    const { toastError, toastSuccess } = useToast();
 
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
@@ -28,36 +28,24 @@ const AgentCellAction: React.FC<AgentCellActionProps> = ({ id }) => {
     const trpcUtils = api.useContext()
 
     const onDelete = async () => {
-        try {
-            setLoading(true);
-            deleteMutation.mutate(
-                [id],
-                {
-                    onSuccess: () => {
-                        toast({
-                            description: "Agent(s) deleted",
-                            variant: "success"
-                        });
-                        trpcUtils.salesAgents.invalidate();
-                    },
-                    onError: () => {
-                        toast({
-                            description: "somthing went wrong",
-                            variant: "destructive"
-                        });
-                    },
-                }
-            );
-        } catch (error: any) {
-            toast({
-                description: "an error occured",
-                variant: "destructive"
-            });
-        } finally {
-            setLoading(false);
-            setOpen(false);
-        }
-    };
+        setLoading(true);
+        deleteMutation.mutate(
+            [id],
+            {
+                onSuccess: () => {
+                    toastSuccess("Agent(s) deleted");
+                    trpcUtils.salesAgents.invalidate();
+                },
+                onError: (error) => {
+                    toastError(error.message);
+                },
+                onSettled: () => {
+                    setLoading(false);
+                    setOpen(false);
+                },
+            }
+        );
+    }
 
     return (
         <>

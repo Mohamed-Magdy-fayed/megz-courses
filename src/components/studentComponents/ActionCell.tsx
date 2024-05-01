@@ -17,15 +17,12 @@ interface CellActionProps {
 }
 
 const CellAction: React.FC<CellActionProps> = ({ id }) => {
-    const { toast } = useToast();
+    const { toastInfo } = useToast();
 
 
     const onCopy = () => {
         navigator.clipboard.writeText(id);
-        toast({
-            description: "Category ID copied to the clipboard",
-            variant: "info"
-        });
+        toastInfo("Category ID copied to the clipboard");
     };
 
     return (

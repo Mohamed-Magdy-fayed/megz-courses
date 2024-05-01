@@ -23,26 +23,19 @@ const StudentClient = ({ data }: { data: Users[] }) => {
     createdAt: format(user.createdAt, "dd MMM yyyy"),
   }));
 
-  const { toast } = useToast();
+  const { toastError, toastSuccess } = useToast();
   const deleteMutation = api.users.deleteUser.useMutation();
   const trpcUtils = api.useContext();
 
-  const onDelete = () => {
+  const onDelete = async () => {
     deleteMutation.mutate(
       users.map((user) => user.id),
       {
         onSuccess: () => {
-          toast({
-            variant: "success",
-            description: "User(s) deleted"
-          });
-          trpcUtils.users.invalidate();
+          trpcUtils.users.invalidate().then(() => toastSuccess("User(s) deleted"))
         },
-        onError: () => {
-          toast({
-            description: "somthing went wrong",
-            variant: "destructive"
-          });
+        onError: (error) => {
+          toastError(error.message);
         },
       }
     );

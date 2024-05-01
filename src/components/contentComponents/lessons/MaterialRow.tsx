@@ -12,30 +12,21 @@ const MaterialRow = ({ material }: { material: MaterialItem }) => {
   const deleteMaterialMutation =
     api.materials.deleteMaterialItems.useMutation();
   const trpcUtils = api.useContext();
-  const { toast } = useToast();
+  const { toastError, toastSuccess } = useToast();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const handleDelete = (id: string) => {
     if (id === "64d4f2bf25c5bf7a1c90bd93")
-      return toast({
-        variant: "destructive",
-        description: `don't delete that please! ^_^`
-      });
+      return toastError(`don't delete that please! ^_^`);
     setLoading(true);
     deleteMaterialMutation.mutate([id], {
       onSuccess: () => {
-        toast({
-          variant: "success",
-          description: `Deleted!`
-        });
+        toastSuccess(`Deleted!`);
         trpcUtils.lessons.invalidate().then(() => setLoading(false));
       },
-      onError: () => {
-        toast({
-          variant: "destructive",
-          description: "an error occured!"
-        });
+      onError: (error) => {
+        toastError(error.message);
         setLoading(false);
       },
     });

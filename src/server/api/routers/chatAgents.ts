@@ -5,6 +5,7 @@ import {
     protectedProcedure,
 } from "@/server/api/trpc";
 import bcrypt from "bcrypt";
+import { TRPCError } from "@trpc/server";
 
 export const chatAgentsRouter = createTRPCRouter({
     getChatAgents: protectedProcedure
@@ -97,6 +98,7 @@ export const chatAgentsRouter = createTRPCRouter({
     deleteChatAgent: protectedProcedure
         .input(z.array(z.string()))
         .mutation(async ({ input, ctx }) => {
+            if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
             const deletedChatAgents = await ctx.prisma.user.deleteMany({
                 where: {
                     id: {

@@ -79,6 +79,7 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
         zodError:
           error.cause instanceof ZodError ? error.cause.flatten() : null,
       },
+      message: error.message || JSON.parse(error.message)[0].message,
     };
   },
 });

@@ -20,7 +20,7 @@ export const Account = ({
     address: Address | null;
   };
 }) => {
-  const { toast } = useToast()
+  const { toastError, toastSuccess } = useToast()
   const session = useSession()
   const isOwnAccount = useRouter().pathname === "/account"
   const trpcUtils = api.useContext();
@@ -35,7 +35,7 @@ export const Account = ({
   const isSuccess = editUserImage.isSuccess;
 
   const handleChange = (url: string) => {
-    if (!user?.email) return toast({ variant: "destructive", description: "no email" });
+    if (!user?.email) return toastError("no email");
     editUserImage.mutate({ url, email: user.email });
   };
 

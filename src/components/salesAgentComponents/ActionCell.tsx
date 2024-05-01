@@ -22,7 +22,7 @@ interface CellActionProps {
 }
 
 const CellAction: React.FC<CellActionProps> = ({ id, assigneeId, code }) => {
-    const { toast } = useToast();
+    const { toastInfo, toastError, toastSuccess } = useToast();
     const router = useRouter();
 
     const [loading, setLoading] = useState(false);
@@ -30,47 +30,32 @@ const CellAction: React.FC<CellActionProps> = ({ id, assigneeId, code }) => {
 
     const onCopy = () => {
         navigator.clipboard.writeText(code);
-        toast({
-            description: "Category ID copied to the clipboard",
-            variant: "info"
-        });
+        toastInfo("Category ID copied to the clipboard");
     };
 
     const deleteMutation = api.salesOperations.deleteSalesOperations.useMutation()
     const trpcUtils = api.useContext()
 
     const onDelete = async () => {
-        try {
-            console.log(id);
+        console.log(id);
 
-            setLoading(true);
-            deleteMutation.mutate(
-                [id],
-                {
-                    onSuccess: () => {
-                        toast({
-                            description: "Operation(s) deleted",
-                            variant: "success"
-                        });
-                        trpcUtils.salesOperations.invalidate();
-                    },
-                    onError: () => {
-                        toast({
-                            description: "somthing went wrong",
-                            variant: "destructive"
-                        });
-                    },
-                }
-            );
-        } catch (error: any) {
-            toast({
-                description: "an error occured",
-                variant: "destructive"
-            });
-        } finally {
-            setLoading(false);
-            setOpen(false);
-        }
+        setLoading(true);
+        deleteMutation.mutate(
+            [id],
+            {
+                onSuccess: () => {
+                    toastSuccess("Operation(s) deleted");
+                    trpcUtils.salesOperations.invalidate();
+                },
+                onError: (error) => {
+                    toastError(error.message)
+                },
+                onSettled: () => {
+                    setLoading(false);
+                    setOpen(false);
+                },
+            }
+        );
     };
 
     const [assignIsOpen, setAssingIsOpen] = useState(false);
@@ -82,16 +67,10 @@ const CellAction: React.FC<CellActionProps> = ({ id, assigneeId, code }) => {
             { id, assigneeId },
             {
                 onSuccess: (data) => {
-                    toast({
-                        variant: "success",
-                        description: `Assigned successfully to ${data.salesOperations.assignee?.user.email}`
-                    })
+                    toastSuccess(`Assigned successfully to ${data.salesOperations.assignee?.user.email}`)
                 },
                 onError: (error) => {
-                    toast({
-                        variant: "destructive",
-                        description: `an error occured ${error}`
-                    })
+                    toastError(error.message)
                 },
                 onSettled: () => {
                     trpcUtils.salesOperations.invalidate()

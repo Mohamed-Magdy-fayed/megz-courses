@@ -18,7 +18,7 @@ const LevelCard = ({ id }: { id: string }) => {
   const level = data?.level;
   const deleteLevelMutation = api.levels.deleteLevels.useMutation();
   const trpcUtils = api.useContext();
-  const { toast } = useToast();
+  const { toastError, toastSuccess } = useToast();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -26,17 +26,11 @@ const LevelCard = ({ id }: { id: string }) => {
     setLoading(true);
     deleteLevelMutation.mutate([id], {
       onSuccess: () => {
-        toast({
-          description: `Deleted!`,
-          variant: "success"
-        });
+        toastSuccess(`Deleted!`);
         trpcUtils.courses.invalidate().then(() => setLoading(false));
       },
-      onError: () => {
-        toast({
-          description: "an error occured!",
-          variant: "destructive"
-        });
+      onError: (error) => {
+        toastError(error.message);
         setLoading(false);
       },
     });

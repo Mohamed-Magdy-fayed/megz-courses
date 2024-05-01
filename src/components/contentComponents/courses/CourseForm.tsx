@@ -47,7 +47,7 @@ const CourseForm = ({ setIsOpen }: { setIsOpen: (val: boolean) => void }) => {
   });
   const createCourseMutation = api.courses.createCourse.useMutation();
   const trpcUtils = api.useContext();
-  const { toast } = useToast();
+  const { toastError, toastSuccess } = useToast();
 
   const onSubmit = ({ form, name, oralTest, price, description, image }: CoursesFormValues) => {
     setLoading(true);
@@ -60,18 +60,12 @@ const CourseForm = ({ setIsOpen }: { setIsOpen: (val: boolean) => void }) => {
       oralTest
     }, {
       onSuccess: ({ course }) => {
-        toast({
-          variant: "success",
-          description: `Your new course (${course.name}) is ready!`
-        });
+        toastSuccess(`Your new course (${course.name}) is ready!`);
         trpcUtils.courses.invalidate();
         setLoading(false);
       },
-      onError: () => {
-        toast({
-          variant: "destructive",
-          description: "somthing went wrong!"
-        });
+      onError: (error) => {
+        toastError(error.message)
         setLoading(false);
       },
     });

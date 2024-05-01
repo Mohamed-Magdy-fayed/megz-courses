@@ -23,14 +23,11 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
 
   const trpcUtils = api.useContext()
   const deleteMutation = api.orders.deleteOrders.useMutation()
-  const { toast } = useToast()
+  const { toastError, toastSuccess } = useToast()
 
   const onCopy = (orderNumber: string) => {
     navigator.clipboard.writeText(orderNumber);
-    toast({
-      variant: "success",
-      description: "Order number copied to the clipboard"
-    })
+    toastSuccess("Order number copied to the clipboard")
   };
 
   const onDelete = () => {
@@ -39,21 +36,15 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
       [data.id],
       {
         onSuccess: (data) => {
-          toast({
-            variant: "success",
-            description: `Deleted ${data.deletedOrders.count} order(s)`
-          })
+          toastSuccess(`Deleted ${data.deletedOrders.count} order(s)`)
           trpcUtils.orders.invalidate()
             .then(() => {
               setLoading(false)
               setOpen(false)
             })
         },
-        onError: (e) => {
-          toast({
-            variant: "destructive",
-            description: e.message
-          })
+        onError: (error) => {
+          toastError(error.message)
           setLoading(false)
         },
       }

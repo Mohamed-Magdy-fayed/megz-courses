@@ -36,9 +36,8 @@ type PasswordFormValues = z.infer<typeof passwordFormSchema>
 const ChangePassword = () => {
     const [loading, setLoading] = useState(false)
     const session = useSession()
-    console.log(session.data);
 
-    const { toast } = useToast()
+    const { toastError, toastSuccess } = useToast()
 
     const passwordDefaultValues: z.infer<typeof passwordFormSchema> = {
         oldPassword: "",
@@ -61,15 +60,9 @@ const ChangePassword = () => {
             newPasswordConfirmation,
             oldPassword,
         }, {
-            onSuccess: () => toast({
-                description: "password changed successfull!",
-                variant: "success"
-            }),
-            onError: (e) => toast({
-                description: e.message,
-                variant: "destructive"
-            }),
-            onSettled: () => setLoading(false)
+            onSuccess: () => toastSuccess("password changed successfull!"),
+            onError: (e) => toastError(e.message),
+            onSettled: () => setLoading(false),
         })
     }
 

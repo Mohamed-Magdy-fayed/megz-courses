@@ -34,6 +34,10 @@ export const formatPercentage = (value: number) => {
   return new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 }).format(value / 100)
 }
 
+export const formatNumbers = (value: number) => {
+  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(value)
+}
+
 export const getLastWeekDate = (now = new Date()) => {
   return new Date(
     now.getFullYear(),
@@ -55,7 +59,7 @@ export const getDifferenceMargin = <T extends DataObject>(
   data: T[],
   accessor: keyof T,
 ): {
-  differenceMargin: number,
+  difference: number,
   total: number
 } => {
   const now = new Date();
@@ -70,18 +74,19 @@ export const getDifferenceMargin = <T extends DataObject>(
     const value = Number(item[accessor]);
 
     if (itemDate.getTime() < lastWeekDate.getTime()) {
+      lastWeekTotal += accessor === 'id' ? 1 : value;
       currentWeekTotal += accessor === 'id' ? 1 : value;
     }
 
     if (itemDate.getTime() >= lastWeekDate.getTime()) {
-      lastWeekTotal += accessor === 'id' ? 1 : value;
+      currentWeekTotal += accessor === 'id' ? 1 : value;
     }
   }
 
-  const percentageChange = (lastWeekTotal / (currentWeekTotal - lastWeekTotal)) * 100;
+  const change = currentWeekTotal - lastWeekTotal;
 
   return {
-    differenceMargin: percentageChange,
-    total: currentWeekTotal + lastWeekTotal
+    difference: change,
+    total: currentWeekTotal
   };
 }

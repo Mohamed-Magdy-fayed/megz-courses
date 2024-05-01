@@ -33,7 +33,7 @@ const CreateMaterialsForm = ({
 
     const createMaterialMutation = api.materials.createMaterialItem.useMutation();
     const trpcUtils = api.useContext();
-    const { toast } = useToast();
+    const { toastError, toastSuccess } = useToast();
 
     const onSubmit = (data: MaterialsFormValues) => {
         setLoading(true);
@@ -42,18 +42,12 @@ const CreateMaterialsForm = ({
             { ...data, lessonId: id },
             {
                 onSuccess: ({ materialItem }) => {
-                    toast({
-                        variant: "success",
-                        description: `Your new material (${materialItem.title}) is ready!`
-                    });
+                    toastSuccess(`Your new material (${materialItem.title}) is ready!`);
                     trpcUtils.lessons.invalidate();
                     setLoading(false);
                 },
-                onError: () => {
-                    toast({
-                        variant: "destructive",
-                        description: "somthing went wrong!"
-                    });
+                onError: (error) => {
+                    toastError(error.message)
                     setLoading(false);
                 },
             }

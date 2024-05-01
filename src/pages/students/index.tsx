@@ -14,13 +14,10 @@ const StudentsPage = () => {
   const { data, isLoading, isError, refetch } = api.users.getUsers.useQuery({
     userType: "student",
   }, {
-    enabled: false
+    _optimisticResults: "optimistic",
+    refetchOnWindowFocus: false,
   });
   const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    refetch()
-  }, [])
 
   return (
     <AppLayout>

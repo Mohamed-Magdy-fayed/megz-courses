@@ -65,7 +65,7 @@ const TrainerForm: React.FC<TrainerFormProps> = ({ setIsOpen }) => {
 
   const createTrainerMutation = api.trainers.createTrainer.useMutation();
   const trpcUtils = api.useContext();
-  const { toast } = useToast()
+  const { toastError, toastSuccess } = useToast()
 
   const onSubmit = (data: UsersFormValues) => {
     setLoading(true);
@@ -73,19 +73,13 @@ const TrainerForm: React.FC<TrainerFormProps> = ({ setIsOpen }) => {
       onSuccess: (data) => {
         trpcUtils.trainers.invalidate()
           .then(() => {
-            toast({
-              variant: "success",
-              description: `Trainer created with email: ${data.trainer.email}`
-            })
+            toastSuccess(`Trainer created with email: ${data.trainer.email}`)
             setIsOpen(false);
             setLoading(false);
           });
       },
-      onError: (e) => {
-        toast({
-          variant: "success",
-          description: e.message
-        })
+      onError: (error) => {
+        toastError(error.message)
         setLoading(false);
       },
     });

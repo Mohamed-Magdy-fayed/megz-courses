@@ -19,14 +19,11 @@ interface OrderReceiptProps {
 
 const OrderReceipt: FC<OrderReceiptProps> = ({ orderId, adminView }) => {
     const { data } = api.orders.getById.useQuery({ id: orderId })
-    const { toast } = useToast()
+    const { toastSuccess } = useToast()
 
     const handleCopy = (data: string) => {
         navigator.clipboard.writeText(data)
-        toast({
-            variant: "success",
-            description: "Payment ID copied to the clipboard"
-        })
+        toastSuccess("Payment ID copied to the clipboard")
     }
 
     const color: SeverityPillProps["color"] =

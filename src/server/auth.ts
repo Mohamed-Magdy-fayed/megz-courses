@@ -65,14 +65,14 @@ export const authOptions: NextAuthOptions = {
           },
         });
 
-        if (!user || !user.hashedPassword) return null;
+        if (!user || !user.hashedPassword) throw new Error("Incorrect email or password!");
 
         const checkPassword = await bcrypt.compare(
           credentials.password,
           user.hashedPassword
         );
 
-        if (!checkPassword) return null;
+        if (!checkPassword) throw new Error("Incorrect email or password!");
 
         return user;
       },

@@ -47,22 +47,16 @@ const OperationStatus = ({ data }: {
     const editMutation = api.salesOperations.editSalesOperations.useMutation()
     const trpcUtils = api.useContext()
     const sesstion = useSession()
-    const { toast } = useToast()
+    const { toastError, toastSuccess } = useToast()
 
     const handleStatusChange = (status: "created" | "assigned" | "ongoing" | "completed" | "cancelled") => {
         setIsLoading(true)
         editMutation.mutate({ id: data.id, status }, {
             onSuccess: (data) => {
-                toast({
-                    variant: "success",
-                    description: `Operation ${data.updatedSalesOperations.code} is now ${data.updatedSalesOperations.status}!`
-                })
+                toastSuccess(`Operation ${data.updatedSalesOperations.code} is now ${data.updatedSalesOperations.status}!`)
             },
             onError: (error) => {
-                toast({
-                    variant: "destructive",
-                    description: `unable to change operation status!`
-                })
+                toastError(error.message)
             },
             onSettled: () => {
                 trpcUtils.salesOperations.invalidate()
@@ -82,7 +76,7 @@ const OperationStatus = ({ data }: {
                     <Typography>Latest update: {updatedAt}</Typography>
                 </div>
                 <div className="flex gap-4 items-center ">
-                    {data.status !== "cancelled" && data.status !== "completed" && (sesstion.data?.user.id === data.salesAgentId
+                    {data.status !== "cancelled" && data.status !== "completed" && (sesstion.data?.user.id === data.assignee?.userId
                         || sesstion.data?.user.userType === "admin") && (
                             <Button
                                 customeColor={"destructive"}
@@ -94,7 +88,7 @@ const OperationStatus = ({ data }: {
                             </Button>
                         )}
                     {data.status === "assigned"
-                        && (sesstion.data?.user.id === data.salesAgentId
+                        && (sesstion.data?.user.id === data.assignee?.userId
                             || sesstion.data?.user.userType === "admin") ? (
                         <Button
                             customeColor={"primaryOutlined"}

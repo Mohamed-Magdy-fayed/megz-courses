@@ -52,27 +52,21 @@ const ChatAgentForm: React.FC<ChatAgentFormProps> = ({ setIsOpen }) => {
 
   const createSalesAgentMutation = api.chatAgents.createChatAgent.useMutation();
   const trpcUtils = api.useContext();
-  const { toast } = useToast()
+  const { toastError, toastSuccess } = useToast()
 
   const onSubmit = (data: ChatAgentsFormValues) => {
     setLoading(true);
     createSalesAgentMutation.mutate(data, {
       onSuccess: (data) => {
         trpcUtils.chatAgents.invalidate().then(() => {
-          toast({
-            variant: "success",
-            description: `Chat Agent account created with email: ${data.agent.user.email}`
-          })
+          toastSuccess(`Chat Agent account created with email: ${data.agent.user.email}`)
           setLoading(false);
           form.reset()
           setIsOpen(false)
         });
       },
-      onError: (e) => {
-        toast({
-          variant: "destructive",
-          description: e.message
-        })
+      onError: (error) => {
+        toastError(error.message)
         setLoading(false);
       },
     });

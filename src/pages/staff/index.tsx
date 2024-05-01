@@ -7,11 +7,17 @@ import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
 import TrainerForm from "@/components/staffComponents/TrainerForm";
-import StaffClient from "@/components/staffComponents/StaffClient";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import TrainersClient from "@/components/staffComponents/TrainersClient";
 
 const StaffPage = () => {
-  const { data, isLoading, isError, refetch } = api.trainers.getTrainers.useQuery(undefined, { enabled: false });
+  const { data, isLoading, isError, refetch } = api.trainers.getTrainers.useQuery(undefined, {
+    refetchInterval: false,
+    refetchIntervalInBackground: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+  });
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -64,7 +70,7 @@ const StaffPage = () => {
             ) : isError ? (
               <>Error</>
             ) : (
-              <StaffClient data={data.trainers}></StaffClient>
+              <TrainersClient data={data.trainers}></TrainersClient>
             )}
           </PaperContainer>
         </div>

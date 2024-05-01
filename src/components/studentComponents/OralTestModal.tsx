@@ -10,7 +10,7 @@ import { SearchSlash } from 'lucide-react'
 
 const OralTestModal = ({ id }: { id: string }) => {
     const { data } = api.courses.getStudentCourses.useQuery({ userId: id });
-    const { toast } = useToast();
+    const { toastError, toastSuccess } = useToast();
 
     const [loading, setLoading] = useState(false);
     const [testId, setTestId] = useState<string[]>([]);
@@ -21,18 +21,15 @@ const OralTestModal = ({ id }: { id: string }) => {
     const updatePlacementOralTestScoreMutation = api.placementTests.updatePlacementOralTestScore.useMutation()
 
     const handleAddCoursPlacementResult = () => {
-        if (!testId[0] || !score) return toast({
-            description: `missing some info here!`,
-            variant: "destructive"
-        })
+        if (!testId[0] || !score) return toastError(`missing some info here!`)
         setLoading(true);
 
         updatePlacementOralTestScoreMutation.mutate({ score, testId: testId[0] }, {
             onSuccess: (data) => {
                 console.log(data);
             },
-            onError: (e) => {
-                console.log(e);
+            onError: (error) => {
+                toastError(error.message)
             },
             onSettled: () => {
                 trpcUtils.courses.invalidate()

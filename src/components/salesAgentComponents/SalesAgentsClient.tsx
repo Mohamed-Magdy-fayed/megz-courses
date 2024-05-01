@@ -25,7 +25,7 @@ const SalesAgentClient = ({ data }: { data: SalesAgents[] }) => {
     createdAt: format(agent.user.createdAt, "MMMM do, yyyy"),
   }));
 
-  const { toast } = useToast();
+  const { toastError, toastSuccess } = useToast();
   const deleteMutation = api.users.deleteUser.useMutation();
   const trpcUtils = api.useContext();
 
@@ -34,22 +34,11 @@ const SalesAgentClient = ({ data }: { data: SalesAgents[] }) => {
       salesAgents.map((salesAgent) => salesAgent.id),
       {
         onSuccess: () => {
-          toast({
-            variant: "success",
-            description: "Agent(s) deleted"
-          });
+          toastSuccess("Agent(s) deleted");
           trpcUtils.salesAgents.invalidate();
         },
-        onError: (e) => {
-          toast({
-            variant: "destructive",
-            description: (
-              <div>
-                <Typography>somthing went wrong</Typography>
-                <Typography>{e.message}</Typography>
-              </div>
-            ),
-          });
+        onError: (error) => {
+          toastError(error.message);
         },
       }
     );

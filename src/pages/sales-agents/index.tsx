@@ -20,7 +20,7 @@ const SalesAgentsPage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [assignIsOpen, setAssingIsOpen] = useState(false);
 
-  const { toast } = useToast()
+  const { toastError, toastSuccess } = useToast()
   const trpcUtils = api.useContext()
   const createOperationMutation = api.salesOperations.createSalesOperation.useMutation()
   const handleCreateOperation = (assigneeId: string) => {
@@ -29,16 +29,10 @@ const SalesAgentsPage = () => {
       { assigneeId, status: "assigned" },
       {
         onSuccess: (data) => {
-          toast({
-            variant: "success",
-            description: `Operation ID: ${data.salesOperations.code}`
-          })
+          toastSuccess(`Operation ID: ${data.salesOperations.code}`)
         },
         onError: (error) => {
-          toast({
-            variant: "destructive",
-            description: `an error occured ${error}`
-          })
+          toastError(error.message)
         },
         onSettled: () => {
           trpcUtils.salesOperations.invalidate()

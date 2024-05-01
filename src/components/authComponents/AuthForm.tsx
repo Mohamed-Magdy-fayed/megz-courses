@@ -28,7 +28,7 @@ interface AuthFormProps {
 
 const AuthForm: FC<AuthFormProps> = ({ authType }) => {
     const [loading, setLoading] = useState(false);
-    const { toast } = useToast()
+    const { toastError, toastSuccess } = useToast()
     const router = useRouter()
 
     const defaultValues: AuthFormValues = {
@@ -46,7 +46,7 @@ const AuthForm: FC<AuthFormProps> = ({ authType }) => {
 
     const handleResgiter = ({ email, password, name }: AuthFormValues) => {
         if (!name || !email || !password) {
-            return toast({ description: "please fill all the data" });
+            return toastError("please fill all the data");
         }
 
         setLoading(true);
@@ -55,7 +55,12 @@ const AuthForm: FC<AuthFormProps> = ({ authType }) => {
             {
                 onSuccess(data) {
                     if (data.user)
-                        toast({ description: `user (${data.user.name}) created successfully` });
+                        toastSuccess(`user (${data.user.name}) created successfully`);
+                    router.push('/authentication?variant=login')
+                },
+                onError(error) {
+                    toastError(error.message)
+                    setLoading(false);
                 },
                 onSettled() {
                     setLoading(false);
@@ -69,15 +74,17 @@ const AuthForm: FC<AuthFormProps> = ({ authType }) => {
         signIn("credentials", {
             email,
             password,
-            redirect: true,
+            redirect: false,
         })
             .then((res) => {
+
                 if (res?.error) {
-                    toast({ description: res.error },);
+                    toastError(res.error);
+                    setLoading(false);
                 }
 
                 if (res?.ok && !res?.error) {
-                    toast({ description: "loggedin" },);
+                    toastSuccess("loggedin");
                 }
             })
     };

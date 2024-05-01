@@ -38,7 +38,7 @@ export const columns: ColumnDef<TrainerColumn>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "name",
+    accessorKey: "email",
     header: ({ column }) => {
       return (
         <div className="flex items-center justify-between">

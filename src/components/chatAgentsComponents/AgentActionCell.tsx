@@ -19,7 +19,7 @@ interface AgentCellActionProps {
 }
 
 const AgentCellAction: React.FC<AgentCellActionProps> = ({ id }) => {
-    const { toast } = useToast();
+    const { toastError, toastSuccess } = useToast();
 
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
@@ -34,28 +34,19 @@ const AgentCellAction: React.FC<AgentCellActionProps> = ({ id }) => {
                 [id],
                 {
                     onSuccess: () => {
-                        toast({
-                            description: "Agent(s) deleted",
-                            variant: "success"
-                        });
+                        toastSuccess("Agent(s) deleted")
                         trpcUtils.chatAgents.invalidate().then(() => {
                             setLoading(false);
                             setOpen(false);
                         });
                     },
-                    onError: () => {
-                        toast({
-                            description: "somthing went wrong",
-                            variant: "destructive"
-                        });
+                    onError: (error) => {
+                        toastError(error.message);
                     },
                 }
             );
         } catch (error: any) {
-            toast({
-                description: "an error occured",
-                variant: "destructive"
-            });
+            toastError(error.message);
         }
     };
 

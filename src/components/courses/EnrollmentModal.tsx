@@ -31,7 +31,7 @@ const EnrollmentModal: FC<EnrollmentModalProps> = ({
     setOpen,
 }) => {
     const enrollCourseMutation = api.selfServe.enrollCourse.useMutation()
-    const { toast } = useToast()
+    const { toastError, toastSuccess } = useToast()
     const router = useRouter()
     const session = useSession()
     const [checkedAgreement, setcheckedAgreement] = useState(false)
@@ -46,10 +46,7 @@ const EnrollmentModal: FC<EnrollmentModalProps> = ({
             email: session.data.user.email,
         }, {
             onSuccess: (data) => router.push(data.paymentLink),
-            onError: (e) => toast({
-                description: e.message,
-                variant: "destructive"
-            }),
+            onError: (e) => toastError(e.message),
             onSettled: () => {
                 setLoading(false)
                 setOpen(false)

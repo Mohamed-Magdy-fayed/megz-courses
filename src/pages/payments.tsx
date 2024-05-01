@@ -6,18 +6,14 @@ import { useEffect } from "react"
 
 const RedirectToPaymentPage = () => {
     const sessionId = useRouter().query.sessionId
-    const { toast } = useToast()
+    const { toastError } = useToast()
 
     const RedirectToCheckout = async (sessionId: string) => {
         const stripe = await getStripe()
         const { error } = await stripe!.redirectToCheckout({
             sessionId,
         })
-        toast({
-            variant: "destructive",
-            title: 'redirectToCheckoutfailed',
-            description: error.message
-        })
+        toastError(error.message)
     }
 
     useEffect(() => {

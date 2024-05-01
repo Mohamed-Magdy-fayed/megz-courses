@@ -55,7 +55,7 @@ const LessonPage = () => {
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {data.lesson.materials.map((material) => (
-              <MaterialCard material={material} />
+              <MaterialCard key={material.id} material={material} />
             ))}
           </div>
         )}

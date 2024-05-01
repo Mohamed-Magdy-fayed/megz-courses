@@ -5,6 +5,7 @@ import {
     protectedProcedure,
 } from "@/server/api/trpc";
 import bcrypt from "bcrypt";
+import { TRPCError } from "@trpc/server";
 
 export const salesAgentsRouter = createTRPCRouter({
     getSalesAgents: protectedProcedure
@@ -123,6 +124,7 @@ export const salesAgentsRouter = createTRPCRouter({
     deleteSalesAgent: protectedProcedure
         .input(z.array(z.string()))
         .mutation(async ({ input, ctx }) => {
+            if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
             const deletedSalesAgents = await ctx.prisma.user.deleteMany({
                 where: {
                     id: {
