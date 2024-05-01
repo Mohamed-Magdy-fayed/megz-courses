@@ -8,9 +8,12 @@ import { Button } from "@/components/ui/button";
 import AuthForm from "@/components/authComponents/AuthForm";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ImageIcon } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import ResetPasswordForm from "@/components/authComponents/ResetPasswordForm";
 
 const AuthenticationPage = () => {
   const defaultVariant = useRouter().query.variant as "login" | "register"
+  const [open, setOpen] = useState<boolean>(false);
   const [variant, setVariant] = useState<"login" | "register">(defaultVariant || "login");
   const session = useSession();
   const router = useRouter();
@@ -40,9 +43,19 @@ const AuthenticationPage = () => {
             Sign in with Google
           </Button>
           <div>
-            <Link href="/">
-              Forgot password?
-            </Link>
+            <Dialog
+              open={open}
+              onOpenChange={setOpen}
+            >
+              <DialogTrigger asChild>
+                <Button variant="link" onClick={() => setOpen(true)}>
+                  Forgot password?
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <ResetPasswordForm setOpen={setOpen}></ResetPasswordForm>
+              </DialogContent>
+            </Dialog>
           </div>
           <div className="flex items-center">
             <Typography>
@@ -58,7 +71,7 @@ const AuthenticationPage = () => {
               }
               }
             >
-              <Typography >
+              <Typography className="ml-1">
                 {variant === "login" ? "Sign Up" : "Sign In"}
               </Typography>
             </Button>
