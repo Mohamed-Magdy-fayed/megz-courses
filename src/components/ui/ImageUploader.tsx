@@ -11,6 +11,7 @@ import { useToast } from "./use-toast";
 import Spinner from "../Spinner";
 import { Typography } from "./Typoghraphy";
 import clsx from "clsx";
+import { getFile, uploadFile } from "@/lib/firebaseStorage";
 
 interface ImageUploaderProps {
     disabled?: boolean;
@@ -36,23 +37,13 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         setIsMounted(true);
     }, []);
 
-    const mutation = api.images.upload.useMutation()
-
-    const upload = async (file: File) => {
-        const { name } = file
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = new Uint8Array(arrayBuffer);
+    const handleUpload = async (file: File) => {
         setLoading(true)
-        mutation.mutate({ buffer, name }, {
-            onSuccess: ({ path }) => {
-                onChange(path.replace("./public", ""))
-                console.log(path.replace("./public", ""));
-
-            },
-            onError: (error) => toastError(error.message),
-            onSettled: () => setLoading(false),
-        })
-    }
+        const imagePath = await uploadFile(file);
+        const imageUrl = await getFile(imagePath);
+        onChange(imageUrl);
+        setLoading(false)
+    };
 
     if (!isMounted) return null;
 
@@ -96,7 +87,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                 )}
                 <Input
                     disabled={disabled}
-                    onChange={(e) => upload(e.target.files![0]!)}
+                    onChange={(e) => handleUpload(e.target.files![0]!)}
                     type="file"
                     accept="image/*"
                     className="hidden"
