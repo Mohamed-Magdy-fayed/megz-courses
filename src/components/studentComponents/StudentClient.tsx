@@ -15,12 +15,12 @@ const StudentClient = ({ data }: { data: Users[] }) => {
   const [users, setUsers] = useState<Student[]>([]);
   const formattedData = data.map((user) => ({
     id: user.id,
-    name: user.name || "no name",
-    email: user.email || "no email",
+    name: user.name,
+    email: user.email,
     image: user.image || "no image",
     phone: user.phone || "no phone",
     address: user.address ? getAddress(user.address) : "no address",
-    createdAt: format(user.createdAt, "dd MMM yyyy"),
+    createdAt: user.createdAt,
   }));
 
   const { toastError, toastSuccess } = useToast();

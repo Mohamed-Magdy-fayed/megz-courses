@@ -3,9 +3,6 @@
 export const advancedSearch = (query: string, data: string[]) => {
     const queryArr = query.toLowerCase().split("")
     const result = []
-    console.log(query);
-    console.log(data);
-
 
     for (let item of data) {
         let match = false
@@ -19,14 +16,11 @@ export const advancedSearch = (query: string, data: string[]) => {
             }
 
             nextItem = nextItem.slice(nextItem.indexOf(letter) + 1)
-            console.log(nextItem);
-
             match = true
         }
         if (match) result.push(item)
     }
 
-    console.log(result);
 
     return result
 }

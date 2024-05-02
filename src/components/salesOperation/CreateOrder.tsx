@@ -1,4 +1,4 @@
-import { Dispatch, FC, SetStateAction, useState } from "react"
+import { Dispatch, FC, SetStateAction, useEffect, useState } from "react"
 import Modal from "../ui/modal"
 import SelectField from "./SelectField"
 import { Address, Course, Level, Order, User } from "@prisma/client"
@@ -36,6 +36,11 @@ const CreateOrder: FC<CreateOrderProps> = ({
 }) => {
     const [email, setEmail] = useState<string[]>([])
     const [courses, setCourses] = useState<string[]>([])
+    const [coursesList, setCoursesList] = useState<{
+        label: string
+        value: string
+        active: boolean
+    }[]>([])
 
     const { toastError, toastSuccess } = useToast()
     const trpcUtils = api.useContext()
@@ -69,9 +74,10 @@ const CreateOrder: FC<CreateOrderProps> = ({
                     subject: `Thanks for your order ${orderNumber}`,
                     message
                 })
+                toastSuccess(`Order ${orderNumber} has been submitted successfully!`)
             },
             onError: (error) => {
-                console.log(error);
+                toastError(error.message)
             },
         })
     }
@@ -104,6 +110,17 @@ const CreateOrder: FC<CreateOrderProps> = ({
         })
     }
 
+    useEffect(() => {
+        const user = usersdata.filter(user => user.email === email[0])[0]
+        if (!user) return
+        const newList = coursesData.map(item => ({
+            label: item.name,
+            value: item.id,
+            active: !user.courseStatus.some(status => status.courseId === item.id)
+        }))
+        setCoursesList(newList)
+    }, [email])
+
     return (
         <Modal
             title="Add courses"
@@ -119,16 +136,16 @@ const CreateOrder: FC<CreateOrderProps> = ({
                             setValues={setEmail}
                             placeholder="Select User..."
                             listTitle="Users"
-                            data={usersdata.map(item => ({ label: item.email, value: item.email }))} />
+                            data={usersdata.map(item => ({ label: item.email, value: item.email, active: true }))} />
                     )}
-                    {!coursesData ? (<></>) : (
+                    {!coursesData || !email[0] ? (<></>) : (
                         <SelectField
                             multiSelect
                             values={courses}
                             setValues={setCourses}
                             placeholder="Select Course..."
                             listTitle="Courses"
-                            data={coursesData.map(item => ({ label: item.name, value: item.id }))} />
+                            data={coursesList} />
                     )}
                 </div>
                 <div className="space-x-2 mt-auto">

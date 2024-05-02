@@ -1,4 +1,4 @@
-import React, { Dispatch, FC, ReactNode, SetStateAction, useState } from 'react'
+import React, { Dispatch, FC, ReactNode, SetStateAction, useEffect, useState } from 'react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { Button } from '../ui/button'
 import { Check, ChevronsUpDown } from 'lucide-react'
@@ -11,6 +11,7 @@ import { Typography } from '../ui/Typoghraphy'
 type DataType = {
     label: string
     value: string
+    active: boolean
 }
 
 interface SelectFieldProps {
@@ -25,6 +26,11 @@ interface SelectFieldProps {
 const SelectField: FC<SelectFieldProps> = ({ placeholder, listTitle, data, values, setValues, multiSelect }) => {
     const [filteredData, setFilteredData] = useState(data)
     const [searchQuery, setSearchQuery] = useState("")
+
+    useEffect(() => {
+        setFilteredData(data)
+    }, [data])
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -64,7 +70,7 @@ const SelectField: FC<SelectFieldProps> = ({ placeholder, listTitle, data, value
                 <DropdownMenuSeparator />
                 <ScrollArea className='h-40'>
                     {filteredData.map(item => (
-                        <DropdownMenuItem key={item.value} onClick={(e) => {
+                        <DropdownMenuItem key={item.value} disabled={!item.active} onClick={(e) => {
                             if (multiSelect) {
                                 e.preventDefault()
                                 setValues(prev => prev.includes(item.value) ? [...prev.filter(i => i !== item.value)] : [...prev, item.value])
@@ -79,7 +85,10 @@ const SelectField: FC<SelectFieldProps> = ({ placeholder, listTitle, data, value
                                     values.includes(item.value) ? "opacity-100" : "opacity-0"
                                 )}
                             />
-                            {item.label}
+                            <div className='flex items-center justify-between w-full'>
+                                <Typography>{item.label}</Typography>
+                                <Typography>{!item.active && "Owned"}</Typography>
+                            </div>
                         </DropdownMenuItem>
                     ))}
                 </ScrollArea>

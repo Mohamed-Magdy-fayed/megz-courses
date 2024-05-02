@@ -11,7 +11,6 @@ import OrdersClient from "@/components/orders/OrdersClient";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { formatPrice } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 const OrderPage: NextPage = () => {
     const { data, isLoading, isError } = api.orders.getAll.useQuery();

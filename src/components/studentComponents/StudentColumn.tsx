@@ -7,6 +7,7 @@ import { getInitials } from "@/lib/getInitials";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Typography } from "../ui/Typoghraphy";
 import CellAction from "./ActionCell";
+import { format } from "date-fns";
 
 export type Student = {
   id: string;
@@ -15,7 +16,7 @@ export type Student = {
   image?: string;
   phone?: string;
   address?: string;
-  createdAt: string;
+  createdAt: Date;
 };
 
 export const columns: ColumnDef<Student>[] = [
@@ -99,6 +100,11 @@ export const columns: ColumnDef<Student>[] = [
         </div>
       );
     },
+    cell: ({ row }) => {
+      return (
+        <>{format(row.original.createdAt, "dd MMM yyyy")}</>
+      )
+    }
   },
   {
     id: "actions",

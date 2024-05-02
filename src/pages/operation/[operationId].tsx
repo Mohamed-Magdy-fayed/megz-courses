@@ -12,6 +12,7 @@ import AppLayout from "@/components/layout/AppLayout";
 import { useSession } from "next-auth/react";
 import Spinner from "@/components/Spinner";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/use-toast";
 
 const OperationPage = () => {
     const router = useRouter()
@@ -19,10 +20,11 @@ const OperationPage = () => {
     const { data, isLoading, isError } = api.salesOperations.getById.useQuery({ id })
     const { data: coursesData } = api.courses.getAll.useQuery()
     const { data: usersData } = api.users.getUsers.useQuery({ userType: "student" })
-    
+
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
-    
+    const { toastSuccess, toastError } = useToast()
+
     const session = useSession()
     const trpcUtils = api.useContext()
     const updateSalesOperationMutation = api.salesOperations.editSalesOperations.useMutation()
@@ -36,20 +38,20 @@ const OperationPage = () => {
             courseIds: data?.salesOperations?.orderDetails?.courseIds,
         }, {
             onSuccess: (data) => {
-                console.log(data);
+                toastSuccess(`${data.placementTests.count} Placement tests created!`)
+                updateSalesOperationMutation.mutate({
+                    id,
+                    status: "completed"
+                }, {
+                    onSettled: () => {
+                        trpcUtils.salesOperations.invalidate()
+                            .then(() => setLoading(false))
+                    }
+                })
             },
             onError: (error) => {
-                console.log(error);
+                toastError(error.message);
             },
-        })
-        updateSalesOperationMutation.mutate({
-            id,
-            status: "completed"
-        }, {
-            onSettled: () => {
-                trpcUtils.salesOperations.invalidate()
-                    .then(() => setLoading(false))
-            }
         })
     }
 
@@ -91,6 +93,7 @@ const OperationPage = () => {
                                 disabled={
                                     loading
                                     || data.salesOperations.status === "completed"
+                                    || data.salesOperations.orderDetails.status !== "paid"
                                     || (
                                         session.data?.user.id !== data.salesOperations.assignee?.userId
                                         && session.data?.user.userType !== "admin"

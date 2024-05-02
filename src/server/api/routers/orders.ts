@@ -5,7 +5,6 @@ import { CURRENCY } from "@/config";
 import { TRPCError } from "@trpc/server";
 import Stripe from 'stripe'
 import { formatAmountForStripe } from "@/lib/stripeHelpers";
-import { env } from "@/env.mjs";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2023-08-16',
 })
@@ -17,6 +16,9 @@ export const ordersRouter = createTRPCRouter({
                 courses: true,
                 user: true,
                 salesOperation: { include: { assignee: true } }
+            },
+            orderBy: {
+                id: "desc"
             },
         });
 
@@ -136,6 +138,102 @@ export const ordersRouter = createTRPCRouter({
                 order,
                 paymentLink: `${process.env.NEXTAUTH_URL}payments?sessionId=${checkoutSession.id}`
             };
+        }),
+    resendPaymentLink: protectedProcedure
+        .input(z.object({
+            orderId: z.string()
+        }))
+        .mutation(async ({ input: { orderId }, ctx }) => {
+            const order = await ctx.prisma.order.findUnique({ where: { id: orderId }, include: { courses: true, user: true } })
+
+            if (!order || !order.paymentId) throw new TRPCError({ code: "BAD_REQUEST", message: "order not found" })
+            if ((await stripe.checkout.sessions.retrieve(order.paymentId)).status === "open") await stripe.checkout.sessions.expire(order.paymentId)
+
+            const coursesPrice = await ctx.prisma.course.findMany({
+                where: {
+                    id: { in: order?.courseIds }
+                }
+            })
+
+            // Create Checkout Sessions from body params.
+            const params: Stripe.Checkout.SessionCreateParams = {
+                submit_type: 'pay',
+                payment_method_types: ['card'],
+                line_items: coursesPrice.map(course => ({
+                    price_data: {
+                        currency: CURRENCY,
+                        unit_amount: formatAmountForStripe(course.price, CURRENCY),
+                        product_data: {
+                            name: course.name,
+                        },
+                    },
+                    quantity: 1
+                })),
+                mode: 'payment',
+                success_url: `${process.env.NEXTAUTH_URL}/payment_success?session_id={CHECKOUT_SESSION_ID}`,
+                cancel_url: `${process.env.NEXTAUTH_URL}/payment_fail`,
+            }
+            const checkoutSession: Stripe.Checkout.Session =
+                await stripe.checkout.sessions.create(params)
+
+            if (!checkoutSession) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "checkoutSession failed" })
+
+            const updatedOrder = await ctx.prisma.order.update({
+                where: { id: orderId },
+                data: {
+                    paymentId: checkoutSession.id,
+                },
+                include: {
+                    courses: true,
+                    user: true,
+                    salesOperation: { include: { assignee: true } }
+                },
+            });
+
+            return {
+                updatedOrder,
+                paymentLink: `${process.env.NEXTAUTH_URL}payments?sessionId=${checkoutSession.id}`
+            };
+        }),
+    payOrderManually: protectedProcedure
+        .input(z.object({
+            id: z.string(),
+            amount: z.string(),
+            paymentConfirmationImage: z.string(),
+        }))
+        .mutation(async ({ input: { id, amount, paymentConfirmationImage }, ctx }) => {
+            const order = await ctx.prisma.order.findUnique({ where: { id }, include: { user: true } })
+
+            if (!order?.id) throw new TRPCError({ code: "BAD_REQUEST", message: "incorrect information" })
+            if (!order?.paymentId) throw new TRPCError({ code: "BAD_REQUEST", message: "incorrect information" })
+
+            const courseLink = `${process.env.NEXTAUTH_URL}my_courses/${order.user.id}`
+
+            if (order.status === "paid" || order.status === "done")
+                return ({
+                    updatedOrder: order,
+                    courseLink: null
+                })
+
+            await stripe.checkout.sessions.expire(order.paymentId)
+
+            const updatedOrder = await ctx.prisma.order.update({
+                where: {
+                    id: order.id
+                },
+                data: {
+                    amount: Number(amount),
+                    paymentConfirmationImage,
+                    status: "paid",
+                },
+                include: {
+                    courses: true,
+                    salesOperation: true,
+                    user: true,
+                }
+            })
+
+            return { courseLink, updatedOrder }
         }),
     payOrder: protectedProcedure
         .input(
