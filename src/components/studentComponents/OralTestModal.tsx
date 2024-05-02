@@ -69,7 +69,8 @@ const OralTestModal = ({ id }: { id: string }) => {
                                         .filter(test => !test.testStatus.oral)
                                         .map(test => ({
                                             label: data.courses.find(course => course.id === test.courseId)?.name || "",
-                                            value: test.id
+                                            value: test.id,
+                                            active: true,
                                         }))
                                 } />
                         )}
