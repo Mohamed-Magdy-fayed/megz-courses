@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/form";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardFooter } from "../ui/card";
+import { writeFile } from "fs/promises";
+import ImageUploader from "../ui/ImageUploader";
 
 const formSchema = z.object({
   name: z.string().nonempty(),
@@ -37,6 +39,7 @@ interface StudentFormProps {
 
 const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
   const [loading, setLoading] = useState(false);
+  const [out, setOut] = useState<any>();
 
   const title = "Sales Operator";
   const description = "Create Sales Operator Account";
@@ -104,6 +107,11 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
           onSubmit={form.handleSubmit(onSubmit)}
           className="flex w-full flex-col justify-between p-0"
         >
+          <div className="w-full">
+            <pre>
+              {JSON.stringify(out)}
+            </pre>
+          </div>
           <CardContent className="grid grid-cols-12 gap-4 p-4">
             <FormField
               control={form.control}
@@ -111,11 +119,11 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
               render={({ field }) => (
                 <FormItem className="col-span-12 lg:col-span-8">
                   <FormControl>
-                    <ImageUpload
-                      value={field.value}
-                      disabled={loading}
+                    <ImageUploader
                       onChange={(url) => field.onChange(url)}
                       onRemove={() => field.onChange("")}
+                      disabled={loading}
+                      value={field.value}
                     />
                   </FormControl>
                   <FormMessage />

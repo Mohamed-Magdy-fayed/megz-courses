@@ -16,6 +16,7 @@ import { analyticsRouter } from "./routers/analytics";
 import { chatAgentsRouter } from "./routers/chatAgents";
 import { chatRouter } from "./routers/chat";
 import { trainersRouter } from "./routers/trainers";
+import { imagesRouter } from "./routers/images";
 
 /**
  * This is the primary router for your server.
@@ -40,6 +41,7 @@ export const appRouter = createTRPCRouter({
   chatAgents: chatAgentsRouter,
   chat: chatRouter,
   trainers: trainersRouter,
+  images: imagesRouter,
 });
 
 // export type definition of API

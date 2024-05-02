@@ -17,9 +17,9 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useToast } from "@/components/ui/use-toast";
 import { Textarea } from "@/components/ui/textarea";
-import ImageUpload from "@/components/ui/ImageUpload";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
+import ImageUploader from "@/components/ui/ImageUploader";
 
 const formSchema = z.object({
   name: z.string().nonempty(),
@@ -88,7 +88,7 @@ const CourseForm = ({ setIsOpen }: { setIsOpen: (val: boolean) => void }) => {
             render={({ field }) => (
               <FormItem className="md:col-span-2">
                 <FormControl>
-                  <ImageUpload
+                  <ImageUploader
                     value={field.value}
                     disabled={loading}
                     onChange={(url) => field.onChange(url)}

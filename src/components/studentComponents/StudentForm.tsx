@@ -1,19 +1,11 @@
 import { api } from "@/lib/api";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import ImageUpload from "@/components/ui/ImageUpload";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import {
   Form,
@@ -25,6 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Typography } from "../ui/Typoghraphy";
 import { useToast } from "../ui/use-toast";
+import ImageUploader from "../ui/ImageUploader";
 
 const formSchema = z.object({
   name: z.string().nonempty(),
@@ -121,7 +114,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
               render={({ field }) => (
                 <FormItem className="md:col-span-2">
                   <FormControl>
-                    <ImageUpload
+                    <ImageUploader
                       value={field.value}
                       disabled={loading}
                       onChange={(url) => field.onChange(url)}

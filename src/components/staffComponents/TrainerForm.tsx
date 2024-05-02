@@ -12,7 +12,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import ImageUpload from "@/components/ui/ImageUpload";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -26,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { validTrainerRoles } from "@/lib/enumsTypes";
+import ImageUploader from "../ui/ImageUploader";
 
 const formSchema = z.object({
   name: z.string().nonempty(),
@@ -118,7 +118,7 @@ const TrainerForm: React.FC<TrainerFormProps> = ({ setIsOpen }) => {
               render={({ field }) => (
                 <FormItem className="md:col-span-2 lg:col-span-3">
                   <FormControl>
-                    <ImageUpload
+                    <ImageUploader
                       value={field.value}
                       disabled={loading}
                       onChange={(url) => field.onChange(url)}

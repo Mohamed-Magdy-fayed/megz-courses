@@ -35,8 +35,8 @@ interface ChatAgentFormProps {
 const ChatAgentForm: React.FC<ChatAgentFormProps> = ({ setIsOpen }) => {
   const [loading, setLoading] = useState(false);
 
-  const title = "Sales Operator";
-  const description = "Create Sales Operator Account";
+  const title = "Chat Operator";
+  const description = "Create Chat Operator Account";
   const action = "Create";
 
   const defaultValues: z.infer<typeof formSchema> = {
