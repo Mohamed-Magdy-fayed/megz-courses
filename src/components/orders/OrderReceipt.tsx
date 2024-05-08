@@ -107,7 +107,7 @@ const OrderReceipt: FC<OrderReceiptProps> = ({ orderId, adminView }) => {
                             <TableRow key={course.id}>
                                 <TableCell className="whitespace-nowrap">{course.name}</TableCell>
                                 <TableCell className="text-right">
-                                    {formatPrice(course.price)}
+                                    {data.order?.courseTypes.find(({ id }) => id === course.id)?.isPrivate ? formatPrice(course.privatePrice) : formatPrice(course.groupPrice)}
                                 </TableCell>
                             </TableRow>
                         ))}

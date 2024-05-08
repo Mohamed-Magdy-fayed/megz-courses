@@ -15,8 +15,6 @@ import {
     Tailwind,
     Text,
 } from '@react-email/components';
-import { GetServerSideProps } from 'next';
-import * as React from 'react';
 
 interface PaymentConfEmailProps {
     customerName: string;

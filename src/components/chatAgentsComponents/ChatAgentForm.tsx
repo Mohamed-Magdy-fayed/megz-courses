@@ -2,7 +2,7 @@ import { api } from "@/lib/api";
 import { useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import ImageUpload from "@/components/ui/ImageUpload";
+import ImageUploader from "@/components/ui/ImageUploader";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -21,8 +21,9 @@ import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardFooter } from "../ui/card";
 
 const formSchema = z.object({
-  name: z.string().nonempty(),
+  name: z.string().min(1, "Name can't be empty"),
   email: z.string().email(),
+  image: z.string().optional(),
   password: z.string().min(4),
 });
 
@@ -42,6 +43,7 @@ const ChatAgentForm: React.FC<ChatAgentFormProps> = ({ setIsOpen }) => {
   const defaultValues: z.infer<typeof formSchema> = {
     name: "",
     email: "",
+    image: "",
     password: "",
   };
 
@@ -99,6 +101,23 @@ const ChatAgentForm: React.FC<ChatAgentFormProps> = ({ setIsOpen }) => {
           className="flex w-full flex-col justify-between p-0"
         >
           <CardContent className="grid grid-cols-12 gap-4 p-4">
+            <FormField
+              control={form.control}
+              name="image"
+              render={({ field }) => (
+                <FormItem className="col-span-12 md:col-span-6 xl:col-span-4">
+                  <FormControl>
+                    <ImageUploader
+                      value={field.value}
+                      disabled={loading}
+                      onChange={(url) => field.onChange(url)}
+                      onRemove={() => field.onChange("")}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="name"

@@ -21,19 +21,16 @@ export const selfServeRouter = createTRPCRouter({
             customerName: z.string(),
             email: z.string(),
             courseId: z.string(),
+            isPrivate: z.boolean().optional(),
         }))
-        .mutation(async ({ input: { courseId, email, customerName }, ctx }) => {
+        .mutation(async ({ input: { courseId, email, customerName, isPrivate }, ctx }) => {
             const user = await ctx.prisma.user.findUnique({
                 where: {
                     email
                 },
             })
 
-            let foundMatchingCourse = false;
-
-            if (user?.courseStatus.some((status) => status.courseId === courseId)) {
-                foundMatchingCourse = true;
-            }
+            const foundMatchingCourse = user?.courseStatus.some((status) => status.courseId === courseId)
 
             if (foundMatchingCourse) {
                 throw new TRPCError({
@@ -57,6 +54,8 @@ export const selfServeRouter = createTRPCRouter({
 
             if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "course not found" })
 
+            const price = isPrivate ? course.privatePrice : course.groupPrice
+
             // Create Checkout Sessions from body params.
             const params: Stripe.Checkout.SessionCreateParams = {
                 submit_type: 'pay',
@@ -64,7 +63,7 @@ export const selfServeRouter = createTRPCRouter({
                 line_items: [{
                     price_data: {
                         currency: CURRENCY,
-                        unit_amount: formatAmountForStripe(course.price, CURRENCY),
+                        unit_amount: formatAmountForStripe(price, CURRENCY),
                         product_data: {
                             name: course.name,
                         },
@@ -82,12 +81,16 @@ export const selfServeRouter = createTRPCRouter({
 
             const order = await ctx.prisma.order.create({
                 data: {
-                    amount: course.price,
+                    amount: price,
                     orderNumber: orderCodeGenerator(),
                     paymentId: checkoutSession.id,
                     courses: { connect: { id: course.id } },
                     salesOperation: { connect: { id: salesOperation.id } },
                     user: { connect: { email } },
+                    courseTypes: [{
+                        id: course.id,
+                        isPrivate: isPrivate ? isPrivate : false,
+                    }]
                 },
                 include: {
                     courses: true,
@@ -106,7 +109,7 @@ export const selfServeRouter = createTRPCRouter({
                     orderNumber={order.orderNumber}
                     paymentLink={paymentLink}
                     customerName={customerName}
-                    courses={[{ courseName: course.name, coursePrice: formatPrice(course.price) }]}
+                    courses={[{ courseName: course.name, coursePrice: formatPrice(price) }]}
                 />, { pretty: true }
             )
 
@@ -127,6 +130,7 @@ export const selfServeRouter = createTRPCRouter({
 
             transporter.sendMail(mailOptions, (error, info) => {
                 if (error) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "mail sending failed" })
+                return info
             });
 
             return {

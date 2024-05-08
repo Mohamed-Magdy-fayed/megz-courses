@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Trash, SearchSlash, MoreVertical } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AlertModal } from "../modals/AlertModal";
 import { api } from "@/lib/api";

@@ -10,7 +10,7 @@ import { SearchSlash } from 'lucide-react'
 
 const OralTestModal = ({ id }: { id: string }) => {
     const { data } = api.courses.getStudentCourses.useQuery({ userId: id });
-    const { toastError, toastSuccess } = useToast();
+    const { toastError } = useToast();
 
     const [loading, setLoading] = useState(false);
     const [testId, setTestId] = useState<string[]>([]);

@@ -6,7 +6,6 @@ import { Separator } from "@/components/ui/separator";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -14,20 +13,25 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { useToast } from "@/components/ui/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import ImageUploader from "@/components/ui/ImageUploader";
+import { validLevelTypes } from "@/lib/enumsTypes";
+import { z } from "zod";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const formSchema = z.object({
-  name: z.string().nonempty(),
-  description: z.string().nonempty(),
-  image: z.string().nonempty(),
-  price: z.string().nonempty(),
-  form: z.string().nonempty(),
-  oralTest: z.string().nonempty(),
+  name: z.string().min(1, "Name can't be empty"),
+  description: z.string().min(1, "description can't be empty"),
+  image: z.string().min(1, "image can't be empty"),
+  groupPrice: z.string().min(1, "groupPrice can't be empty"),
+  privatePrice: z.string().min(1, "privatePrice can't be empty"),
+  instructorPrice: z.string().min(1, "instructorPrice can't be empty"),
+  form: z.string().min(1, "form can't be empty"),
+  oralTest: z.string().min(1, "oralTest can't be empty"),
+  level: z.enum(validLevelTypes),
 });
 
 type CoursesFormValues = z.infer<typeof formSchema>;
@@ -35,34 +39,43 @@ type CoursesFormValues = z.infer<typeof formSchema>;
 const CourseForm = ({ setIsOpen }: { setIsOpen: (val: boolean) => void }) => {
   const [loading, setLoading] = useState(false);
 
-  const form = useForm({
+  const form = useForm<CoursesFormValues>({
     defaultValues: {
       name: "",
       description: "",
       image: "",
-      price: "",
+      groupPrice: "",
+      instructorPrice: "",
+      privatePrice: "",
       form: "",
       oralTest: "",
+      level: "A0_A1_Beginner_Elementary",
     }
   });
   const createCourseMutation = api.courses.createCourse.useMutation();
   const trpcUtils = api.useContext();
   const { toastError, toastSuccess } = useToast();
 
-  const onSubmit = ({ form, name, oralTest, price, description, image }: CoursesFormValues) => {
+  const onSubmit = ({ form, name, oralTest, privatePrice, groupPrice, instructorPrice, description, image, level }: CoursesFormValues) => {
     setLoading(true);
     createCourseMutation.mutate({
       name: name,
       description: description,
       image: image,
-      price: Number(price),
+      privatePrice: Number(privatePrice),
+      groupPrice: Number(groupPrice),
+      instructorPrice: Number(instructorPrice),
       form,
-      oralTest
+      oralTest,
+      level,
     }, {
       onSuccess: ({ course }) => {
-        toastSuccess(`Your new course (${course.name}) is ready!`);
-        trpcUtils.courses.invalidate();
-        setLoading(false);
+        trpcUtils.courses.invalidate()
+          .then(() => {
+            toastSuccess(`Your new course (${course.name}) is ready!`);
+            setIsOpen(false)
+            setLoading(false);
+          });
       },
       onError: (error) => {
         toastError(error.message)
@@ -135,12 +148,38 @@ const CourseForm = ({ setIsOpen }: { setIsOpen: (val: boolean) => void }) => {
           />
           <FormField
             control={form.control}
-            name="price"
+            name="privatePrice"
             render={({ field }) => (
               <FormItem className="p-4">
-                <FormLabel>Course Price</FormLabel>
+                <FormLabel>Private Price</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="EX. 9999 is EGP 99.99" {...field} />
+                  <Input type="number" placeholder="EX. 99.99" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="groupPrice"
+            render={({ field }) => (
+              <FormItem className="p-4">
+                <FormLabel>Group Price</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="EX. 99.99" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="instructorPrice"
+            render={({ field }) => (
+              <FormItem className="p-4">
+                <FormLabel>Instructor Price</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="EX. 99.99" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -167,6 +206,39 @@ const CourseForm = ({ setIsOpen }: { setIsOpen: (val: boolean) => void }) => {
                 <FormLabel>Oral test questions doc</FormLabel>
                 <FormControl>
                   <Input placeholder="doc url" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="level"
+            render={({ field }) => (
+              <FormItem className="p-4">
+                <FormLabel>Oral test questions doc</FormLabel>
+                <FormControl>
+                  <Select
+                    disabled={loading}
+                    // @ts-ignore
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="pl-8 bg-white">
+                        <SelectValue
+                          defaultValue={field.value}
+                          placeholder="Select Course Level"
+                        />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {validLevelTypes.map(level => (
+                        <SelectItem id={level} value={level}>{level}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </FormControl>
                 <FormMessage />
               </FormItem>

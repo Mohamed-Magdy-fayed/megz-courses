@@ -76,6 +76,8 @@ export const Account = ({
         )}
       </Card>
       {(isOwnAccount) && <ChangePassword />}
+      <Typography>follow up (attendance - homework - quizes - assignements - final test - certificate)</Typography>
+      <Typography>Notes</Typography>
     </div>
   );
 };

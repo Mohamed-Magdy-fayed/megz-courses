@@ -64,10 +64,12 @@ export const placementTestsRouter = createTRPCRouter({
                 },
                 data: {
                     courseStatus: {
-                        push: courseIds.map(courseId => ({
-                            courseId,
-                            state: "waiting"
-                        })),
+                        updateMany: {
+                            where: { courseId: { in: courseIds } },
+                            data: {
+                                state: "waiting"
+                            }
+                        },
                     }
                 },
             });

@@ -1,4 +1,3 @@
-import React from "react";
 import { Typography } from "./ui/Typoghraphy";
 import Link from "next/link";
 import { Button } from "./ui/button";

@@ -35,6 +35,7 @@ const EnrollmentModal: FC<EnrollmentModalProps> = ({
     const router = useRouter()
     const session = useSession()
     const [checkedAgreement, setcheckedAgreement] = useState(false)
+    const [isPrivate, setIsPrivate] = useState(false)
 
     const onEnroll = () => {
         if (!session.data?.user.email || !session.data?.user.name) return
@@ -44,6 +45,7 @@ const EnrollmentModal: FC<EnrollmentModalProps> = ({
             courseId: course.id,
             customerName: session.data.user.name,
             email: session.data.user.email,
+            isPrivate,
         }, {
             onSuccess: (data) => router.push(data.paymentLink),
             onError: (e) => toastError(e.message),
@@ -67,7 +69,18 @@ const EnrollmentModal: FC<EnrollmentModalProps> = ({
                         <Typography variant={"secondary"}>{course.name}</Typography>
                     </div>
                     <div className="self-end">
-                        {formatPrice(course.price)}
+                        <Typography className={cn("", isPrivate && "text-info")}> {formatPrice(isPrivate ? course.privatePrice : course.groupPrice)}</Typography>                    </div>
+                    <div className="self-start">
+                        <Typography variant={"secondary"}>Do you need a private class?</Typography>
+                    </div>
+                    <div className="w-full">
+                        <Typography>note that prices might change!</Typography>
+                        <Checkbox
+                            id='isPrivate'
+                            className="float-right border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                            checked={isPrivate}
+                            onClick={() => setIsPrivate((prev) => !prev)}
+                        />
                     </div>
                 </div>
                 <div className="flex flex-col items-center justify-between p-4">

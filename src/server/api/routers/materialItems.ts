@@ -20,22 +20,22 @@ export const materialItemsRouter = createTRPCRouter({
       });
       return { materialItem };
     }),
-  getByLessonId: protectedProcedure
+  getByCourseId: protectedProcedure
     .input(
       z.object({
-        lessonId: z.string(),
+        courseId: z.string(),
       })
     )
-    .query(async ({ ctx, input: { lessonId } }) => {
+    .query(async ({ ctx, input: { courseId } }) => {
       const materialItems = await ctx.prisma.materialItem.findMany({
-        where: { lessonId },
+        where: { courseId },
       });
       return { materialItems };
     }),
   createMaterialItem: protectedProcedure
     .input(
       z.object({
-        lessonId: z.string(),
+        courseId: z.string(),
         leadinText: z.string(),
         leadinImageUrl: z.string(),
         firstTestTitle: z.string(),
@@ -86,7 +86,7 @@ export const materialItemsRouter = createTRPCRouter({
           firstTestTitle,
           leadinImageUrl,
           leadinText,
-          lessonId,
+          courseId,
           practiceQuestions,
           subTitle,
           title,
@@ -104,8 +104,8 @@ export const materialItemsRouter = createTRPCRouter({
             frameWorkName: "TTT vocab",
             answerCards,
             answerAreas,
-            lesson: {
-              connect: { id: lessonId },
+            course: {
+              connect: { id: courseId },
             },
             vocabularyCards,
             practiceQuestions: practiceQuestions.map((q) => ({

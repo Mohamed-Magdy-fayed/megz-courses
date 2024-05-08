@@ -5,7 +5,6 @@ import { DataTable } from "@/components/ui/DataTable";
 import { SalesAgentsColumn, columns } from "./SalesAgentColumn";
 import { SalesAgent, SalesOperation, User } from "@prisma/client";
 import { useToast } from "../ui/use-toast";
-import { Typography } from "../ui/Typoghraphy";
 
 interface SalesAgents extends SalesAgent {
   user: User;

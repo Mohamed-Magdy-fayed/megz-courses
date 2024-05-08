@@ -13,9 +13,9 @@ export const ordersRouter = createTRPCRouter({
     getAll: protectedProcedure.query(async ({ ctx }) => {
         const orders = await ctx.prisma.order.findMany({
             include: {
-                courses: true,
                 user: true,
-                salesOperation: { include: { assignee: true } }
+                salesOperation: { include: { assignee: true } },
+                courses: true,
             },
             orderBy: {
                 id: "desc"
@@ -31,9 +31,9 @@ export const ordersRouter = createTRPCRouter({
             },
             take: 10,
             include: {
-                courses: true,
                 user: true,
-                salesOperation: { include: { assignee: true } }
+                salesOperation: { include: { assignee: true } },
+                courses: true,
             },
         });
 
@@ -49,9 +49,9 @@ export const ordersRouter = createTRPCRouter({
             const order = await ctx.prisma.order.findUnique({
                 where: { id },
                 include: {
-                    courses: true,
                     user: true,
-                    salesOperation: { include: { assignee: true } }
+                    salesOperation: { include: { assignee: true } },
+                    courses: true,
                 },
             });
             return { order };
@@ -59,24 +59,23 @@ export const ordersRouter = createTRPCRouter({
     createOrder: protectedProcedure
         .input(
             z.object({
-                courses: z.array(z.string()),
+                coursesDetails: z.array(z.object({
+                    courseId: z.string(),
+                    isPrivate: z.boolean(),
+                })),
                 salesOperationId: z.string(),
                 email: z.string().email(),
             })
         )
-        .mutation(async ({ input: { courses, salesOperationId, email }, ctx }) => {
+        .mutation(async ({ input: { coursesDetails, salesOperationId, email }, ctx }) => {
             const user = await ctx.prisma.user.findUnique({
                 where: {
                     email
                 },
             })
 
-            let foundMatchingCourse = false;
-
-            courses.forEach((courseId) => {
-                if (user?.courseStatus.some((status) => status.courseId === courseId)) {
-                    foundMatchingCourse = true;
-                }
+            const foundMatchingCourse = coursesDetails.some(({ courseId }) => {
+                return user?.courseStatus.some((status) => status.courseId === courseId)
             });
 
             if (foundMatchingCourse) {
@@ -86,23 +85,28 @@ export const ordersRouter = createTRPCRouter({
                 });
             }
 
-            const coursesPrice = await ctx.prisma.course.findMany({
+            const courses = await ctx.prisma.course.findMany({
                 where: {
-                    id: { in: courses }
+                    id: { in: coursesDetails.map(course => course.courseId) }
                 }
             })
-            const totalPrice = coursesPrice.map(course => course.price).reduce((accumulator, value) => {
-                return accumulator + value;
-            }, 0);
+            const totalPrice = courses.map(course => coursesDetails.find(({
+                courseId
+            }) => course.id === courseId)?.isPrivate ? course.privatePrice : course.groupPrice)
+                .reduce((accumulator, value) => {
+                    return accumulator + value;
+                }, 0);
 
             // Create Checkout Sessions from body params.
             const params: Stripe.Checkout.SessionCreateParams = {
                 submit_type: 'pay',
                 payment_method_types: ['card'],
-                line_items: coursesPrice.map(course => ({
+                line_items: courses.map(course => ({
                     price_data: {
                         currency: CURRENCY,
-                        unit_amount: formatAmountForStripe(course.price, CURRENCY),
+                        unit_amount: formatAmountForStripe(coursesDetails.find(({
+                            courseId
+                        }) => course.id === courseId)?.isPrivate ? course.privatePrice : course.groupPrice, CURRENCY),
                         product_data: {
                             name: course.name,
                         },
@@ -123,9 +127,10 @@ export const ordersRouter = createTRPCRouter({
                     amount: totalPrice,
                     orderNumber: orderCodeGenerator(),
                     paymentId: checkoutSession.id,
-                    courses: { connect: courses.map(c => ({ id: c })) },
+                    courses: { connect: coursesDetails.map(({ courseId }) => ({ id: courseId })) },
                     salesOperation: { connect: { id: salesOperationId } },
                     user: { connect: { email } },
+                    courseTypes: coursesDetails.map(({ courseId, isPrivate }) => ({ id: courseId, isPrivate }))
                 },
                 include: {
                     courses: true,
@@ -162,7 +167,9 @@ export const ordersRouter = createTRPCRouter({
                 line_items: coursesPrice.map(course => ({
                     price_data: {
                         currency: CURRENCY,
-                        unit_amount: formatAmountForStripe(course.price, CURRENCY),
+                        unit_amount: formatAmountForStripe(order.courseTypes.find(({
+                            id,
+                        }) => course.id === id)?.isPrivate ? course.privatePrice : course.groupPrice, CURRENCY),
                         product_data: {
                             name: course.name,
                         },
@@ -254,7 +261,7 @@ export const ordersRouter = createTRPCRouter({
             })
 
             if (!order?.id) throw new TRPCError({ code: "BAD_REQUEST", message: "incorrect information" })
-            const courseLink = `${process.env.NEXTAUTH_URL}my_courses/${order.user.id}`
+            const courseLink = `${process.env.NEXTAUTH_URL}my_courses`
 
             if (order.status === "paid" || order.status === "done")
                 return ({
@@ -283,18 +290,24 @@ export const ordersRouter = createTRPCRouter({
         .input(
             z.object({
                 id: z.string(),
-                courses: z.array(z.string()),
+                coursesDetails: z.array(z.object({
+                    courseId: z.string(),
+                    isPrivate: z.boolean(),
+                })),
             })
         )
-        .mutation(async ({ ctx, input: { id, courses } }) => {
-            const coursesPrice = await ctx.prisma.course.findMany({
+        .mutation(async ({ ctx, input: { id, coursesDetails } }) => {
+            const courses = await ctx.prisma.course.findMany({
                 where: {
-                    id: { in: courses }
+                    id: { in: coursesDetails.map(({ courseId }) => courseId) }
                 }
             })
-            const totalPrice = coursesPrice.map(course => course.price).reduce((accumulator, value) => {
-                return accumulator + value;
-            }, 0);
+            const totalPrice = courses.map(course => coursesDetails.find(({
+                courseId
+            }) => course.id === courseId)?.isPrivate ? course.privatePrice : course.groupPrice)
+                .reduce((accumulator, value) => {
+                    return accumulator + value;
+                }, 0);
 
             const updatedOrder = await ctx.prisma.order.update({
                 where: {
@@ -302,7 +315,7 @@ export const ordersRouter = createTRPCRouter({
                 },
                 data: {
                     amount: totalPrice,
-                    courses: { connect: courses.map(c => ({ id: c })) },
+                    courses: { connect: coursesDetails.map(({ courseId }) => ({ id: courseId })) },
                 },
                 include: {
                     courses: true,

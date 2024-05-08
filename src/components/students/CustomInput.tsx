@@ -1,11 +1,11 @@
-import React from "react";
+import { ChangeEvent } from "react";
 import { Input, InputProps } from "../ui/input";
 import { Label } from "../ui/label";
 import { Typography } from "../ui/Typoghraphy";
 
 interface CustomInputProps {
   loading: boolean;
-  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleChange: (e: ChangeEvent<HTMLInputElement>) => void;
   value?: string | number;
   smallGrid?: boolean;
   label: string;

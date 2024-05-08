@@ -11,7 +11,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { env } from "@/env.mjs";
 import { prisma } from "@/server/db";
 import bcrypt from "bcrypt";
-import { Devices, UserType } from "@prisma/client";
+import type { Devices, UserType } from "@prisma/client";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -56,10 +56,10 @@ export const authOptions: NextAuthOptions = {
         email: { label: "email", type: "text" },
         password: { label: "password", type: "password" },
       },
-      async authorize(credentials, req) {
+      async authorize(credentials) {
         if (!credentials?.email || !credentials.password) return null;
 
-        let user = await prisma.user.findUnique({
+        const user = await prisma.user.findUnique({
           where: {
             email: credentials.email,
           },

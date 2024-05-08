@@ -15,6 +15,10 @@ export const mainNavLinks = [
     url: "dashboard",
   },
   {
+    label: "Groups",
+    url: "groups",
+  },
+  {
     label: "Orders",
     url: "orders",
   },

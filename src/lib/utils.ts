@@ -10,13 +10,9 @@ export const getAddress = (address: Address) => `${address?.city || "no city"
   }, ${address?.state || "no state"}, 
 ${address?.country || "no country"}`;
 
-export const salesOperationCodeGenerator = () => {
-  return `SO-${Date.now()}`
-}
+export const salesOperationCodeGenerator = () => `SO-${Date.now()}`
 
-export const orderCodeGenerator = () => {
-  return `CO-${Date.now()}`
-}
+export const orderCodeGenerator = () => `CO-${Date.now()}`
 
 export const formatPrice = (price: number) => {
   const formattedPrice = new Intl.NumberFormat('en-EG', {
@@ -30,25 +26,20 @@ export const formatPrice = (price: number) => {
 };
 
 
-export const formatPercentage = (value: number) => {
-  return new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 }).format(value / 100)
-}
+export const formatPercentage = (value: number) => new Intl.NumberFormat("en-US", {
+  style: "percent",
+  maximumFractionDigits: 2
+}).format(value / 100)
 
-export const formatNumbers = (value: number) => {
-  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(value)
-}
+export const formatNumbers = (value: number) => new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(value)
 
-export const getLastWeekDate = (now = new Date()) => {
-  return new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate() - 7,
-  );
-}
+export const getLastWeekDate = (now = new Date()) => new Date(
+  now.getFullYear(),
+  now.getMonth(),
+  now.getDate() - 7,
+);
 
-export const isGoodState = (difference: number, isLiability: boolean) => {
-  return (isLiability && difference < 0) || (!isLiability && difference > 0)
-}
+export const isGoodState = (difference: number, isLiability: boolean) => (isLiability && difference < 0) || (!isLiability && difference > 0)
 
 type DataObject = {
   createdAt: Date;

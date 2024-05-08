@@ -1,10 +1,10 @@
 import LandingLayout from "@/components/landingPageComponents/LandingLayout";
 import HeroSection from "@/components/landingPageComponents/HeroSection";
-import { Star } from "lucide-react";
 import ContactSection from "@/components/landingPageComponents/ContactSection";
 import CoursesSection from "@/components/landingPageComponents/CoursesSection";
 import LandingSectionSeparator from "@/components/landingPageComponents/LandingSectionSeparator";
 import OurTeamSection from "@/components/landingPageComponents/OurTeamSection";
+import { Star } from "lucide-react";
 
 const Page = () => {
   return (

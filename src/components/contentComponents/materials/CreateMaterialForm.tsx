@@ -39,12 +39,14 @@ const CreateMaterialsForm = ({
         setLoading(true);
 
         createMaterialMutation.mutate(
-            { ...data, lessonId: id },
+            { ...data, courseId: id },
             {
                 onSuccess: ({ materialItem }) => {
-                    toastSuccess(`Your new material (${materialItem.title}) is ready!`);
-                    trpcUtils.lessons.invalidate();
-                    setLoading(false);
+                    trpcUtils.courses.invalidate()
+                    .then(() => {
+                        toastSuccess(`Your new material (${materialItem.title}) is ready!`);
+                        setLoading(false);
+                    })
                 },
                 onError: (error) => {
                     toastError(error.message)

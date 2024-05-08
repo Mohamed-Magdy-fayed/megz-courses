@@ -2,12 +2,11 @@ import { Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Loader, Lock } from 'lucide-react'
-import { FC, useState } from "react";
+import { Lock } from 'lucide-react'
+import { useState } from "react";
 import { Card, CardFooter, CardHeader } from "@/components/ui/card";
 import Spinner from "@/components/Spinner";
 import { api } from "@/lib/api";
@@ -15,9 +14,9 @@ import { useSession } from "next-auth/react";
 import { useToast } from "@/components/ui/use-toast";
 
 const passwordFormSchema = z.object({
-    oldPassword: z.string().nonempty("Please enter your old password"),
-    newPassword: z.string().nonempty("Please add a new password"),
-    newPasswordConfirmation: z.string().nonempty("Please confirm the new password"),
+    oldPassword: z.string().min(1, "Please enter your old password"),
+    newPassword: z.string().min(1, "Please add a new password"),
+    newPasswordConfirmation: z.string().min(1, "Please confirm the new password"),
 }).superRefine(({ oldPassword, newPassword, newPasswordConfirmation }, ctx) => {
     if (newPassword !== newPasswordConfirmation) ctx.addIssue({
         code: "custom",

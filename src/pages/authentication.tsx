@@ -2,7 +2,6 @@ import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import Copyright from "@/components/Copyright";
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import AuthForm from "@/components/authComponents/AuthForm";

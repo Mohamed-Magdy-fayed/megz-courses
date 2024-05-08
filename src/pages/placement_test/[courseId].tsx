@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { api } from "@/lib/api"
 import { useRouter } from "next/router"
-import { useEffect } from "react"
 
 const CoursePlacementTestPage = () => {
     const router = useRouter()

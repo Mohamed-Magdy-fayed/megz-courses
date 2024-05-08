@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
-import { SalesOperationStatus } from "@prisma/client";
 import { orderCodeGenerator, salesOperationCodeGenerator } from "@/lib/utils";
 import { validOperationStatus } from "@/lib/enumsTypes";
 import { TRPCError } from "@trpc/server";

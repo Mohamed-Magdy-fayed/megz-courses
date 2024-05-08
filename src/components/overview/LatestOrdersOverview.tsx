@@ -23,7 +23,7 @@ export const LatestOrdersOverview = () => {
       </CardHeader>
       <CardContent>
         {!orders?.orders ? <Spinner className="w-full" /> : (
-          <LatestOrdersClient data={orders.orders.slice(0, 10)} />
+          <LatestOrdersClient data={orders.orders} />
         )}
       </CardContent>
       <Separator />

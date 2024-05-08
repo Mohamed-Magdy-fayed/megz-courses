@@ -1,4 +1,3 @@
-import React from "react";
 import { PaperContainer } from "../ui/PaperContainers";
 import { Skeleton } from "../ui/skeleton";
 

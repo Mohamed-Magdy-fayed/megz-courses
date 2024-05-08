@@ -20,7 +20,7 @@ import { useToast } from "../ui/use-toast";
 import ImageUploader from "../ui/ImageUploader";
 
 const formSchema = z.object({
-  name: z.string().nonempty(),
+  name: z.string().min(1, "Name can't be empty"),
   email: z.string().email(),
   password: z.string().min(4),
   image: z.string().optional(),

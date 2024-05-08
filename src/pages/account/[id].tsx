@@ -2,7 +2,6 @@ import { Account } from "@/components/users/accountComponents/Account";
 import { AccountDetails } from "@/components/users/accountComponents/AccountDetails";
 import { api } from "@/lib/api";
 import { useRouter } from "next/router";
-import React from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import { ArrowLeftFromLine } from "lucide-react";
 import { Button } from "@/components/ui/button";

@@ -42,6 +42,8 @@ export const usersRouter = createTRPCRouter({
         where: { id },
         include: { orders: true },
       });
+
+      if (!user) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "didn't find user" })
       return { user };
     }),
   getCurrentUser: protectedProcedure

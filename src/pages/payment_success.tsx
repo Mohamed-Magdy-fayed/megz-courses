@@ -24,7 +24,7 @@ const SuccessfullPaymentPage = () => {
     }>()
 
     const payOrderMutation = api.orders.payOrder.useMutation()
-    const sendEmailMutation = api.comms.sendEmail.useMutation()
+    const sendEmailMutation = api.emails.sendEmail.useMutation()
     const trpcUtils = api.useContext()
 
     const handleSendEmail = ({
@@ -83,7 +83,12 @@ const SuccessfullPaymentPage = () => {
                         orderNumber={data.updatedOrder.orderNumber}
                         courseLink={data.courseLink ? data.courseLink : ""}
                         customerName={data.updatedOrder.user.name}
-                        courses={data.updatedOrder.courses.map(course => ({ courseName: course.name, coursePrice: formatPrice(course.price) }))}
+                        courses={data.updatedOrder.courses.map(course => ({
+                            courseName: course.name,
+                            coursePrice: data.updatedOrder.courseTypes.find(type => type.id === course.id)?.isPrivate
+                                ? formatPrice(course.privatePrice)
+                                : formatPrice(course.groupPrice)
+                        }))}
                     />, { pretty: true }
                 )
                 handleSendEmail({

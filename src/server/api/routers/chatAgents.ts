@@ -61,6 +61,7 @@ export const chatAgentsRouter = createTRPCRouter({
             z.object({
                 name: z.string(),
                 email: z.string().email(),
+                image: z.string().optional(),
                 password: z.string(),
             })
         )
@@ -82,6 +83,7 @@ export const chatAgentsRouter = createTRPCRouter({
                             name: input.name,
                             email: input.email,
                             hashedPassword,
+                            image: input.image,
                             userType: "chatAgent",
                         }
                     }

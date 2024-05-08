@@ -14,7 +14,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 const formSchema = z.object({
-    message: z.string().nonempty(),
+    message: z.string().min(1, "message can't be empty"),
 });
 
 type ChatFormValues = z.infer<typeof formSchema>;

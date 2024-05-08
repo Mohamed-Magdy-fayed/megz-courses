@@ -28,7 +28,7 @@ import { validTrainerRoles } from "@/lib/enumsTypes";
 import ImageUploader from "../ui/ImageUploader";
 
 const formSchema = z.object({
-  name: z.string().nonempty(),
+  name: z.string().min(1, "Name can't be empty"),
   email: z.string().email(),
   password: z.string().min(4),
   image: z.string().optional(),
@@ -49,7 +49,7 @@ const TrainerForm: React.FC<TrainerFormProps> = ({ setIsOpen }) => {
   const description = "Add a new Trainer";
   const action = "Create";
 
-  const defaultValues: z.infer<typeof formSchema> = {
+  const defaultValues: UsersFormValues = {
     name: "",
     email: "",
     password: "",

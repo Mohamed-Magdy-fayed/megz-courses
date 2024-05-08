@@ -5,7 +5,6 @@ import { DataTable } from "@/components/ui/DataTable";
 import { ChatAgentColumn, columns } from "./ChatAgentColumn";
 import { ChatAgent, SupportChat, User } from "@prisma/client";
 import { useToast } from "../ui/use-toast";
-import { Typography } from "../ui/Typoghraphy";
 
 interface ChatAgents extends ChatAgent {
   user: User;
@@ -17,6 +16,7 @@ const ChatAgentsClient = ({ data }: { data: ChatAgents[] }) => {
   const formattedData = data.map((agent) => ({
     id: agent.user.id,
     name: agent.user.name || "no name",
+    image: agent.user.image || "",
     email: agent.user.email || "no email",
     chats: agent?.chats.length || 0,
     createdAt: format(agent.user.createdAt, "MMMM do, yyyy"),

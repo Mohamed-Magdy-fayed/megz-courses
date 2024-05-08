@@ -6,8 +6,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Copy, SearchSlash, MoreVertical } from "lucide-react";
-import { useState } from "react";
+import { Copy, MoreVertical } from "lucide-react";
 import { useToast } from "../ui/use-toast";
 import PlacmentTestModal from "./PlacmentTestModal";
 import OralTestModal from "./OralTestModal";

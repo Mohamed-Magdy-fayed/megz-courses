@@ -81,8 +81,20 @@ const OrderInfoPanel = ({ data }: {
                             onDelete={() => { }}
                             setUsers={() => { }}
                             columns={[
-                                { accessorKey: "name", header: "Name", cell: ({ row }) => <>{row.original.name}</> },
-                                { accessorKey: "price", header: "Price", cell: ({ row }) => <>{formatPrice(row.original.price)}</> },
+                                {
+                                    accessorKey: "name",
+                                    header: "Name",
+                                    cell: ({ row }) => <>{row.original.name}</>
+                                },
+                                {
+                                    accessorKey: "price",
+                                    header: "Price",
+                                    cell: ({ row }) => <>{
+                                        formatPrice(data.orderDetails?.courseTypes.find(({ id }) => id === row.original.id)?.isPrivate
+                                            ? row.original.privatePrice
+                                            : row.original.groupPrice)
+                                    }</>
+                                },
                             ]}
                         />
                     )}

@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import { Moon, Settings2Icon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 

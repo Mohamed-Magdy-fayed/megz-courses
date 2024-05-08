@@ -67,18 +67,7 @@ const CoursePage = () => {
                                 <div>{course.description}</div>
                             </div>
                             <div>
-                                <Typography variant={"secondary"}>Levels</Typography>
-                                <div>{course.levels.length === 0 ? (
-                                    <Typography>No content yet</Typography>
-                                ) : course.levels.map(level => {
-
-                                    return (
-                                        <div key={level.id}>
-                                            {level.name}
-                                        </div>
-                                    )
-                                })}
-                                </div>
+                                <Typography variant={"secondary"}>Level: {course.level}</Typography>
                             </div>
                         </CardContent>
                         <CardFooter className="flex gap-4 items-center justify-between flex-wrap p-4">
@@ -112,7 +101,7 @@ const CoursePage = () => {
                                     </Button>
                                 </>
                             )}
-                            <Typography variant={"secondary"} className="text-success">{formatPrice(course.price)}</Typography>
+                            <Typography variant={"secondary"} className="text-success">{formatPrice(course.groupPrice)}</Typography>
                         </CardFooter>
                     </Card>
                 </div>
@@ -121,18 +110,15 @@ const CoursePage = () => {
                         <Typography variant={"secondary"}>{course.name}</Typography>
                         <Typography>Added on {format(course.createdAt, "do MMM yyyy")}</Typography>
                     </div>
-                    {course.levels[0]?.lessons[0] ? (
+                    {!course.materialItems[0] ? (
                         <div className="p-4 space-x-4">
-                            <Typography>{course.levels[0].name}</Typography>
+                            <Typography>{course.materialItems.length} Materials</Typography>
                             <Typography>-</Typography>
                             <Typography>
-                                {course.levels[0].lessons[0].name || "No lessons"}
+                                {course.materialItems[0]!?.title || "No Material"}
                             </Typography>
                         </div>
-                    ) : (<Spinner />)}
-                    {course?.levels[0]?.lessons[0]?.materials[0] ? (
-                        <MaterialShowcase materialItem={course.levels[0].lessons[0]?.materials[0]} />
-                    ) : (<Spinner />)}
+                    ) : courseQuery.isLoading ? <Spinner /> : <MaterialShowcase materialItem={course.materialItems[0]} />}
                     {/* <div className="max-w-3xl self-center grid place-content-center">
                         <video controls className="p-4 rounded-3xl " >
                             <source src={exampleVideo.sources[0]} type="video/mp4" />

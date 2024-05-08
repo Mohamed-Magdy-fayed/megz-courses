@@ -1,12 +1,11 @@
-import * as React from "react";
 import { ActiveLinkType, useNavStore } from "@/zustand/store";
 import { useRouter } from "next/router";
 import Spinner from "../Spinner";
-import MegzDrawer from "./Drawer";
 import MegzTopBar from "./TopBar";
+import { ReactNode, useEffect } from "react";
 
 interface AppDrawerProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export default function AppDrawer({ children }: AppDrawerProps) {
@@ -17,7 +16,7 @@ export default function AppDrawer({ children }: AppDrawerProps) {
     navStore.opened ? navStore.closeNav() : navStore.openNav();
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     navStore.setActiveLink(
       router.route.toString().substring(1) as ActiveLinkType
     );

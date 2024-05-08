@@ -38,7 +38,7 @@ const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId })
     };
 
     const resendPaymentLinkMutation = api.orders.resendPaymentLink.useMutation()
-    const sendEmailMutation = api.comms.sendEmail.useMutation()
+    const sendEmailMutation = api.emails.sendEmail.useMutation()
     const trpcUtils = api.useContext()
 
     const handleSendEmail = ({
@@ -73,7 +73,7 @@ const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId })
 
     const handleResendPaymentLink = () => {
         resendPaymentLinkMutation.mutate({ orderId }, {
-            onSuccess: ({ updatedOrder: { id, amount, orderNumber, user, courses, createdAt, salesOperationId }, paymentLink }) => {
+            onSuccess: ({ updatedOrder: { id, amount, orderNumber, user, courses, createdAt, salesOperationId, courseTypes }, paymentLink }) => {
                 const message = render(
                     <Email
                         orderCreatedAt={format(createdAt, "dd MMM yyyy")}
@@ -82,8 +82,12 @@ const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId })
                         orderNumber={orderNumber}
                         paymentLink={paymentLink}
                         customerName={user.name}
-                        courses={courses.map(course => ({ courseName: course.name, coursePrice: formatPrice(course.price) }))}
-                    />, { pretty: true }
+                        courses={courses.map(course => ({
+                            courseName: course.name,
+                            coursePrice: courseTypes.find(type => type.id === course.id)?.isPrivate
+                                ? formatPrice(course.privatePrice)
+                                : formatPrice(course.groupPrice)
+                        }))} />, { pretty: true }
                 )
                 handleSendEmail({
                     orderId: id,

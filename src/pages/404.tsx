@@ -1,10 +1,15 @@
 import { Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
-import { ArrowLeftToLine } from "lucide-react";
+import { ArrowLeftToLine, Home } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 export default function Page() {
+  const session = useSession()
+  const router = useRouter()
+
   return (
     <main className="items-center justify-center flex flex-grow min-h-screen w-screen"  >
       <div>
@@ -24,11 +29,18 @@ export default function Page() {
             You either tried some shady route or you came here by mistake.
             Whichever it is, try using the navigation
           </Typography>
-          <Link href="/">
-            <Button >
-              <ArrowLeftToLine />Go back to dashboard
+          <div className="flex items-center justify-around w-full">
+            <Button onClick={() => router.back()} className="flex gap-2" variant={"outline"} customeColor={"primaryOutlined"}>
+              <ArrowLeftToLine />
+              <Typography>Go back</Typography>
             </Button>
-          </Link>
+            <Link href={session.data?.user.userType === "student" ? "/" : "/dashboard"}>
+              <Button className="flex gap-2">
+                <Home />
+                <Typography>Go to dashboard</Typography>
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </main>

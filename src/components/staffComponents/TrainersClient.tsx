@@ -6,20 +6,21 @@ import { DataTable } from "../ui/DataTable";
 import { TrainerColumn, columns } from "./StaffColumns";
 import { useToast } from "../ui/use-toast";
 
-export interface Users extends User {
-  trainer: Trainer | null;
+export interface Trainers extends Trainer {
+  user: User;
 }
 
-const TrainersClient = ({ data }: { data: Users[] }) => {
+const TrainersClient = ({ data }: { data: Trainers[] }) => {
   const [trainers, setTraiers] = useState<TrainerColumn[]>([]);
-  const formattedData: TrainerColumn[] = data.map((user) => ({
-    id: user.id,
-    name: user.name || "no name",
-    email: user.email || "no email",
-    image: user.image || "no image",
-    phone: user.phone || "no phone",
-    role: user.trainer?.role || "NA",
-    createdAt: format(user.createdAt, "MMMM do, yyyy"),
+  const formattedData: TrainerColumn[] = data.map((trainer) => ({
+    id: trainer.id,
+    userId: trainer.userId,
+    name: trainer.user.name || "no name",
+    email: trainer.user.email || "no email",
+    image: trainer.user.image || "no image",
+    phone: trainer.user.phone || "no phone",
+    role: trainer.role || "NA",
+    createdAt: format(trainer.createdAt, "MMMM do, yyyy"),
   }));
 
   const { toastError, toastSuccess } = useToast();

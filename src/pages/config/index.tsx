@@ -1,7 +1,6 @@
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { ApiAlert } from "@/components/ui/api-alert";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import AppLayout from "@/components/layout/AppLayout";
 import { ArrowRightFromLineIcon } from "lucide-react";
 import type { NextPage } from "next";

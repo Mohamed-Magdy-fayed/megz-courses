@@ -1,7 +1,7 @@
 import { Dispatch, FC, SetStateAction, useEffect, useState } from "react"
 import Modal from "../ui/modal"
 import SelectField from "./SelectField"
-import { Address, Course, Level, Order, User } from "@prisma/client"
+import { Address, Course, Order, User } from "@prisma/client"
 import { Button } from "../ui/button"
 import { api } from "@/lib/api"
 import { render } from "@react-email/render"
@@ -9,6 +9,7 @@ import Email from "../emails/Email"
 import { format } from "date-fns"
 import { useToast } from "../ui/use-toast"
 import { formatPrice } from "@/lib/utils"
+import CoursesSelectField from "./CoursesSelectField"
 
 interface CreateOrderProps {
     loading: boolean
@@ -19,10 +20,8 @@ interface CreateOrderProps {
         address: Address | null;
         orders: Order[];
     })[];
-    coursesData: (Course & {
-        levels: Level[];
-    })[];
-    salesOperationId: string
+    coursesData: Course[];
+    salesOperationId: string;
 }
 
 const CreateOrder: FC<CreateOrderProps> = ({
@@ -41,18 +40,19 @@ const CreateOrder: FC<CreateOrderProps> = ({
         value: string
         active: boolean
     }[]>([])
+    const [coursesGroupType, setCoursesGroupType] = useState<{ courseId: string, isPrivate: boolean }[]>([])
 
     const { toastError, toastSuccess } = useToast()
-    const trpcUtils = api.useContext()
     const createOrderMutation = api.orders.createOrder.useMutation()
-    const sendEmailMutation = api.comms.sendEmail.useMutation()
+    const sendEmailMutation = api.emails.sendEmail.useMutation()
+    const trpcUtils = api.useContext()
 
     const handleAddCourses = () => {
         if (!email[0] || courses.length === 0) return toastError(`missing some info here!`)
 
         setLoading(true)
         createOrderMutation.mutate({
-            courses,
+            coursesDetails: coursesGroupType,
             email: email[0],
             salesOperationId
         }, {
@@ -65,7 +65,7 @@ const CreateOrder: FC<CreateOrderProps> = ({
                         orderNumber={orderNumber}
                         paymentLink={paymentLink}
                         customerName={user.name}
-                        courses={courses.map(course => ({ courseName: course.name, coursePrice: formatPrice(course.price) }))}
+                        courses={courses.map(course => ({ courseName: course.name, coursePrice: formatPrice(course.groupPrice) }))}
                     />, { pretty: true }
                 )
                 handleSendEmail({
@@ -104,8 +104,10 @@ const CreateOrder: FC<CreateOrderProps> = ({
             onError: (e) => toastError(e.message),
             onSettled: () => {
                 trpcUtils.salesOperations.invalidate()
-                setOpen(false)
-                setLoading(false)
+                    .then(() => {
+                        setOpen(false)
+                        setLoading(false)
+                    })
             }
         })
     }
@@ -139,10 +141,10 @@ const CreateOrder: FC<CreateOrderProps> = ({
                             data={usersdata.map(item => ({ label: item.email, value: item.email, active: true }))} />
                     )}
                     {!coursesData || !email[0] ? (<></>) : (
-                        <SelectField
+                        <CoursesSelectField
                             multiSelect
-                            values={courses}
-                            setValues={setCourses}
+                            values={coursesGroupType}
+                            setValues={setCoursesGroupType}
                             placeholder="Select Course..."
                             listTitle="Courses"
                             data={coursesList} />

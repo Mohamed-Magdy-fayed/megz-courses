@@ -1,26 +1,32 @@
 import { storage } from "@/config/firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, getDownloadURL, uploadBytesResumable, StorageReference } from "firebase/storage";
 
-export const uploadFile = async (file: File) => {
-    try {
-        const filename = file.name;
-        const storageRef = ref(
-            storage,
-            `uploads/${filename}}`
+export const upload = async (file: File) => {
+    const filename = file.name;
+    const storageRef = ref(
+        storage,
+        `uploads/${filename}`
+    );
+
+    const uploadTask = new Promise<StorageReference>((resolve, reject) => {
+        const task = uploadBytesResumable(storageRef, file);
+
+        task.on('state_changed',
+            () => { },
+            (error) => {
+                reject(error);
+            },
+            () => {
+                resolve(task.snapshot.ref);
+            }
         );
-        const res = await uploadBytes(storageRef, file);
+    });
 
-        return res.metadata.fullPath;
-    } catch (error) {
-        throw error;
-    }
-};
-
-export const getFile = async (path: string) => {
     try {
-        const fileRef = ref(storage, path);
-        return getDownloadURL(fileRef);
+        const snapshotRef = await uploadTask;
+        const downloadURL = await getDownloadURL(snapshotRef);
+        return downloadURL
     } catch (error) {
-        throw error;
+        throw new Error(`Error uploading file: ${error}`);
     }
 };

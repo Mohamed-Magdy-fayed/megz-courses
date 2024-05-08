@@ -1,12 +1,15 @@
-import { Address, User } from "@prisma/client";
+import { Order, User } from "@prisma/client";
 import UserDataForm, { UserDataFormValues } from "../UserDataForm/UserDataForm";
 import { useSession } from "next-auth/react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Typography } from "@/components/ui/Typoghraphy";
+import { Separator } from "@/components/ui/separator";
+import AccountPaymentClient from "./AccountPaymentClient";
 
 export const AccountDetails = ({ user }: {
-  user:
-  | (User & {
-    address: Address | null;
-  })
+  user: (User & {
+    orders: Order[];
+  });
 }) => {
   const session = useSession()
   const formattedUser: UserDataFormValues = {
@@ -24,6 +27,22 @@ export const AccountDetails = ({ user }: {
   }
 
   return (
-    <UserDataForm withPassword={session.data?.user.userType === "admin"} title="Edit your account" initialData={formattedUser} />
+    <div className="flex flex-col gap-4">
+      <UserDataForm withPassword={session.data?.user.userType === "admin"} title="Edit your account" initialData={formattedUser} />
+      <Card>
+        <CardHeader>
+          <div className="space-y-2 flex-col flex">
+            <Typography className="text-left text-xl font-medium">
+              Account history
+            </Typography>
+          </div>
+        </CardHeader>
+        <Separator></Separator>
+        <CardContent className="scrollbar-thumb-rounded-lg gap-4 overflow-auto p-4 transition-all scrollbar-thin scrollbar-track-transparent scrollbar-thumb-primary/50">
+          <Typography className="col-span-12" variant={'secondary'}>Payments</Typography>
+          <AccountPaymentClient data={user.orders}></AccountPaymentClient>
+        </CardContent>
+      </Card>
+    </div>
   );
 };

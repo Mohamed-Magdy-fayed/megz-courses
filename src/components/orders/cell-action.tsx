@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Copy, MoreVertical, Trash } from "lucide-react";
+import { Copy, MoreVertical, Trash } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { OrderRow } from "./OrdersColumn";

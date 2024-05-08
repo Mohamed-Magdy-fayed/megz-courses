@@ -9,6 +9,7 @@ import { Typography } from "../ui/Typoghraphy";
 
 export type TrainerColumn = {
   id: string;
+  userId: string;
   name: string;
   email: string;
   image?: string;
@@ -53,7 +54,7 @@ export const columns: ColumnDef<TrainerColumn>[] = [
       );
     },
     cell: ({ row }) => (
-      <Link className="block w-fit" href={`/account/${row.original.id}`}>
+      <Link className="block w-fit" href={`/account/${row.original.userId}`}>
         <div className="flex items-center gap-2" >
           <Avatar>
             <AvatarImage src={`${row.original.image}`} />

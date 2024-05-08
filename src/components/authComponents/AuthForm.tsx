@@ -15,7 +15,7 @@ import { Input } from "../ui/input";
 import { useRouter } from "next/router";
 
 export const authFormSchema = z.object({
-    name: z.string().nonempty().optional(),
+    name: z.string().min(1, "Name can't be empty").optional(),
     email: z.string().email(),
     password: z.string().min(4),
 });

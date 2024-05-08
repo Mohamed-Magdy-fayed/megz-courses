@@ -1,4 +1,4 @@
-import { Question } from "@prisma/client";
+import type { Question } from "@prisma/client";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -26,9 +26,9 @@ export const useNavStore = create<SideNavState>()((set) => ({
   opened: false,
   activeLink: null,
   setActiveLink: (link) =>
-    set((state) => ({ opened: false, activeLink: link })),
-  openNav: () => set((state) => ({ opened: true })),
-  closeNav: () => set((state) => ({ opened: false })),
+    set(() => ({ opened: false, activeLink: link })),
+  openNav: () => set(() => ({ opened: true })),
+  closeNav: () => set(() => ({ opened: false })),
 }));
 
 export interface AnswerCard {
@@ -122,9 +122,9 @@ export const useDraggingStore = create<DraggingState>()(
             areas: state.areas.map((area) => ({ ...area, card: null })),
           }));
         },
-        setSelectedCard: (card) => set((state) => ({ selectedCard: card })),
-        setCards: (cards) => set((state) => ({ cards })),
-        setAreas: (areas) => set((state) => ({ areas })),
+        setSelectedCard: (card) => set(() => ({ selectedCard: card })),
+        setCards: (cards) => set(() => ({ cards })),
+        setAreas: (areas) => set(() => ({ areas })),
         submit: () =>
           set((state) => {
             const correctAreas = state.areas.filter(
@@ -249,7 +249,7 @@ export const useControlledPracticeMultichoiceStore =
               };
             }),
           setQuestions: (questions) => {
-            set((state) => ({ questions }));
+            set(() => ({ questions }));
           },
         };
       },
@@ -305,7 +305,7 @@ export const useTutorialStore = create<TutorialState>()(
           confirmCreateMaterial: false,
           manageMaterial: false,
         },
-        setSkipTutorial: (value) => set((state) => ({ skipTutorial: value })),
+        setSkipTutorial: (value) => set(() => ({ skipTutorial: value })),
         setStep: (value, step) =>
           set((state) => ({
             steps: {

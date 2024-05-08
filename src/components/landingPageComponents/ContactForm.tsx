@@ -1,19 +1,9 @@
-import { api } from "@/lib/api";
-import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import ImageUpload from "@/components/ui/ImageUpload";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import {
     Form,
@@ -24,20 +14,22 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Typography } from "../ui/Typoghraphy";
-import { useToast } from "../ui/use-toast";
-import { Textarea } from "../ui/textarea";
 import { Card, CardContent, CardFooter } from "../ui/card";
+import { Textarea } from "../ui/textarea";
+import { api } from "@/lib/api";
+import { useToast } from "../ui/use-toast";
 
 const formSchema = z.object({
-    name: z.string().nonempty("Please add a name"),
-    email: z.string().email("invalid email address").nonempty("Please add your email"),
-    message: z.string().nonempty("how can we help?"),
+    name: z.string().min(1, "Please add a name"),
+    email: z.string().email("invalid email address").min(1, "Please add your email"),
+    message: z.string().min(1, "how can we help?"),
 });
 
-type UsersFormValues = z.infer<typeof formSchema>;
+type ContactFormValues = z.infer<typeof formSchema>;
 
 const ContactForm = () => {
     const [loading, setLoading] = useState(false);
+    const { toastSuccess } = useToast()
 
     const defaultValues: z.infer<typeof formSchema> = {
         name: "",
@@ -45,15 +37,21 @@ const ContactForm = () => {
         message: "",
     };
 
-    const form = useForm<UsersFormValues>({
+    const form = useForm<ContactFormValues>({
         resolver: zodResolver(formSchema),
         defaultValues,
     });
 
+    const mutation = api.emails.sendWhatsappMessage.useMutation()
 
-    const onSubmit = (data: UsersFormValues) => {
-        console.log(data);
-        
+    const onSubmit = (data: ContactFormValues) => {
+        setLoading(true)
+        mutation.mutate(data, {
+            onSuccess: ({ message }) => {
+                toastSuccess(message)
+                setLoading(false)
+            }
+        })
     };
 
     return (

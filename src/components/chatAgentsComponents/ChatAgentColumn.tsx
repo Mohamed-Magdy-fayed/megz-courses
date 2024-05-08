@@ -12,6 +12,7 @@ export type ChatAgentColumn = {
   id: string
   name: string
   email: string
+  image: string
   chats: number
   createdAt: string
 }
@@ -53,7 +54,13 @@ export const columns: ColumnDef<ChatAgentColumn>[] = [
     },
     cell: ({ row }) => (
       <Link className="block w-fit" href={`/account/${row.original.id}`}>
-        <div className="flex items-center gap-2" >
+        <div className="flex items-center gap-2 space-x-2" >
+          <Avatar>
+            <AvatarImage src={`${row.original.image}`} />
+            <AvatarFallback>
+              {getInitials(`${row.original.name}`)}
+            </AvatarFallback>
+          </Avatar>
           <div className="flex flex-col gap-2">
             <Typography
               className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"

@@ -1,4 +1,4 @@
-import React, { Dispatch, FC, ReactNode, SetStateAction, useEffect, useState } from 'react'
+import React, { Dispatch, FC, SetStateAction, useEffect, useState } from 'react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { Button } from '../ui/button'
 import { Check, ChevronsUpDown } from 'lucide-react'
@@ -50,7 +50,7 @@ const SelectField: FC<SelectFieldProps> = ({ placeholder, listTitle, data, value
             <DropdownMenuContent>
                 <div className='p-2'>
                     <Input
-                        placeholder='Search courses'
+                        placeholder={`Search ${listTitle}`}
                         value={searchQuery}
                         onChange={(e) => {
                             setSearchQuery(e.target.value)

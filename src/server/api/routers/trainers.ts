@@ -6,21 +6,18 @@ import {
 } from "@/server/api/trpc";
 import bcrypt from "bcrypt";
 import { TRPCError } from "@trpc/server";
-import { Prisma } from "@prisma/client";
-import { validDeviceTypes, validTrainerRoles, validUserTypes } from "@/lib/enumsTypes";
+import { validTrainerRoles } from "@/lib/enumsTypes";
 
 export const trainersRouter = createTRPCRouter({
   getTrainers: protectedProcedure
     .query(async ({ ctx }) => {
-      const trainers = await ctx.prisma.user.findMany({
-        where: {
-          userType: "teacher",
-        },
+      const trainers = await ctx.prisma.trainer.findMany({
         orderBy: {
           id: "desc"
         },
         include: {
-          trainer: true,
+          user: true,
+          groups: true,
         },
       });
 
@@ -45,6 +42,7 @@ export const trainersRouter = createTRPCRouter({
         name: z.string(),
         email: z.string().email(),
         password: z.string(),
+        image: z.string().optional(),
         phone: z.string().optional(),
         trainerRoll: z.enum(validTrainerRoles).optional(),
       })
@@ -66,6 +64,7 @@ export const trainersRouter = createTRPCRouter({
           email: input.email,
           hashedPassword,
           phone: input.phone,
+          image: input.image,
           userType: "teacher",
           trainer: {
             create: {

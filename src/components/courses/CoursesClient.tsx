@@ -26,7 +26,7 @@ const CoursesClient = ({ userId }: { userId: string }) => {
 
   useEffect(() => {
     refetch()
-  }, [])
+  }, [userId])
 
   if (!formattedData) return <div className="w-full h-full grid place-content-center"><Spinner /></div>
 

@@ -17,8 +17,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { validUserTypes } from "@/lib/enumsTypes";
 
 const userDataFormSchema = z.object({
-    id: z.string().nonempty(),
-    name: z.string().nonempty(),
+    id: z.string().min(1),
+    name: z.string().min(1, "Name can't be empty"),
     email: z.string().email(),
     password: z.string().optional(),
     image: z.string().optional().nullable(),

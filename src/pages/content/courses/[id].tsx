@@ -1,6 +1,3 @@
-import LevelCard from "@/components/contentComponents/levels/LevelCard";
-import LevelForm from "@/components/contentComponents/levels/LevelForm";
-import CardsSkeleton from "@/components/layout/CardsSkeleton";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
@@ -9,6 +6,9 @@ import { api } from "@/lib/api";
 import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import MaterialsClient from "@/components/contentComponents/materials/MaterialsClient";
+import Spinner from "@/components/Spinner";
+import CreateMaterialForm from "@/components/contentComponents/materials/CreateMaterialForm";
 
 const CoursePage = () => {
   const router = useRouter();
@@ -30,7 +30,7 @@ const CoursePage = () => {
           <div className="flex flex-col gap-2">
             <ConceptTitle>{data?.course?.name}</ConceptTitle>
             <Typography className="text-sm font-medium text-gray-500">
-              total levels: {data?.course?.levels.length}
+              total materials: {data?.course?.materialItems.length}
             </Typography>
           </div>
           <Button
@@ -39,26 +39,22 @@ const CoursePage = () => {
             }}
           >
             <PlusIcon className="mr-2"></PlusIcon>
-            Add a level
+            Add a material
           </Button>
         </div>
         {isOpen && (
           <PaperContainer>
-            <LevelForm id={id} setIsOpen={setIsOpen} />
+            <CreateMaterialForm id={id} setIsOpen={setIsOpen} />
           </PaperContainer>
         )}
         {isLoading ? (
-          <CardsSkeleton />
+          <Spinner className="w-full h-40" />
         ) : isError ? (
           <>Error</>
-        ) : !data.course?.levels ? (
-          <>No levels yet</>
+        ) : !data.course?.materialItems ? (
+          <>No materials yet</>
         ) : (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {data?.course?.levels.map((level) => (
-              <LevelCard key={level.id} id={level.id} />
-            ))}
-          </div>
+          <MaterialsClient data={data.course.materialItems} />
         )}
       </div>
     </AppLayout>

@@ -38,14 +38,16 @@ const OperationPage = () => {
             courseIds: data?.salesOperations?.orderDetails?.courseIds,
         }, {
             onSuccess: (data) => {
-                toastSuccess(`${data.placementTests.count} Placement tests created!`)
                 updateSalesOperationMutation.mutate({
                     id,
                     status: "completed"
                 }, {
                     onSettled: () => {
                         trpcUtils.salesOperations.invalidate()
-                            .then(() => setLoading(false))
+                            .then(() => {
+                                toastSuccess(`${data.placementTests.count} Placement tests created!`)
+                                setLoading(false)
+                            })
                     }
                 })
             },

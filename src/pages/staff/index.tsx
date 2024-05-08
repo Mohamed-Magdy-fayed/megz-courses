@@ -1,6 +1,6 @@
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { api } from "@/lib/api";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { FileDown, FileUp, PlusIcon } from "lucide-react";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import Spinner from "@/components/Spinner";
@@ -11,18 +11,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import TrainersClient from "@/components/staffComponents/TrainersClient";
 
 const StaffPage = () => {
-  const { data, isLoading, isError, refetch } = api.trainers.getTrainers.useQuery(undefined, {
-    refetchInterval: false,
-    refetchIntervalInBackground: false,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-    refetchOnWindowFocus: false,
-  });
+  const { data, isLoading, isError } = api.trainers.getTrainers.useQuery();
   const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    refetch();
-  }, []);
 
   return (
     <AppLayout>

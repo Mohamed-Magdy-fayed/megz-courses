@@ -48,7 +48,7 @@ const LandingFooter = () => {
                         })}
                     </div>
                     <div className='col-span-12 lg:col-span-3 flex items-center justify-center p-4 md:justify-end lg:justify-center'>
-                        <FooterCourseSearchBar  />
+                        <FooterCourseSearchBar />
                     </div>
                 </div>
             </div>

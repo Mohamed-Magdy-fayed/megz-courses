@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import CourseForm from "@/components/contentComponents/courses/CourseForm";
-import CourseCard from "@/components/contentComponents/courses/CourseCard";
-import CardsSkeleton from "@/components/layout/CardsSkeleton";
+import CoursesClient from "@/components/contentComponents/courses/CoursesClient";
+import Spinner from "@/components/Spinner";
 
 const ContentPage = () => {
   const { data, isLoading, isError } = api.courses.getAll.useQuery();
@@ -42,15 +42,11 @@ const ContentPage = () => {
             </PaperContainer>
           )}
           {isLoading ? (
-            <CardsSkeleton />
+            <Spinner className="w-full h-40" />
           ) : isError ? (
             <>Error</>
           ) : (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {data?.courses.map((course) => (
-                <CourseCard key={course.id} id={course.id} />
-              ))}
-            </div>
+            <CoursesClient />
           )}
         </div>
       </div>

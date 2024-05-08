@@ -22,7 +22,8 @@ const config = {
   },
   images: {
     domains: [
-      "res.cloudinary.com"
+      "res.cloudinary.com",
+      "firebasestorage.googleapis.com",
     ]
   }
 };

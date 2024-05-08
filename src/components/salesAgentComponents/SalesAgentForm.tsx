@@ -2,7 +2,6 @@ import { api } from "@/lib/api";
 import { useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import ImageUpload from "@/components/ui/ImageUpload";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -19,11 +18,10 @@ import {
 } from "@/components/ui/form";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardFooter } from "../ui/card";
-import { writeFile } from "fs/promises";
 import ImageUploader from "../ui/ImageUploader";
 
 const formSchema = z.object({
-  name: z.string().nonempty(),
+  name: z.string().min(1, "Name can't be empty"),
   email: z.string().email(),
   password: z.string().min(4),
   image: z.string().optional(),
@@ -63,7 +61,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
   const trpcUtils = api.useContext();
   const { toastError, toastSuccess } = useToast()
 
-  const onSubmit = (data: UsersFormValues) => {
+  const onSubmit = async (data: UsersFormValues) => {
     setLoading(true);
     createSalesAgentMutation.mutate(data, {
       onSuccess: (data) => {
@@ -123,7 +121,6 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
                       onChange={(url) => field.onChange(url)}
                       onRemove={() => field.onChange("")}
                       disabled={loading}
-                      value={field.value}
                     />
                   </FormControl>
                   <FormMessage />
