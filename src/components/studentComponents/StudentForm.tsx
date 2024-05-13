@@ -70,7 +70,6 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
       onSuccess: (data) => {
         trpcUtils.invalidate()
           .then(() => {
-            callback && callback()
             toastSuccess(`User created with email: ${data.user.email}`)
             setIsOpen(false);
             setLoading(false);
