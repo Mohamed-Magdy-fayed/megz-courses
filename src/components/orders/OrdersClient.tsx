@@ -45,13 +45,16 @@ const OrdersClient = ({ data }: {
   const deleteMutation = api.orders.deleteOrders.useMutation()
   const { toastError, toastSuccess } = useToast()
 
-  const onDelete = () => {
+  const onDelete = (callback?: () => void) => {
     deleteMutation.mutate(
       orders.map(or => or.id),
       {
         onSuccess: (data) => {
-          toastSuccess(`Deleted ${data.deletedOrders.count} order(s)`)
           trpcUtils.orders.invalidate()
+            .then(() => {
+              callback && callback()
+              toastSuccess(`Deleted ${data.deletedOrders.count} order(s)`)
+            })
         },
         onError: (error) => {
           toastError(error.message)

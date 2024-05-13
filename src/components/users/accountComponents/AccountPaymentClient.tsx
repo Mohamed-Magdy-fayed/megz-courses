@@ -19,11 +19,15 @@ const AccountPaymentClient = ({ data }: { data: Order[] }) => {
   const deleteMutation = api.orders.deleteOrders.useMutation();
   const trpcUtils = api.useContext();
 
-  const onDelete = async () => {
+  const onDelete = (callback?: () => void) => {
     deleteMutation.mutate(orders.map(order => order.id),
       {
         onSuccess: () => {
-          trpcUtils.users.invalidate().then(() => toastSuccess("Order(s) deleted"))
+          trpcUtils.users.invalidate()
+            .then(() => {
+              callback && callback()
+              toastSuccess("Order(s) deleted")
+            })
         },
         onError: (error) => {
           toastError(error.message);

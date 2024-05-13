@@ -26,13 +26,16 @@ const ChatAgentsClient = ({ data }: { data: ChatAgents[] }) => {
   const deleteMutation = api.users.deleteUser.useMutation();
   const trpcUtils = api.useContext();
 
-  const onDelete = () => {
+  const onDelete = (callback?: () => void) => {
     deleteMutation.mutate(
       chatAgents.map((chatAgent) => chatAgent.id),
       {
         onSuccess: () => {
-          toastSuccess("Agent(s) deleted");
-          trpcUtils.chatAgents.invalidate();
+          trpcUtils.chatAgents.invalidate()
+            .then(() => {
+              callback && callback()
+              toastSuccess("Agent(s) deleted");
+            })
         },
         onError: (error) => {
           toastError(error.message);

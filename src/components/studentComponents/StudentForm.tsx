@@ -68,10 +68,13 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
     setLoading(true);
     addUserMutation.mutate(data, {
       onSuccess: (data) => {
-        trpcUtils.invalidate();
-        toastSuccess(`User created with email: ${data.user.email}`)
-        setIsOpen(false);
-        setLoading(false);
+        trpcUtils.invalidate()
+          .then(() => {
+            callback && callback()
+            toastSuccess(`User created with email: ${data.user.email}`)
+            setIsOpen(false);
+            setLoading(false);
+          })
       },
       onError: (error) => {
         toastError(error.message)

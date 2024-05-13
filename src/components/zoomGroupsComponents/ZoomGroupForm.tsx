@@ -39,10 +39,12 @@ const ZoomGroupForm: React.FC<ZoomGroupFormProps> = ({ setIsOpen }) => {
             trainerId: trainerId[0]!,
         }, {
             onSuccess: (data) => {
-                trpcUtils.zoomGroups.invalidate();
-                toastSuccess(`Group ${data.zoomGroup.groupNumber} created successfully!`)
-                setIsOpen(false);
-                setLoading(false);
+                trpcUtils.zoomGroups.invalidate()
+                .then(() => {
+                    toastSuccess(`Group ${data.zoomGroup.groupNumber} created successfully!`)
+                    setIsOpen(false);
+                    setLoading(false);
+                })
             },
             onError: (error) => {
                 toastError(error.message)

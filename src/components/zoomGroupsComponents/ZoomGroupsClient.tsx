@@ -14,13 +14,16 @@ const ZoomGroupsClient = () => {
     const trpcUtils = api.useContext();
     const { toastError, toastSuccess } = useToast()
 
-    const onDelete = () => {
+    const onDelete = (callback?: () => void) => {
         deleteMutation.mutate(
             zoomGroups.map((zoomGroup) => zoomGroup.id),
             {
                 onSuccess: () => {
-                    toastSuccess("Group(s) deleted")
-                    trpcUtils.zoomGroups.invalidate();
+                    trpcUtils.zoomGroups.invalidate()
+                        .then(() => {
+                            callback && callback()
+                            toastSuccess("Group(s) deleted")
+                        })
                 },
                 onError: (error) => {
                     toastError(error.message)

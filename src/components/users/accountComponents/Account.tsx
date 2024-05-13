@@ -27,7 +27,13 @@ export const Account = ({
 
   const editUserImage = api.users.editUserImage.useMutation({
     onSuccess() {
-      trpcUtils.users.invalidate();
+      trpcUtils.users.invalidate()
+        .then(() => {
+          toastSuccess("Image updated successfully!")
+        })
+    },
+    onError(error) {
+      toastError(error.message)
     },
   });
   const isIdle = editUserImage.isIdle;

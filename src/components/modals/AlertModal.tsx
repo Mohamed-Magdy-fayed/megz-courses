@@ -5,7 +5,7 @@ import { Button } from "../ui/button";
 interface AlertModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: (callback?: () => void) => void;
   loading: boolean;
 }
 
@@ -34,7 +34,7 @@ export const AlertModal = ({
         <Button disabled={loading} variant={"outline"} customeColor={"mutedOutlined"} onClick={onClose}>
           Cancel
         </Button>
-        <Button disabled={loading} customeColor="destructive" onClick={onConfirm}>
+        <Button disabled={loading} customeColor="destructive" onClick={() => onConfirm()}>
           Continue
         </Button>
       </div>

@@ -27,12 +27,16 @@ const TrainersClient = ({ data }: { data: Trainers[] }) => {
   const deleteMutation = api.trainers.deleteTrainer.useMutation();
   const trpcUtils = api.useContext();
 
-  const onDelete = () => {
+  const onDelete = (callback?: () => void) => {
     deleteMutation.mutate(
       trainers.map((user) => user.id),
       {
         onSuccess: () => {
-          trpcUtils.trainers.invalidate().then(() => toastSuccess("Trainer(s) deleted"));
+          trpcUtils.trainers.invalidate()
+            .then(() => {
+              callback && callback()
+              toastSuccess("Trainer(s) deleted")
+            });
         },
         onError: (error) => {
           toastError(error.message)

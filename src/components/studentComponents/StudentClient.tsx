@@ -26,12 +26,16 @@ const StudentClient = ({ data }: { data: Users[] }) => {
   const deleteMutation = api.users.deleteUser.useMutation();
   const trpcUtils = api.useContext();
 
-  const onDelete = async () => {
+  const onDelete = (callback?: () => void) => {
     deleteMutation.mutate(
       users.map((user) => user.id),
       {
         onSuccess: () => {
-          trpcUtils.users.invalidate().then(() => toastSuccess("User(s) deleted"))
+          trpcUtils.users.invalidate()
+            .then(() => {
+              toastSuccess("User(s) deleted")
+              callback && callback()
+            })
         },
         onError: (error) => {
           toastError(error.message);

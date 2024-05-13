@@ -30,15 +30,16 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
     toastSuccess("Order number copied to the clipboard")
   };
 
-  const onDelete = () => {
+  const onDelete = (callback?: () => void) => {
     setLoading(true)
     deleteMutation.mutate(
       [data.id],
       {
         onSuccess: (data) => {
-          toastSuccess(`Deleted ${data.deletedOrders.count} order(s)`)
           trpcUtils.orders.invalidate()
             .then(() => {
+              callback && callback()
+              toastSuccess(`Deleted ${data.deletedOrders.count} order(s)`)
               setLoading(false)
               setOpen(false)
             })

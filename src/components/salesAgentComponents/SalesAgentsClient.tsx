@@ -28,13 +28,16 @@ const SalesAgentClient = ({ data }: { data: SalesAgents[] }) => {
   const deleteMutation = api.users.deleteUser.useMutation();
   const trpcUtils = api.useContext();
 
-  const onDelete = () => {
+  const onDelete = (callback?: () => void) => {
     deleteMutation.mutate(
       salesAgents.map((salesAgent) => salesAgent.id),
       {
         onSuccess: () => {
-          toastSuccess("Agent(s) deleted");
-          trpcUtils.salesAgents.invalidate();
+          trpcUtils.salesAgents.invalidate()
+            .then(() => {
+              toastSuccess("Agent(s) deleted");
+              callback && callback()
+            })
         },
         onError: (error) => {
           toastError(error.message);

@@ -26,21 +26,22 @@ const AgentCellAction: React.FC<AgentCellActionProps> = ({ id }) => {
     const deleteMutation = api.salesAgents.deleteSalesAgent.useMutation()
     const trpcUtils = api.useContext()
 
-    const onDelete = async () => {
+    const onDelete = () => {
         setLoading(true);
         deleteMutation.mutate(
             [id],
             {
                 onSuccess: () => {
-                    toastSuccess("Agent(s) deleted");
-                    trpcUtils.salesAgents.invalidate();
+                    trpcUtils.salesAgents.invalidate()
+                        .then(() => {
+                            toastSuccess("Agent(s) deleted");
+                            setLoading(false);
+                            setOpen(false);
+                        })
                 },
                 onError: (error) => {
                     toastError(error.message);
-                },
-                onSettled: () => {
                     setLoading(false);
-                    setOpen(false);
                 },
             }
         );

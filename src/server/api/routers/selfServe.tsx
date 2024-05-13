@@ -66,6 +66,8 @@ export const selfServeRouter = createTRPCRouter({
                         unit_amount: formatAmountForStripe(price, CURRENCY),
                         product_data: {
                             name: course.name,
+                            description: course.description || `No description`,
+                            images: [course.image || ""],
                         },
                     },
                     quantity: 1

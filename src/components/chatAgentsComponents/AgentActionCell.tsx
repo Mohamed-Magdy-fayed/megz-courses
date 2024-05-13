@@ -26,27 +26,23 @@ const AgentCellAction: React.FC<AgentCellActionProps> = ({ id }) => {
     const deleteMutation = api.chatAgents.deleteChatAgent.useMutation()
     const trpcUtils = api.useContext()
 
-    const onDelete = async () => {
-        try {
-            setLoading(true);
-            deleteMutation.mutate(
-                [id],
-                {
-                    onSuccess: () => {
+    const onDelete = () => {
+        setLoading(true);
+        deleteMutation.mutate(
+            [id],
+            {
+                onSuccess: () => {
+                    trpcUtils.chatAgents.invalidate().then(() => {
                         toastSuccess("Agent(s) deleted")
-                        trpcUtils.chatAgents.invalidate().then(() => {
-                            setLoading(false);
-                            setOpen(false);
-                        });
-                    },
-                    onError: (error) => {
-                        toastError(error.message);
-                    },
-                }
-            );
-        } catch (error: any) {
-            toastError(error.message);
-        }
+                        setLoading(false);
+                        setOpen(false);
+                    });
+                },
+                onError: (error) => {
+                    toastError(error.message);
+                },
+            }
+        );
     };
 
     return (

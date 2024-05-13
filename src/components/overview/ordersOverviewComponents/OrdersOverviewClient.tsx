@@ -22,14 +22,13 @@ const LatestOrdersClient = ({ data }: { data: Orders[] }) => {
     status: order.status,
   }));
 
-  const onDelete = () => { }
 
   return (
     <DataTable
       columns={columns}
       data={formattedData}
       setUsers={() => { }}
-      onDelete={onDelete}
+      onDelete={() => { }}
       search={{
         key: "orderNumber",
         label: "Order Number"

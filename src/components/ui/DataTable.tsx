@@ -29,7 +29,7 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   setUsers: (users: TData[]) => void;
-  onDelete: () => void;
+  onDelete: (callback?: () => void) => void;
   search?: {
     label: string
     key: Extract<keyof TData, string>
@@ -80,9 +80,12 @@ export function DataTable<TData, TValue>({
         isOpen={open}
         onClose={() => setOpen(false)}
         onConfirm={() => {
-          onDelete();
-          setOpen(false);
-          table.toggleAllPageRowsSelected()
+          setLoading(true)
+          onDelete(() => {
+            table.toggleAllPageRowsSelected(false)
+            setOpen(false);
+            setLoading(false)
+          });
         }}
         loading={loading}
       />

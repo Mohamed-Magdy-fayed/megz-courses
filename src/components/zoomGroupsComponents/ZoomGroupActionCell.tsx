@@ -32,23 +32,23 @@ const ZoomGroupActionCell: React.FC<ZoomGroupActionCellProps> = ({ id }) => {
     const deleteMutation = api.salesOperations.deleteSalesOperations.useMutation()
     const trpcUtils = api.useContext()
 
-    const onDelete = async () => {
-        console.log(id);
-
+    const onDelete = (callback?: () => void) => {
         setLoading(true);
         deleteMutation.mutate(
             [id],
             {
                 onSuccess: () => {
-                    toastSuccess("Operation(s) deleted");
-                    trpcUtils.salesOperations.invalidate();
+                    trpcUtils.salesOperations.invalidate()
+                        .then(() => {
+                            callback && callback()
+                            toastSuccess("Operation(s) deleted");
+                            setLoading(false);
+                            setOpen(false);
+                        })
                 },
                 onError: (error) => {
                     toastError(error.message)
-                },
-                onSettled: () => {
                     setLoading(false);
-                    setOpen(false);
                 },
             }
         );
