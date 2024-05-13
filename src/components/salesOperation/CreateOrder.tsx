@@ -34,7 +34,6 @@ const CreateOrder: FC<CreateOrderProps> = ({
     salesOperationId,
 }) => {
     const [email, setEmail] = useState<string[]>([])
-    const [courses, setCourses] = useState<string[]>([])
     const [coursesList, setCoursesList] = useState<{
         label: string
         value: string
@@ -48,7 +47,7 @@ const CreateOrder: FC<CreateOrderProps> = ({
     const trpcUtils = api.useContext()
 
     const handleAddCourses = () => {
-        if (!email[0] || courses.length === 0) return toastError(`missing some info here!`)
+        if (!email[0] || coursesGroupType.length === 0) return toastError(`missing some info here!`)
 
         setLoading(true)
         createOrderMutation.mutate({
@@ -152,7 +151,7 @@ const CreateOrder: FC<CreateOrderProps> = ({
                 </div>
                 <div className="space-x-2 mt-auto">
                     <Button disabled={loading} variant={"outline"} customeColor={"destructiveOutlined"} onClick={() => {
-                        setCourses([])
+                        setCoursesGroupType([])
                         setEmail([])
                     }}>
                         Clear
