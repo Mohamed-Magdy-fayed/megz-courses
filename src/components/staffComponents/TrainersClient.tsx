@@ -34,7 +34,7 @@ const TrainersClient = ({ data }: { data: Trainers[] }) => {
         onSuccess: () => {
           trpcUtils.trainers.invalidate()
             .then(() => {
-              callback && callback()
+              callback?.()
               toastSuccess("Trainer(s) deleted")
             });
         },

@@ -129,7 +129,7 @@ const CreateOrder: FC<CreateOrderProps> = ({
             isOpen={open}
             onClose={() => setOpen(false)}
         >
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-4">
                 <div className="space-y-4 [&>*]:w-full">
                     {!usersdata ? (<></>) : (
                         <SelectField
@@ -149,7 +149,7 @@ const CreateOrder: FC<CreateOrderProps> = ({
                             data={coursesList} />
                     )}
                 </div>
-                <div className="space-x-2 mt-auto">
+                <div className="space-x-2 mt-auto flex">
                     <Button disabled={loading} variant={"outline"} customeColor={"destructiveOutlined"} onClick={() => {
                         setCoursesGroupType([])
                         setEmail([])

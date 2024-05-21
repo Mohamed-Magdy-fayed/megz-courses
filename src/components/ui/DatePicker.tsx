@@ -1,4 +1,4 @@
-import { Dispatch, FC, SetStateAction } from "react"
+import { ButtonHTMLAttributes, Dispatch, FC, SetStateAction, useRef } from "react"
 import { format } from "date-fns"
 
 import { Button } from "@/components/ui/button"
@@ -9,13 +9,16 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 import { CalendarIcon } from "lucide-react"
+import { Label } from "./label"
+import { cn } from "@/lib/utils"
+import { TimePicker } from "./TimePicker"
 
-type DatePickerProps = {
+interface DatePickerProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     date: Date | undefined
     setDate: Dispatch<SetStateAction<Date | undefined>>
 }
 
-export const DatePicker: FC<DatePickerProps> = ({ date, setDate }) => {
+export const DatePicker: FC<DatePickerProps> = ({ date, setDate, className, ...props }) => {
 
     return (
         <Popover>
@@ -23,18 +26,28 @@ export const DatePicker: FC<DatePickerProps> = ({ date, setDate }) => {
                 <Button
                     variant="outline"
                     customeColor={"foregroundOutlined"}
-                    className='max-w-[16rem] flex flex-wrap items-center h-fit gap-2 justify-start hover:bg-primary-foreground hover:text-primary hover:border-primary'
+                    className={cn('flex flex-wrap items-center h-fit gap-2 justify-start hover:bg-slate-50 hover:text-primary hover:border-primary', className)}
+                    {...props}
                 >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? format(date, "PPP") : <span>Pick a date</span>}
+                    {date ? format(date, "PPPp") : <span>Pick a date</span>}
                 </Button>
             </PopoverTrigger>
             <PopoverContent
                 align="start"
-                className="flex w-auto flex-col space-y-2 p-2"
+                className="flex w-auto flex-col space-y-2 p-2 bg-background"
             >
                 <div className="rounded-md border">
-                    <Calendar mode="single" selected={date} onSelect={setDate} />
+                    <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />
+                </div>
+                <Label htmlFor="hours" className="text-xs">
+                    Group Time
+                </Label>
+                <div className="flex gap-2 items-center">
+                    <TimePicker
+                        date={date}
+                        setDate={setDate}
+                    />
                 </div>
             </PopoverContent>
         </Popover>

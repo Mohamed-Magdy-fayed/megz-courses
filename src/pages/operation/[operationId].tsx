@@ -53,6 +53,7 @@ const OperationPage = () => {
             },
             onError: (error) => {
                 toastError(error.message);
+                setLoading(false)
             },
         })
     }

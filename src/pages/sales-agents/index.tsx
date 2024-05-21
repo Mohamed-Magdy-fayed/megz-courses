@@ -92,7 +92,16 @@ const SalesAgentsPage = () => {
             )}
           </PaperContainer>
 
-          <ConceptTitle className="mt-8">Sales Tasks</ConceptTitle>
+          <div className="flex items-center justify-between">
+            <ConceptTitle className="mt-8">Sales Tasks</ConceptTitle>
+            <AssignModal
+              isOpen={assignIsOpen}
+              loading={loading}
+              onClose={() => setAssingIsOpen(false)}
+              onConfirm={handleCreateOperation}
+            />
+            <Button onClick={() => setAssingIsOpen(true)}>Create Operation</Button>
+          </div>
           <PaperContainer>
             {salesOperations.isLoading ? (
               <Spinner></Spinner>
@@ -106,16 +115,6 @@ const SalesAgentsPage = () => {
               />
             )}
           </PaperContainer>
-          <div>
-            <AssignModal
-              isOpen={assignIsOpen}
-              loading={loading}
-              onClose={() => setAssingIsOpen(false)}
-              onConfirm={handleCreateOperation}
-            />
-            <Button onClick={() => setAssingIsOpen(true)}>Create Operation</Button>
-          </div>
-
         </div>
       </main>
     </AppLayout>

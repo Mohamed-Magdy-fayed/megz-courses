@@ -2,9 +2,10 @@ import AppLayout from "@/components/layout/AppLayout";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
+import Modal from "@/components/ui/modal";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import ZoomGroupForm from "@/components/zoomGroupsComponents/ZoomGroupForm";
-import ZoomGroupsClient from "@/components/zoomGroupsComponents/ZoomGroupsClient";
+import ZoomGroupForm from "@/components/zoomGroupsComponents/Form";
+import ZoomGroupsClient from "@/components/zoomGroupsComponents/Client";
 import { FileDown, FileUp, PlusIcon } from "lucide-react";
 import type { NextPage } from "next";
 import { useState } from "react";
@@ -44,12 +45,20 @@ const GroupsPage: NextPage = () => {
                         </div>
                         <Button onClick={() => setIsOpen(true)} customeColor={"primary"}>
                             <PlusIcon className="mr-2"></PlusIcon>
-                            <Typography variant={"buttonText"}>Add</Typography>
+                            <Typography variant={"buttonText"}>Create</Typography>
                         </Button>
                     </div>
                     {isOpen && (
                         <PaperContainer>
-                            <ZoomGroupForm setIsOpen={setIsOpen}></ZoomGroupForm>
+                            <Modal
+                                isOpen={isOpen}
+                                title="Create Zoom Group"
+                                description="add a new group"
+                                onClose={() => setIsOpen(false)}
+                                children={(
+                                    <ZoomGroupForm setIsOpen={setIsOpen}></ZoomGroupForm>
+                                )}
+                            />
                         </PaperContainer>
                     )}
                     <PaperContainer>

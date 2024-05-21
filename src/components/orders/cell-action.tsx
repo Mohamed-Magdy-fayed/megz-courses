@@ -38,7 +38,7 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
         onSuccess: (data) => {
           trpcUtils.orders.invalidate()
             .then(() => {
-              callback && callback()
+              callback?.()
               toastSuccess(`Deleted ${data.deletedOrders.count} order(s)`)
               setLoading(false)
               setOpen(false)

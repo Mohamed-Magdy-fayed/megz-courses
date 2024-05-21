@@ -6,25 +6,37 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Copy, MoreVertical } from "lucide-react";
+import { ArrowLeft, Copy, MoreVertical } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import OralTestModal from "@/components/modals/OralTestModal";
 import PlacmentTestModal from "@/components/modals/PlacmentTestModal";
+import OralTestModal from "@/components/modals/OralTestModal";
+import { RefundModal } from "@/components/modals/RefundModal";
+import { useState } from "react";
 
-interface AccountPaymentActionCellProps {
+interface CellActionProps {
     id: string;
 }
 
-const AccountPaymentActionCell: React.FC<AccountPaymentActionCellProps> = ({ id }) => {
+const WaitingListActionCell: React.FC<CellActionProps> = ({ id }) => {
     const { toastInfo } = useToast();
+    const [isOpen, setIsOpen] = useState(false)
 
     const onCopy = () => {
         navigator.clipboard.writeText(id);
-        toastInfo("Category ID copied to the clipboard");
+        toastInfo("ID copied to the clipboard");
     };
 
     return (
         <>
+            <RefundModal
+                isOpen={isOpen}
+                loading={false}
+                onClose={() => setIsOpen(false)}
+                onConfirm={(data) => {
+                    console.log(data)
+                    setIsOpen(false)
+                }}
+            />
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button customeColor="mutedIcon" variant={"icon"} >
@@ -43,10 +55,14 @@ const AccountPaymentActionCell: React.FC<AccountPaymentActionCellProps> = ({ id 
                         <Copy className="w-4 h-4 mr-2" />
                         Copy ID
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setIsOpen(true)}>
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Refund
+                    </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
         </>
     );
 };
 
-export default AccountPaymentActionCell;
+export default WaitingListActionCell;

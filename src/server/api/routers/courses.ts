@@ -4,6 +4,52 @@ import { TRPCError } from "@trpc/server";
 import { validLevelTypes } from "@/lib/enumsTypes";
 
 export const coursesRouter = createTRPCRouter({
+  getWaitingList: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input: { id }, ctx }) => {
+      const course = await ctx.prisma.course.findUnique({
+        where: {
+          id,
+        },
+        include: { orders: true }
+      });
+
+      const userIds = course?.orders.map(o => o.userId)
+
+      const users = await ctx.prisma.user.findMany({
+        where: { id: { in: userIds } },
+        include: {
+          orders: true,
+        }
+      })
+
+      const watingUsers = users.filter(u => u.courseStatus.some(({ courseId, state }) => courseId === course?.id && state === "waiting"))
+
+      return { watingUsers };
+    }),
+  getWaitingLists: publicProcedure
+    .query(async ({ ctx }) => {
+      const courses = await ctx.prisma.course.findMany({
+        include: { orders: true }
+      });
+
+      const coursesWaitingUsers = await Promise.all(courses.map(async (course) => {
+        const userIds = course?.orders.map(order => order.userId)
+
+        const users = await ctx.prisma.user.findMany({
+          where: { id: { in: userIds } }
+        })
+
+        const watingUsers = users.filter(user => user.courseStatus.some(({ courseId, state }) => courseId === course?.id && state === "waiting"))
+        return {
+          courseId: course.id,
+          waitingList: watingUsers.length,
+        }
+      }))
+
+
+      return { coursesWaitingUsers };
+    }),
   getLatest: publicProcedure
     .query(async ({ ctx }) => {
       const courses = await ctx.prisma.course.findMany({
@@ -78,6 +124,7 @@ export const coursesRouter = createTRPCRouter({
         where: { id },
         include: {
           materialItems: true,
+          zoomGroup: true,
           orders: { include: { user: true } },
           placementTests: { include: { student: true, trainer: { include: { user: true } } } }
         },

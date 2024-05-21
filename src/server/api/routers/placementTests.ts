@@ -1,48 +1,26 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { TRPCError } from "@trpc/server";
+import { CoursStatus } from "@prisma/client";
 
 export const placementTestsRouter = createTRPCRouter({
-    startCourse: protectedProcedure
+    getCoursePlacementTest: protectedProcedure
         .input(z.object({
-            userId: z.string(),
             courseId: z.string(),
         }))
-        .mutation(async ({ input: { userId, courseId }, ctx }) => {
-            const placementTest = await ctx.prisma.placementTest.create({
-                data: {
-                    testStatus: {},
-                    student: {
-                        connect: {
-                            id: userId
-                        }
-                    },
-                    course: {
-                        connect: {
-                            id: courseId
-                        }
-                    }
+        .query(async ({ ctx, input: { courseId } }) => {
+            const tests = await ctx.prisma.placementTest.findMany({
+                where: {
+                    courseId,
+                },
+                include: {
+                    course: true,
+                    student: true,
+                    trainer: { include: { user: true } },
                 }
             })
 
-            await ctx.prisma.user.update({
-                where: {
-                    id: userId,
-                },
-                data: {
-                    courseStatus: {
-                        updateMany: {
-                            where: {
-                                courseId,
-                            },
-                            data: {
-                                state: "waiting"
-                            }
-                        }
-                    }
-                },
-            });
-
-            return { placementTest };
+            return { tests }
         }),
     startCourses: protectedProcedure
         .input(z.object({
@@ -58,23 +36,23 @@ export const placementTestsRouter = createTRPCRouter({
                 })),
             })
 
-            await ctx.prisma.user.update({
+            const user = await ctx.prisma.user.findUnique({ where: { id: userId } })
+            if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "user not found!" })
+
+            const newStatuses: CoursStatus[] = courseIds.map(id => ({ courseId: id, state: "waiting" }))
+
+            const updatedUser = await ctx.prisma.user.update({
                 where: {
                     id: userId,
                 },
                 data: {
                     courseStatus: {
-                        updateMany: {
-                            where: { courseId: { in: courseIds } },
-                            data: {
-                                state: "waiting"
-                            }
-                        },
+                        set: [...user.courseStatus, ...newStatuses]
                     }
                 },
             });
 
-            return { placementTests };
+            return { placementTests, updatedUser };
         }),
     updatePlacementFormTestScore: protectedProcedure
         .input(z.object({

@@ -8,6 +8,7 @@ import { ScrollArea } from '../ui/scroll-area'
 import { advancedSearch } from '@/lib/advancedSearch'
 import { Typography } from '../ui/Typoghraphy'
 import { Checkbox } from '../ui/checkbox'
+import { Separator } from '../ui/separator'
 
 type DataType = {
     label: string
@@ -67,19 +68,29 @@ const CoursesSelectField: FC<CoursesSelectFieldProps> = ({ placeholder, listTitl
                         size={10}
                     />
                 </div>
-                <DropdownMenuLabel>{listTitle}</DropdownMenuLabel>
+                <DropdownMenuLabel className='flex items-center justify-between'>
+                    <Typography>{listTitle}</Typography>
+                    <Typography>Private Class?</Typography>
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <ScrollArea className='h-40'>
                     {filteredData.map(item => (
-                        <DropdownMenuItem key={item.value} disabled={!item.active} onClick={(e) => {
-                            if (multiSelect) {
+                        <DropdownMenuItem
+                            key={item.value}
+                            disabled={!item.active}
+                            onClick={(e) => {
                                 e.preventDefault()
-                                setValues(prev => prev.some(({ courseId }) => item.value === courseId) ? [...prev.filter(i => i.courseId !== item.value)] : [...prev, { courseId: item.value, isPrivate: false }])
-                                return
-                            }
-                            setValues([{ courseId: item.value, isPrivate: false }])
+                                if (multiSelect) {
+                                    setValues(prev => {
+                                        return prev.some(({ courseId }) => item.value === courseId)
+                                            ? [...prev.filter(i => i.courseId !== item.value)]
+                                            : [...prev, { courseId: item.value, isPrivate: false }]
+                                    })
+                                    return
+                                }
+                                setValues([{ courseId: item.value, isPrivate: false }])
 
-                        }}>
+                            }}>
                             <Check
                                 className={cn(
                                     "mr-2 h-4 w-4",
@@ -90,15 +101,35 @@ const CoursesSelectField: FC<CoursesSelectFieldProps> = ({ placeholder, listTitl
                                 <Typography>{item.label}</Typography>
                                 <Typography>{!item.active && "Owned"}</Typography>
                             </div>
+                            <Separator orientation="vertical" className="h-4 bg-primary" />
                             <Checkbox
-                                onCheckedChange={(val) => {
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+
                                     setValues((prev) => {
-                                        return prev.map(item => ({
-                                            courseId: item.courseId,
-                                            isPrivate: val.valueOf() as boolean
-                                        }))
+                                        console.log(prev
+                                            .some(({ courseId }) => courseId === item.value)
+                                            ? prev.map(prevValue => prevValue.courseId === item.value
+                                                ? {
+                                                    courseId: prevValue.courseId,
+                                                    isPrivate: !prevValue.isPrivate,
+                                                }
+                                                : prevValue)
+                                            : [...prev, { courseId: item.value, isPrivate: true }])
+                                        return prev
+                                            .some(({ courseId }) => courseId === item.value)
+                                            ? prev.map(prevValue => prevValue.courseId === item.value
+                                                ? {
+                                                    courseId: prevValue.courseId,
+                                                    isPrivate: !prevValue.isPrivate,
+                                                }
+                                                : prevValue)
+                                            : [...prev, { courseId: item.value, isPrivate: true }]
                                     })
+
                                 }}
+                                checked={values.some(({ courseId, isPrivate }) => courseId === item.value && !!isPrivate)}
                             />
                         </DropdownMenuItem>
                     ))}

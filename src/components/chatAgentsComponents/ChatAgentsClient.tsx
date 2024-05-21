@@ -33,7 +33,7 @@ const ChatAgentsClient = ({ data }: { data: ChatAgents[] }) => {
         onSuccess: () => {
           trpcUtils.chatAgents.invalidate()
             .then(() => {
-              callback && callback()
+              callback?.()
               toastSuccess("Agent(s) deleted");
             })
         },

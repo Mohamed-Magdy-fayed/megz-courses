@@ -32,7 +32,7 @@ const SalesOperationsClient = ({ data }: { data: SalesOperations[] }) => {
           trpcUtils.salesOperations.invalidate()
             .then(() => {
               toastSuccess("operation(s) deleted")
-              callback && callback()
+              callback?.()
             });
         },
         onError: (error) => {

@@ -1,16 +1,19 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Typography } from "../ui/Typoghraphy";
-import ZoomGroupActionCell from "./ZoomGroupActionCell";
 import { Course, GroupStatus, Trainer, User } from "@prisma/client";
 import { SeverityPill, SeverityPillProps } from "../overview/SeverityPill";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { getInitials } from "@/lib/getInitials";
+import { format } from "date-fns";
+import { Button } from "../ui/button";
+import { ArrowUpDown } from "lucide-react";
+import ActionCell from "./ActionCell";
 
-export type ZoomGroupColumn = {
+export type ColumnType = {
     id: string,
-    course: Course | null,
+    course: Course,
     createdAt: Date,
     updatedAt: Date,
     groupNumber: string,
@@ -19,10 +22,10 @@ export type ZoomGroupColumn = {
     students: User[],
     trainer: Trainer & {
         user: User
-    } | null,
+    },
 }
 
-export const columns: ColumnDef<ZoomGroupColumn>[] = [
+export const columns: ColumnDef<ColumnType>[] = [
     {
         id: "select",
         header: ({ table }) => (
@@ -45,10 +48,29 @@ export const columns: ColumnDef<ZoomGroupColumn>[] = [
     {
         accessorKey: "groupNumber",
         header: "Group Number",
+        cell: ({ row }) => (
+            <Link href={`/groups/${row.original.id}`} target="_blank">
+                <Button variant={"link"}>
+                    <Typography>{row.original.groupNumber}</Typography>
+                </Button>
+            </Link>
+        )
     },
     {
         accessorKey: "groupStatus",
-        header: "Status",
+        header: ({ column }) => {
+            return (
+                <div className="flex items-center justify-between">
+                    Status
+                    <Button
+                        className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
+                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                    >
+                        <ArrowUpDown className="h-4 w-4 text-primary" />
+                    </Button>
+                </div>
+            );
+        },
         cell: ({ row }) => {
             const status = row.original.groupStatus
             const color: SeverityPillProps["color"] =
@@ -58,14 +80,15 @@ export const columns: ColumnDef<ZoomGroupColumn>[] = [
                             : status === "paused" ? "muted" : "primary"
 
             return <SeverityPill color={color}>{status}</SeverityPill>
-        }
+        },
+        enableSorting: true
     },
     {
         accessorKey: "trainer",
         header: "Trainer",
         cell: ({ row }) => {
             return (
-                <Link className="block w-fit" href={`/account/${row.original.id}`}>
+                <Link className="block w-fit" href={`/account/${row.original.trainer.userId}`}>
                     <div className="flex items-center gap-2" >
                         <Avatar>
                             <AvatarImage src={`${row.original.trainer?.user.image}`} />
@@ -89,10 +112,29 @@ export const columns: ColumnDef<ZoomGroupColumn>[] = [
         }
     },
     {
+        accessorKey: "startDate",
+        header: "Start Date",
+        cell: ({ row }) => (<Typography>{format(row.original.startDate, "PPPp")}</Typography>)
+    },
+    {
+        accessorKey: "students",
+        header: "Students",
+        cell: ({ row }) => (
+            <Typography>{row.original.students.length}</Typography>
+        )
+    },
+    {
         id: "actions",
         header: () => (
             <Typography variant={"secondary"}>Actions</Typography>
         ),
-        cell: ({ row }) => <ZoomGroupActionCell id={row.original.id} />
+        cell: ({ row }) => <ActionCell
+            id={row.original.id}
+            courseId={row.original.course.id}
+            startDate={row.original.startDate}
+            trainerId={row.original.trainer?.id}
+            studentIds={row.original.students.map(student => student.id)}
+            status={row.original.groupStatus}
+        />
     },
 ];

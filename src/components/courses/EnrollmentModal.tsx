@@ -31,7 +31,7 @@ const EnrollmentModal: FC<EnrollmentModalProps> = ({
     setOpen,
 }) => {
     const enrollCourseMutation = api.selfServe.enrollCourse.useMutation()
-    const { toastError, toastSuccess } = useToast()
+    const { toastError } = useToast()
     const router = useRouter()
     const session = useSession()
     const [checkedAgreement, setcheckedAgreement] = useState(false)

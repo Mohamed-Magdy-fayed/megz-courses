@@ -36,7 +36,7 @@ const SalesAgentClient = ({ data }: { data: SalesAgents[] }) => {
           trpcUtils.salesAgents.invalidate()
             .then(() => {
               toastSuccess("Agent(s) deleted");
-              callback && callback()
+              callback?.()
             })
         },
         onError: (error) => {

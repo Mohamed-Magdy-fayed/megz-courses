@@ -7,32 +7,33 @@ import { Button } from '../ui/button'
 import { api } from '@/lib/api'
 import { useToast } from '../ui/use-toast'
 import { SearchSlash } from 'lucide-react'
+import { Select, SelectTrigger } from '../ui/select'
 
-const OralTestModal = ({ id }: { id: string }) => {
+const PlacmentTestModal = ({ id, courseTestId, courseId }: { id: string, courseTestId?: string, courseId?: string }) => {
     const { data } = api.courses.getStudentCourses.useQuery({ userId: id });
-    const { toastError } = useToast();
+    const { toastError, toastSuccess } = useToast();
 
     const [loading, setLoading] = useState(false);
-    const [testId, setTestId] = useState<string[]>([]);
+    const [testId, setTestId] = useState<string[]>(courseTestId ? [courseTestId] : []);
     const [score, setScore] = useState(0);
     const [open, setOpen] = useState(false);
 
     const trpcUtils = api.useContext()
-    const updatePlacementOralTestScoreMutation = api.placementTests.updatePlacementOralTestScore.useMutation()
+    const updatePlacementFormTestScoreMutation = api.placementTests.updatePlacementFormTestScore.useMutation()
 
     const handleAddCoursPlacementResult = () => {
         if (!testId[0] || !score) return toastError(`missing some info here!`)
         setLoading(true);
 
-        updatePlacementOralTestScoreMutation.mutate({ score, testId: testId[0] }, {
+        updatePlacementFormTestScoreMutation.mutate({ score, testId: testId[0] }, {
             onSuccess: (data) => {
-                console.log(data);
+                toastSuccess(`${data.updatedPlacementTest.testStatus.oral}`)
             },
             onError: (error) => {
                 toastError(error.message)
             },
             onSettled: () => {
-                trpcUtils.courses.invalidate()
+                trpcUtils.placementTests.invalidate()
                     .then(() => {
                         setOpen(false)
                         setLoading(false);
@@ -48,7 +49,7 @@ const OralTestModal = ({ id }: { id: string }) => {
                 className='flex items-center gap-2 hover:bg-slate-100'
             >
                 <SearchSlash className="w-4 h-4 mr-2" />
-                Oral Test
+                Placement Test
             </button>
             <Modal
                 title="Add placement test result"
@@ -58,22 +59,30 @@ const OralTestModal = ({ id }: { id: string }) => {
             >
                 <div className="flex items-center justify-between">
                     <div className="space-y-4 [&>*]:w-full">
-                        {!data?.courses ? (<></>) : (
-                            <SelectField
-                                values={testId}
-                                setValues={setTestId}
-                                placeholder="Select Course..."
-                                listTitle="Courses"
-                                data={
-                                    data.user.placementTests
-                                        .filter(test => !test.testStatus.oral)
-                                        .map(test => ({
-                                            label: data.courses.find(course => course.id === test.courseId)?.name || "",
-                                            value: test.id,
-                                            active: true,
-                                        }))
-                                } />
-                        )}
+                        {!data?.courses
+                            ? (<></>)
+                            : courseTestId && courseId
+                                ? (
+                                    <Select>
+                                        <SelectTrigger disabled>{data.courses.find(course => course.id === courseId)?.name}</SelectTrigger>
+                                    </Select>
+                                )
+                                : (
+                                    <SelectField
+                                        values={testId}
+                                        setValues={setTestId}
+                                        placeholder="Select Course..."
+                                        listTitle="Courses"
+                                        data={
+                                            data.user.placementTests
+                                                .filter(test => !test.testStatus.form)
+                                                .map(test => ({
+                                                    label: data.courses.find(course => course.id === test.courseId)?.name || "",
+                                                    value: test.id,
+                                                    active: true,
+                                                }))
+                                        } />
+                                )}
                         <div className="mt-4">
                             <Label>Score</Label>
                             <Input
@@ -95,9 +104,9 @@ const OralTestModal = ({ id }: { id: string }) => {
                         </Button>
                     </div>
                 </div>
-            </Modal>
+            </Modal >
         </>
     )
 }
 
-export default OralTestModal
+export default PlacmentTestModal

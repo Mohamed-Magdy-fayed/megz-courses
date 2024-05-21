@@ -52,6 +52,9 @@ enum CoursStatuses {
     waiting
     ongoing
     completed
+    cancelled
+    refunded
+    postponded
 }
 
 enum Devices {

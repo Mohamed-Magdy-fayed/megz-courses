@@ -25,7 +25,7 @@ const AccountPaymentClient = ({ data }: { data: Order[] }) => {
         onSuccess: () => {
           trpcUtils.users.invalidate()
             .then(() => {
-              callback && callback()
+              callback?.()
               toastSuccess("Order(s) deleted")
             })
         },

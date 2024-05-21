@@ -44,7 +44,7 @@ const CellAction: React.FC<CellActionProps> = ({ id, assigneeId, code }) => {
                 onSuccess: () => {
                     trpcUtils.salesOperations.invalidate()
                         .then(() => {
-                            callback && callback()
+                            callback?.()
                             toastSuccess("Operation(s) deleted");
                             setLoading(false);
                             setOpen(false);

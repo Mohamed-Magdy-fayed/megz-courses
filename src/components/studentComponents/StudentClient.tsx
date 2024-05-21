@@ -34,7 +34,7 @@ const StudentClient = ({ data }: { data: Users[] }) => {
           trpcUtils.users.invalidate()
             .then(() => {
               toastSuccess("User(s) deleted")
-              callback && callback()
+              callback?.()
             })
         },
         onError: (error) => {

@@ -52,7 +52,7 @@ const OrdersClient = ({ data }: {
         onSuccess: (data) => {
           trpcUtils.orders.invalidate()
             .then(() => {
-              callback && callback()
+              callback?.()
               toastSuccess(`Deleted ${data.deletedOrders.count} order(s)`)
             })
         },

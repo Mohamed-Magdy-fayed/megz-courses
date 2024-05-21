@@ -222,7 +222,7 @@ export const ordersRouter = createTRPCRouter({
                     courseLink: null
                 })
 
-            await stripe.checkout.sessions.expire(order.paymentId)
+            if ((await stripe.checkout.sessions.retrieve(order.paymentId)).status === "open") await stripe.checkout.sessions.expire(order.paymentId)
 
             const updatedOrder = await ctx.prisma.order.update({
                 where: {

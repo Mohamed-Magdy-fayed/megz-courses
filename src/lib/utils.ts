@@ -1,6 +1,8 @@
-import { Address } from "@prisma/client";
+import { Address, Course, Order, User } from "@prisma/client";
 import { type ClassValue, clsx } from "clsx";
+import { format } from "date-fns";
 import { twMerge } from "tailwind-merge";
+import { getInitials } from "./getInitials";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -80,4 +82,21 @@ export const getDifferenceMargin = <T extends DataObject>(
     difference: change,
     total: currentWeekTotal
   };
+}
+
+type CourseType = Course & {
+  orders: (Order & {
+    user: User
+  })[]
+}
+export const getWaitingList = (course: CourseType): number => {
+  return course.orders
+    .filter(order => order.user.courseStatus
+      .find(status => status.courseId === course.id)?.state === "waiting")
+    .filter((order, i, self) => i === self.findIndex(({ userId }) => order.user.id === userId))
+    .length
+}
+
+export const generateGroupNumnber = (startDate: Date, trainerUserName: string, courseName: string): string => {
+  return `${format(startDate.getTime(), "E_do_MMM_hh:mm_aaa")}_${getInitials(trainerUserName)}_${courseName.replaceAll(" ", "_")}`
 }
