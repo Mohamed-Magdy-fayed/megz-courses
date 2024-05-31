@@ -48,7 +48,7 @@ const StudentClient = ({ data }: { data: Users[] }) => {
     <DataTable
       columns={columns}
       data={formattedData}
-      setUsers={setUsers}
+      setData={setUsers}
       onDelete={onDelete}
       search={{ key: "email", label: "Email" }}
     />

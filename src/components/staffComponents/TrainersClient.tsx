@@ -49,7 +49,7 @@ const TrainersClient = ({ data }: { data: Trainers[] }) => {
     <DataTable
       columns={columns}
       data={formattedData}
-      setUsers={setTraiers}
+      setData={setTraiers}
       onDelete={onDelete}
       search={{
         key: "email",

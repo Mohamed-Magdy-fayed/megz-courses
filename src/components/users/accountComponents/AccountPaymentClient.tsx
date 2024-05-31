@@ -40,7 +40,7 @@ const AccountPaymentClient = ({ data }: { data: Order[] }) => {
     <DataTable
       columns={columns}
       data={formattedData}
-      setUsers={setOrders}
+      setData={setOrders}
       onDelete={onDelete}
       search={{ key: "orderNumber", label: "Order Number" }}
     />

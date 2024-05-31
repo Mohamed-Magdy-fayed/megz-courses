@@ -50,7 +50,7 @@ const ZoomGroupsClient = () => {
                 students: zoomGroup.students,
                 trainer: zoomGroup.trainer!,
             }))}
-            setUsers={setZoomGroups}
+            setData={setZoomGroups}
             onDelete={onDelete}
         />
     );

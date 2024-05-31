@@ -106,8 +106,8 @@ export const columns: ColumnDef<Order>[] = [
             const status = row.original.status
             const color: SeverityPillProps["color"] =
                 status === "cancelled" ? "destructive"
-                    : status === "done" ? "success"
-                        : status === "paid" ? "info"
+                    : status === "refunded" ? "primary"
+                        : status === "paid" ? "success"
                             : status === "pending" ? "muted" : "destructive"
             return (
                 <SeverityPill color={color}>

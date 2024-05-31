@@ -35,7 +35,7 @@ const WaitingListClient = ({ courseId }: { courseId: string }) => {
         <DataTable
             columns={columns}
             data={formattedData || []}
-            setUsers={() => { }}
+            setData={() => { }}
             onDelete={() => { }}
             search={{ key: "email", label: "Email" }}
         />

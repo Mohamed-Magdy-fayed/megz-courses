@@ -22,7 +22,7 @@ const DatabaseClient = ({ data }: { data: PotintialCustomer[] }) => {
     <DataTable
       columns={columns}
       data={formattedData}
-      setUsers={() => { }}
+      setData={() => { }}
       onDelete={() => { }}
       search={{ key: "firstName", label: "Name" }}
     />

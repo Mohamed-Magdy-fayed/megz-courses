@@ -28,8 +28,8 @@ const OrderReceipt: FC<OrderReceiptProps> = ({ orderId, adminView }) => {
 
     const color: SeverityPillProps["color"] =
         data?.order?.status === "cancelled" ? "destructive"
-            : data?.order?.status === "done" ? "success"
-                : data?.order?.status === "paid" ? "info"
+            : data?.order?.status === "refunded" ? "primary"
+                : data?.order?.status === "paid" ? "success"
                     : "muted"
 
     if (!data?.order) return (

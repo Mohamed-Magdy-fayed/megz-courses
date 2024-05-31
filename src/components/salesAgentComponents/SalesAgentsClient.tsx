@@ -50,7 +50,7 @@ const SalesAgentClient = ({ data }: { data: SalesAgents[] }) => {
     <DataTable
       columns={columns}
       data={formattedData}
-      setUsers={setSalesAgents}
+      setData={setSalesAgents}
       onDelete={onDelete}
     />
   );

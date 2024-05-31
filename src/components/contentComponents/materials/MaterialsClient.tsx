@@ -25,7 +25,7 @@ const MaterialsClient = ({ data }: { data: MaterialItem[] }) => {
         <DataTable
             columns={columns}
             data={formattedData || []}
-            setUsers={() => { }}
+            setData={() => { }}
             onDelete={() => { }}
             search={{ key: "title", label: "Title" }}
         />

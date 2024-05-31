@@ -37,7 +37,7 @@ const CourseGroupsClient = ({ zoomGroups }: { zoomGroups: ZoomGroup[] }) => {
         <DataTable
             columns={columns}
             data={formattedData || []}
-            setUsers={() => { }}
+            setData={() => { }}
             onDelete={() => { }}
             search={{ key: "groupNumber", label: "Group name" }}
         />

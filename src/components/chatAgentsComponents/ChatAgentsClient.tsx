@@ -48,7 +48,7 @@ const ChatAgentsClient = ({ data }: { data: ChatAgents[] }) => {
     <DataTable
       columns={columns}
       data={formattedData}
-      setUsers={setChatAgents}
+      setData={setChatAgents}
       onDelete={onDelete}
     />
   );

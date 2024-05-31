@@ -27,9 +27,9 @@ const OrderInfoPanel = ({ data }: {
             case "cancelled":
                 return "destructive"
             case "refunded":
-                return "destructive";
-            case "paid":
                 return "primary";
+            case "paid":
+                return "success";
             case "pending":
                 return "muted";
             default:
@@ -64,7 +64,7 @@ const OrderInfoPanel = ({ data }: {
                                 refundedBy: refundedByUser?.data?.user.email
                             }]}
                             onDelete={() => { }}
-                            setUsers={() => { }}
+                            setData={() => { }}
                             columns={[
                                 {
                                     accessorKey: "status", header: () => "Status", cell: ({ row }) => (
@@ -109,7 +109,7 @@ const OrderInfoPanel = ({ data }: {
                         <DataTable
                             data={data.orderDetails?.courses}
                             onDelete={() => { }}
-                            setUsers={() => { }}
+                            setData={() => { }}
                             columns={[
                                 {
                                     accessorKey: "name",

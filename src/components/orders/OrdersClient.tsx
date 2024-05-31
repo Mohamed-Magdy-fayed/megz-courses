@@ -67,7 +67,7 @@ const OrdersClient = ({ data }: {
     <DataTable
       columns={columns}
       data={formattedData}
-      setUsers={setOrders}
+      setData={setOrders}
       onDelete={onDelete}
       search={{ key: "orderNumber", label: "Order Number" }}
     />

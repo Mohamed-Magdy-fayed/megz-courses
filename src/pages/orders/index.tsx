@@ -55,7 +55,7 @@ const OrderPage: NextPage = () => {
                                 </Typography>
                                 <Separator orientation="vertical" />
                                 <Typography>
-                                    Fullfilled: {data?.orders.filter(order => order.status === "done").length}
+                                    Refunded: {data?.orders.filter(order => order.status === "refunded").length}
                                 </Typography>
                             </CardContent>
                             <Separator orientation="vertical" className="hidden lg:block" />

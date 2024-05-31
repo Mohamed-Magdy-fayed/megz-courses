@@ -27,7 +27,7 @@ const LatestOrdersClient = ({ data }: { data: Orders[] }) => {
     <DataTable
       columns={columns}
       data={formattedData}
-      setUsers={() => { }}
+      setData={() => { }}
       onDelete={() => { }}
       search={{
         key: "orderNumber",
