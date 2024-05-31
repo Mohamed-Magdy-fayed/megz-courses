@@ -109,6 +109,8 @@ export const ordersRouter = createTRPCRouter({
                         }) => course.id === courseId)?.isPrivate ? course.privatePrice : course.groupPrice, CURRENCY),
                         product_data: {
                             name: course.name,
+                            description: course.description || `No description`,
+                            images: [course.image || ""],
                         },
                     },
                     quantity: 1
@@ -172,12 +174,14 @@ export const ordersRouter = createTRPCRouter({
                         }) => course.id === id)?.isPrivate ? course.privatePrice : course.groupPrice, CURRENCY),
                         product_data: {
                             name: course.name,
+                            description: course.description || `No description`,
+                            images: [course.image || ""],
                         },
                     },
                     quantity: 1
                 })),
                 mode: 'payment',
-                success_url: `${process.env.NEXTAUTH_URL}/payment_success?session_id={CHECKOUT_SESSION_ID}`,
+                success_url: `${process.env.NEXTAUTH_URL}/payment_success?session_id={CHECKOUT_SESSION_ID}&payment_intent={payment_intent}`,
                 cancel_url: `${process.env.NEXTAUTH_URL}/payment_fail`,
             }
             const checkoutSession: Stripe.Checkout.Session =
@@ -216,7 +220,7 @@ export const ordersRouter = createTRPCRouter({
 
             const courseLink = `${process.env.NEXTAUTH_URL}my_courses/${order.user.id}`
 
-            if (order.status === "paid" || order.status === "done")
+            if (order.status === "paid" || order.status === "refunded")
                 return ({
                     updatedOrder: order,
                     courseLink: null
@@ -249,6 +253,9 @@ export const ordersRouter = createTRPCRouter({
             })
         )
         .mutation(async ({ ctx, input: { sessionId } }) => {
+            const session = await stripe.checkout.sessions.retrieve(sessionId)
+            const paymentIntentId = `${session.payment_intent}`
+
             const order = await ctx.prisma.order.findFirst({
                 where: {
                     paymentId: sessionId
@@ -263,7 +270,7 @@ export const ordersRouter = createTRPCRouter({
             if (!order?.id) throw new TRPCError({ code: "BAD_REQUEST", message: "incorrect information" })
             const courseLink = `${process.env.NEXTAUTH_URL}my_courses`
 
-            if (order.status === "paid" || order.status === "done")
+            if (order.status === "paid" || order.status === "refunded")
                 return ({
                     updatedOrder: order,
                     courseLink: null
@@ -275,6 +282,7 @@ export const ordersRouter = createTRPCRouter({
                 },
                 data: {
                     status: "paid",
+                    paymentId: paymentIntentId,
                 },
                 include: {
                     courses: true,
@@ -285,6 +293,56 @@ export const ordersRouter = createTRPCRouter({
 
 
             return { courseLink, updatedOrder }
+        }),
+    refundOrder: protectedProcedure
+        .input(z.object({
+            userId: z.string(),
+            orderId: z.string(),
+            reason: z.enum(["requested_by_customer", "duplicate", "fraudulent"]),
+        }))
+        .mutation(async ({ input: { orderId, userId, reason }, ctx }) => {
+            const user = await ctx.prisma.user.findUnique({ where: { id: userId } })
+            if (!user?.email) throw new TRPCError({ code: "BAD_REQUEST", message: "Requester user don't exist!" })
+            const order = await ctx.prisma.order.findUnique({ where: { id: orderId } })
+            if (!order?.paymentId) throw new TRPCError({ code: "BAD_REQUEST", message: "order don't have a payment id, please refund manually" })
+
+            const refund = await stripe.refunds.create({
+                payment_intent: order.paymentId,
+                reason,
+                metadata: {
+                    refundedBy: user.email
+                }
+            });
+
+            const updatedOrder = await ctx.prisma.order.update({
+                where: {
+                    id: orderId,
+                },
+                data: {
+                    status: "refunded",
+                    refundId: refund.id,
+                    refundRequester: user.id
+                },
+            });
+
+            const updatedUser = await ctx.prisma.user.update({
+                where: {
+                    id: userId,
+                },
+                data: {
+                    courseStatus: {
+                        deleteMany: {
+                            where: {
+                                courseId: {
+                                    in: order.courseIds
+                                }
+                            }
+                        }
+                    }
+                },
+            });
+
+            return { success: refund.status === "succeeded", refund, updatedOrder, requestedBy: user, updatedUser };
         }),
     editOrder: protectedProcedure
         .input(

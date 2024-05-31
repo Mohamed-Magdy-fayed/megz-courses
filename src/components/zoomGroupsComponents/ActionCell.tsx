@@ -6,7 +6,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Copy, Trash, SearchSlash, MoreVertical, List, Edit, UserPlus } from "lucide-react";
+import { Copy, Trash, SearchSlash, MoreVertical, List, Edit, UserPlus, UserMinus, PauseCircle, PlayCircle } from "lucide-react";
 import { FC, useState } from "react";
 import { AlertModal } from "../modals/AlertModal";
 import { api } from "@/lib/api";
@@ -18,6 +18,12 @@ import { GroupStatus } from "@prisma/client";
 import { upperFirst } from "lodash";
 import ZoomGroupForm from "./Form";
 import AddStudentsForm from "./AddStudentsForm";
+import RemoveStudentsForm from "./RemoveStudentsForm";
+import MoveStudentsForm from "./MoveStudentsForm";
+import { UserCog } from "lucide-react";
+import PostpondStudentsForm from "./PostpondStudentsForm";
+import ResumeStudentsForm from "./ResumeStudentsForm";
+import { useRouter } from "next/router";
 
 interface ActionCellProps {
     id: string;
@@ -26,18 +32,24 @@ interface ActionCellProps {
     studentIds: string[];
     startDate: Date;
     status: GroupStatus;
+    isGroupPage?: boolean;
 }
 
-const ActionCell: FC<ActionCellProps> = ({ id, courseId, startDate, trainerId, status, studentIds }) => {
+const ActionCell: FC<ActionCellProps> = ({ id, courseId, startDate, trainerId, status, studentIds, isGroupPage }) => {
     const { toastError, toastSuccess } = useToast();
 
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
     const [newStatus, setNewStatus] = useState<GroupStatus[]>([status]);
     const [isAddFormOpen, setIsAddFormOpen] = useState(false);
+    const [isRemoveFormOpen, setIsRemoveFormOpen] = useState(false);
+    const [isMoveFormOpen, setIsMoveFormOpen] = useState(false);
+    const [isPostpondFormOpen, setIsPostpondFormOpen] = useState(false);
+    const [isResumeFormOpen, setIsResumeFormOpen] = useState(false);
     const [changeStatusOpen, setChangeStatusOpen] = useState(false);
     const [isEditFormOpen, setIsEditFormOpen] = useState(false);
 
+    const router = useRouter()
     const trpcUtils = api.useContext()
     const editMutation = api.zoomGroups.editZoomGroup.useMutation({
         onMutate: () => setLoading(true),
@@ -84,6 +96,7 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, startDate, trainerId, s
                             callback?.()
                             toastSuccess("Group deleted");
                             setOpen(false);
+                            isGroupPage && router.push(`/groups`)
                         })
                 },
                 onError: (error) => {
@@ -95,14 +108,50 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, startDate, trainerId, s
     };
 
     return (
-        <>
+        <div>
+            <Modal
+                title="Resume studnets"
+                description="move studnets to back to waiting list"
+                isOpen={isResumeFormOpen}
+                onClose={() => setIsResumeFormOpen(false)}
+                children={(
+                    <ResumeStudentsForm setIsOpen={setIsResumeFormOpen} id={id} courseId={courseId} />
+                )}
+            />
+            <Modal
+                title="Postpond studnets"
+                description="move studnets to postponded list"
+                isOpen={isPostpondFormOpen}
+                onClose={() => setIsPostpondFormOpen(false)}
+                children={(
+                    <PostpondStudentsForm setIsOpen={setIsPostpondFormOpen} id={id} />
+                )}
+            />
+            <Modal
+                title="Move studnets"
+                description="move studnets to waiting list"
+                isOpen={isMoveFormOpen}
+                onClose={() => setIsMoveFormOpen(false)}
+                children={(
+                    <MoveStudentsForm setIsOpen={setIsMoveFormOpen} courseId={courseId} id={id} />
+                )}
+            />
+            <Modal
+                title="Remove studnets"
+                description="move studnets to waiting list"
+                isOpen={isRemoveFormOpen}
+                onClose={() => setIsRemoveFormOpen(false)}
+                children={(
+                    <RemoveStudentsForm setIsOpen={setIsRemoveFormOpen} courseId={courseId} id={id} studentIds={studentIds} />
+                )}
+            />
             <Modal
                 title="Add studnets"
                 description="add new students to the group"
                 isOpen={isAddFormOpen}
                 onClose={() => setIsAddFormOpen(false)}
                 children={(
-                    <AddStudentsForm setIsOpen={setIsAddFormOpen} courseId={courseId} id={id} studentIds={studentIds} />
+                    <AddStudentsForm setIsOpen={setIsAddFormOpen} courseId={courseId} id={id} />
                 )}
             />
             <Modal
@@ -174,12 +223,16 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, startDate, trainerId, s
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem>
-                        <Link className="flex gap-2" href={`/groups/${id}`} target="_blank">
-                            <SearchSlash className="w-4 h-4 mr-2" />
-                            View
-                        </Link>
-                    </DropdownMenuItem>
+                    {isGroupPage ? (
+                        null
+                    ) : (
+                        <DropdownMenuItem>
+                            <Link className="flex gap-2" href={`/groups/${id}`} target="_blank">
+                                <SearchSlash className="w-4 h-4 mr-2" />
+                                View
+                            </Link>
+                        </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem onClick={() => setChangeStatusOpen(true)}>
                         <List className="w-4 h-4 mr-2" />
                         Change Status
@@ -187,6 +240,22 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, startDate, trainerId, s
                     <DropdownMenuItem onClick={() => setIsAddFormOpen(true)}>
                         <UserPlus className="w-4 h-4 mr-2" />
                         Add students
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setIsRemoveFormOpen(true)}>
+                        <UserMinus className="w-4 h-4 mr-2" />
+                        Remove students
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setIsMoveFormOpen(true)}>
+                        <UserCog className="w-4 h-4 mr-2" />
+                        Move students
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setIsPostpondFormOpen(true)}>
+                        <PauseCircle className="w-4 h-4 mr-2" />
+                        Postpond students
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setIsResumeFormOpen(true)}>
+                        <PlayCircle className="w-4 h-4 mr-2" />
+                        Resume students
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setIsEditFormOpen(true)}>
                         <Edit className="w-4 h-4 mr-2" />
@@ -202,7 +271,7 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, startDate, trainerId, s
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
-        </>
+        </div>
     );
 };
 

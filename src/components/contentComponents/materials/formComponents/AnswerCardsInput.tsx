@@ -46,6 +46,7 @@ const AnswerCardsInput: FC<AnswerCardsInputProps> = ({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
+                    type="button"
                     variant={"icon"}
                     customeColor={"infoIcon"}
                     onClick={() => {

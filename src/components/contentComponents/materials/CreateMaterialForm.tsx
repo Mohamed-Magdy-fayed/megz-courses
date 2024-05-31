@@ -43,10 +43,10 @@ const CreateMaterialsForm = ({
             {
                 onSuccess: ({ materialItem }) => {
                     trpcUtils.courses.invalidate()
-                    .then(() => {
-                        toastSuccess(`Your new material (${materialItem.title}) is ready!`);
-                        setLoading(false);
-                    })
+                        .then(() => {
+                            toastSuccess(`Your new material (${materialItem.title}) is ready!`);
+                            setLoading(false);
+                        })
                 },
                 onError: (error) => {
                     toastError(error.message)

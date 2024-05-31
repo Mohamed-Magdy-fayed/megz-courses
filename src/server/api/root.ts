@@ -15,6 +15,7 @@ import { chatAgentsRouter } from "./routers/chatAgents";
 import { chatRouter } from "./routers/chat";
 import { trainersRouter } from "./routers/trainers";
 import { zoomGroupsRouter } from "./routers/zoomGroups";
+import { evaluationFormRouter } from "./routers/evaluationForm";
 
 /**
  * This is the primary router for your server.
@@ -38,6 +39,7 @@ export const appRouter = createTRPCRouter({
   chat: chatRouter,
   trainers: trainersRouter,
   zoomGroups: zoomGroupsRouter,
+  evaluationForm: evaluationFormRouter,
 });
 
 // export type definition of API

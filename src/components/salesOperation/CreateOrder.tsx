@@ -55,7 +55,7 @@ const CreateOrder: FC<CreateOrderProps> = ({
             email: email[0],
             salesOperationId
         }, {
-            onSuccess: ({ order: { id, amount, orderNumber, user, courses, createdAt }, paymentLink }) => {
+            onSuccess: ({ order: { id, amount, orderNumber, user, courses, createdAt, courseTypes }, paymentLink }) => {
                 const message = render(
                     <Email
                         orderCreatedAt={format(createdAt, "dd MMM yyyy")}
@@ -64,7 +64,12 @@ const CreateOrder: FC<CreateOrderProps> = ({
                         orderNumber={orderNumber}
                         paymentLink={paymentLink}
                         customerName={user.name}
-                        courses={courses.map(course => ({ courseName: course.name, coursePrice: formatPrice(course.groupPrice) }))}
+                        courses={courses.map(course => ({
+                            courseName: course.name,
+                            coursePrice: courseTypes.find(type => type.id === course.id)?.isPrivate
+                                ? formatPrice(course.privatePrice)
+                                : formatPrice(course.groupPrice)
+                        }))}
                     />, { pretty: true }
                 )
                 handleSendEmail({

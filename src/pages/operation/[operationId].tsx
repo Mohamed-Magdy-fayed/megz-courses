@@ -73,11 +73,11 @@ const OperationPage = () => {
                     <OperationStatus data={data.salesOperations} />
                     <div className="py-4">
                         <ConceptTitle>User Details</ConceptTitle>
-                        {<UserInfoPanel data={data.salesOperations} />}
+                        <UserInfoPanel data={data.salesOperations} />
                     </div>
                     <div className="py-4">
                         <ConceptTitle>Order Details</ConceptTitle>
-                        {<OrderInfoPanel data={data.salesOperations} />}
+                        <OrderInfoPanel data={data.salesOperations} />
                     </div>
                     <div className="flex">
                         {coursesData && usersData && (

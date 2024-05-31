@@ -28,7 +28,7 @@ import { ArrowLeft, ArrowRight, Trash } from "lucide-react";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  setUsers: (users: TData[]) => void;
+  setData: (data: TData[]) => void;
   onDelete: (callback?: () => void) => void;
   search?: {
     label: string
@@ -39,7 +39,7 @@ interface DataTableProps<TData, TValue> {
 export function DataTable<TData, TValue>({
   columns,
   data,
-  setUsers,
+  setData,
   onDelete,
   search,
 }: DataTableProps<TData, TValue>) {
@@ -71,7 +71,7 @@ export function DataTable<TData, TValue>({
 
   const handleOpen = () => {
     setOpen(true);
-    setUsers(table.getSelectedRowModel().rows.map((row) => row.original));
+    setData(table.getSelectedRowModel().rows.map((row) => row.original));
   };
 
   return (

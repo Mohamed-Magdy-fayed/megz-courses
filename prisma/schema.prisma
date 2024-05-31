@@ -170,8 +170,55 @@ model Course {
     createdAt       DateTime        @default(now())
 }
 
+type Option {
+    text      String
+    isCorrect Boolean
+}
+
+enum QuizOrAssignmentQuestionType {
+    multipleChoice
+    trueFalse
+}
+
+type FormQuestion {
+    isQuestionCorrect Boolean?
+    image             String?
+    options           Option[]
+    points            Int
+    questionText      String
+    type              QuizOrAssignmentQuestionType
+}
+
+type FormAnswer {
+    selectedOption Option
+    question       FormQuestion
+}
+
+type Submission {
+    studentId String       @db.ObjectId
+    answers   FormAnswer[]
+}
+
+enum EvaluationFormTypes {
+    assignment
+    quiz
+}
+
+model EvaluationForm {
+    id             String              @id @default(auto()) @map("_id") @db.ObjectId
+    type           EvaluationFormTypes
+    totalPoints    Int
+    submissions    Submission[]
+    questions      FormQuestion[]
+    materialItem   MaterialItem?       @relation(fields: [materialItemId], references: [id])
+    materialItemId String?             @db.ObjectId
+    createdBy      String
+    updatedAt      DateTime            @updatedAt
+    createdAt      DateTime            @default(now())
+}
+
 model MaterialItem {
-    id                String       @id @default(auto()) @map("_id") @db.ObjectId
+    id                String           @id @default(auto()) @map("_id") @db.ObjectId
     frameWorkName     String
     leadinText        String
     leadinImageUrl    String
@@ -182,10 +229,11 @@ model MaterialItem {
     answerAreas       AnswerArea[]
     vocabularyCards   VocabCard[]
     practiceQuestions Question[]
-    course            Course?      @relation(fields: [courseId], references: [id])
-    courseId          String?      @db.ObjectId
-    updatedAt         DateTime     @updatedAt
-    createdAt         DateTime     @default(now())
+    evaluationForms   EvaluationForm[]
+    course            Course?          @relation(fields: [courseId], references: [id])
+    courseId          String?          @db.ObjectId
+    updatedAt         DateTime         @updatedAt
+    createdAt         DateTime         @default(now())
 }
 
 type Question {
@@ -230,7 +278,7 @@ enum OrderStatus {
     pending
     paid
     cancelled
-    done
+    refunded
 }
 
 type CourseTypes {
@@ -246,6 +294,8 @@ model Order {
     courses                  Course[]       @relation(fields: [courseIds], references: [id])
     courseIds                String[]       @db.ObjectId
     status                   OrderStatus    @default(pending)
+    refundRequester          String?        @db.ObjectId
+    refundId                 String?
     paymentId                String?
     paymentConfirmationImage String?
     salesOperation           SalesOperation @relation("OrderToSalesOperation", fields: [salesOperationId], references: [id], onDelete: Cascade)
@@ -340,18 +390,26 @@ enum SessionStatus {
     cancelled
 }
 
+type StudentRating {
+    studentId   String  @db.ObjectId
+    score       Float
+    isCompleted Boolean
+}
+
 model ZoomSession {
-    id            String        @id @default(auto()) @map("_id") @db.ObjectId
+    id            String          @id @default(auto()) @map("_id") @db.ObjectId
     sessionDate   DateTime
     sessionLink   String
     sessionStatus SessionStatus
-    subTrainer    Trainer?      @relation(fields: [subTrainerId], references: [id])
-    subTrainerId  String?       @db.ObjectId
-    zoomGroup     ZoomGroup?    @relation(fields: [groupId], references: [id])
-    groupId       String?       @db.ObjectId
+    subTrainer    Trainer?        @relation(fields: [subTrainerId], references: [id])
+    subTrainerId  String?         @db.ObjectId
+    zoomGroup     ZoomGroup?      @relation(fields: [groupId], references: [id])
+    groupId       String?         @db.ObjectId
     attenders     String[]
-    updatedAt     DateTime      @updatedAt
-    createdAt     DateTime      @default(now())
+    assignments   StudentRating[]
+    quizzes       StudentRating[]
+    updatedAt     DateTime        @updatedAt
+    createdAt     DateTime        @default(now())
 }
 
 enum GroupStatus {
@@ -360,20 +418,22 @@ enum GroupStatus {
     inactive
     paused
     cancelled
+    completed
 }
 
 model ZoomGroup {
-    id           String        @id @default(auto()) @map("_id") @db.ObjectId
+    id           String          @id @default(auto()) @map("_id") @db.ObjectId
     groupNumber  String
     startDate    DateTime
     groupStatus  GroupStatus
-    trainer      Trainer?      @relation(fields: [trainerId], references: [id])
-    trainerId    String?       @db.ObjectId
-    students     User[]        @relation("UserToGroup", fields: [studentIds], references: [id])
-    studentIds   String[]      @db.ObjectId
-    course       Course?       @relation(fields: [courseId], references: [id])
-    courseId     String?       @db.ObjectId
+    trainer      Trainer?        @relation(fields: [trainerId], references: [id])
+    trainerId    String?         @db.ObjectId
+    students     User[]          @relation("UserToGroup", fields: [studentIds], references: [id])
+    studentIds   String[]        @db.ObjectId
+    course       Course?         @relation(fields: [courseId], references: [id])
+    courseId     String?         @db.ObjectId
     zoomSessions ZoomSession[]
-    updatedAt    DateTime      @updatedAt
-    createdAt    DateTime      @default(now())
+    finalTests   StudentRating[]
+    updatedAt    DateTime        @updatedAt
+    createdAt    DateTime        @default(now())
 }

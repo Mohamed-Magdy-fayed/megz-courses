@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { HTMLAttributes, HtmlHTMLAttributes, ReactNode, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ImageOff, ImagePlus, Trash } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
@@ -19,6 +19,7 @@ interface ImageUploaderProps {
     onRemove?: () => void;
     customeImage?: ReactNode;
     customeButton?: ReactNode;
+    noPadding?: boolean;
 }
 
 const ImageUploader: React.FC<ImageUploaderProps> = ({
@@ -28,6 +29,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     disabled,
     customeImage,
     customeButton,
+    noPadding
 }) => {
     const [loading, setLoading] = useState(false);
     const [progress, setProgress] = useState(0);
@@ -71,7 +73,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     if (!isMounted) return null;
 
     return (
-        <div className="flex items-center justify-between gap-4 py-4 w-full">
+        <div className={cn("flex items-center justify-between gap-4 py-4 w-full", noPadding && "py-0")}>
             {value && value.length > 0 ? (
                 <div className="flex gap-4 rounded-md items-center">
                     {customeImage ? customeImage : (
@@ -87,6 +89,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                     <div>
                         {onRemove && (
                             <Button
+                                type="button"
                                 variant={"icon"}
                                 customeColor={"destructiveIcon"}
                                 onClick={() => {
@@ -94,7 +97,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                                     if (!inputRef.current) return
                                     inputRef.current.value = ""
                                 }}
-                                type="button"
                             >
                                 <Trash className="h-4 w-4 text-error" />
                             </Button>

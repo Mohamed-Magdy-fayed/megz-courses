@@ -67,7 +67,7 @@ export const selfServeRouter = createTRPCRouter({
                         product_data: {
                             name: course.name,
                             description: course.description || `No description`,
-                            images: [course.image || ""],
+                            images: !course.image ? undefined : [course.image],
                         },
                     },
                     quantity: 1

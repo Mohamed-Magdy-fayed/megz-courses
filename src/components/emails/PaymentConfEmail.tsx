@@ -180,7 +180,7 @@ export const PaymentConfEmail = ({
 
                         <Section className="text-center mt-[32px] mb-[32px]">
                             <Button
-                                className="bg-[#000000] rounded text-white text-[12px] px-[20px] py-[12] font-semibold no-underline text-center"
+                                className="bg-[#000000] rounded text-white text-[12px] p-[20px_14px_20px_14px] font-semibold no-underline text-center"
                                 href={courseLink}
                             >
                                 Start learning

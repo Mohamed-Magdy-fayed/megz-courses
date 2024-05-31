@@ -1,9 +1,32 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import { validLevelTypes } from "@/lib/enumsTypes";
+import { validCourseStatuses, validLevelTypes } from "@/lib/enumsTypes";
 
 export const coursesRouter = createTRPCRouter({
+  getUsersWithStatus: publicProcedure
+    .input(z.object({ id: z.string(), status: z.enum(validCourseStatuses) }))
+    .query(async ({ input: { id, status }, ctx }) => {
+      const course = await ctx.prisma.course.findUnique({
+        where: {
+          id,
+        },
+        include: { orders: true }
+      });
+
+      const userIds = course?.orders.map(o => o.userId)
+
+      const users = await ctx.prisma.user.findMany({
+        where: { id: { in: userIds } },
+        include: {
+          orders: true,
+        }
+      })
+
+      const usersWithStatus = users.filter(u => u.courseStatus.some(({ courseId, state }) => courseId === course?.id && state === status))
+
+      return { usersWithStatus };
+    }),
   getWaitingList: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input: { id }, ctx }) => {

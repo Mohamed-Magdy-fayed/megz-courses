@@ -6,7 +6,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Copy, LucideDollarSign, MoreVertical, Send } from "lucide-react";
+import { Coins, Copy, LucideDollarSign, MoreVertical, Send } from "lucide-react";
 import { useToast } from "../ui/use-toast";
 import { OrderStatus } from "@prisma/client";
 import { Dispatch, SetStateAction, useState } from "react";
@@ -15,6 +15,10 @@ import { render } from "@react-email/render";
 import Email from "../emails/Email";
 import { format } from "date-fns";
 import { formatPrice } from "@/lib/utils";
+import Modal from "../ui/modal";
+import SelectField from "./SelectField";
+import { useSession } from "next-auth/react";
+import { z } from "zod";
 
 interface CellActionProps {
     status: OrderStatus;
@@ -24,7 +28,12 @@ interface CellActionProps {
 }
 
 const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId }) => {
+    const sesstion = useSession();
     const { toastInfo, toastSuccess, toastError } = useToast();
+    const [refundReason, setRefundReason] = useState<("requested_by_customer" | "duplicate" | "fraudulent")[]>([])
+    const [isRefundModalOpen, setIsRefundModalOpen] = useState(false)
+    const [loading, setLoading] = useState(false)
+
     const origin =
         typeof window !== 'undefined' && window.location.origin
             ? window.location.origin
@@ -37,6 +46,7 @@ const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId })
         toastInfo("Payment link copied to the clipboard");
     };
 
+    const refundOrderMutation = api.orders.refundOrder.useMutation()
     const resendPaymentLinkMutation = api.orders.resendPaymentLink.useMutation()
     const sendEmailMutation = api.emails.sendEmail.useMutation()
     const trpcUtils = api.useContext()
@@ -101,8 +111,56 @@ const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId })
         })
     }
 
+    const handleRefund = () => {
+        if (!refundReason[0]) return toastError("please select a reason")
+        refundOrderMutation.mutate({
+            orderId,
+            userId: sesstion.data?.user.id || "",
+            reason: refundReason[0],
+        })
+    }
+
     return (
         <>
+            <Modal
+                title="Refund"
+                description="Select refund reason"
+                isOpen={isRefundModalOpen}
+                onClose={() => setIsRefundModalOpen(false)}
+                children={(
+                    <div className="flex gap-4 items-center justify-between">
+                        <SelectField
+                            data={[
+                                { active: true, label: "Customer request", value: "requested_by_customer" },
+                                { active: true, label: "Dublicate", value: "duplicate" },
+                                { active: true, label: "Fraud", value: "fraudulent" },
+                            ]}
+                            listTitle="Reasons"
+                            placeholder="Select Refund Reason"
+                            values={refundReason}
+                            setValues={setRefundReason}
+                            disableSearch
+                        />
+                        <div className="flex items-center gap-4">
+                            <Button
+                                disabled={loading}
+                                onClick={() => setIsRefundModalOpen(false)}
+                                variant={"outline"}
+                                customeColor={"destructiveOutlined"}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                disabled={loading}
+                                onClick={handleRefund}
+                                customeColor={"success"}
+                            >
+                                Confirm
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            />
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button customeColor="mutedIcon" variant={"icon"} >
@@ -123,9 +181,10 @@ const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId })
                         <Send className="w-4 h-4 mr-2" />
                         Resend payment link
                     </DropdownMenuItem>
-                    /**TODO
-                    refund option
-                    */
+                    <DropdownMenuItem disabled={status !== "paid"} onClick={() => setIsRefundModalOpen(true)}>
+                        <Coins className="w-4 h-4 mr-2" />
+                        Refund
+                    </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
         </>

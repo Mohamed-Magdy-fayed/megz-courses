@@ -9,9 +9,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import MaterialsForm, { MaterialsFormValues } from "./MaterialsForm";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { useToast } from "@/components/ui/use-toast";
+import { MaterialItem } from "@prisma/client";
 
-const EditMaterialsForm = ({ materialId }: { materialId: string }) => {
-  const { data } = api.materials.getById.useQuery({ id: materialId });
+const EditMaterialsForm = ({ materialItem }: { materialItem: MaterialItem }) => {
   const [loading, setLoading] = useState(false);
 
   const {
@@ -24,7 +24,7 @@ const EditMaterialsForm = ({ materialId }: { materialId: string }) => {
     answerAreas,
     vocabularyCards,
     practiceQuestions,
-  } = data?.materialItem!;
+  } = materialItem;
 
   const form = useForm<MaterialsFormValues>({
     defaultValues: {
@@ -48,7 +48,7 @@ const EditMaterialsForm = ({ materialId }: { materialId: string }) => {
     setLoading(true);
 
     editMaterialMutation.mutate(
-      { ...data, id: materialId },
+      { ...data, id: materialItem.id },
       {
         onSuccess: ({ updatedmaterialItem }) => {
           toastSuccess(`Your material (${updatedmaterialItem.title}) is updated!`);
@@ -63,21 +63,23 @@ const EditMaterialsForm = ({ materialId }: { materialId: string }) => {
   };
 
   return (
-    <div>
-      <div className="flex items-center gap-4 p-4">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant={"icon"} customeColor={"mutedIcon"} onClick={() => router.back()}>
-              <ArrowLeft className="text-primary" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            Go back
-          </TooltipContent>
-        </Tooltip>
-        <Typography variant={"secondary"}>Edit material</Typography>
+    <div className="relative">
+      <div className="sticky top-0 bg-background z-50">
+        <div className="flex items-center gap-4 p-4">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant={"icon"} customeColor={"mutedIcon"} onClick={() => router.back()}>
+                <ArrowLeft className="text-primary" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              Go back
+            </TooltipContent>
+          </Tooltip>
+          <Typography variant={"secondary"}>Edit material</Typography>
+        </div>
+        <Separator />
       </div>
-      <Separator />
       <MaterialsForm
         form={form}
         loading={loading}

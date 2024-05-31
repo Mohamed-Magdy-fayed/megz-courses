@@ -10,25 +10,24 @@ import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import Spinner from "../Spinner";
 
-type AddStudentsFormProps = {
+type PostpondStudentsFormProps = {
     setIsOpen: (val: boolean) => void,
     id: string,
-    courseId: string,
 }
-const AddStudentsForm: FC<AddStudentsFormProps> = ({ setIsOpen, id, courseId }) => {
+const PostpondStudentsForm: FC<PostpondStudentsFormProps> = ({ setIsOpen, id }) => {
     const [loading, setLoading] = useState(false);
     const [userIds, setUserIds] = useState<string[]>([]);
 
     const action = "Continue";
 
-    const { data: courseWaitingListData } = api.courses.getWaitingList.useQuery({ id: courseId });
-    const addToZoomGroupMutation = api.zoomGroups.addStudentsToZoomGroup.useMutation();
+    const { data: courseOngoingListData } = api.zoomGroups.getZoomGroupStudents.useQuery({ id });
+    const moveStudentToPostpondedListMutation = api.zoomGroups.moveStudentToPostpondedList.useMutation();
     const trpcUtils = api.useContext();
     const { toastError, toastSuccess } = useToast()
 
     const onSubmit = () => {
         setLoading(true);
-        addToZoomGroupMutation.mutate({
+        moveStudentToPostpondedListMutation.mutate({
             id,
             studentIds: userIds
         }, {
@@ -50,16 +49,16 @@ const AddStudentsForm: FC<AddStudentsFormProps> = ({ setIsOpen, id, courseId }) 
     return (
         <div>
             <div className="flex flex-col p-4 items-start gap-4 h-full">
-                {!courseWaitingListData?.watingUsers ? <Spinner className="mx-auto" /> :
+                {!courseOngoingListData?.gorupStudents ? <Spinner className="mx-auto" /> :
                     <SelectField
-                        disabled={courseWaitingListData.watingUsers.length === 0}
+                        disabled={courseOngoingListData.gorupStudents.length === 0 || loading}
                         className="col-span-2"
                         multiSelect
                         values={userIds}
                         setValues={setUserIds}
-                        placeholder={courseWaitingListData.watingUsers.length === 0 ? "No students waiting for this course!" : "Select Users..."}
+                        placeholder={courseOngoingListData.gorupStudents.length === 0 ? "No students in this group!" : "Select Users..."}
                         listTitle="Users"
-                        data={courseWaitingListData.watingUsers
+                        data={courseOngoingListData.gorupStudents
                             .map(user => ({
                                 active: true,
                                 label: user.email,
@@ -114,4 +113,4 @@ const AddStudentsForm: FC<AddStudentsFormProps> = ({ setIsOpen, id, courseId }) 
     );
 };
 
-export default AddStudentsForm;
+export default PostpondStudentsForm;

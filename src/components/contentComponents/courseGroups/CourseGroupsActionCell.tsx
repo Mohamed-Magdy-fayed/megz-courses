@@ -6,9 +6,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Copy, CopyPlus, Edit, List, MoreVertical, SearchSlash, Trash } from "lucide-react";
+import { Copy, Edit, List, MoreVertical, SearchSlash, Trash } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { useRouter } from "next/router";
 import Link from "next/link";
 import { AlertModal } from "@/components/modals/AlertModal";
 import { useState } from "react";

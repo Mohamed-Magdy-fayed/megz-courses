@@ -48,31 +48,20 @@ const GroupsPage: NextPage = () => {
                             <Typography variant={"buttonText"}>Create</Typography>
                         </Button>
                     </div>
-                    {isOpen && (
-                        <PaperContainer>
-                            <Modal
-                                isOpen={isOpen}
-                                title="Create Zoom Group"
-                                description="add a new group"
-                                onClose={() => setIsOpen(false)}
-                                children={(
-                                    <ZoomGroupForm setIsOpen={setIsOpen}></ZoomGroupForm>
-                                )}
-                            />
-                        </PaperContainer>
-                    )}
+                    <Modal
+                        isOpen={isOpen}
+                        title="Create Zoom Group"
+                        description="add a new group"
+                        onClose={() => setIsOpen(false)}
+                        children={(
+                            <ZoomGroupForm setIsOpen={setIsOpen}></ZoomGroupForm>
+                        )}
+                    />
                     <PaperContainer>
                         <ZoomGroupsClient></ZoomGroupsClient>
                     </PaperContainer>
                 </div>
             </main>
-            Groups Page
-            <div className="flex flex-col gap-4">
-
-                <Typography>Active groups (name - instructor - dates - students - group price - instructor salary - course - progress - absent percentage )</Typography>
-                <Typography>inactive groups (same)</Typography>
-                <Typography>create a group (same)</Typography>
-            </div>
         </AppLayout>
     )
 }

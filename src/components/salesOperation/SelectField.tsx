@@ -18,7 +18,7 @@ type DataType = {
 interface SelectFieldProps<T> extends ButtonHTMLAttributes<HTMLButtonElement> {
     placeholder: string
     multiSelect?: boolean
-    listTitle: string
+    listTitle: string | ReactNode
     data: DataType[]
     values: T[]
     setValues: Dispatch<SetStateAction<T[]>>
@@ -59,7 +59,7 @@ const SelectField: FC<SelectFieldProps<any>> = ({ placeholder, listTitle, data, 
                 {disableSearch ? null : (
                     <div className='p-2'>
                         <Input
-                            placeholder={`Search ${listTitle}`}
+                            placeholder={`Search ${typeof listTitle === "string" ? listTitle : ""}`}
                             value={searchQuery}
                             onChange={(e) => {
                                 setSearchQuery(e.target.value)

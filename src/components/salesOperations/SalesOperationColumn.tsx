@@ -1,6 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import AssigneeCell from "./AssigneeCell";
+import AssigneeCell from "../salesAgentComponents/AssigneeCell";
 import CellAction from "./ActionCell";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
@@ -94,6 +94,8 @@ export const columns: ColumnDef<SalesOperationColumn>[] = [
     cell: ({ row }) => <CellAction
       id={row.original.id}
       code={row.original.code}
-      assigneeId={row.original.assignee} />,
+      status={row.original.status}
+      assigneeId={row.original.assignee}
+    />,
   },
 ];

@@ -49,7 +49,7 @@ const SalesAgentsPage = () => {
         <div className="flex w-full flex-col gap-4">
           <div className="flex justify-between">
             <div className="flex flex-col gap-2">
-              <ConceptTitle>Sales Agents</ConceptTitle>
+              <ConceptTitle>Sales Operations</ConceptTitle>
               <div className="flex items-center gap-2">
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -73,22 +73,25 @@ const SalesAgentsPage = () => {
                 </Tooltip>
               </div>
             </div>
-            <Button onClick={() => setIsOpen(true)} customeColor={"primary"}>
-              <PlusIcon className="mr-2"></PlusIcon>
-              <Typography variant={"buttonText"}>Add</Typography>
-            </Button>
+            <AssignModal
+              isOpen={assignIsOpen}
+              loading={loading}
+              onClose={() => setAssingIsOpen(false)}
+              onConfirm={handleCreateOperation}
+            />
+            <Button onClick={() => setAssingIsOpen(true)}>Create Operation</Button>
           </div>
-          {isOpen && (
-            <SalesAgentForm setIsOpen={setIsOpen}></SalesAgentForm>
-          )}
-
           <PaperContainer>
-            {salesAgents.isLoading ? (
+            {salesOperations.isLoading ? (
               <Spinner></Spinner>
-            ) : salesAgents.isError ? (
+            ) : salesOperations.isError ? (
               <>Error</>
             ) : (
-              <SalesAgentsClient data={salesAgents.data.salesAgents}></SalesAgentsClient>
+              <SalesOperationsClient
+                data={salesOperations.data?.salesOperations.sort((a, b) => {
+                  return a.createdAt > b.createdAt ? -1 : 1
+                })}
+              />
             )}
           </PaperContainer>
         </div>

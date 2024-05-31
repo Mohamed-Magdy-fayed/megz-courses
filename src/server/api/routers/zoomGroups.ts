@@ -7,15 +7,166 @@ import { TRPCError } from "@trpc/server";
 import { SessionStatus } from "@prisma/client";
 import { validGroupStatuses } from "@/lib/enumsTypes";
 import { generateGroupNumnber } from "@/lib/utils";
+import { subHours } from "date-fns";
 
 export const zoomGroupsRouter = createTRPCRouter({
+    setGroupFinalTests: protectedProcedure
+        .input(z.object({
+            groupId: z.string(),
+            finalTests: z.array(z.object({
+                isCompleted: z.boolean(),
+                score: z.number(),
+                studentId: z.string(),
+            })),
+        }))
+        .mutation(async ({ ctx, input: { groupId, finalTests } }) => {
+            const updatedGroup = await ctx.prisma.zoomGroup.update({
+                where: { id: groupId },
+                data: {
+                    finalTests,
+                }
+            })
+
+            return { updatedGroup }
+        }),
+    setSessionQuizzes: protectedProcedure
+        .input(z.object({
+            sessionId: z.string(),
+            quizzes: z.array(z.object({
+                isCompleted: z.boolean(),
+                score: z.number(),
+                studentId: z.string(),
+            })),
+        }))
+        .mutation(async ({ ctx, input: { sessionId, quizzes } }) => {
+            const updatedSession = await ctx.prisma.zoomSession.update({
+                where: { id: sessionId },
+                data: {
+                    quizzes,
+                }
+            })
+
+            return { updatedSession }
+        }),
+    setSessionAssignments: protectedProcedure
+        .input(z.object({
+            sessionId: z.string(),
+            assignments: z.array(z.object({
+                isCompleted: z.boolean(),
+                score: z.number(),
+                studentId: z.string(),
+            })),
+        }))
+        .mutation(async ({ ctx, input: { sessionId, assignments } }) => {
+            const updatedSession = await ctx.prisma.zoomSession.update({
+                where: { id: sessionId },
+                data: {
+                    assignments,
+                }
+            })
+
+            return { updatedSession }
+        }),
+    setSessionAttendance: protectedProcedure
+        .input(z.object({
+            sessionId: z.string(),
+            studentIds: z.array(z.string()),
+        }))
+        .mutation(async ({ ctx, input: { sessionId, studentIds } }) => {
+            const updatedSession = await ctx.prisma.zoomSession.update({
+                where: { id: sessionId },
+                data: {
+                    attenders: studentIds
+                }
+            })
+
+            return { updatedSession }
+        }),
+    zoomGroupsCronJob: protectedProcedure
+        .mutation(async ({ ctx }) => {
+            const currentDate = new Date()
+            const twoHoursAgo = subHours(currentDate, 2);
+
+            const ongoingGroups = await ctx.prisma.zoomGroup.updateMany({
+                where: {
+                    AND: {
+                        zoomSessions: { some: { sessionStatus: { in: ["ongoing", "completedOnTime", "completedOffTime"] } } },
+                        groupStatus: "waiting",
+                    }
+                },
+                data: {
+                    groupStatus: "active",
+                }
+            })
+
+            const completedGroups = ctx.prisma.zoomGroup.updateMany({
+                where: {
+                    AND: {
+                        zoomSessions: {
+                            every: {
+                                sessionStatus: {
+                                    in: ["completedOffTime", "completedOnTime"]
+                                }
+                            },
+                        },
+                        groupStatus: "active"
+                    }
+                },
+                data: {
+                    groupStatus: "completed"
+                }
+            })
+
+            const ongoingSessions = await ctx.prisma.zoomSession.updateMany({
+                where: {
+                    AND: {
+                        sessionStatus: "scheduled",
+                        sessionDate: {
+                            lte: currentDate
+                        }
+                    }
+                },
+                data: {
+                    sessionStatus: "ongoing"
+                }
+            })
+
+            const completedSessions = await ctx.prisma.zoomSession.updateMany({
+                where: {
+                    AND: {
+                        sessionStatus: {
+                            in: ["ongoing", "scheduled"]
+                        },
+                        sessionDate: {
+                            lte: twoHoursAgo
+                        }
+                    }
+                },
+                data: {
+                    sessionStatus: "completedOnTime"
+                }
+            })
+
+            return {
+                ongoingGroups,
+                completedGroups,
+                ongoingSessions,
+                completedSessions,
+            };
+        }),
     getzoomGroups: protectedProcedure
         .input(z.object({
-            ids: z.array(z.string())
+            ids: z.array(z.string()).optional(),
+            courseId: z.string().optional(),
         }).optional())
         .query(async ({ ctx, input }) => {
             const zoomGroups = await ctx.prisma.zoomGroup.findMany({
-                where: { id: { in: input?.ids } },
+                where: {
+                    OR: input ? {
+                        id: { in: input.ids },
+                        courseId: input.courseId,
+                    } : undefined,
+                },
                 orderBy: { createdAt: "desc" },
                 include: {
                     course: true,
@@ -40,12 +191,39 @@ export const zoomGroupsRouter = createTRPCRouter({
                 where: { id },
                 include: {
                     course: true,
+                    zoomSessions: {
+                        orderBy: {
+                            sessionDate: "asc"
+                        }
+                    },
+                    students: true,
+                    trainer: { include: { user: true } },
+                },
+            });
+            return { zoomGroup };
+        }),
+    getZoomGroupStudents: protectedProcedure
+        .input(
+            z.object({
+                id: z.string(),
+            })
+        )
+        .query(async ({ ctx, input: { id } }) => {
+            const zoomGroup = await ctx.prisma.zoomGroup.findUnique({
+                where: { id },
+                include: {
+                    course: true,
                     zoomSessions: true,
                     students: true,
                     trainer: true,
                 },
             });
-            return { zoomGroup };
+
+            const gorupStudents = await ctx.prisma.user.findMany({
+                where: { id: { in: zoomGroup?.studentIds } }
+            })
+
+            return { gorupStudents };
         }),
     createZoomGroup: protectedProcedure
         .input(
@@ -66,7 +244,7 @@ export const zoomGroupsRouter = createTRPCRouter({
 
             const generateZoomSessions = async (startDate: Date): Promise<ZoomSession[]> => {
                 const sessions: ZoomSession[] = [];
-                let currentDate = new Date(startDate);
+                let currentDate = new Date(startDate)
 
                 // Determine the start day
                 const startDay = currentDate.getDay();
@@ -78,7 +256,7 @@ export const zoomGroupsRouter = createTRPCRouter({
                 } else if (startDay === 1 || startDay === 4) { // Monday or Thursday
                     days = [1, 4]; // Monday and Thursday
                 } else { // Tuesday or Saturday
-                    days = [2, 5]; // Tuesday and Saturday
+                    days = [2, 6]; // Tuesday and Saturday
                 }
 
                 //` Generate 7 sessions
@@ -87,7 +265,7 @@ export const zoomGroupsRouter = createTRPCRouter({
                         sessions.push({
                             attenders: [],
                             sessionStatus: "scheduled",
-                            sessionDate: currentDate,
+                            sessionDate: new Date(currentDate),
                             sessionLink: `https://zoom.us/start/webmeeting`,
                         })
                     }
@@ -105,7 +283,7 @@ export const zoomGroupsRouter = createTRPCRouter({
 
             const zoomGroup = await ctx.prisma.zoomGroup.create({
                 data: {
-                    startDate,
+                    startDate: new Date(startDate),
                     groupNumber: generateGroupNumnber(startDate, trainer?.user.name, course?.name),
                     groupStatus: "waiting",
                     zoomSessions: {
@@ -319,13 +497,19 @@ export const zoomGroupsRouter = createTRPCRouter({
         .input(z.array(z.string()))
         .mutation(async ({ input, ctx }) => {
             if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+
             const deletedzoomGroups = await ctx.prisma.zoomGroup.deleteMany({
                 where: {
-                    id: {
-                        in: input,
-                    },
+                    AND: {
+                        id: {
+                            in: input,
+                        },
+                        studentIds: { isEmpty: true },
+                    }
                 },
             });
+
+            if (deletedzoomGroups.count !== input.length) throw new TRPCError({ code: "BAD_REQUEST", message: "you may need to remove all stundets before deleting a group!" })
 
             return { deletedzoomGroups };
         }),

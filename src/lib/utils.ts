@@ -1,4 +1,4 @@
-import { Address, Course, Order, User } from "@prisma/client";
+import { Address, Course, Order, User, ZoomGroup, ZoomSession } from "@prisma/client";
 import { type ClassValue, clsx } from "clsx";
 import { format } from "date-fns";
 import { twMerge } from "tailwind-merge";
@@ -99,4 +99,24 @@ export const getWaitingList = (course: CourseType): number => {
 
 export const generateGroupNumnber = (startDate: Date, trainerUserName: string, courseName: string): string => {
   return `${format(startDate.getTime(), "E_do_MMM_hh:mm_aaa")}_${getInitials(trainerUserName)}_${courseName.replaceAll(" ", "_")}`
+}
+
+export const calculateAttendancePercentages = (group: ZoomGroup & { zoomSessions: ZoomSession[] }) => {
+  const totalStudents = group.studentIds.length;
+
+  const sessionAttendance = group.zoomSessions.filter(session => session.sessionDate < new Date()).map(session => {
+    const attendedStudents = session.attenders.length;
+    const attendancePercentage = (attendedStudents / totalStudents) * 100;
+    return {
+      sessionId: session.id,
+      attendancePercentage
+    };
+  });
+
+  const overallAttendancePercentage = sessionAttendance.reduce((acc, session) => acc + session.attendancePercentage, 0) / sessionAttendance.length;
+
+  return {
+    sessionAttendance,
+    overallAttendancePercentage
+  };
 }

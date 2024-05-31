@@ -6,7 +6,10 @@ import { SeverityPill, SeverityPillProps } from "../overview/SeverityPill";
 import { DataTable } from "../ui/DataTable";
 import CellAction from "./ActionCell";
 import { PaymentForm } from "./PaymentForm";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { Info } from "lucide-react";
 
 const OrderInfoPanel = ({ data }: {
     data: SalesOperation & {
@@ -23,8 +26,8 @@ const OrderInfoPanel = ({ data }: {
         switch (data.orderDetails?.status) {
             case "cancelled":
                 return "destructive"
-            case "done":
-                return "success";
+            case "refunded":
+                return "destructive";
             case "paid":
                 return "primary";
             case "pending":
@@ -36,6 +39,12 @@ const OrderInfoPanel = ({ data }: {
 
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
+
+    const refundedByUser = api.users.getUserById.useQuery({ id: data.orderDetails?.refundRequester || "" }, { enabled: false });
+
+    useEffect(() => {
+        if (data.orderDetails?.refundRequester) refundedByUser.refetch()
+    }, [data.orderDetails?.refundRequester])
 
     return (
         <PaperContainer className="mt-4 p-4">
@@ -52,11 +61,32 @@ const OrderInfoPanel = ({ data }: {
                                 total: data.orderDetails?.amount!,
                                 id: data.orderDetails.paymentId,
                                 orderId: data.orderDetails.id,
+                                refundedBy: refundedByUser?.data?.user.email
                             }]}
                             onDelete={() => { }}
                             setUsers={() => { }}
                             columns={[
-                                { accessorKey: "status", header: () => "Status", cell: ({ row }) => <><SeverityPill className="max-w-[6rem]" color={color()}>{row.original.status}</SeverityPill></> },
+                                {
+                                    accessorKey: "status", header: () => "Status", cell: ({ row }) => (
+                                        <div className="flex flex-col gap-2">
+                                            {row.original.status === "refunded" ? (
+                                                <div className="flex gap-2 items-center">
+                                                    <SeverityPill className="max-w-[6rem] flex-grow" color={color()}>{row.original.status}</SeverityPill>
+                                                    <Tooltip>
+                                                        <TooltipTrigger >
+                                                            <Info />
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <Typography>Refunded by: {row.original.refundedBy}</Typography>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </div>
+                                            ) : (
+                                                <SeverityPill className="max-w-[6rem]" color={color()}>{row.original.status}</SeverityPill>
+                                            )}
+                                        </div>
+                                    )
+                                },
                                 { accessorKey: "total", header: () => "Amount", cell: ({ row }) => <>{formatPrice(row.original.total)}</> },
                                 { id: "actions", header: () => "Actions", cell: ({ row }) => <CellAction id={row.original.id} status={row.original.status} orderId={row.original.orderId} setOpen={setOpen} />, },
                             ]}

@@ -211,7 +211,7 @@ const MaterialsForm = ({
             Reset
           </Button>
           <Button disabled={loading} type="submit">
-            Create Material
+            Update Material
           </Button>
         </div>
       </form>

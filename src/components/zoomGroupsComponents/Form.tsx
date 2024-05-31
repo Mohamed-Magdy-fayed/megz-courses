@@ -1,5 +1,5 @@
 import { api } from "@/lib/api";
-import { FC, useState } from "react";
+import { FC, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Typography } from "../ui/Typoghraphy";
@@ -83,6 +83,19 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
         });
     };
 
+    const totalWaitingUsers = useMemo(
+        () => coursesData?.courses.map(course => {
+            const userIds = new Set();
+            course.orders.forEach(order => {
+                if (order.user.courseStatus.some(({ courseId, state }) => courseId === course.id && state === "waiting")) {
+                    userIds.add(order.user.id);
+                }
+            });
+            return userIds.size;
+        }).reduce((a, b) => a + b, 0),
+        [coursesData?.courses]
+    )
+
     return (
         <div>
             {!trainersData || !coursesData ? <Spinner className="w-fit mx-auto" /> : (
@@ -101,9 +114,14 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                             values={courseId}
                             setValues={setCourseId}
                             placeholder="Select Course..."
-                            listTitle="Courses"
+                            listTitle={(
+                                <div className="flex items-center justify-between w-full">
+                                    <Typography>Courses</Typography>
+                                    <Typography className="text-xs text-muted">Total waiting: {totalWaitingUsers}</Typography>
+                                </div>
+                            )}
                             data={coursesData.courses.map(course => ({
-                                active: getWaitingList(course) >= 5,
+                                active: getWaitingList(course) >= 1,
                                 label: course.name,
                                 value: course.id,
                                 customLabel: (

@@ -10,25 +10,25 @@ import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import Spinner from "../Spinner";
 
-type AddStudentsFormProps = {
+type ResumeStudentsFormProps = {
     setIsOpen: (val: boolean) => void,
     id: string,
     courseId: string,
 }
-const AddStudentsForm: FC<AddStudentsFormProps> = ({ setIsOpen, id, courseId }) => {
+const ResumeStudentsForm: FC<ResumeStudentsFormProps> = ({ setIsOpen, id, courseId }) => {
     const [loading, setLoading] = useState(false);
     const [userIds, setUserIds] = useState<string[]>([]);
 
     const action = "Continue";
 
-    const { data: courseWaitingListData } = api.courses.getWaitingList.useQuery({ id: courseId });
-    const addToZoomGroupMutation = api.zoomGroups.addStudentsToZoomGroup.useMutation();
+    const { data: coursePostpondedListData } = api.courses.getUsersWithStatus.useQuery({ id: courseId, status: "postponded" });
+    const moveStudentsToWaitingListMutation = api.zoomGroups.moveStudentsToWaitingList.useMutation();
     const trpcUtils = api.useContext();
     const { toastError, toastSuccess } = useToast()
 
     const onSubmit = () => {
         setLoading(true);
-        addToZoomGroupMutation.mutate({
+        moveStudentsToWaitingListMutation.mutate({
             id,
             studentIds: userIds
         }, {
@@ -50,44 +50,43 @@ const AddStudentsForm: FC<AddStudentsFormProps> = ({ setIsOpen, id, courseId }) 
     return (
         <div>
             <div className="flex flex-col p-4 items-start gap-4 h-full">
-                {!courseWaitingListData?.watingUsers ? <Spinner className="mx-auto" /> :
+                {!coursePostpondedListData?.usersWithStatus ? <Spinner className="mx-auto" /> :
                     <SelectField
-                        disabled={courseWaitingListData.watingUsers.length === 0}
+                        disabled={coursePostpondedListData.usersWithStatus.length === 0 || loading}
                         className="col-span-2"
                         multiSelect
                         values={userIds}
                         setValues={setUserIds}
-                        placeholder={courseWaitingListData.watingUsers.length === 0 ? "No students waiting for this course!" : "Select Users..."}
+                        placeholder={coursePostpondedListData.usersWithStatus.length === 0 ? "No students in postpond list!" : "Select Users..."}
                         listTitle="Users"
-                        data={courseWaitingListData.watingUsers
-                            .map(user => ({
-                                active: true,
-                                label: user.email,
-                                value: user.id,
-                                customLabel: (
-                                    <TooltipProvider>
-                                        <Typography className="mr-auto">{user.email}</Typography>
-                                        <Tooltip delayDuration={10}>
-                                            <TooltipTrigger>
-                                                <Link
-                                                    href={`/account/${user.id}`}
-                                                    target="_blank"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                    }}
-                                                >
-                                                    <ExternalLink className="w-4 h-4 text-info"></ExternalLink>
-                                                </Link>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                <Typography>
-                                                    Go to account
-                                                </Typography>
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
-                                )
-                            }))
+                        data={coursePostpondedListData.usersWithStatus.map(user => ({
+                            active: true,
+                            label: user.email,
+                            value: user.id,
+                            customLabel: (
+                                <TooltipProvider>
+                                    <Typography className="mr-auto">{user.email}</Typography>
+                                    <Tooltip delayDuration={10}>
+                                        <TooltipTrigger>
+                                            <Link
+                                                href={`/account/${user.id}`}
+                                                target="_blank"
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                }}
+                                            >
+                                                <ExternalLink className="w-4 h-4 text-info"></ExternalLink>
+                                            </Link>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <Typography>
+                                                Go to account
+                                            </Typography>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            )
+                        }))
                         }
                     />
                 }
@@ -114,4 +113,4 @@ const AddStudentsForm: FC<AddStudentsFormProps> = ({ setIsOpen, id, courseId }) 
     );
 };
 
-export default AddStudentsForm;
+export default ResumeStudentsForm;

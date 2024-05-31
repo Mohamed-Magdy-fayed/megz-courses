@@ -169,13 +169,13 @@ export const Email = ({
 
                         <Section className="text-center mt-[32px] mb-[32px]">
                             <Button
-                                className="bg-[#000000] rounded text-white text-[12px] px-[20px] py-[12] font-semibold no-underline text-center"
+                                className="bg-[#000000] rounded text-white text-[12px] p-[14px_20px_14px_20px] font-semibold no-underline text-center"
                                 href={paymentLink}
                             >
                                 Proceed to payment
                             </Button>
                         </Section>
-                        <Text className="text-black text-[14px] leading-[24px]">
+                        <Text className="text-black text-sm leading-6">
                             or copy and paste this URL into your browser:{' '}
                             <Link
                                 href={paymentLink}

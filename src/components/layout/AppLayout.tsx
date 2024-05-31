@@ -4,14 +4,21 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useNavStore } from "@/zustand/store";
 import { useSession } from "next-auth/react";
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import Spinner from "../Spinner";
 import UnauthorizedAccess from "./UnauthorizedAccess";
+import { api } from "@/lib/api";
 
 const AppLayout = ({ children }: { children: ReactNode }) => {
   const { opened, openNav, closeNav } = useNavStore();
 
   const { data: session, status } = useSession({ required: true })
+  const mutation = api.zoomGroups.zoomGroupsCronJob.useMutation()
+  const trpcUtils = api.useContext()
+
+  useEffect(() => {
+    mutation.mutate(undefined, { onSettled: () => trpcUtils.invalidate() })
+  }, [new Date().getMinutes()])
 
   if (status === "loading" || !session.user) return (
     <div className="grid place-content-center w-screen h-screen">

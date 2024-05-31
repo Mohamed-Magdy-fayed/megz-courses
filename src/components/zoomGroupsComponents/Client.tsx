@@ -26,6 +26,7 @@ const ZoomGroupsClient = () => {
                         })
                 },
                 onError: (error) => {
+                    callback?.()
                     toastError(error.message)
                 },
             }
