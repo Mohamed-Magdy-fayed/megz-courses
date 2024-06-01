@@ -167,6 +167,9 @@ export const usersRouter = createTRPCRouter({
           throw new TRPCError({ code: "UNAUTHORIZED" })
         }
 
+        const user = await ctx.prisma.user.findUnique({ where: { email } })
+        if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "user not found" })
+
         const updateOptions: Prisma.UserUpdateArgs = {
           where: {
             email: email,
@@ -183,7 +186,9 @@ export const usersRouter = createTRPCRouter({
             },
             device,
             userType,
-            trainer: userType === "teacher" ? { create: { role: "teacher" } } : undefined
+            trainer: userType === "teacher" ? {
+              connectOrCreate: { where: { userId: user.id }, create: { role: "teacher" } }
+            } : undefined
           },
         }
 
@@ -194,6 +199,9 @@ export const usersRouter = createTRPCRouter({
 
         if (ctx.session.user.userType === "admin" && userType) {
           updateOptions.data.userType = userType
+          updateOptions.data.trainer = user.userType === "student" && userType === "teacher" ? {
+            connectOrCreate: { where: { userId: user.id }, create: { role: "teacher" } }
+          } : undefined
         }
 
         const updatedUser = await ctx.prisma.user.update(updateOptions);
