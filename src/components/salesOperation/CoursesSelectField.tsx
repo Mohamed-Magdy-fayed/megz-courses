@@ -108,15 +108,6 @@ const CoursesSelectField: FC<CoursesSelectFieldProps> = ({ placeholder, listTitl
                                     e.stopPropagation()
 
                                     setValues((prev) => {
-                                        console.log(prev
-                                            .some(({ courseId }) => courseId === item.value)
-                                            ? prev.map(prevValue => prevValue.courseId === item.value
-                                                ? {
-                                                    courseId: prevValue.courseId,
-                                                    isPrivate: !prevValue.isPrivate,
-                                                }
-                                                : prevValue)
-                                            : [...prev, { courseId: item.value, isPrivate: true }])
                                         return prev
                                             .some(({ courseId }) => courseId === item.value)
                                             ? prev.map(prevValue => prevValue.courseId === item.value

@@ -110,7 +110,7 @@ export const ordersRouter = createTRPCRouter({
                         product_data: {
                             name: course.name,
                             description: course.description || `No description`,
-                            images: [course.image || ""],
+                            images: course.image ? [course.image] : undefined,
                         },
                     },
                     quantity: 1

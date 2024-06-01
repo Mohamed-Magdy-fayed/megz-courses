@@ -182,6 +182,8 @@ export const usersRouter = createTRPCRouter({
               city,
             },
             device,
+            userType,
+            trainer: userType === "teacher" ? { create: { role: "teacher" } } : undefined
           },
         }
 

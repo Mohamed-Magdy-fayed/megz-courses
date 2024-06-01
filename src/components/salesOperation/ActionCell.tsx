@@ -29,7 +29,7 @@ interface CellActionProps {
 
 const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId }) => {
     const sesstion = useSession();
-    const { toastInfo, toastSuccess, toastError } = useToast();
+    const { toastInfo, toastSuccess, toastError, toast } = useToast();
     const [refundReason, setRefundReason] = useState<("requested_by_customer" | "duplicate" | "fraudulent")[]>([])
     const [isRefundModalOpen, setIsRefundModalOpen] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -46,7 +46,12 @@ const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId })
         toastInfo("Payment link copied to the clipboard");
     };
 
-    const refundOrderMutation = api.orders.refundOrder.useMutation()
+    const refundOrderMutation = api.orders.refundOrder.useMutation({
+        onMutate: () => setLoading(true),
+        onSuccess: ({ success }) => toast({ variant: "info", description: success ? "refunded successfully" : "Unable to refund" }),
+        onError: ({ message }) => toastError(message.startsWith("No such payment_intent") ? "Please refund the order manually!" : message),
+        onSettled: () => setLoading(false),
+    })
     const resendPaymentLinkMutation = api.orders.resendPaymentLink.useMutation()
     const sendEmailMutation = api.emails.sendEmail.useMutation()
     const trpcUtils = api.useContext()
@@ -130,6 +135,7 @@ const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId })
                 children={(
                     <div className="flex gap-4 items-center justify-between">
                         <SelectField
+                            disabled={loading}
                             data={[
                                 { active: true, label: "Customer request", value: "requested_by_customer" },
                                 { active: true, label: "Dublicate", value: "duplicate" },
