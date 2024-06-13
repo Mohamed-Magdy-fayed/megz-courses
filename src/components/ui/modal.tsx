@@ -8,6 +8,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ScrollArea } from "./scroll-area";
 
 interface ModalProps {
   title: string;
@@ -36,7 +37,7 @@ export default function Modal({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <div>{children}</div>
+        <ScrollArea className="max-h-[70vh]">{children}</ScrollArea>
       </DialogContent>
     </Dialog>
   );

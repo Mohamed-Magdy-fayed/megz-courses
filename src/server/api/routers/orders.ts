@@ -258,7 +258,9 @@ export const ordersRouter = createTRPCRouter({
 
             const order = await ctx.prisma.order.findFirst({
                 where: {
-                    paymentId: sessionId
+                    paymentId: {
+                        in: [sessionId, paymentIntentId]
+                    }
                 },
                 include: {
                     courses: true,

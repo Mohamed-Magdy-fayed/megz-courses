@@ -12,6 +12,7 @@
 # database
 /prisma/db.sqlite
 /prisma/db.sqlite-journal
+/mongodb-cluster
 
 # next.js
 /.next/

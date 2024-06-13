@@ -40,7 +40,7 @@ export const usersRouter = createTRPCRouter({
     .query(async ({ ctx, input: { id } }) => {
       const user = await ctx.prisma.user.findUnique({
         where: { id },
-        include: { orders: true },
+        include: { orders: true, evaluationFormSubmissions: true },
       });
 
       if (!user) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "didn't find user" })

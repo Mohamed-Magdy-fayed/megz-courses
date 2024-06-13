@@ -1,9 +1,9 @@
 import { Order, User } from "@prisma/client";
-import UserDataForm, { UserDataFormValues } from "../UserDataForm/UserDataForm";
 import { useSession } from "next-auth/react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { Separator } from "@/components/ui/separator";
+import UserDataForm, { UserDataFormValues } from "../UserDataForm/UserDataForm";
 import AccountPaymentClient from "./AccountPaymentClient";
 
 export const AccountDetails = ({ user }: {

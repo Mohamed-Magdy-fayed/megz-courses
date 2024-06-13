@@ -14,6 +14,7 @@ import { Course } from '@prisma/client'
 import ChatWithUs from '../landingPageComponents/ChatWithUs'
 import { useRouter } from 'next/router'
 import { useToast } from '../ui/use-toast'
+import LoginModal from '../modals/LoginModal'
 
 interface EnrollmentModalProps {
     setOpen: Dispatch<SetStateAction<boolean>>
@@ -31,14 +32,15 @@ const EnrollmentModal: FC<EnrollmentModalProps> = ({
     setOpen,
 }) => {
     const enrollCourseMutation = api.selfServe.enrollCourse.useMutation()
-    const { toastError } = useToast()
+    const { toastError, toast } = useToast()
     const router = useRouter()
     const session = useSession()
+    const [loginModalOpen, setLoginModalOpen] = useState(false)
     const [checkedAgreement, setcheckedAgreement] = useState(false)
     const [isPrivate, setIsPrivate] = useState(false)
 
     const onEnroll = () => {
-        if (!session.data?.user.email || !session.data?.user.name) return
+        if (!session.data?.user.email || !session.data?.user.name) return setLoginModalOpen(true)
 
         setLoading(true)
         enrollCourseMutation.mutate({
@@ -57,70 +59,73 @@ const EnrollmentModal: FC<EnrollmentModalProps> = ({
     }
 
     return (
-        <Modal
-            title="Confirm enrollment"
-            description="review your order before confirmation"
-            isOpen={open}
-            onClose={() => setOpen(false)}
-        >
-            <div>
-                <div className="flex flex-col items-center justify-between p-4">
-                    <div className="self-start">
-                        <Typography variant={"secondary"}>{course.name}</Typography>
+        <>
+            <LoginModal open={loginModalOpen} setOpen={setLoginModalOpen} />
+            <Modal
+                title="Confirm enrollment"
+                description="review your order before confirmation"
+                isOpen={open}
+                onClose={() => setOpen(false)}
+            >
+                <div>
+                    <div className="flex flex-col items-center justify-between p-4">
+                        <div className="self-start">
+                            <Typography variant={"secondary"}>{course.name}</Typography>
+                        </div>
+                        <div className="self-end">
+                            <Typography className={cn("", isPrivate && "text-info")}> {formatPrice(isPrivate ? course.privatePrice : course.groupPrice)}</Typography>                    </div>
+                        <div className="self-start">
+                            <Typography variant={"secondary"}>Do you need a private class?</Typography>
+                        </div>
+                        <div className="w-full">
+                            <Typography>note that prices might change!</Typography>
+                            <Checkbox
+                                id='isPrivate'
+                                className="float-right border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                                checked={isPrivate}
+                                onClick={() => setIsPrivate((prev) => !prev)}
+                            />
+                        </div>
                     </div>
-                    <div className="self-end">
-                        <Typography className={cn("", isPrivate && "text-info")}> {formatPrice(isPrivate ? course.privatePrice : course.groupPrice)}</Typography>                    </div>
-                    <div className="self-start">
-                        <Typography variant={"secondary"}>Do you need a private class?</Typography>
+                    <div className="flex flex-col items-center justify-between p-4">
+                        <div className="self-start">
+                            <Typography variant={"secondary"}>Creating order for email:</Typography>
+                        </div>
+                        <div className="self-end">
+                            <Typography >{session.data?.user.email}</Typography>
+                        </div>
                     </div>
-                    <div className="w-full">
-                        <Typography>note that prices might change!</Typography>
+                    <Separator />
+                    <div className="flex items-center gap-2">
                         <Checkbox
-                            id='isPrivate'
-                            className="float-right border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
-                            checked={isPrivate}
-                            onClick={() => setIsPrivate((prev) => !prev)}
+                            id="checkedAgreement"
+                            className="border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                            checked={checkedAgreement}
+                            onClick={() => setcheckedAgreement((prev) => !prev)}
                         />
+                        <Label htmlFor="checkedAgreement">
+                            <Typography className="leading-5">
+                                By clicking continue payment online you authorize our website to send you an email with the payment link
+                            </Typography>
+                        </Label>
+                    </div>
+                    <div className="flex flex-col items-center justify-between p-4">
+                        <Button
+                            disabled={!checkedAgreement || loading}
+                            onClick={onEnroll}
+                        >
+                            <Typography className={cn("", loading && "opacity-0")}>
+                                Continue payment online
+                            </Typography>
+                            <CreditCard className={cn("", loading && "opacity-0")} />
+                            {loading && <Spinner className="w-4 h-4 absolute" />}
+                        </Button>
+                        <Separator className='my-4' />
+                        <ChatWithUs />
                     </div>
                 </div>
-                <div className="flex flex-col items-center justify-between p-4">
-                    <div className="self-start">
-                        <Typography variant={"secondary"}>Creating order for email:</Typography>
-                    </div>
-                    <div className="self-end">
-                        <Typography >{session.data?.user.email}</Typography>
-                    </div>
-                </div>
-                <Separator />
-                <div className="flex items-center gap-2">
-                    <Checkbox
-                        id="checkedAgreement"
-                        className="border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
-                        checked={checkedAgreement}
-                        onClick={() => setcheckedAgreement((prev) => !prev)}
-                    />
-                    <Label htmlFor="checkedAgreement">
-                        <Typography className="leading-5">
-                            By clicking continue payment online you authorize our website to send you an email with the payment link
-                        </Typography>
-                    </Label>
-                </div>
-                <div className="flex flex-col items-center justify-between p-4">
-                    <Button
-                        disabled={!checkedAgreement || loading}
-                        onClick={onEnroll}
-                    >
-                        <Typography className={cn("", loading && "opacity-0")}>
-                            Continue payment online
-                        </Typography>
-                        <CreditCard className={cn("", loading && "opacity-0")} />
-                        {loading && <Spinner className="w-4 h-4 absolute" />}
-                    </Button>
-                    <Separator className='my-4' />
-                    <ChatWithUs />
-                </div>
-            </div>
-        </Modal>
+            </Modal>
+        </>
     )
 }
 

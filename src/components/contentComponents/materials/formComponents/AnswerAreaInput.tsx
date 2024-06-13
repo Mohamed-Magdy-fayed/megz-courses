@@ -23,6 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { MaterialsFormValues } from "../MaterialsForm";
+import ImageUploader from "@/components/ui/ImageUploader";
 
 interface AnswerAreaInputProps {
   field: ControllerRenderProps<MaterialsFormValues, "answerAreas">;

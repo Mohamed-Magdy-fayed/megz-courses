@@ -18,7 +18,7 @@ import { Plus, Trash, Upload } from "lucide-react";
 import { CheckCircle2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useRouter } from "next/router";
-import { EvaluationForm, EvaluationFormTypes } from "@prisma/client";
+import { EvaluationForm, EvaluationFormQuestion, EvaluationFormTypes } from "@prisma/client";
 import { useToast } from "../ui/use-toast";
 import Image from "next/image";
 import { getInitials } from "@/lib/getInitials";
@@ -30,16 +30,17 @@ const QuestionSchema = z.object({
         type: z.enum(["multipleChoice", "trueFalse"]),
         image: z.string().optional().nullable(),
         options: z.array(z.object({
-            text: z.string(),
+            isTrue: z.boolean().nullable(),
+            text: z.string().nullable(),
             isCorrect: z.boolean()
         })).max(6).optional(),
-        correctAnswer: z.boolean().optional(),
+        trueOrFalse: z.boolean().optional(),
     }))
 });
 
 export interface IFormInput extends z.infer<typeof QuestionSchema> { }
 
-const CustomForm: FC<{ initialData?: EvaluationForm }> = ({ initialData }) => {
+const CustomForm: FC<{ initialData?: EvaluationForm & { questions: EvaluationFormQuestion[] } }> = ({ initialData }) => {
     const router = useRouter();
     const courseId = router.query?.id as string;
 
@@ -51,7 +52,11 @@ const CustomForm: FC<{ initialData?: EvaluationForm }> = ({ initialData }) => {
         type: "multipleChoice",
         question: "",
         points: 1,
-        options: [{ text: "", isCorrect: false }, { text: "", isCorrect: false }, { text: "", isCorrect: false }],
+        options: [
+            { text: "", isTrue: null, isCorrect: false },
+            { text: "", isTrue: null, isCorrect: false },
+            { text: "", isTrue: null, isCorrect: false }
+        ],
     }
 
     const methods = useForm<IFormInput>({
@@ -78,7 +83,10 @@ const CustomForm: FC<{ initialData?: EvaluationForm }> = ({ initialData }) => {
 
     const onSubmit: SubmitHandler<IFormInput> = (data) => {
         createEvalFormMutation.mutate({
-            fields: data.fields,
+            fields: data.fields.map(field => field.type === "trueFalse" ? ({
+                ...field,
+                options: [{ text: null, isTrue: true, isCorrect: !!field.trueOrFalse }, { text: null, isTrue: false, isCorrect: !field.trueOrFalse }]
+            }) : field),
             materialId,
             type,
         })
@@ -245,7 +253,7 @@ const CustomForm: FC<{ initialData?: EvaluationForm }> = ({ initialData }) => {
                             {questionType === "trueFalse" && (
                                 <FormField
                                     control={control}
-                                    name={`fields.${i}.correctAnswer`}
+                                    name={`fields.${i}.trueOrFalse`}
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Correct Answer</FormLabel>
@@ -264,7 +272,7 @@ const CustomForm: FC<{ initialData?: EvaluationForm }> = ({ initialData }) => {
                                                     </SelectContent>
                                                 </Select>
                                             </FormControl>
-                                            {errors.fields && errors.fields[i]?.correctAnswer &&
+                                            {errors.fields && errors.fields[i]?.trueOrFalse &&
                                                 <FormMessage>
                                                     This field is required
                                                 </FormMessage>
@@ -309,7 +317,7 @@ const MultipleChoiceOptions: React.FC<{ control: Control<IFormInput, any>, error
                                 <FormItem>
                                     <FormLabel>Option {i + 1}</FormLabel>
                                     <FormControl>
-                                        <Input {...field} />
+                                        <Input {...field} value={field.value || ""} />
                                     </FormControl>
                                     {errors.fields && errors.fields[index]?.options?.[i]?.text &&
                                         <FormMessage>
@@ -348,7 +356,7 @@ const MultipleChoiceOptions: React.FC<{ control: Control<IFormInput, any>, error
             })}
             <div className="py-4">
                 {fields.length < 6 && (
-                    <Button className="w-fit" type="button" onClick={() => append({ text: "", isCorrect: false })}>Add Option</Button>
+                    <Button className="w-fit" type="button" onClick={() => append({ text: "", isTrue: null, isCorrect: false })}>Add Option</Button>
                 )}
             </div>
         </div>

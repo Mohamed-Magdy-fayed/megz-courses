@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   createTRPCRouter,
   protectedProcedure,
+  publicProcedure,
   adminProcedure,
 } from "@/server/api/trpc";
 import bcrypt from "bcrypt";
@@ -9,7 +10,7 @@ import { TRPCError } from "@trpc/server";
 import { validTrainerRoles } from "@/lib/enumsTypes";
 
 export const trainersRouter = createTRPCRouter({
-  getTrainers: protectedProcedure
+  getTrainers: publicProcedure
     .query(async ({ ctx }) => {
       const trainers = await ctx.prisma.trainer.findMany({
         orderBy: {

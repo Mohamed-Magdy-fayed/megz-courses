@@ -32,7 +32,7 @@ export const columns: ColumnDef<CourseRow>[] = [
       );
     },
     cell: ({ row }) => (
-      <Link href={`/courses/${row.original.id}`} className="hover:text-primary">
+      <Link href={`/my_courses/${row.original.id}`} className="hover:text-primary">
         <Typography>
           {row.original.name}
         </Typography>

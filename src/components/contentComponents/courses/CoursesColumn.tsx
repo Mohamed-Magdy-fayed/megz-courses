@@ -1,14 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Info } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import CoursesActionCell from "./CoursesActionCell";
 import { Typography } from "@/components/ui/Typoghraphy";
-import { CourseLevels, Order } from "@prisma/client";
+import { CourseLevels, Order, User } from "@prisma/client";
 import { formatPrice } from "@/lib/utils";
 import { SeverityPill, SeverityPillProps } from "@/components/overview/SeverityPill";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export type Course = {
     id: string,
@@ -21,9 +22,8 @@ export type Course = {
     privatePrice: number,
     instructorPrice: number,
     level: CourseLevels,
-    form: string,
     oralTest: string,
-    orders: Order[],
+    orders: (Order & { user: User })[],
 };
 
 export const columns: ColumnDef<Course>[] = [
@@ -128,10 +128,20 @@ export const columns: ColumnDef<Course>[] = [
         }
     },
     {
-        accessorKey: "form",
-        header: "Placement Test",
+        accessorKey: "orders",
+        header: "Enrollments",
         cell: ({ row }) => (
-            <Link target="_blank" href={row.original.form.split(`<iframe src="`)[1]?.split(`" width="640" height="1904" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>`)[0]!} >Go to form</Link>
+            <div className="flex items-center gap-2">
+                <Typography>{row.original.orders.length}</Typography>
+                <Tooltip>
+                    <TooltipTrigger>
+                        <Info className="text-info" />
+                    </TooltipTrigger>
+                    <TooltipContent className="flex flex-col">
+                        {row.original.orders.map(({ user }) => (<Typography>{user.email}</Typography>))}
+                    </TooltipContent>
+                </Tooltip>
+            </div>
         )
     },
     {

@@ -106,8 +106,26 @@
 
 body {
   overflow-x: hidden;
+  overflow-y: hidden;
 }
 
 .in-table-link {
   @apply font-medium hover:text-primary
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .printable * {
+    visibility: visible;
+  }
+
+  .printable {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
 }

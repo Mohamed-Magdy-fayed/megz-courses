@@ -40,7 +40,8 @@ interface UserDataFormProps {
 }
 
 const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsOpen, initialData }) => {
-    const isOwnAccount = useRouter().pathname === "/account"
+    const pathname = useRouter().pathname
+    const isOwnAccount = pathname === "/account" || pathname === "/my_account"
     const session = useSession()
 
     const [loading, setLoading] = useState(false)

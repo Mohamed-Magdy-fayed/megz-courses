@@ -73,7 +73,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         const Comp = asChild ? Slot : "button"
         return (
             <Comp
-                className={cn(buttonVariants({ variant, size, className, customeColor }))}
+                className={cn("!whitespace-nowrap", buttonVariants({ variant, size, className, customeColor }))}
                 ref={ref}
                 {...props}
             />

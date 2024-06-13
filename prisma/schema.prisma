@@ -69,32 +69,33 @@ type CoursStatus {
 }
 
 model User {
-    id             String          @id @default(auto()) @map("_id") @db.ObjectId
-    name           String
-    email          String          @unique
-    emailVerified  DateTime?
-    image          String?
-    hashedPassword String?
-    tempPassword   String?
-    phone          String?
-    userType       UserType        @default(student)
-    accounts       Account[]
-    sessions       Session[]
-    orders         Order[]
-    courseStatus   CoursStatus[]
-    address        Address?
-    placementTests PlacementTest[]
-    trainer        Trainer?        @relation("UserToTrainer")
-    trainerId      String?         @db.ObjectId
-    salesAgent     SalesAgent?     @relation("UserToSalesAgent")
-    chatAgent      ChatAgent?      @relation("UserToChatAgent")
-    supportChat    SupportChat?    @relation("UserToChat")
-    salesAgentId   String?         @db.ObjectId
-    device         Devices?
-    zoomGroups     ZoomGroup[]     @relation("UserToGroup", fields: [zoomGroupIds], references: [id])
-    zoomGroupIds   String[]        @db.ObjectId
-    updatedAt      DateTime        @updatedAt
-    createdAt      DateTime        @default(now())
+    id                        String                     @id @default(auto()) @map("_id") @db.ObjectId
+    name                      String
+    email                     String                     @unique
+    emailVerified             DateTime?
+    image                     String?
+    hashedPassword            String?
+    tempPassword              String?
+    phone                     String?
+    userType                  UserType                   @default(student)
+    accounts                  Account[]
+    sessions                  Session[]
+    orders                    Order[]
+    courseStatus              CoursStatus[]
+    address                   Address?
+    placementTests            PlacementTest[]
+    trainer                   Trainer?                   @relation("UserToTrainer")
+    trainerId                 String?                    @db.ObjectId
+    salesAgent                SalesAgent?                @relation("UserToSalesAgent")
+    chatAgent                 ChatAgent?                 @relation("UserToChatAgent")
+    supportChat               SupportChat?               @relation("UserToChat")
+    salesAgentId              String?                    @db.ObjectId
+    device                    Devices?
+    zoomGroups                ZoomGroup[]                @relation("UserToGroup", fields: [zoomGroupIds], references: [id])
+    zoomGroupIds              String[]                   @db.ObjectId
+    evaluationFormSubmissions EvaluationFormSubmission[]
+    updatedAt                 DateTime                   @updatedAt
+    createdAt                 DateTime                   @default(now())
 }
 
 model VerificationToken {
@@ -151,70 +152,75 @@ enum CourseLevels {
 }
 
 model Course {
-    id              String          @id @default(auto()) @map("_id") @db.ObjectId
+    id              String           @id @default(auto()) @map("_id") @db.ObjectId
     name            String
     description     String?
     image           String?
     groupPrice      Float
     privatePrice    Float
     instructorPrice Float
-    form            String
     oralTest        String
-    level           CourseLevels
     placementTests  PlacementTest[]
+    level           CourseLevels
     materialItems   MaterialItem[]
     zoomGroup       ZoomGroup[]
-    orders          Order[]         @relation(fields: [orderIds], references: [id])
-    orderIds        String[]        @db.ObjectId
-    updatedAt       DateTime        @updatedAt
-    createdAt       DateTime        @default(now())
+    EvaluationForm  EvaluationForm[]
+    orders          Order[]          @relation(fields: [orderIds], references: [id])
+    orderIds        String[]         @db.ObjectId
+    updatedAt       DateTime         @updatedAt
+    createdAt       DateTime         @default(now())
 }
 
 type Option {
-    text      String
+    text      String?
+    isTrue    Boolean?
     isCorrect Boolean
 }
 
-enum QuizOrAssignmentQuestionType {
+enum EvaluationFormQuestionType {
     multipleChoice
     trueFalse
 }
 
-type FormQuestion {
-    isQuestionCorrect Boolean?
-    image             String?
-    options           Option[]
-    points            Int
-    questionText      String
-    type              QuizOrAssignmentQuestionType
-}
-
-type FormAnswer {
-    selectedOption Option
-    question       FormQuestion
-}
-
-type Submission {
-    studentId String       @db.ObjectId
-    answers   FormAnswer[]
+model EvaluationFormQuestion {
+    id               String                     @id @default(auto()) @map("_id") @db.ObjectId
+    image            String?
+    options          Option[]
+    points           Int
+    questionText     String
+    type             EvaluationFormQuestionType
+    EvaluationForm   EvaluationForm?            @relation(fields: [evaluationFormId], references: [id])
+    evaluationFormId String?                    @db.ObjectId
+    updatedAt        DateTime                   @updatedAt
+    createdAt        DateTime                   @default(now())
 }
 
 enum EvaluationFormTypes {
     assignment
     quiz
+    finalTest
+    placementTest
+}
+
+type EvaluationFormHistory {
+    updatedBy String
+    updatedAt DateTime
 }
 
 model EvaluationForm {
-    id             String              @id @default(auto()) @map("_id") @db.ObjectId
+    id             String                     @id @default(auto()) @map("_id") @db.ObjectId
     type           EvaluationFormTypes
     totalPoints    Int
-    submissions    Submission[]
-    questions      FormQuestion[]
-    materialItem   MaterialItem?       @relation(fields: [materialItemId], references: [id])
-    materialItemId String?             @db.ObjectId
+    submissions    EvaluationFormSubmission[]
+    questions      EvaluationFormQuestion[]
+    updateHistory  EvaluationFormHistory[]
+    materialItem   MaterialItem?              @relation(fields: [materialItemId], references: [id])
+    materialItemId String?                    @db.ObjectId
+    course         Course?                    @relation(fields: [courseId], references: [id])
+    courseId       String?                    @db.ObjectId
     createdBy      String
-    updatedAt      DateTime            @updatedAt
-    createdAt      DateTime            @default(now())
+    updatedAt      DateTime                   @updatedAt
+    createdAt      DateTime                   @default(now())
 }
 
 model MaterialItem {
@@ -230,6 +236,7 @@ model MaterialItem {
     vocabularyCards   VocabCard[]
     practiceQuestions Question[]
     evaluationForms   EvaluationForm[]
+    ZoomSession       ZoomSession[]
     course            Course?          @relation(fields: [courseId], references: [id])
     courseId          String?          @db.ObjectId
     updatedAt         DateTime         @updatedAt
@@ -390,26 +397,46 @@ enum SessionStatus {
     cancelled
 }
 
-type StudentRating {
-    studentId   String  @db.ObjectId
-    score       Float
-    isCompleted Boolean
+type SubmissionAnswer {
+    text       String?
+    isTrue     Boolean?
+    questionId String   @db.ObjectId
+}
+
+model EvaluationFormSubmission {
+    id                        String             @id @default(auto()) @map("_id") @db.ObjectId
+    answers                   SubmissionAnswer[]
+    rating                    Float
+    student                   User               @relation(fields: [userId], references: [id])
+    userId                    String             @db.ObjectId
+    evaluationForm            EvaluationForm     @relation(fields: [evaluationFormId], references: [id], onDelete: Cascade)
+    evaluationFormId          String             @db.ObjectId
+    zoomSessionAsAssignment   ZoomSession?       @relation("Assignments", fields: [zoomSessionIdAsAssignment], references: [id])
+    zoomSessionIdAsAssignment String?            @db.ObjectId
+    zoomSessionAsQuiz         ZoomSession?       @relation("Quizzes", fields: [zoomSessionIdAsQuiz], references: [id])
+    zoomSessionIdAsQuiz       String?            @db.ObjectId
+    zoomGroup                 ZoomGroup?         @relation(fields: [zoomGroupId], references: [id])
+    zoomGroupId               String?            @db.ObjectId
+    updatedAt                 DateTime           @updatedAt
+    createdAt                 DateTime           @default(now())
 }
 
 model ZoomSession {
-    id            String          @id @default(auto()) @map("_id") @db.ObjectId
-    sessionDate   DateTime
-    sessionLink   String
-    sessionStatus SessionStatus
-    subTrainer    Trainer?        @relation(fields: [subTrainerId], references: [id])
-    subTrainerId  String?         @db.ObjectId
-    zoomGroup     ZoomGroup?      @relation(fields: [groupId], references: [id])
-    groupId       String?         @db.ObjectId
-    attenders     String[]
-    assignments   StudentRating[]
-    quizzes       StudentRating[]
-    updatedAt     DateTime        @updatedAt
-    createdAt     DateTime        @default(now())
+    id             String                     @id @default(auto()) @map("_id") @db.ObjectId
+    sessionDate    DateTime
+    sessionLink    String
+    sessionStatus  SessionStatus
+    subTrainer     Trainer?                   @relation(fields: [subTrainerId], references: [id])
+    subTrainerId   String?                    @db.ObjectId
+    zoomGroup      ZoomGroup?                 @relation(fields: [groupId], references: [id])
+    groupId        String?                    @db.ObjectId
+    materialItem   MaterialItem?              @relation(fields: [materialItemId], references: [id])
+    materialItemId String?                    @db.ObjectId
+    attenders      String[]
+    assignments    EvaluationFormSubmission[] @relation("Assignments")
+    quizzes        EvaluationFormSubmission[] @relation("Quizzes")
+    updatedAt      DateTime                   @updatedAt
+    createdAt      DateTime                   @default(now())
 }
 
 enum GroupStatus {
@@ -422,18 +449,18 @@ enum GroupStatus {
 }
 
 model ZoomGroup {
-    id           String          @id @default(auto()) @map("_id") @db.ObjectId
+    id           String                     @id @default(auto()) @map("_id") @db.ObjectId
     groupNumber  String
     startDate    DateTime
     groupStatus  GroupStatus
-    trainer      Trainer?        @relation(fields: [trainerId], references: [id])
-    trainerId    String?         @db.ObjectId
-    students     User[]          @relation("UserToGroup", fields: [studentIds], references: [id])
-    studentIds   String[]        @db.ObjectId
-    course       Course?         @relation(fields: [courseId], references: [id])
-    courseId     String?         @db.ObjectId
+    trainer      Trainer?                   @relation(fields: [trainerId], references: [id])
+    trainerId    String?                    @db.ObjectId
+    students     User[]                     @relation("UserToGroup", fields: [studentIds], references: [id])
+    studentIds   String[]                   @db.ObjectId
+    course       Course?                    @relation(fields: [courseId], references: [id])
+    courseId     String?                    @db.ObjectId
     zoomSessions ZoomSession[]
-    finalTests   StudentRating[]
-    updatedAt    DateTime        @updatedAt
-    createdAt    DateTime        @default(now())
+    finalTests   EvaluationFormSubmission[]
+    updatedAt    DateTime                   @updatedAt
+    createdAt    DateTime                   @default(now())
 }

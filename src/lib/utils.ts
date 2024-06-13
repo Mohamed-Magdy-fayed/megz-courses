@@ -1,4 +1,4 @@
-import { Address, Course, Order, User, ZoomGroup, ZoomSession } from "@prisma/client";
+import { Address, Course, EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, MaterialItem, Order, User, ZoomGroup, ZoomSession } from "@prisma/client";
 import { type ClassValue, clsx } from "clsx";
 import { format } from "date-fns";
 import { twMerge } from "tailwind-merge";
@@ -119,4 +119,16 @@ export const calculateAttendancePercentages = (group: ZoomGroup & { zoomSessions
     sessionAttendance,
     overallAttendancePercentage
   };
+}
+
+export const getEvalutaionFormFullMark = (questions: EvaluationFormQuestion[]) => questions.map(question => question.points).reduce((a, b) => a + b, 0)
+export const getSubmissionScoreAndPercentage = (evaluationForm: EvaluationForm, submissions: EvaluationFormSubmission[]) => {
+  const submissionScore = submissions.find(submission => submission.evaluationFormId === evaluationForm.id)?.rating || 0
+  return {
+    score: submissionScore || 0,
+    percentage: formatPercentage(submissionScore / evaluationForm.totalPoints * 100)
+  }
+}
+export const isQuestionCorrect = (question: EvaluationFormQuestion, submission: EvaluationFormSubmission) => {
+  return submission.answers.some(answer => answer.questionId === question.id && question.options.some(option => option.text === answer.text && option.isCorrect))
 }

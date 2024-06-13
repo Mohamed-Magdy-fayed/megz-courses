@@ -146,7 +146,11 @@ export const coursesRouter = createTRPCRouter({
       const course = await ctx.prisma.course.findUnique({
         where: { id },
         include: {
-          materialItems: true,
+          materialItems: {
+            include: {
+              evaluationForms: true,
+            }
+          },
           zoomGroup: true,
           orders: { include: { user: true } },
           placementTests: { include: { student: true, trainer: { include: { user: true } } } }
@@ -163,13 +167,11 @@ export const coursesRouter = createTRPCRouter({
         groupPrice: z.number(),
         privatePrice: z.number(),
         instructorPrice: z.number(),
-        form: z.string(),
         oralTest: z.string(),
         level: z.enum(validLevelTypes),
       })
     )
     .mutation(async ({ input: {
-      form,
       name,
       image,
       description,
@@ -187,9 +189,35 @@ export const coursesRouter = createTRPCRouter({
           groupPrice,
           privatePrice,
           instructorPrice,
-          form,
           oralTest,
           level,
+        },
+      });
+
+      return {
+        course,
+      };
+    }),
+  dublicateCourse: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .mutation(async ({ input: { id }, ctx }) => {
+      const existingCourse = await ctx.prisma.course.findUnique({ where: { id } })
+      if (!existingCourse) throw new TRPCError({ code: "BAD_REQUEST", message: "can't find course" })
+
+      const course = await ctx.prisma.course.create({
+        data: {
+          name: existingCourse.name,
+          image: existingCourse.image,
+          description: existingCourse.description,
+          groupPrice: existingCourse.groupPrice,
+          privatePrice: existingCourse.privatePrice,
+          instructorPrice: existingCourse.instructorPrice,
+          oralTest: existingCourse.oralTest,
+          level: existingCourse.level,
         },
       });
 
@@ -202,19 +230,29 @@ export const coursesRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         name: z.string(),
-        form: z.string(),
+        image: z.string(),
+        description: z.string(),
+        groupPrice: z.number(),
+        privatePrice: z.number(),
+        instructorPrice: z.number(),
         oralTest: z.string(),
+        level: z.enum(validLevelTypes),
       })
     )
-    .mutation(async ({ ctx, input: { name, id, form, oralTest } }) => {
+    .mutation(async ({ ctx, input: { name, id, oralTest, description, groupPrice, image, instructorPrice, level, privatePrice } }) => {
       const updatedCourse = await ctx.prisma.course.update({
         where: {
           id,
         },
         data: {
           name,
-          form,
           oralTest,
+          description,
+          groupPrice,
+          privatePrice,
+          level,
+          instructorPrice,
+          image,
         },
       });
 

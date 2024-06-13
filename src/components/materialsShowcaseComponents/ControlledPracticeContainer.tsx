@@ -26,7 +26,7 @@ const ControlledPracticeContainer: FC<ControlledPracticeContainerProps> = ({
       (q) => q.correctAnswer === q.studentAnswer
     ).length;
 
-    correctAnswers >= questions.length / 2
+    correctAnswers <= questions.length / 2
       ? toastError(`${correctAnswers} Correct answers of ${questions.length} - Score: ${(
         (correctAnswers / questions.length) *
         100

@@ -1,6 +1,6 @@
 "use client";
 
-import { HTMLAttributes, HtmlHTMLAttributes, ReactNode, useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ImageOff, ImagePlus, Trash } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
@@ -51,7 +51,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             const task = uploadBytesResumable(storageRef, file);
 
             task.on('state_changed',
-                ({ bytesTransferred, totalBytes }) => setProgress(bytesTransferred / totalBytes),
+                ({ bytesTransferred, totalBytes }) => setProgress(bytesTransferred / totalBytes * 100),
                 (error) => reject(error),
                 () => resolve(task.snapshot.ref),
             );
@@ -86,22 +86,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                             </Avatar>
                         </div>
                     )}
-                    <div>
-                        {onRemove && (
-                            <Button
-                                type="button"
-                                variant={"icon"}
-                                customeColor={"destructiveIcon"}
-                                onClick={() => {
-                                    onRemove()
-                                    if (!inputRef.current) return
-                                    inputRef.current.value = ""
-                                }}
-                            >
-                                <Trash className="h-4 w-4 text-error" />
-                            </Button>
-                        )}
-                    </div>
                 </div>
             ) : customeImage ? customeImage : (
                 <div className="rounded-md w-20 h-20">
@@ -118,22 +102,58 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                 className="hidden"
                 ref={inputRef}
             />
-            <Button
-                type="button"
-                disabled={disabled || loading}
-                variant="outline"
-                customeColor="primaryOutlined"
-                onClick={() => inputRef.current?.click()}
-                className={cn("relative overflow-hidden")}
-            >
-                {customeButton ? customeButton : (
-                    <>
-                        {progress > 0 && <Progress value={progress} className="absolute h-full rounded-none opacity-40" />}
-                        <ImagePlus className={cn("mr-2 h-4 w-4")} />
-                        <Typography>Upload an image</Typography>
-                    </>
-                )}
-            </Button>
+            <div className="flex flex-col items-end gap-2">
+                {onRemove && value && value.length > 0 ? (
+                    <div className="flex items-center">
+                        <Button
+                            type="button"
+                            variant={"outline"}
+                            customeColor={"destructiveOutlined"}
+                            onClick={() => {
+                                onRemove()
+                                if (!inputRef.current) return
+                                inputRef.current.value = ""
+                            }}
+                            className="rounded-r-none"
+                        >
+                            <Trash className="h-4 w-4 text-error" />
+                        </Button>
+                        <Button
+                            type="button"
+                            disabled={disabled || loading}
+                            variant="outline"
+                            customeColor="primaryOutlined"
+                            onClick={() => inputRef.current?.click()}
+                            className={cn("relative overflow-hidden rounded-l-none")}
+                        >
+                            {customeButton ? customeButton : (
+                                <>
+                                    {progress > 0 && <Progress value={progress} className="absolute h-full rounded-none opacity-40" />}
+                                    <ImagePlus className={cn("mr-2 h-4 w-4")} />
+                                    <Typography className="whitespace-nowrap">Upload an image</Typography>
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                ) :
+                    <Button
+                        type="button"
+                        disabled={disabled || loading}
+                        variant="outline"
+                        customeColor="primaryOutlined"
+                        onClick={() => inputRef.current?.click()}
+                        className={cn("relative overflow-hidden")}
+                    >
+                        {customeButton ? customeButton : (
+                            <>
+                                {progress > 0 && <Progress value={progress} className="absolute h-full rounded-none opacity-40" />}
+                                <ImagePlus className={cn("mr-2 h-4 w-4")} />
+                                <Typography className="whitespace-nowrap">Upload an image</Typography>
+                            </>
+                        )}
+                    </Button>
+                }
+            </div>
         </div>
     );
 };

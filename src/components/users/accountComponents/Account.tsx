@@ -22,7 +22,8 @@ export const Account = ({
 }) => {
   const { toastError, toastSuccess } = useToast()
   const session = useSession()
-  const isOwnAccount = useRouter().pathname === "/account"
+  const pathname = useRouter().pathname
+  const isOwnAccount = pathname === "/account" || pathname === "/my_account"
   const trpcUtils = api.useContext();
 
   const editUserImage = api.users.editUserImage.useMutation({
@@ -42,7 +43,8 @@ export const Account = ({
 
   const handleChange = (url: string) => {
     if (!user?.email) return toastError("no email");
-    editUserImage.mutate({ url, email: user.email });
+    editUserImage.mutate({ url, email: user.email }, {onSuccess: () => {
+    }});
   };
 
   return (

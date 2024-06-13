@@ -77,6 +77,7 @@ const PracticeQuestionsController: FC<PracticeQuestionsControllerProps> = ({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
+                    type="button"
                     variant={"icon"}
                     customeColor={"infoIcon"}
                     onClick={() =>
@@ -105,10 +106,10 @@ const PracticeQuestionsController: FC<PracticeQuestionsControllerProps> = ({
               onChange={(e) => setQuestionText(e.target.value)}
             />
             <Button
+              type="button"
               variant="outline"
               customeColor="primaryOutlined"
               className="whitespace-nowrap"
-              type="button"
               onClick={() =>
                 changeHandler([...question.choices, questionText], "choices")
               }

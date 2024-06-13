@@ -12,11 +12,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import MaterialImageUpload from "../../ui/MaterialImageUpload";
 import AnswerCardsInput from "./formComponents/AnswerCardsInput";
 import AnswerAreaInput from "./formComponents/AnswerAreaInput";
 import VocabCardsInput from "./formComponents/VocabCardsInput";
 import PracticeQuestionsInput from "./formComponents/PracticeQuestionsInput";
+import ImageUploader from "@/components/ui/ImageUploader";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const formSchema = z.object({
   leadinText: z.string(),
@@ -80,7 +81,7 @@ const MaterialsForm = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form onSubmit={form.handleSubmit(onSubmit)} >
         <FormField
           control={form.control}
           name="title"
@@ -124,14 +125,21 @@ const MaterialsForm = ({
           control={form.control}
           name="leadinImageUrl"
           render={({ field }) => (
-            <FormItem className="p-4 md:col-span-2">
+            <FormItem className="p-4">
               <FormLabel>Leadin Image</FormLabel>
               <FormControl>
-                <MaterialImageUpload
-                  value={field.value}
+                <ImageUploader
                   disabled={loading}
+                  value={field.value}
                   onChange={(url) => field.onChange(url)}
                   onRemove={() => field.onChange("")}
+                  customeImage={field.value && field.value.length > 0 ? (
+                    <div className="flex gap-4 rounded-md">
+                      <img alt="user image" src={field.value} className="max-h-[72px]" />
+                    </div>
+                  ) : (
+                    <Skeleton className="h-[72px] w-[128px] rounded-md" />
+                  )}
                 />
               </FormControl>
               <FormMessage />
@@ -211,7 +219,7 @@ const MaterialsForm = ({
             Reset
           </Button>
           <Button disabled={loading} type="submit">
-            Update Material
+            Create Material
           </Button>
         </div>
       </form>

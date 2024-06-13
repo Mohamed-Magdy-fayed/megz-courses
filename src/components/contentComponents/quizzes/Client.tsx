@@ -32,6 +32,7 @@ const QuizzesClient = ({ courseId }: { courseId: string }) => {
         updatedAt: format(updatedAt, "PPPp"),
     })) : []
 
+    const trpcUtils = api.useContext()
     const deleteMutation = api.evaluationForm.deleteEvalForm.useMutation({
         onMutate: () => { },
         onError: ({ message }) => toastError(message),
@@ -40,8 +41,11 @@ const QuizzesClient = ({ courseId }: { courseId: string }) => {
     const onDelete = (callback?: () => void) => {
         deleteMutation.mutate({ ids }, {
             onSuccess: (data) => {
-                toastSuccess(`${data.deletedEvalForms.count} forms deleted`)
-                callback?.()
+                trpcUtils.evaluationForm.invalidate()
+                    .then(() => {
+                        toastSuccess(`${data.deletedEvalForms.count} forms deleted`)
+                        callback?.()
+                    })
             }
         })
     }

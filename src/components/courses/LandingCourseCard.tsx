@@ -10,15 +10,18 @@ import { Typography } from '../ui/Typoghraphy'
 import { Skeleton } from '../ui/skeleton'
 import EnrollmentModal from './EnrollmentModal'
 import { api } from '@/lib/api'
+import { useSession } from 'next-auth/react'
 
 const LandingCourseCard = ({ course }: { course: Course }) => {
     const imageUrl = !course.image ? "" : `url(${course.image})`
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false)
+    const { data: sessionData } = useSession()
 
     const userQuery = api.users.getCurrentUser.useQuery(undefined, { enabled: false })
 
     useEffect(() => {
+        if (!sessionData?.user) return
         userQuery.refetch()
     }, [])
 
@@ -61,7 +64,7 @@ const LandingCourseCard = ({ course }: { course: Course }) => {
                         </Button>
                     </Link>
                     {userQuery.data?.user?.courseStatus.some(status => status.courseId === course.id) ? (
-                        <Link href={`/my_courses/${userQuery.data?.user.id}`}>
+                        <Link href={`/my_courses/${userQuery.data.user.courseStatus.find(status => status.courseId === course.id)?.courseId}`}>
                             <Button>
                                 <Typography>
                                     Go to courses

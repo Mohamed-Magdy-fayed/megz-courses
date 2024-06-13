@@ -10,7 +10,7 @@ import { Course, Order } from "@prisma/client"
 import Spinner from "@/components/Spinner"
 import { Button } from "@/components/ui/button"
 import { Typography } from "@/components/ui/Typoghraphy"
-import { BookOpen, LayoutDashboard, LogIn, Menu, UserPlus } from "lucide-react"
+import { BookOpen, LayoutDashboard, LogIn, Menu, UserCog, UserPlus } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useEffect, useState } from "react"
 import { LogoForeground } from "../layout/Logo"
@@ -200,15 +200,23 @@ const DesktopAuthenticatedProfileMenu = () => {
   }
 
   return (
-    <div className="hidden md:flex col-span-3 items-center gap-4 justify-end">
+    <div className="hidden lg:flex col-span-3 items-center gap-4 justify-end">
       {/* Authenticated Users (Students) */}
       {session.data?.user.userType === "student" ? (
-        <Link href={`/my_courses/${session.data?.user.id}`}>
-          <Button customeColor={"primaryIcon"}>
-            <Typography className="text-foreground whitespace-nowrap">My courses</Typography>
-            <BookOpen />
-          </Button>
-        </Link>
+        <>
+          <Link href={`/my_courses`}>
+            <Button customeColor={"primaryIcon"}>
+              <Typography className="text-foreground whitespace-nowrap">My courses</Typography>
+              <BookOpen />
+            </Button>
+          </Link>
+          <Link href={`/my_account`}>
+            <Button customeColor={"primaryIcon"}>
+              <Typography className="text-foreground whitespace-nowrap">My Account</Typography>
+              <UserCog />
+            </Button>
+          </Link>
+        </>
       ) /* Authenticated Users (non student) */ : (
         <Link href={`/dashboard`}>
           <Button customeColor={"primaryIcon"}>
@@ -274,7 +282,7 @@ const MobileAuthenticatedProfileMenu = () => {
   }
 
   return (
-    <div className="col-span-3 flex items-center gap-4 justify-end md:hidden">
+    <div className="col-span-3 flex items-center gap-4 justify-end lg:hidden">
       <DropdownMenu open={open} onOpenChange={(value) => setOpen(value)}>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -295,7 +303,7 @@ const MobileAuthenticatedProfileMenu = () => {
             Profile Menu
           </TooltipContent>
         </Tooltip>
-        <DropdownMenuContent className="p-2 md:hidden">
+        <DropdownMenuContent className="p-2 lg:hidden">
           <div className="flex flex-col p-2">
             <Typography
               className="text-slate-700 font-medium"
@@ -311,21 +319,31 @@ const MobileAuthenticatedProfileMenu = () => {
             <DarkModeToggle />
           </div>
           <Separator></Separator>
-          {session.data?.user.userType === "student" ? (
-            <Link href={`/my_courses/${session.data?.user.id}`}>
-              <Button customeColor={"primaryIcon"} className="w-full my-2">
-                <Typography className="text-foreground">My courses</Typography>
-                <BookOpen />
-              </Button>
-            </Link>
-          ) : (
-            <Link href={`/dashboard`}>
-              <Button customeColor={"primaryIcon"} className="w-full my-2">
-                <Typography className="text-foreground">Dashboard</Typography>
-                <LayoutDashboard />
-              </Button>
-            </Link>
-          )}
+          <div className="flex flex-col gap-2">
+            {session.data?.user.userType === "student" ? (
+              <>
+                <Link href={`/my_courses`}>
+                  <Button customeColor={"primaryIcon"} className="w-full">
+                    <Typography className="text-foreground">My courses</Typography>
+                    <BookOpen />
+                  </Button>
+                </Link>
+                <Link href={`/my_account`}>
+                  <Button customeColor={"primaryIcon"} className="w-full">
+                    <Typography className="text-foreground">My Account</Typography>
+                    <UserCog />
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <Link href={`/dashboard`}>
+                <Button customeColor={"primaryIcon"} className="w-full my-2">
+                  <Typography className="text-foreground">Dashboard</Typography>
+                  <LayoutDashboard />
+                </Button>
+              </Link>
+            )}
+          </div>
           <DropdownMenuSeparator className="md:hidden" />
           <MobileNavMenu />
           <Separator></Separator>

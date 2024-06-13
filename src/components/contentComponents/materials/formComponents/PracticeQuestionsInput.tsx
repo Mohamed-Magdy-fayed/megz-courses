@@ -57,6 +57,7 @@ const PracticeQuestionsInput: FC<AnswerAreaInputProps> = ({ field, form }) => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
+                    type="button"
                     variant={"icon"}
                     customeColor={"infoIcon"}
                     onClick={() => {
@@ -78,6 +79,7 @@ const PracticeQuestionsInput: FC<AnswerAreaInputProps> = ({ field, form }) => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
+                  type="button"
                     variant={"icon"}
                     customeColor={"destructiveIcon"}
                     onClick={() =>

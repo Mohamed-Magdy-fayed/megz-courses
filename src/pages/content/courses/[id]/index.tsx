@@ -1,9 +1,8 @@
-import { PaperContainer } from "@/components/ui/PaperContainers";
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
 import { api } from "@/lib/api";
-import { Plus, PlusIcon } from "lucide-react";
+import { ArrowLeftToLine, Plus, PlusIcon } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import MaterialsClient from "@/components/contentComponents/materials/MaterialsClient";
@@ -16,6 +15,7 @@ import PlacmentTestClient from "@/components/contentComponents/placmentTests/Cli
 import AssignmentsClient from "@/components/contentComponents/assignments/Client";
 import QuizzesClient from "@/components/contentComponents/quizzes/Client";
 import Link from "next/link";
+import Modal from "@/components/ui/modal";
 
 const tabs = [
     { value: "materials", label: "Materials" },
@@ -30,7 +30,7 @@ const CoursePage = () => {
     const router = useRouter();
     const id = router.query?.id as string;
     const tabName = router.query.tab as string;
-    const { data, isLoading, isError } = api.courses.getById.useQuery({ id });
+    const { data, isLoading, isError, error } = api.courses.getById.useQuery({ id });
     const [tab, setTab] = useState("materials");
     const [isOpen, setIsOpen] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
@@ -40,15 +40,19 @@ const CoursePage = () => {
     }, []);
 
     useEffect(() => {
-        setTab(tabName)
-    }, [tabName]);
+        if (!tabName && id) router.push(`${id}?tab=${tab}`)
+        if (tabName) setTab(tabName)
+    }, [tabName, id]);
 
     if (!isMounted) return null;
 
     return (
         <AppLayout>
             <div className="space-y-4">
-                <div className="flex justify-between">
+                <div className="flex items-center gap-2">
+                    <Link href={`/content`} >
+                        <ArrowLeftToLine />
+                    </Link>
                     <div className="flex flex-col gap-2">
                         <ConceptTitle>{data?.course?.name}</ConceptTitle>
                         <Typography className="text-sm font-medium text-gray-500">
@@ -56,11 +60,15 @@ const CoursePage = () => {
                         </Typography>
                     </div>
                 </div>
-                {isOpen && (
-                    <PaperContainer>
+                <Modal
+                    description="Create a material for the course"
+                    isOpen={isOpen}
+                    onClose={() => setIsOpen(false)}
+                    title="Add material"
+                    children={(
                         <CreateMaterialForm id={id} setIsOpen={setIsOpen} />
-                    </PaperContainer>
-                )}
+                    )}
+                />
                 {isLoading ? (
                     <Spinner className="w-full h-40" />
                 ) : isError ? (
@@ -75,7 +83,9 @@ const CoursePage = () => {
                                     key={tab.value}
                                     value={tab.value}
                                     onClick={() => router.push(`${id}?tab=${tab.value}`)}
-                                >{tab.label}</TabsTrigger>
+                                >
+                                    {tab.label}
+                                </TabsTrigger>
                             ))}
                         </TabsList>
                         <TabsContent value="materials">

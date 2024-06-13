@@ -9,6 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ImageIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import ResetPasswordForm from "@/components/authComponents/ResetPasswordForm";
+import { Card, CardHeader } from "@/components/ui/card";
+import { Lock } from "lucide-react";
 
 const AuthenticationPage = () => {
   const defaultVariant = useRouter().query.variant as "login" | "register"
@@ -29,9 +31,25 @@ const AuthenticationPage = () => {
     <main className="min-h-screen bg-background p-4 grid gap-8 grid-cols-1 lg:grid-cols-2">
       <div className="space-y-4 min-w-[24rem] mx-auto">
         {variant === "register" ? (
-          <AuthForm authType="register"></AuthForm>
+          <Card className="mt-2 flex flex-col items-center mx-auto">
+            <CardHeader className="flex flex-col items-center p-4">
+              <Lock />
+              <Typography variant={"primary"}>
+                Sign up
+              </Typography>
+            </CardHeader>
+            <AuthForm authType="register" />
+          </Card>
         ) : (
-          <AuthForm authType="login"></AuthForm>
+          <Card className="mt-2 flex flex-col items-center mx-auto">
+            <CardHeader className="flex flex-col items-center p-4">
+              <Lock />
+              <Typography variant={"primary"}>
+                Login
+              </Typography>
+            </CardHeader>
+            <AuthForm authType="login"></AuthForm>
+          </Card>
         )}
         <div className="grid place-content-center gap-2">
           <Button

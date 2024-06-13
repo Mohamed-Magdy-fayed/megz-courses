@@ -8,6 +8,7 @@ import { PaperContainer } from "@/components/ui/PaperContainers";
 import CourseForm from "@/components/contentComponents/courses/CourseForm";
 import CoursesClient from "@/components/contentComponents/courses/CoursesClient";
 import Spinner from "@/components/Spinner";
+import Modal from "@/components/ui/modal";
 
 const ContentPage = () => {
   const { data, isLoading, isError } = api.courses.getAll.useQuery();
@@ -22,6 +23,13 @@ const ContentPage = () => {
 
   return (
     <AppLayout>
+      <Modal
+        title="Add a course"
+        description="create a new course"
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        children={<CourseForm setIsOpen={setIsOpen} />}
+      />
       <div className="p-4">
         <div className="flex w-full flex-col gap-4">
           <div className="flex justify-between">
@@ -36,11 +44,6 @@ const ContentPage = () => {
               <Typography variant={"buttonText"}>Add</Typography>
             </Button>
           </div>
-          {isOpen && (
-            <PaperContainer>
-              <CourseForm setIsOpen={setIsOpen} />
-            </PaperContainer>
-          )}
           {isLoading ? (
             <Spinner className="w-full h-40" />
           ) : isError ? (

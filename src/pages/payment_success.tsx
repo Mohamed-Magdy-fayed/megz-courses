@@ -2,7 +2,8 @@ import Spinner from "@/components/Spinner"
 import PaymentConfEmail from "@/components/emails/PaymentConfEmail"
 import LandingLayout from "@/components/landingPageComponents/LandingLayout"
 import OrderReceipt from "@/components/orders/OrderReceipt"
-import { ConceptTitle } from "@/components/ui/Typoghraphy"
+import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/components/ui/use-toast"
 import { api } from "@/lib/api"
 import { formatPrice } from "@/lib/utils"
@@ -15,8 +16,8 @@ import { useEffect, useState } from "react"
 const SuccessfullPaymentPage = () => {
     const sessionId = useRouter().query.session_id
     const { toast, toastError } = useToast()
-    const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState("")
     const [orderData, setOrderData] = useState<Order & {
         user: User;
         salesOperation: SalesOperation;
@@ -63,7 +64,6 @@ const SuccessfullPaymentPage = () => {
                     })
                 }
                 trpcUtils.salesOperations.invalidate()
-                setOpen(false)
                 setLoading(false)
             }
         })
@@ -100,12 +100,13 @@ const SuccessfullPaymentPage = () => {
                     updatedOrder: data.updatedOrder,
                 })
             },
-            onError: () => {
+            onError: ({ message }) => {
                 toast({
                     variant: "destructive",
                     title: "Error",
                     description: `Please contact support for assistance`
                 })
+                setError(message)
             },
             onSettled: () => {
                 setLoading(false)
@@ -113,26 +114,27 @@ const SuccessfullPaymentPage = () => {
         })
     }, [sessionId])
 
-
-
-    if (loading) return (
-        <LandingLayout>
-            <div className="w-full h-full grid place-content-center">
-                <Spinner />
-            </div>
-        </LandingLayout>
-    )
-
     return (
         <LandingLayout>
             <ConceptTitle className="mb-4">Payment Successfull</ConceptTitle>
-            {!orderData?.id ? (
-                <div className="w-full h-full grid place-content-center">
-                    <Spinner />
-                </div>
-            ) : (
-                <OrderReceipt adminView={false} orderId={orderData.id} />
-            )}
+            {loading
+                ? (
+                    <Skeleton className="max-w-4xl mx-auto h-96 grid place-content-center">
+                        <div className="flex items-center gap-2">
+                            <Spinner className="w-4 h-4" />
+                            <Typography>
+                                loading order data...
+                            </Typography>
+                        </div>
+                    </Skeleton>
+                )
+                : !orderData
+                    ? (
+                        <>Error: {error}</>
+                    )
+                    : (
+                        <OrderReceipt adminView={false} order={orderData} />
+                    )}
         </LandingLayout>
     )
 }

@@ -14,7 +14,7 @@ export const evaluationFormRouter = createTRPCRouter({
     .query(async ({ ctx, input: { id } }) => {
       const evaluationForm = await ctx.prisma.evaluationForm.findUnique({
         where: { id },
-        include: { materialItem: true }
+        include: { materialItem: true, questions: true, submissions: true }
       })
 
       return { evaluationForm }
@@ -27,7 +27,7 @@ export const evaluationFormRouter = createTRPCRouter({
       const assignments = await ctx.prisma.evaluationForm.findMany({
         where: { type: "assignment", materialItem: { courseId } },
         orderBy: { createdAt: "asc" },
-        include: { materialItem: true }
+        include: { materialItem: true, questions: true, submissions: true }
       })
 
       return { assignments }
@@ -40,10 +40,36 @@ export const evaluationFormRouter = createTRPCRouter({
       const quizzes = await ctx.prisma.evaluationForm.findMany({
         where: { type: "quiz", materialItem: { courseId } },
         orderBy: { createdAt: "asc" },
-        include: { materialItem: true }
+        include: { materialItem: true, questions: true, submissions: true }
       })
 
       return { quizzes }
+    }),
+  getSessionQuiz: protectedProcedure
+    .input(z.object({
+      materialItemId: z.string(),
+    }))
+    .query(async ({ ctx, input: { materialItemId } }) => {
+      const quiz = await ctx.prisma.evaluationForm.findFirst({
+        where: { type: "quiz", materialItemId },
+        orderBy: { createdAt: "asc" },
+        include: { materialItem: true, questions: true, submissions: true }
+      })
+
+      return { quiz }
+    }),
+  getSessionAssignment: protectedProcedure
+    .input(z.object({
+      materialItemId: z.string(),
+    }))
+    .query(async ({ ctx, input: { materialItemId } }) => {
+      const quiz = await ctx.prisma.evaluationForm.findFirst({
+        where: { type: "assignment", materialItemId },
+        orderBy: { createdAt: "asc" },
+        include: { materialItem: true, questions: true, submissions: true }
+      })
+
+      return { quiz }
     }),
   createEvalForm: protectedProcedure
     .input(z.object({
@@ -55,7 +81,8 @@ export const evaluationFormRouter = createTRPCRouter({
         type: z.enum(["multipleChoice", "trueFalse"]),
         image: z.string().optional().nullable(),
         options: z.array(z.object({
-          text: z.string(),
+          isTrue: z.boolean().nullable(),
+          text: z.string().nullable(),
           isCorrect: z.boolean()
         })).max(6).optional(),
         correctAnswer: z.boolean().optional(),
@@ -69,18 +96,20 @@ export const evaluationFormRouter = createTRPCRouter({
           totalPoints: fields.map(field => field.points).reduce((a, b) => a + b, 0),
           type,
           materialItem: { connect: { id: materialId } },
-          questions: fields.map(field => ({
-            points: field.points,
-            questionText: field.question,
-            type: field.type,
-            image: field.image,
-            isQuestionCorrect: field.correctAnswer,
-            options: field.options,
-          })),
+          questions: {
+            createMany: {
+              data: fields.map(field => ({
+                points: field.points,
+                questionText: field.question,
+                type: field.type,
+                image: field.image,
+                options: field.options,
+              }))
+            }
+          },
           createdBy: ctx.session.user.email,
-          submissions: [],
         },
-        include: { materialItem: true }
+        include: { materialItem: true, questions: true, submissions: true }
       })
 
       return {
@@ -99,7 +128,6 @@ export const evaluationFormRouter = createTRPCRouter({
           text: z.string(),
           isCorrect: z.boolean()
         })).max(6).optional(),
-        correctAnswer: z.boolean().optional(),
       }))
     }))
     .mutation(async ({ ctx, input: { fields, id } }) => {
@@ -107,17 +135,19 @@ export const evaluationFormRouter = createTRPCRouter({
         where: { id },
         data: {
           totalPoints: fields.map(field => field.points).reduce((a, b) => a + b, 0),
-          questions: fields.map(field => ({
-            points: field.points,
-            questionText: field.question,
-            type: field.type,
-            image: field.image,
-            isQuestionCorrect: field.correctAnswer,
-            options: field.options,
-          })),
-          submissions: [],
+          questions: {
+            createMany: {
+              data: fields.map(field => ({
+                points: field.points,
+                questionText: field.question,
+                type: field.type,
+                image: field.image,
+                options: field.options,
+              }))
+            }
+          },
         },
-        include: { materialItem: true }
+        include: { materialItem: true, questions: true, submissions: true }
       })
 
       return {

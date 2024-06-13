@@ -1,11 +1,7 @@
-import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
-import { X } from "lucide-react";
 import { useState } from "react";
-import { Separator } from "@/components/ui/separator";
 import { useForm } from "react-hook-form";
-import { Typography } from "@/components/ui/Typoghraphy";
-import MaterialsForm, { MaterialsFormValues } from "./MaterialsForm";
+import MaterialsForm, { type MaterialsFormValues } from "./MaterialsForm";
 import { useToast } from "@/components/ui/use-toast";
 
 const CreateMaterialsForm = ({
@@ -31,50 +27,30 @@ const CreateMaterialsForm = ({
         },
     });
 
-    const createMaterialMutation = api.materials.createMaterialItem.useMutation();
+    const createMaterialMutation = api.materials.createMaterialItem.useMutation({
+        onMutate: () => setLoading(true),
+        onSuccess: ({ materialItem }) =>
+            trpcUtils.courses.invalidate().then(() => {
+                toastSuccess(`Your new material (${materialItem.title}) is ready!`)
+                setIsOpen(false)
+            }),
+        onError: ({ message }) => toastError(message),
+        onSettled: () => setLoading(false),
+    });
     const trpcUtils = api.useContext();
     const { toastError, toastSuccess } = useToast();
 
     const onSubmit = (data: MaterialsFormValues) => {
-        setLoading(true);
-
-        createMaterialMutation.mutate(
-            { ...data, courseId: id },
-            {
-                onSuccess: ({ materialItem }) => {
-                    trpcUtils.courses.invalidate()
-                        .then(() => {
-                            toastSuccess(`Your new material (${materialItem.title}) is ready!`);
-                            setLoading(false);
-                        })
-                },
-                onError: (error) => {
-                    toastError(error.message)
-                    setLoading(false);
-                },
-            }
-        );
+        createMaterialMutation.mutate({ ...data, courseId: id },);
     };
 
     return (
-        <div>
-            <div className="flex items-center justify-between p-4">
-                <div className="flex items-center gap-8">
-                    <Typography variant={"secondary"}>Create material</Typography>
-                    <Typography>(using the TTT vocab framework)</Typography>
-                </div>
-                <Button variant={"x"} onClick={() => setIsOpen(false)}>
-                    <X className="h-4 w-4" />
-                </Button>
-            </div>
-            <Separator />
-            <MaterialsForm
-                form={form}
-                loading={loading}
-                setIsOpen={setIsOpen}
-                onSubmit={onSubmit}
-            />
-        </div>
+        <MaterialsForm
+            form={form}
+            loading={loading}
+            setIsOpen={setIsOpen}
+            onSubmit={onSubmit}
+        />
     );
 };
 

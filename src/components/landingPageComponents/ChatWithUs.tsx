@@ -36,6 +36,7 @@ const ChatWithUs = () => {
     };
 
     useEffect(() => {
+        if (!sessionData?.user) return
         const channelSubscription = pusherClient.subscribe('SUPPORT_CHAT');
         setChannelSubscription(channelSubscription)
         const deleteSubscription = pusherClient.subscribe('DELETE_CHAT');
