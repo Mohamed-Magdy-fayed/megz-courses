@@ -73,11 +73,19 @@ const CoursePage = () => {
                                                 <AccordionContent>
                                                     <div className="flex items-center w-full justify-around">
                                                         <Link
-                                                            className={cn(!item.evaluationForms.find(form => form.type === "quiz")?.id && "pointer-events-none")}
+                                                            className={
+                                                                cn(
+                                                                    !item.evaluationForms.find(form => form.type === "quiz")?.id && "pointer-events-none",
+                                                                    !userQuery.data?.user?.zoomGroups.some(group => group.zoomSessions.some(session => session.materialItemId === item.id)) && "pointer-events-none",
+                                                                )
+                                                            }
                                                             href={`/my_courses/${id}/quiz/${item.evaluationForms.find(form => form.type === "quiz")?.id}`}
                                                         >
                                                             <Button
-                                                                disabled={!item.evaluationForms.find(form => form.type === "quiz")?.id}
+                                                                disabled={
+                                                                    !item.evaluationForms.find(form => form.type === "quiz")?.id
+                                                                    || !userQuery.data?.user?.zoomGroups.some(group => group.zoomSessions.some(session => session.materialItemId === item.id))
+                                                                }
                                                                 variant={"outline"}
                                                                 customeColor={"infoOutlined"}
                                                             >
@@ -96,11 +104,19 @@ const CoursePage = () => {
                                                             </Button>
                                                         </Link>
                                                         <Link
-                                                            className={cn(!item.evaluationForms.find(form => form.type === "assignment")?.id && "pointer-events-none")}
+                                                            className={
+                                                                cn(
+                                                                    !item.evaluationForms.find(form => form.type === "quiz")?.id && "pointer-events-none",
+                                                                    !userQuery.data?.user?.zoomGroups.some(group => group.zoomSessions.some(session => session.materialItemId === item.id)) && "pointer-events-none",
+                                                                )
+                                                            }
                                                             href={`/my_courses/${id}/assignment/${item.evaluationForms.find(form => form.type === "assignment")?.id}`}
                                                         >
                                                             <Button
-                                                                disabled={!item.evaluationForms.find(form => form.type === "assignment")?.id}
+                                                                disabled={
+                                                                    !item.evaluationForms.find(form => form.type === "assignment")?.id
+                                                                    || !userQuery.data?.user?.zoomGroups.some(group => group.zoomSessions.some(session => session.materialItemId === item.id))
+                                                                }
                                                                 variant={"outline"}
                                                                 customeColor={"successOutlined"}
                                                             >

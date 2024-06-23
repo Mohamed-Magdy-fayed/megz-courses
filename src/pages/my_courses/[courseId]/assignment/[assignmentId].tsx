@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Modal from "@/components/ui/modal";
 import { api } from "@/lib/api";
-import { cn, getEvalutaionFormFullMark } from "@/lib/utils";
+import { cn, getEvalutaionFormFullMark, getEvalutaionStatus } from "@/lib/utils";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useSession } from "next-auth/react";
 import { EvaluationFormSubmission, SubmissionAnswer } from "@prisma/client";
+import { SeverityPill } from "@/components/overview/SeverityPill";
 
 const AssignmentPage: NextPage = () => {
     const router = useRouter()
@@ -98,7 +99,33 @@ const AssignmentPage: NextPage = () => {
                 <div className="flex items-center justify-between flex-wrap gap-4">
                     <div className="flex items-center gap-4">
                         <ConceptTitle>{assignmentQuery.data.evaluationForm?.materialItem?.title} Assignment</ConceptTitle>
-                        <Typography>Total Points: {totalPoints}</Typography>
+                        {
+                            submission
+                                ? (
+                                    <SeverityPill color="info">
+                                        {
+                                            getEvalutaionStatus(
+                                                assignmentQuery.data.evaluationForm.materialItem?.zoomSessions.find(session => session.materialItemId === assignmentQuery.data.evaluationForm?.materialItemId)?.sessionDate || new Date(),
+                                                !!submission
+                                            )
+                                        }
+                                    </SeverityPill>
+                                )
+                                : (
+                                    <>
+                                        <SeverityPill color="info">
+                                            {
+                                                getEvalutaionStatus(
+                                                    assignmentQuery.data.evaluationForm.materialItem?.zoomSessions.find(session => session.materialItemId === assignmentQuery.data.evaluationForm?.materialItemId)?.sessionDate || new Date(),
+                                                    !!submission
+                                                )
+                                            }
+                                        </SeverityPill>
+                                        <Typography>Total Points: {totalPoints}</Typography>
+
+                                    </>
+                                )
+                        }
                     </div>
                     {isSubmitted && (
                         <div className="flex items-center gap-2 flex-nowrap">
@@ -113,29 +140,41 @@ const AssignmentPage: NextPage = () => {
                         </div>
                     )}
                 </div>
-                {assignmentQuery.data.evaluationForm.questions.map((question, index) => (
-                    <EvaluationFormQuestionCard
-                        key={`${question.questionText}questionCard${index}`}
-                        question={question}
-                        index={index}
-                        setAnswers={setAnswers}
-                        setDescription={setDescription}
-                        setImage={setImage}
-                        setIsImageModalOpen={setIsImageModalOpen}
-                        isSubmitted={isSubmitted}
-                        submission={submission}
-                        score={score}
-                        totalPoints={totalPoints}
-                        evaluationForm={assignmentQuery.data.evaluationForm!}
-                    />
-                ))}
-                {!isSubmitted && <Button
-                    type="button"
-                    disabled={loading}
-                    onClick={handleSubmit}
-                >
-                    Submit
-                </Button>}
+                {!userQuery.data?.user.zoomGroups.some(group => group.zoomSessions.some(session => session.materialItemId === assignmentQuery.data?.evaluationForm?.materialItemId))
+                    ? (
+                        <div className="w-full text-center p-8">
+                            <Typography variant={"secondary"}>
+                                Form is not due yet! please check again later.
+                            </Typography>
+                        </div>
+                    )
+                    : (
+                        <>
+                            {assignmentQuery.data.evaluationForm.questions.map((question, index) => (
+                                <EvaluationFormQuestionCard
+                                    key={`${question.questionText}questionCard${index}`}
+                                    question={question}
+                                    index={index}
+                                    setAnswers={setAnswers}
+                                    setDescription={setDescription}
+                                    setImage={setImage}
+                                    setIsImageModalOpen={setIsImageModalOpen}
+                                    isSubmitted={isSubmitted}
+                                    submission={submission}
+                                    score={score}
+                                    totalPoints={totalPoints}
+                                    evaluationForm={assignmentQuery.data.evaluationForm!}
+                                />
+                            ))}
+                            {!isSubmitted && <Button
+                                type="button"
+                                disabled={loading}
+                                onClick={handleSubmit}
+                            >
+                                Submit
+                            </Button>}
+                        </>
+                    )}
             </div>
         </LearningLayout>
     )

@@ -209,17 +209,18 @@ export const zoomGroupsRouter = createTRPCRouter({
                 //` Generate sessions
                 for (let index = 0; index < course.materialItems.length; index++) {
                     const materialItem = course.materialItems[index];
-                    if (days.some((day) => day === currentDate.getDay())) {
-                        sessions.push({
-                            attenders: [],
-                            sessionStatus: "scheduled",
-                            sessionDate: new Date(currentDate),
-                            sessionLink: `https://zoom.us/start/webmeeting`,
-                            materialItemId: materialItem?.id!,
-                        })
+                    while (!sessions[index]) {
+                        if (days.some((day) => day === currentDate.getDay())) {
+                            sessions.push({
+                                attenders: [],
+                                sessionStatus: "scheduled",
+                                sessionDate: new Date(currentDate),
+                                sessionLink: `https://zoom.us/start/webmeeting`,
+                                materialItemId: materialItem?.id!,
+                            })
+                        }
+                        currentDate.setDate(currentDate.getDate() + 1)
                     }
-
-                    currentDate.setDate(currentDate.getDate() + 1)
                 }
 
                 return sessions;

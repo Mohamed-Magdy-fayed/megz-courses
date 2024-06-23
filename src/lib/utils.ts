@@ -1,6 +1,6 @@
 import { Address, Course, EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, MaterialItem, Order, User, ZoomGroup, ZoomSession } from "@prisma/client";
 import { type ClassValue, clsx } from "clsx";
-import { format } from "date-fns";
+import { compareAsc, format } from "date-fns";
 import { twMerge } from "tailwind-merge";
 import { getInitials } from "./getInitials";
 
@@ -131,4 +131,12 @@ export const getSubmissionScoreAndPercentage = (evaluationForm: EvaluationForm, 
 }
 export const isQuestionCorrect = (question: EvaluationFormQuestion, submission: EvaluationFormSubmission) => {
   return submission.answers.some(answer => answer.questionId === question.id && question.options.some(option => option.text === answer.text && option.isCorrect))
+}
+
+export const getEvalutaionStatus = (formDueDate: Date, submitted: boolean = false) => {
+  const now = new Date()
+  let value = submitted ? "Submitted" : (formDueDate.getTime() - now.getTime()) > 0 ? "Due now" : "Upcoming"
+
+  console.log(value);
+  return value
 }

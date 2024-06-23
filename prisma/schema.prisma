@@ -236,7 +236,7 @@ model MaterialItem {
     vocabularyCards   VocabCard[]
     practiceQuestions Question[]
     evaluationForms   EvaluationForm[]
-    ZoomSession       ZoomSession[]
+    zoomSessions      ZoomSession[]
     course            Course?          @relation(fields: [courseId], references: [id])
     courseId          String?          @db.ObjectId
     updatedAt         DateTime         @updatedAt

@@ -5,19 +5,18 @@ import { useEffect, useState } from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
 import { Typography } from "../ui/Typoghraphy";
-import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
-import { LogoAccent, LogoForeground, LogoPrimary } from "../layout/Logo";
+import { LogoPrimary } from "../layout/Logo";
 import { FullCourseType } from "@/lib/PrismaFullTypes";
-import { Button } from "../ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import { BookMinus, BookOpen, BookOpenCheck } from "lucide-react";
 import { useRouter } from "next/router";
+import { api } from "@/lib/api";
 
 export default function LearningDrawer({ course }: { course: FullCourseType }) {
   const router = useRouter();
   const id = router.query.courseId as string;
   const navStore = useNavStore();
+  const userQuery = api.users.getCurrentUser.useQuery()
 
   const [isMounted, setIsMounted] = useState(false);
 
@@ -53,7 +52,8 @@ export default function LearningDrawer({ course }: { course: FullCourseType }) {
                     <Link
                       className={cn(
                         "flex items-center justify-between gap-2 whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-primary hover:text-primary-foreground",
-                        !item.evaluationForms.find(form => form.type === "quiz")?.id && "pointer-events-none text-primary/30"
+                        !item.evaluationForms.find(form => form.type === "quiz")?.id && "pointer-events-none text-primary/30",
+                        !userQuery.data?.user?.zoomGroups.some(group => group.zoomSessions.some(session => session.materialItemId === item.id)) && "pointer-events-none text-primary/30",
                       )}
                       href={`/my_courses/${id}/quiz/${item.evaluationForms.find(form => form.type === "quiz")?.id}`}
                       onClick={() => {
@@ -81,7 +81,8 @@ export default function LearningDrawer({ course }: { course: FullCourseType }) {
                       className={cn(
                         "flex items-center justify-between gap-2 whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-primary/80 hover:text-primary-foreground",
                         !item.evaluationForms.find(form => form.type === "assignment")?.id && "pointer-events-none text-primary/30",
-                        router && router.pathname === `/my_courses/${id}/assignment/${item.evaluationForms.find(form => form.type === "assignment")?.id}` && "bg-primary text-primary-foreground"
+                        router && router.pathname === `/my_courses/${id}/assignment/${item.evaluationForms.find(form => form.type === "assignment")?.id}` && "bg-primary text-primary-foreground",
+                        !userQuery.data?.user?.zoomGroups.some(group => group.zoomSessions.some(session => session.materialItemId === item.id)) && "pointer-events-none text-primary/30",
                       )}
                       href={`/my_courses/${id}/assignment/${item.evaluationForms.find(form => form.type === "assignment")?.id}`}
                       onClick={() => {

@@ -14,7 +14,7 @@ export const evaluationFormRouter = createTRPCRouter({
     .query(async ({ ctx, input: { id } }) => {
       const evaluationForm = await ctx.prisma.evaluationForm.findUnique({
         where: { id },
-        include: { materialItem: true, questions: true, submissions: true }
+        include: { materialItem: { include: { zoomSessions: true } }, questions: true, submissions: true }
       })
 
       return { evaluationForm }
