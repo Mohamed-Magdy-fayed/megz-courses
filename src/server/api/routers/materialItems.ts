@@ -29,9 +29,43 @@ export const materialItemsRouter = createTRPCRouter({
     .query(async ({ ctx, input: { courseId } }) => {
       const materialItems = await ctx.prisma.materialItem.findMany({
         where: { courseId },
+        include: { evaluationForms: true },
       });
       return { materialItems };
     }),
+  dublicateMaterialItem: protectedProcedure
+    .input(
+      z.object({ id: z.string() })
+    )
+    .mutation(
+      async ({ input: { id }, ctx }) => {
+        const materialItem = await ctx.prisma.materialItem.findUnique({ where: { id } })
+        if (!materialItem) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to dublicate this material!" })
+        if (!materialItem.courseId) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to dublicate this material!" })
+
+        const materialItemDublication = await ctx.prisma.materialItem.create({
+          data: {
+            leadinText: materialItem.leadinText,
+            leadinImageUrl: materialItem.leadinImageUrl,
+            firstTestTitle: materialItem.firstTestTitle,
+            title: materialItem.title,
+            subTitle: materialItem.subTitle,
+            frameWorkName: materialItem.frameWorkName,
+            answerCards: materialItem.answerCards,
+            answerAreas: materialItem.answerAreas,
+            course: {
+              connect: { id: materialItem.courseId },
+            },
+            vocabularyCards: materialItem.vocabularyCards,
+            practiceQuestions: materialItem.practiceQuestions,
+          },
+        });
+
+        return {
+          materialItemDublication,
+        };
+      }
+    ),
   createMaterialItem: protectedProcedure
     .input(
       z.object({
@@ -209,7 +243,7 @@ export const materialItemsRouter = createTRPCRouter({
     .input(z.array(z.string()))
     .mutation(async ({ input, ctx }) => {
       if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
-        const deletedMaterialItems = await ctx.prisma.materialItem.deleteMany({
+      const deletedMaterialItems = await ctx.prisma.materialItem.deleteMany({
         where: {
           id: {
             in: input,

@@ -1,6 +1,6 @@
 import { EvaluationFormQuestionCard } from "@/components/FormsComponents/EvaluationForm/EvaluationFormQuestionCard";
 import Spinner from "@/components/Spinner";
-import LearningLayout from "@/components/landingPageComponents/LearningLayout";
+import LearningLayout from "@/components/LearningLayout/LearningLayout";
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

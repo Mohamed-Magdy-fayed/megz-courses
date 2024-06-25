@@ -45,8 +45,8 @@ const CustomForm: FC<{ initialData?: EvaluationForm & { questions: EvaluationFor
     const courseId = router.query?.id as string;
 
     const [isLoading, setIsLoading] = useState(false)
-    const [materialId, setMaterialId] = useState(initialData?.materialItemId ? initialData.materialItemId : "")
-    const [type, setType] = useState<EvaluationFormTypes>(initialData ? initialData.type : "assignment")
+    const [materialId, setMaterialId] = useState(initialData?.materialItemId ? initialData.materialItemId : undefined)
+    const [type, setType] = useState<EvaluationFormTypes | undefined>(initialData ? initialData.type : undefined)
 
     const defaultQuestion: IFormInput["fields"][number] = {
         type: "multipleChoice",
@@ -73,15 +73,20 @@ const CustomForm: FC<{ initialData?: EvaluationForm & { questions: EvaluationFor
     });
 
     const { toastSuccess, toastError } = useToast()
+    const trpcUtils = api.useContext()
     const { data: materialsData } = api.materials.getByCourseId.useQuery({ courseId })
     const createEvalFormMutation = api.evaluationForm.createEvalForm.useMutation({
         onMutate: () => setIsLoading(true),
-        onSuccess: ({ evaluationForm }) => toastSuccess(`Evaluation form total points ${evaluationForm.totalPoints}`),
+        onSuccess: ({ evaluationForm }) => trpcUtils.materials.invalidate()
+            .then(() => {
+                toastSuccess(`Evaluation form total points ${evaluationForm.totalPoints}`)
+            }),
         onError: ({ message }) => toastError(message),
         onSettled: () => setIsLoading(false),
     })
 
     const onSubmit: SubmitHandler<IFormInput> = (data) => {
+        if (!type || !materialId) return
         createEvalFormMutation.mutate({
             fields: data.fields.map(field => field.type === "trueFalse" ? ({
                 ...field,
@@ -102,21 +107,44 @@ const CustomForm: FC<{ initialData?: EvaluationForm & { questions: EvaluationFor
                         </SelectTrigger>
                         <SelectContent>
                             {materialsData?.materialItems.map(item => (
-                                <SelectItem key={item.id} value={item.id}>{item.title}</SelectItem>
+                                <SelectItem
+                                    key={item.id}
+                                    value={item.id}
+                                    disabled={item.evaluationForms.some(({ type }) => type === "assignment")
+                                        && item.evaluationForms.some(({ type }) => type === "quiz")}
+                                >
+                                    {item.title}
+                                </SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
                     <Select
+                        disabled={!materialId}
                         onValueChange={(val) => setType(val === EvaluationFormTypes.assignment
                             ? EvaluationFormTypes.assignment
-                            : EvaluationFormTypes.quiz)}
+                            : EvaluationFormTypes.quiz)
+                        }
                     >
                         <SelectTrigger className="xl:w-fit">
                             <SelectValue placeholder="Assignment or Quiz?"></SelectValue>
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value={EvaluationFormTypes.assignment}>Assignemnt</SelectItem>
-                            <SelectItem value={EvaluationFormTypes.quiz}>Quiz</SelectItem>
+                            <SelectItem
+                                disabled={materialsData?.materialItems
+                                    .find(({ id }) => id === materialId)?.evaluationForms
+                                    .some(({ type }) => type === "assignment")}
+                                value={EvaluationFormTypes.assignment}
+                            >
+                                Assignemnt
+                            </SelectItem>
+                            <SelectItem
+                                disabled={materialsData?.materialItems
+                                    .find(({ id }) => id === materialId)?.evaluationForms
+                                    .some(({ type }) => type === "quiz")}
+                                value={EvaluationFormTypes.quiz}
+                            >
+                                Quiz
+                            </SelectItem>
                         </SelectContent>
                     </Select>
                 </div>

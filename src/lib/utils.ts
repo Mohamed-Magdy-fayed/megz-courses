@@ -135,7 +135,7 @@ export const isQuestionCorrect = (question: EvaluationFormQuestion, submission: 
 
 export const getEvalutaionStatus = (formDueDate: Date, submitted: boolean = false) => {
   const now = new Date()
-  let value = submitted ? "Submitted" : (formDueDate.getTime() - now.getTime()) > 0 ? "Due now" : "Upcoming"
+  let value = submitted ? "Submitted" : (formDueDate.getTime() - now.getTime()) < 0 ? "Due now" : "Upcoming"
 
   console.log(value);
   return value

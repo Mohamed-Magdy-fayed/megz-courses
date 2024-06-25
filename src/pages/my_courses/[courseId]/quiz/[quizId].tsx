@@ -1,6 +1,6 @@
 import { EvaluationFormQuestionCard } from "@/components/FormsComponents/EvaluationForm/EvaluationFormQuestionCard";
 import Spinner from "@/components/Spinner";
-import LearningLayout from "@/components/landingPageComponents/LearningLayout";
+import LearningLayout from "@/components/LearningLayout/LearningLayout";
 import { SeverityPill } from "@/components/overview/SeverityPill";
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import Modal from "@/components/ui/modal";
 import { useToast } from "@/components/ui/use-toast";
 import { api } from "@/lib/api";
 import { cn, getEvalutaionFormFullMark, getEvalutaionStatus } from "@/lib/utils";
-import { EvaluationFormQuestion, EvaluationFormSubmission, SubmissionAnswer } from "@prisma/client";
+import { EvaluationFormSubmission, SubmissionAnswer } from "@prisma/client";
 import type { NextPage } from "next";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -18,7 +18,7 @@ import { useEffect, useState } from "react";
 const QuizPage: NextPage = () => {
     const router = useRouter()
     const courseId = router.query.courseId as string
-    const id = router.query.assignmentId as string
+    const id = router.query.quizId as string
     const { toastError, toastSuccess } = useToast()
     const { data } = useSession()
     const trpcUtils = api.useContext()

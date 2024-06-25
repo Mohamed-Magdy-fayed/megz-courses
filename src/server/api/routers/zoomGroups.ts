@@ -137,7 +137,11 @@ export const zoomGroupsRouter = createTRPCRouter({
                 include: {
                     course: true,
                     zoomSessions: {
-                        include: { assignments: true, quizzes: true, materialItem: true },
+                        include: {
+                            assignments: { include: { student: true } },
+                            quizzes: { include: { student: true } },
+                            materialItem: true,
+                        },
                         orderBy: {
                             sessionDate: "asc"
                         }

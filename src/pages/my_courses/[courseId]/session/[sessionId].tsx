@@ -1,6 +1,6 @@
 import Spinner from "@/components/Spinner";
 import MaterialShowcase from "@/components/contentComponents/materials/MaterialShowcase";
-import LearningLayout from "@/components/landingPageComponents/LearningLayout";
+import LearningLayout from "@/components/LearningLayout/LearningLayout";
 import { api } from "@/lib/api";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";

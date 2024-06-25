@@ -24,6 +24,7 @@ import SelectField from "@/components/salesOperation/SelectField";
 import { useToast } from "@/components/ui/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { DataTable } from "@/components/ui/DataTable";
 
 const statusMap: {
     scheduled: "primary";
@@ -231,62 +232,56 @@ const GroupPage: NextPage = () => {
                                         )}
                                     />
                                     <Modal
-                                        title="Set Quizzes"
-                                        description="Rate each student quiz"
+                                        title="Quizzes"
+                                        description="View each student quiz result"
                                         isOpen={isQuizzesOpen}
                                         onClose={() => setIsQuizzesOpen(false)}
                                         children={(
                                             <div className="space-y-4">
-                                                <SelectField
-                                                    disabled={isLoading}
-                                                    multiSelect
-                                                    data={data.zoomGroup.students.map(student => ({
-                                                        active: student.courseStatus.some(({ courseId, state }) => courseId === data.zoomGroup?.courseId && state === "ongoing"),
-                                                        label: student.email,
-                                                        value: student.id,
-                                                    }))}
-                                                    listTitle="Students"
-                                                    placeholder="Search students"
-                                                    values={studentIds}
-                                                    setValues={setStudentIds}
+                                                <DataTable
+                                                    columns={[
+                                                        {
+                                                            accessorKey: "userId",
+                                                            header: "Student",
+                                                            cell: ({ row }) => <>{row.original.student.email}</>
+                                                        },
+                                                        {
+                                                            accessorKey: "rating",
+                                                            header: "Rating",
+                                                            cell: ({ row }) => <>{formatPercentage(row.original.rating)}</>
+                                                        },
+                                                    ]}
+                                                    onDelete={() => { }}
+                                                    setData={() => { }}
+                                                    data={data.zoomGroup.zoomSessions.find(({ id }) => id === sessionId)?.quizzes || []}
                                                 />
-                                                <div className="flex items-center gap-4 justify-end">
-                                                    <Button
-                                                        disabled={isLoading}
-                                                        onClick={() => setIsQuizzesOpen(false)}
-                                                        variant={"outline"}
-                                                        customeColor={"destructiveOutlined"}
-                                                    >Cancel</Button>
-                                                    <Button
-                                                        disabled={isLoading}
-                                                        onClick={handleSetAttendance}
-                                                        customeColor={"primary"}
-                                                    >Submit</Button>
-                                                </div>
                                             </div>
                                         )}
                                     />
                                     <Modal
-                                        title="Set Assignments"
-                                        description="rate each student assignment"
+                                        title="View Assignments"
+                                        description="View each student assignment rating"
                                         isOpen={isAssignmentsOpen}
                                         onClose={() => setIsAssignmentsOpen(false)}
                                         children={(
                                             <div className="space-y-4">
-
-                                                <div className="flex items-center gap-4 justify-end">
-                                                    <Button
-                                                        disabled={isLoading}
-                                                        onClick={() => setIsAssignmentsOpen(false)}
-                                                        variant={"outline"}
-                                                        customeColor={"destructiveOutlined"}
-                                                    >Cancel</Button>
-                                                    <Button
-                                                        disabled={isLoading}
-                                                        onClick={handleSetAttendance}
-                                                        customeColor={"primary"}
-                                                    >Submit</Button>
-                                                </div>
+                                                <DataTable
+                                                    columns={[
+                                                        {
+                                                            accessorKey: "userId",
+                                                            header: "Student",
+                                                            cell: ({ row }) => <>{row.original.student.email}</>
+                                                        },
+                                                        {
+                                                            accessorKey: "rating",
+                                                            header: "Rating",
+                                                            cell: ({ row }) => <>{formatPercentage(row.original.rating)}</>
+                                                        },
+                                                    ]}
+                                                    onDelete={() => { }}
+                                                    setData={() => { }}
+                                                    data={data.zoomGroup.zoomSessions.find(({ id }) => id === sessionId)?.assignments || []}
+                                                />
                                             </div>
                                         )}
                                     />
@@ -302,6 +297,7 @@ const GroupPage: NextPage = () => {
                                                             <Button
                                                                 onClick={() => {
                                                                     setIsQuizzesOpen(true)
+                                                                    setSessionId(session.id)
                                                                 }}
                                                                 variant={"icon"}
                                                                 customeColor={"primaryIcon"}
@@ -322,6 +318,7 @@ const GroupPage: NextPage = () => {
                                                             <Button
                                                                 onClick={() => {
                                                                     setIsAssignmentsOpen(true)
+                                                                    setSessionId(session.id)
                                                                 }}
                                                                 variant={"icon"}
                                                                 customeColor={"infoIcon"}

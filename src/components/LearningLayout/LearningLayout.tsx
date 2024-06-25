@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react'
 import Spinner from '../Spinner'
 import { LearningNavigationMenu } from './LearningNavigationMenu'
 import LearningDrawer from './LearningDrawer'
-import ChatWithUs from './ChatWithUs'
+import ChatWithUs from '../landingPageComponents/ChatWithUs'
 import LearningFooter from './LearningFooter'
 import { useRouter } from 'next/router'
 

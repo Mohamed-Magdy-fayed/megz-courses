@@ -1,12 +1,11 @@
 import { cn } from "@/lib/utils";
 import { useNavStore } from "@/zustand/store";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
 import { Typography } from "../ui/Typoghraphy";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
 import { LogoForeground } from "./Logo";
 
 export const mainNavLinks = [
@@ -59,12 +58,6 @@ export const mainNavLinks = [
     url: "account",
   },
   {
-    label: "Login or Register",
-    onClick: () => {
-      signOut({ callbackUrl: `/authentication` })
-    },
-  },
-  {
     label: "Error",
     url: "404",
   },
@@ -72,11 +65,16 @@ export const mainNavLinks = [
 
 export default function MegzDrawer() {
   const pathname = usePathname();
-
   const navStore = useNavStore();
 
-
   const [isMounted, setIsMounted] = useState(false);
+  const activeLinkRef = useRef<HTMLAnchorElement>(null);
+
+  useEffect(() => {
+    if (activeLinkRef.current) {
+      activeLinkRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [pathname, activeLinkRef.current, activeLinkRef]);
 
   useEffect(() => {
     if (!isMounted) setIsMounted(true);
@@ -97,30 +95,23 @@ export default function MegzDrawer() {
       <ScrollArea className="w-min h-screen">
         <div className="flex flex-col items-center gap-2">
           {mainNavLinks.map((link) => {
-            if (link.onClick) {
-              return (
-                <button
-                  key={link.label}
-                  onClick={link.onClick}
-                  className={cn("whitespace-nowrap text-left w-full rounded-lg bg-transparent p-2 font-bold hover:bg-muted-foreground/80 hover:text-muted")}
-                >
-                  {link.label}
-                </button>
-              )
-            }
+            const isActive = pathname && pathname.split("/")[1] === link.url;
+            const linkProps = {
+              key: link.url,
+              className: cn(
+                "whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-muted-foreground/80 hover:text-muted",
+                isActive && "bg-muted-foreground text-muted"
+              ),
+              ...(isActive ? { ref: activeLinkRef } : {}),
+            };
 
             return (
               <Link
-                key={link.url}
                 onClick={() => {
                   navStore.closeNav();
                 }}
-                className={cn(
-                  "whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-muted-foreground/80 hover:text-muted",
-                  pathname && pathname.split("/")[1] === link.url &&
-                  "bg-muted-foreground text-muted"
-                )}
                 href={`/${link.url}`}
+                {...linkProps}
               >
                 {link.label}
               </Link>

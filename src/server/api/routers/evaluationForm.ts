@@ -90,6 +90,14 @@ export const evaluationFormRouter = createTRPCRouter({
     }))
     .mutation(async ({ ctx, input: { materialId, fields, type } }) => {
       if (!ctx.session.user.email) throw new TRPCError({ code: "UNAUTHORIZED", message: "UNAUTHORIZED" })
+      if (await ctx.prisma.evaluationForm.findFirst({
+        where: {
+          AND: {
+            materialItemId: materialId,
+            type,
+          }
+        }
+      })) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to create multible forms on the same type!" })
 
       const evaluationForm = await ctx.prisma.evaluationForm.create({
         data: {
