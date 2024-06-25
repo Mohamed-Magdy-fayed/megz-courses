@@ -35,7 +35,6 @@ const LandingFooter = () => {
                     </div>
                     <div className='grid grid-cols-2 col-span-12 md:col-span-8 lg:col-span-6 gap-4 justify-items-start w-full px-8'>
                         {mainNavLinks.map(link => {
-                            if (link.onClick) return
                             return (
                                 <Link
                                     key={link.url}
