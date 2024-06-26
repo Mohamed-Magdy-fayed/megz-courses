@@ -19,13 +19,14 @@ type DataType = {
 interface CoursesSelectFieldProps {
     placeholder: string
     multiSelect?: boolean
+    loading?: boolean
     listTitle: string
     data: DataType[]
     values: { courseId: string, isPrivate: boolean }[]
     setValues: Dispatch<SetStateAction<{ courseId: string, isPrivate: boolean }[]>>
 }
 
-const CoursesSelectField: FC<CoursesSelectFieldProps> = ({ placeholder, listTitle, data, values, setValues, multiSelect }) => {
+const CoursesSelectField: FC<CoursesSelectFieldProps> = ({ placeholder, listTitle, data, values, setValues, multiSelect, loading }) => {
     const [filteredData, setFilteredData] = useState(data)
     const [searchQuery, setSearchQuery] = useState("")
 
@@ -36,7 +37,7 @@ const CoursesSelectField: FC<CoursesSelectFieldProps> = ({ placeholder, listTitl
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline" customeColor={"foregroundOutlined"} className='max-w-[16rem] flex flex-wrap items-center h-fit gap-2 justify-start hover:bg-slate-50 hover:text-primary hover:border-primary'>
+                <Button disabled={loading} variant="outline" customeColor={"foregroundOutlined"} className='max-w-[16rem] flex flex-wrap items-center h-fit gap-2 justify-start hover:bg-slate-50 hover:text-primary hover:border-primary'>
                     {values.length === 0 ? (
                         <Typography>
                             {placeholder}
