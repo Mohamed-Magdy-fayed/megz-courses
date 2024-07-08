@@ -15,6 +15,7 @@ import { AlertModal } from "../modals/AlertModal";
 import { useSession } from "next-auth/react";
 import Modal from "../ui/modal";
 import SelectField from "../salesOperation/SelectField";
+import ModalInDropdownMenu from "../ui/modal-in-dropdown-menu";
 
 interface CellActionProps {
   data: OrderRow;
@@ -77,76 +78,90 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
   }
 
   return (
-    <>
-      <Modal
-        title="Refund"
-        description="Select refund reason"
-        isOpen={isRefundModalOpen}
-        onClose={() => setIsRefundModalOpen(false)}
-        children={(
-          <div className="flex gap-4 items-center justify-between">
-            <SelectField
-              disabled={loading}
-              data={[
-                { active: true, label: "Customer request", value: "requested_by_customer" },
-                { active: true, label: "Dublicate", value: "duplicate" },
-                { active: true, label: "Fraud", value: "fraudulent" },
-              ]}
-              listTitle="Reasons"
-              placeholder="Select Refund Reason"
-              values={refundReason}
-              setValues={setRefundReason}
-              disableSearch
-            />
-            <div className="flex items-center gap-4">
-              <Button
-                disabled={loading}
-                onClick={() => setIsRefundModalOpen(false)}
-                variant={"outline"}
-                customeColor={"destructiveOutlined"}
-              >
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" customeColor={"mutedOutlined"} className="h-8 w-8 p-0">
+          <MoreVertical className="w-4 h-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        <DropdownMenuItem onClick={() => onCopy(data.orderNumber)}>
+          <Copy className="w-4 h-4 mr-2" />
+          Copy Id
+        </DropdownMenuItem>
+        <ModalInDropdownMenu
+          isOpen={open}
+          onOpen={() => setOpen(true)}
+          onClose={() => setOpen(false)}
+          title="Delete"
+          description="This action can't be undone!"
+          children={
+            <div className="flex w-full items-center justify-end space-x-2 pt-6">
+              <Button disabled={loading} variant={"outline"} customeColor={"mutedOutlined"} onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button
-                disabled={loading}
-                onClick={handleRefund}
-                customeColor={"success"}
-              >
-                Confirm
+              <Button disabled={loading} customeColor="destructive" onClick={() => onDelete()}>
+                Continue
               </Button>
             </div>
-          </div>
-        )}
-      />
-      <AlertModal
-        isOpen={open}
-        loading={loading}
-        onClose={() => setOpen(false)}
-        onConfirm={onDelete}
-      />
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" customeColor={"mutedOutlined"} className="h-8 w-8 p-0">
-            <MoreVertical className="w-4 h-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => onCopy(data.orderNumber)}>
-            <Copy className="w-4 h-4 mr-2" />
-            Copy Id
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setOpen(true)}>
-            <Trash className="w-4 h-4 mr-2" />
-            Delete
-          </DropdownMenuItem>
-          <DropdownMenuItem disabled={data.status !== "paid"} onClick={() => setIsRefundModalOpen(true)}>
-            <Coins className="w-4 h-4 mr-2" />
-            Refund
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </>
+          }
+          itemChildren={
+            <>
+              <Trash className="w-4 h-4 mr-2" />
+              Delete
+            </>
+          }
+        />
+        <ModalInDropdownMenu
+          title="Refund"
+          description="Select refund reason"
+          isOpen={isRefundModalOpen}
+          onOpen={() => setIsRefundModalOpen(true)}
+          onClose={() => setIsRefundModalOpen(false)}
+          children={(
+            <div className="flex gap-4 items-center justify-between">
+              <SelectField
+                disabled={loading}
+                data={[
+                  { active: true, label: "Customer request", value: "requested_by_customer" },
+                  { active: true, label: "Dublicate", value: "duplicate" },
+                  { active: true, label: "Fraud", value: "fraudulent" },
+                ]}
+                listTitle="Reasons"
+                placeholder="Select Refund Reason"
+                values={refundReason}
+                setValues={setRefundReason}
+                disableSearch
+              />
+              <div className="flex items-center gap-4">
+                <Button
+                  disabled={loading}
+                  onClick={() => setIsRefundModalOpen(false)}
+                  variant={"outline"}
+                  customeColor={"destructiveOutlined"}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  disabled={loading}
+                  onClick={handleRefund}
+                  customeColor={"success"}
+                >
+                  Confirm
+                </Button>
+              </div>
+            </div>
+          )}
+          itemChildren={
+            <>
+              <Coins className="w-4 h-4 mr-2" />
+              Refund
+            </>
+          }
+        />
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 

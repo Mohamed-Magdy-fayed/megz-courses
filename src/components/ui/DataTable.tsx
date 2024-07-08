@@ -3,6 +3,7 @@ import {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
+  filterFns,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -14,6 +15,7 @@ import {
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -23,7 +25,8 @@ import { AlertModal } from "../modals/AlertModal";
 import { Input } from "./input";
 import { Typography } from "./Typoghraphy";
 import { Button } from "./button";
-import { ArrowLeft, ArrowRight, Trash } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, Trash } from "lucide-react";
+import { SeverityPill } from "../overview/SeverityPill";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -34,6 +37,11 @@ interface DataTableProps<TData, TValue> {
     label: string
     key: Extract<keyof TData, string>
   }
+  filters?: {
+    label: string
+    values: (Extract<TData[keyof TData], string>)[]
+    key: Extract<keyof TData, string>
+  }[]
 }
 
 export function DataTable<TData, TValue>({
@@ -42,6 +50,7 @@ export function DataTable<TData, TValue>({
   setData,
   onDelete,
   search,
+  filters,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -99,6 +108,31 @@ export function DataTable<TData, TValue>({
             placeholder={`Search by ${search.label}`}
             className="w-full hover:shadow-0 rounded-full p-2 text-sm font-medium leading-6 outline-none outline-1 outline-offset-0 outline-slate-300 focus-within:!bg-white focus-within:outline-2 focus-within:outline-primary hover:bg-slate-100"
           />
+        </div>
+      )}
+      {filters && (
+        <div className="p-4 flex flex-col gap-2">
+          <Typography>Filter by</Typography>
+          {filters.map(filter => (
+            <div key={filter.key} className="flex items-center gap-4">
+              {filter.values.map((value, i) => (
+                <div key={`${value}filters${i}`} className="flex items-center gap-4">
+                  <Button
+                    onClick={() => {
+                      const isSameFilter = table.getColumn(filter.key)?.getFilterValue() === value
+                      table.getColumn(filter.key)?.setFilterValue(isSameFilter ? "" : value)
+                    }}
+                    placeholder={`Filter by ${filter.label}`}
+                    customeColor={table.getColumn(filter.key)?.getFilterValue() as string === value ? "primary" : "accent"}
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    <Typography>{value}</Typography>
+                  </Button>
+                  {i === filter.values.length - 1 && <SeverityPill color="info" className="aspect-square">{table.getRowModel().rows.length}</SeverityPill>}
+                </div>
+              ))}
+            </div>
+          ))}
         </div>
       )}
       <div className="whitespace-nowrap grid">

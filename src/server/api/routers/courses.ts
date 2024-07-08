@@ -168,7 +168,7 @@ export const coursesRouter = createTRPCRouter({
         privatePrice: z.number(),
         instructorPrice: z.number(),
         oralTest: z.string(),
-        level: z.enum(validLevelTypes),
+        levels: z.array(z.enum(validLevelTypes)),
       })
     )
     .mutation(async ({ input: {
@@ -179,7 +179,7 @@ export const coursesRouter = createTRPCRouter({
       groupPrice,
       privatePrice,
       instructorPrice,
-      level,
+      levels,
     }, ctx }) => {
       const course = await ctx.prisma.course.create({
         data: {
@@ -190,7 +190,7 @@ export const coursesRouter = createTRPCRouter({
           privatePrice,
           instructorPrice,
           oralTest,
-          level,
+          levels,
         },
       });
 
@@ -217,7 +217,7 @@ export const coursesRouter = createTRPCRouter({
           privatePrice: existingCourse.privatePrice,
           instructorPrice: existingCourse.instructorPrice,
           oralTest: existingCourse.oralTest,
-          level: existingCourse.level,
+          levels: existingCourse.levels,
         },
       });
 
@@ -236,10 +236,10 @@ export const coursesRouter = createTRPCRouter({
         privatePrice: z.number(),
         instructorPrice: z.number(),
         oralTest: z.string(),
-        level: z.enum(validLevelTypes),
+        levels: z.array(z.enum(validLevelTypes)),
       })
     )
-    .mutation(async ({ ctx, input: { name, id, oralTest, description, groupPrice, image, instructorPrice, level, privatePrice } }) => {
+    .mutation(async ({ ctx, input: { name, id, oralTest, description, groupPrice, image, instructorPrice, levels, privatePrice } }) => {
       const updatedCourse = await ctx.prisma.course.update({
         where: {
           id,
@@ -250,7 +250,7 @@ export const coursesRouter = createTRPCRouter({
           description,
           groupPrice,
           privatePrice,
-          level,
+          levels,
           instructorPrice,
           image,
         },

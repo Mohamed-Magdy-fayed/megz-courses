@@ -10,6 +10,7 @@
     "start": "next start",
     "ngrok": "ngrok http 3000",
     "db": "cd ./mongodb-cluster && docker compose up --wait",
+    "dbprod": "cd ./mongodb-cluster-prod && docker compose up --wait",
     "dep": "git add . & git commit -m \"auto commit\" & git push"
   },
   "dependencies": {
@@ -22,6 +23,7 @@
     "@radix-ui/react-alert-dialog": "^1.0.4",
     "@radix-ui/react-avatar": "^1.0.4",
     "@radix-ui/react-checkbox": "^1.0.4",
+    "@radix-ui/react-context-menu": "^2.2.1",
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-dropdown-menu": "^2.0.5",
     "@radix-ui/react-label": "^2.0.2",

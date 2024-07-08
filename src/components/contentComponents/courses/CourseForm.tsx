@@ -20,8 +20,8 @@ import Image from "next/image";
 import ImageUploader from "@/components/ui/ImageUploader";
 import { validLevelTypes } from "@/lib/enumsTypes";
 import { z } from "zod";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Course } from "@prisma/client";
+import SelectField from "@/components/salesOperation/SelectField";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name can't be empty"),
@@ -31,13 +31,13 @@ const formSchema = z.object({
   privatePrice: z.string().min(1, "privatePrice can't be empty"),
   instructorPrice: z.string().min(1, "instructorPrice can't be empty"),
   oralTest: z.string().min(1, "oralTest can't be empty"),
-  level: z.enum(validLevelTypes),
 });
 
 type CoursesFormValues = z.infer<typeof formSchema>;
 
 const CourseForm = ({ initialData, setIsOpen }: { initialData?: Course, setIsOpen: Dispatch<SetStateAction<boolean>> }) => {
   const [loading, setLoading] = useState(false);
+  const [levels, setLevels] = useState(initialData ? initialData.levels : []);
   const [loadingToast, setLoadingToast] = useState<ReturnType<typeof toast>>()
   const { toast } = useToast()
 
@@ -51,7 +51,6 @@ const CourseForm = ({ initialData, setIsOpen }: { initialData?: Course, setIsOpe
         instructorPrice: initialData.instructorPrice.toString(),
         privatePrice: initialData.privatePrice.toString(),
         oralTest: initialData.oralTest,
-        level: initialData.level,
       }
       : {
         name: "",
@@ -61,7 +60,6 @@ const CourseForm = ({ initialData, setIsOpen }: { initialData?: Course, setIsOpe
         instructorPrice: "",
         privatePrice: "",
         oralTest: "",
-        level: "A0_A1_Beginner_Elementary",
       }
   });
   const createCourseMutation = api.courses.createCourse.useMutation({
@@ -124,7 +122,7 @@ const CourseForm = ({ initialData, setIsOpen }: { initialData?: Course, setIsOpe
   });
   const trpcUtils = api.useContext();
 
-  const onSubmit = ({ name, oralTest, privatePrice, groupPrice, instructorPrice, description, image, level }: CoursesFormValues) => {
+  const onSubmit = ({ name, oralTest, privatePrice, groupPrice, instructorPrice, description, image }: CoursesFormValues) => {
     initialData
       ? editCourseMutation.mutate({
         id: initialData.id,
@@ -135,7 +133,7 @@ const CourseForm = ({ initialData, setIsOpen }: { initialData?: Course, setIsOpe
         instructorPrice: Number(instructorPrice),
         privatePrice: Number(privatePrice),
         image,
-        level,
+        levels,
       })
       : createCourseMutation.mutate({
         name: name,
@@ -145,7 +143,7 @@ const CourseForm = ({ initialData, setIsOpen }: { initialData?: Course, setIsOpe
         groupPrice: Number(groupPrice),
         instructorPrice: Number(instructorPrice),
         oralTest,
-        level,
+        levels,
       });
   };
 
@@ -257,39 +255,24 @@ const CourseForm = ({ initialData, setIsOpen }: { initialData?: Course, setIsOpe
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="level"
-          render={({ field }) => (
-            <FormItem className="p-4">
-              <FormLabel>Course level</FormLabel>
-              <FormControl>
-                <Select
-                  disabled={loading}
-                  // @ts-ignore
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger className="pl-8 bg-white">
-                      <SelectValue
-                        defaultValue={field.value}
-                        placeholder="Select Course Level"
-                      />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {validLevelTypes.map(level => (
-                      <SelectItem id={level} value={level}>{level}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <FormItem className="p-4">
+          <FormLabel>Course level</FormLabel>
+          <SelectField
+            multiSelect
+            data={validLevelTypes.map(level => ({
+              active: true,
+              label: level,
+              value: level,
+            }))}
+            listTitle="Level"
+            placeholder="Select Course Levels"
+            setValues={setLevels}
+            values={levels}
+          >
+
+          </SelectField>
+          <FormMessage />
+        </FormItem>
         <Separator />
         <div className="flex w-full justify-end gap-4 self-end p-4">
           <Button

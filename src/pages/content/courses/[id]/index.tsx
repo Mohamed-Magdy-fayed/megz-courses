@@ -2,7 +2,7 @@ import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
 import { api } from "@/lib/api";
-import { ArrowLeftToLine, Plus, PlusIcon } from "lucide-react";
+import { ArrowLeftToLine, Plus, PlusIcon, Upload } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import MaterialsClient from "@/components/contentComponents/materials/MaterialsClient";
@@ -16,6 +16,7 @@ import AssignmentsClient from "@/components/contentComponents/assignments/Client
 import QuizzesClient from "@/components/contentComponents/quizzes/Client";
 import Link from "next/link";
 import Modal from "@/components/ui/modal";
+import UploadMaterialForm from "@/components/contentComponents/materials/uploadForm/UploadMaterialForm";
 
 const tabs = [
     { value: "materials", label: "Materials" },
@@ -32,6 +33,7 @@ const CoursePage = () => {
     const tabName = router.query.tab as string;
     const { data, isLoading, isError, error } = api.courses.getById.useQuery({ id });
     const [tab, setTab] = useState("materials");
+    const [isUploadOpen, setIsUploadOpen] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
 
@@ -61,6 +63,15 @@ const CoursePage = () => {
                     </div>
                 </div>
                 <Modal
+                    description="Upload a material for the course"
+                    isOpen={isUploadOpen}
+                    onClose={() => setIsUploadOpen(false)}
+                    title="Upload material"
+                    children={(
+                        <UploadMaterialForm id={id} setIsUploadOpen={setIsUploadOpen} />
+                    )}
+                />
+                <Modal
                     description="Create a material for the course"
                     isOpen={isOpen}
                     onClose={() => setIsOpen(false)}
@@ -89,7 +100,7 @@ const CoursePage = () => {
                             ))}
                         </TabsList>
                         <TabsContent value="materials">
-                            <div className="p-4">
+                            <div className="p-4 flex gap-4 items-center">
                                 <Button
                                     onClick={() => {
                                         setIsOpen(true);
@@ -97,6 +108,14 @@ const CoursePage = () => {
                                 >
                                     <PlusIcon className="mr-2"></PlusIcon>
                                     Add a material
+                                </Button>
+                                <Button
+                                    onClick={() => {
+                                        setIsUploadOpen(true);
+                                    }}
+                                >
+                                    <Upload className="mr-2"></Upload>
+                                    Upload a material
                                 </Button>
                             </div>
                             <MaterialsClient data={data.course.materialItems} />

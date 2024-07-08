@@ -33,9 +33,7 @@ export function LearningBreadcrumb({ course }: { course: FullCourseType }) {
         if (index === 2) return course.name
         if (index === 3 && pathSegments[3] === "quiz") return `Session ${course.materialItems.findIndex(({ evaluationForms }) => evaluationForms.find(({ id }) => id === pathSegments[pathSegments.length - 1])?.id) + 1} Quiz`
         if (index === 3 && pathSegments[3] === "assignment") return `Session ${course.materialItems.findIndex(({ evaluationForms }) => evaluationForms.find(({ id }) => id === pathSegments[pathSegments.length - 1])?.id) + 1} Assignment`
-        if (index === 3 && pathSegments[3] === "session") return `Session: ${course.materialItems.find(({ id }) => id === pathSegments[pathSegments.length - 1])?.title || "no title"}`
-        console.log(pathSegments);
-
+        if (index === 3 && pathSegments[3] === "session") return `Session: ${course.materialItems.find(({ id }) => id === pathSegments[pathSegments.length - 1])?.manual?.title || course.materialItems.find(({ id }) => id === pathSegments[pathSegments.length - 1])?.upload?.title || "no title"}`
         return "asd"
     }
 

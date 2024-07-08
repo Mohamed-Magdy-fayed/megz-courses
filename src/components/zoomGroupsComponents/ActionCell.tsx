@@ -24,6 +24,7 @@ import { UserCog } from "lucide-react";
 import PostpondStudentsForm from "./PostpondStudentsForm";
 import ResumeStudentsForm from "./ResumeStudentsForm";
 import { useRouter } from "next/router";
+import ModalInDropdownMenu from "../ui/modal-in-dropdown-menu";
 
 interface ActionCellProps {
     id: string;
@@ -109,112 +110,7 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, startDate, trainerId, s
 
     return (
         <div>
-            <Modal
-                title="Resume studnets"
-                description="move studnets to back to waiting list"
-                isOpen={isResumeFormOpen}
-                onClose={() => setIsResumeFormOpen(false)}
-                children={(
-                    <ResumeStudentsForm setIsOpen={setIsResumeFormOpen} id={id} courseId={courseId} />
-                )}
-            />
-            <Modal
-                title="Postpond studnets"
-                description="move studnets to postponded list"
-                isOpen={isPostpondFormOpen}
-                onClose={() => setIsPostpondFormOpen(false)}
-                children={(
-                    <PostpondStudentsForm setIsOpen={setIsPostpondFormOpen} id={id} />
-                )}
-            />
-            <Modal
-                title="Move studnets"
-                description="move studnets to waiting list"
-                isOpen={isMoveFormOpen}
-                onClose={() => setIsMoveFormOpen(false)}
-                children={(
-                    <MoveStudentsForm setIsOpen={setIsMoveFormOpen} courseId={courseId} id={id} />
-                )}
-            />
-            <Modal
-                title="Remove studnets"
-                description="move studnets to waiting list"
-                isOpen={isRemoveFormOpen}
-                onClose={() => setIsRemoveFormOpen(false)}
-                children={(
-                    <RemoveStudentsForm setIsOpen={setIsRemoveFormOpen} courseId={courseId} id={id} studentIds={studentIds} />
-                )}
-            />
-            <Modal
-                title="Add studnets"
-                description="add new students to the group"
-                isOpen={isAddFormOpen}
-                onClose={() => setIsAddFormOpen(false)}
-                children={(
-                    <AddStudentsForm setIsOpen={setIsAddFormOpen} courseId={courseId} id={id} />
-                )}
-            />
-            <Modal
-                title="Edit group"
-                description="Update group details"
-                isOpen={isEditFormOpen}
-                onClose={() => setIsEditFormOpen(false)}
-                children={(
-                    <ZoomGroupForm setIsOpen={setIsEditFormOpen} initialData={{
-                        id,
-                        courseId,
-                        startDate,
-                        studentIds,
-                        trainerId,
-                    }} />
-                )}
-            />
-            <Modal
-                title="Change group status"
-                description=""
-                isOpen={changeStatusOpen}
-                onClose={() => setChangeStatusOpen(false)}
-                children={(
-                    <div className="flex gap-4 items-center justify-between">
-                        <SelectField
-                            disabled={loading}
-                            data={Object.values(GroupStatus).map(groupstatus => ({
-                                active: groupstatus !== status,
-                                label: upperFirst(groupstatus),
-                                value: groupstatus,
-                            }))}
-                            listTitle="Statuses"
-                            placeholder={upperFirst(status)}
-                            setValues={setNewStatus}
-                            values={newStatus}
-                            disableSearch
-                        />
-                        <div className="flex items-center gap-4">
-                            <Button
-                                disabled={loading}
-                                onClick={() => setChangeStatusOpen(false)}
-                                variant={"outline"}
-                                customeColor={"destructiveOutlined"}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                disabled={loading}
-                                onClick={onChangeStatus}
-                                customeColor={"success"}
-                            >
-                                Confirm
-                            </Button>
-                        </div>
-                    </div>
-                )}
-            />
-            <AlertModal
-                isOpen={open}
-                loading={loading}
-                onClose={() => setOpen(false)}
-                onConfirm={onDelete}
-            />
+
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button customeColor="mutedIcon" variant={"icon"} >
@@ -233,42 +129,182 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, startDate, trainerId, s
                             </Link>
                         </DropdownMenuItem>
                     )}
-                    <DropdownMenuItem onClick={() => setChangeStatusOpen(true)}>
-                        <List className="w-4 h-4 mr-2" />
-                        Change Status
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setIsAddFormOpen(true)}>
-                        <UserPlus className="w-4 h-4 mr-2" />
-                        Add students
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setIsRemoveFormOpen(true)}>
-                        <UserMinus className="w-4 h-4 mr-2" />
-                        Remove students
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setIsMoveFormOpen(true)}>
-                        <UserCog className="w-4 h-4 mr-2" />
-                        Move students
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setIsPostpondFormOpen(true)}>
-                        <PauseCircle className="w-4 h-4 mr-2" />
-                        Postpond students
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setIsResumeFormOpen(true)}>
-                        <PlayCircle className="w-4 h-4 mr-2" />
-                        Resume students
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setIsEditFormOpen(true)}>
-                        <Edit className="w-4 h-4 mr-2" />
-                        Edit
-                    </DropdownMenuItem>
+                    <ModalInDropdownMenu
+                        title="Change group status"
+                        description=""
+                        isOpen={changeStatusOpen}
+                        onOpen={() => setChangeStatusOpen(true)}
+                        onClose={() => setChangeStatusOpen(false)}
+                        children={(
+                            <div className="flex gap-4 items-center justify-between">
+                                <SelectField
+                                    disabled={loading}
+                                    data={Object.values(GroupStatus).map(groupstatus => ({
+                                        active: groupstatus !== status,
+                                        label: upperFirst(groupstatus),
+                                        value: groupstatus,
+                                    }))}
+                                    listTitle="Statuses"
+                                    placeholder={upperFirst(status)}
+                                    setValues={setNewStatus}
+                                    values={newStatus}
+                                    disableSearch
+                                />
+                                <div className="flex items-center gap-4">
+                                    <Button
+                                        disabled={loading}
+                                        onClick={() => setChangeStatusOpen(false)}
+                                        variant={"outline"}
+                                        customeColor={"destructiveOutlined"}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        disabled={loading}
+                                        onClick={onChangeStatus}
+                                        customeColor={"success"}
+                                    >
+                                        Confirm
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                        itemChildren={
+                            <>
+                                <List className="w-4 h-4 mr-2" />
+                                Change Status
+                            </>
+                        }
+                    />
+                    <ModalInDropdownMenu
+                        title="Add studnets"
+                        description="add new students to the group"
+                        isOpen={isAddFormOpen}
+                        onOpen={() => setIsAddFormOpen(true)}
+                        onClose={() => setIsAddFormOpen(false)}
+                        children={(
+                            <AddStudentsForm setIsOpen={setIsAddFormOpen} courseId={courseId} id={id} />
+                        )}
+                        itemChildren={
+                            <>
+                                <UserPlus className="w-4 h-4 mr-2" />
+                                Add students
+                            </>
+                        }
+                    />
+                    <ModalInDropdownMenu
+                        title="Move studnets"
+                        description="move studnets to waiting list"
+                        isOpen={isMoveFormOpen}
+                        onOpen={() => setIsMoveFormOpen(true)}
+                        onClose={() => setIsMoveFormOpen(false)}
+                        children={(
+                            <MoveStudentsForm setIsOpen={setIsMoveFormOpen} courseId={courseId} id={id} />
+                        )}
+                        itemChildren={
+                            <>
+                                <UserCog className="w-4 h-4 mr-2" />
+                                Move students
+                            </>
+                        }
+                    />
+                    <ModalInDropdownMenu
+                        title="Remove studnets"
+                        description="move studnets to waiting list"
+                        isOpen={isRemoveFormOpen}
+                        onOpen={() => setIsRemoveFormOpen(true)}
+                        onClose={() => setIsRemoveFormOpen(false)}
+                        children={(
+                            <RemoveStudentsForm setIsOpen={setIsRemoveFormOpen} courseId={courseId} id={id} studentIds={studentIds} />
+                        )}
+                        itemChildren={
+                            <>
+                                <UserMinus className="w-4 h-4 mr-2" />
+                                Remove students
+                            </>
+                        }
+                    />
+                    <ModalInDropdownMenu
+                        title="Postpond studnets"
+                        description="move studnets to postponded list"
+                        isOpen={isPostpondFormOpen}
+                        onOpen={() => setIsPostpondFormOpen(true)}
+                        onClose={() => setIsPostpondFormOpen(false)}
+                        children={(
+                            <PostpondStudentsForm setIsOpen={setIsPostpondFormOpen} id={id} />
+                        )}
+                        itemChildren={
+                            <>
+                                <PauseCircle className="w-4 h-4 mr-2" />
+                                Postpond students
+                            </>
+                        }
+                    />
+                    <ModalInDropdownMenu
+                        title="Resume studnets"
+                        description="move studnets to back to waiting list"
+                        isOpen={isResumeFormOpen}
+                        onOpen={() => setIsResumeFormOpen(true)}
+                        onClose={() => setIsResumeFormOpen(false)}
+                        children={(
+                            <ResumeStudentsForm setIsOpen={setIsResumeFormOpen} id={id} courseId={courseId} />
+                        )}
+                        itemChildren={
+                            <>
+                                <PlayCircle className="w-4 h-4 mr-2" />
+                                Resume students
+                            </>
+                        }
+                    />
+                    <ModalInDropdownMenu
+                        title="Edit group"
+                        description="Update group details"
+                        isOpen={isEditFormOpen}
+                        onOpen={() => setIsEditFormOpen(true)}
+                        onClose={() => setIsEditFormOpen(false)}
+                        children={(
+                            <ZoomGroupForm setIsOpen={setIsEditFormOpen} initialData={{
+                                id,
+                                courseId,
+                                startDate,
+                                studentIds,
+                                trainerId,
+                            }} />
+                        )}
+                        itemChildren={
+                            <>
+                                <Edit className="w-4 h-4 mr-2" />
+                                Edit
+                            </>
+                        }
+                    />
                     <DropdownMenuItem onClick={onDublicate}>
                         <Copy className="w-4 h-4 mr-2" />
                         Dublicate
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setOpen(true)}>
-                        <Trash className="w-4 h-4 mr-2" />
-                        Delete
-                    </DropdownMenuItem>
+                    <ModalInDropdownMenu
+                        isOpen={open}
+                        onOpen={() => setOpen(true)}
+                        onClose={() => setOpen(false)}
+                        title="Delete"
+                        description="This action can't be undone!"
+                        children={
+                            <div className="flex w-full items-center justify-end space-x-2 pt-6">
+                                <Button disabled={loading} variant={"outline"} customeColor={"mutedOutlined"} onClick={() => setOpen(false)}>
+                                    Cancel
+                                </Button>
+                                <Button disabled={loading} customeColor="destructive" onClick={() => onDelete()}>
+                                    Continue
+                                </Button>
+                            </div>
+                        }
+                        itemChildren={
+                            <>
+                                <Trash className="w-4 h-4 mr-2" />
+                                Delete
+                            </>
+                        }
+                    />
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>

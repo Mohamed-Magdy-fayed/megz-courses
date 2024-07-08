@@ -2,7 +2,10 @@ import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 
-import { cn } from "@/lib/utils"
+import { cn, formatPercentage } from "@/lib/utils"
+import Spinner from "../Spinner"
+import { Typography } from "./Typoghraphy"
+import { Progress } from "./progress"
 
 const buttonVariants = cva(
     "inline-flex items-center space-x-2 active:opacity-75 justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
@@ -82,4 +85,25 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 )
 Button.displayName = "Button"
 
-export { Button, buttonVariants }
+const LoadingButton = React.forwardRef<HTMLButtonElement, ButtonProps & { progress: number }>(
+    ({ className, variant, customeColor, size, asChild = false, children, disabled, progress, ...props }, ref) => {
+        const Comp = asChild ? Slot : "button"
+        return (
+            <Comp
+                className={cn("!whitespace-nowrap !overflow-hidden !relative", buttonVariants({ variant, size, className, customeColor }))}
+                ref={ref}
+                {...props}
+            >
+                <div className={cn(disabled ? "opacity-0" : "opacity-100")}>{children}</div>
+                <div className={cn("absolute flex items-center gap-1", disabled ? "opacity-100" : "opacity-0")}>
+                    <Spinner className={cn("w-4 h-4")} />
+                    <Typography>{formatPercentage(Number(isNaN(progress) ? 0 : progress.toFixed()))}</Typography>
+                </div>
+                {disabled && <Progress value={progress} className="absolute h-1 bottom-0 left-0 right-0 !m-0" />}
+            </Comp>
+        )
+    }
+)
+LoadingButton.displayName = "LoadingButton"
+
+export { Button, LoadingButton, buttonVariants }

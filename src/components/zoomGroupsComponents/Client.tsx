@@ -4,6 +4,7 @@ import { DataTable } from "@/components/ui/DataTable";
 import { useToast } from "@/components/ui/use-toast";
 import { type ColumnType, columns } from "./Column";
 import Spinner from "../Spinner";
+import { validGroupStatuses } from "@/lib/enumsTypes";
 
 const ZoomGroupsClient = () => {
     const { data, isLoading, isError } = api.zoomGroups.getzoomGroups.useQuery()
@@ -33,7 +34,7 @@ const ZoomGroupsClient = () => {
         );
     };
 
-    if (!data || isLoading || data.zoomGroups.some(({ course, trainer }) => !course || !trainer)) return <Spinner className=" mx-auto" />
+    if (!data || isLoading /*|| data.zoomGroups.some(({ course, trainer }) => !course || !trainer)*/) return <Spinner className=" mx-auto" />
     if (isError) return <>Error</>
 
     return (
@@ -52,6 +53,8 @@ const ZoomGroupsClient = () => {
             }))}
             setData={setZoomGroups}
             onDelete={onDelete}
+            search={{ key: "groupNumber", label: "Group Number" }}
+            filters={[{ key: "groupStatus", label: "Group Status", values: [...validGroupStatuses] }]}
         />
     );
 };

@@ -12,17 +12,16 @@ const MaterialsClient = ({ data }: { data: MaterialItem[] }) => {
         id,
         createdAt,
         updatedAt,
-        frameWorkName,
-        title,
-        subTitle,
+        manual,
+        type,
+        upload,
         courseId,
     }) => ({
         id,
         createdAt,
         updatedAt,
-        frameWorkName,
-        title,
-        subTitle,
+        title: (type === "manual" ? manual?.title : upload?.title) || "",
+        type,
         courseId,
     }))
 
@@ -32,7 +31,7 @@ const MaterialsClient = ({ data }: { data: MaterialItem[] }) => {
     const onDelete = (callback?: () => void) => {
         deleteMutation.mutate(materialItems, {
             onSuccess: ({ deletedMaterialItems }) => {
-                trpcUtils.materials.invalidate()
+                trpcUtils.courses.invalidate()
                     .then(() => {
                         callback?.()
                         toastSuccess(`Deleted ${deletedMaterialItems.count} materials`)

@@ -121,7 +121,7 @@ model PlacementTest {
     id            String      @id @default(auto()) @map("_id") @db.ObjectId
     student       User        @relation(fields: [studentUserId], references: [id])
     studentUserId String      @db.ObjectId
-    course        Course      @relation(fields: [courseId], references: [id])
+    course        Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
     courseId      String      @db.ObjectId
     testStatus    TestTstatus
     trainer       Trainer?    @relation(fields: [trainerId], references: [id])
@@ -161,7 +161,7 @@ model Course {
     instructorPrice Float
     oralTest        String
     placementTests  PlacementTest[]
-    level           CourseLevels
+    levels          CourseLevels[]
     materialItems   MaterialItem[]
     zoomGroup       ZoomGroup[]
     EvaluationForm  EvaluationForm[]
@@ -223,9 +223,7 @@ model EvaluationForm {
     createdAt      DateTime                   @default(now())
 }
 
-model MaterialItem {
-    id                String           @id @default(auto()) @map("_id") @db.ObjectId
-    frameWorkName     String
+type MaterialItemManual {
     leadinText        String
     leadinImageUrl    String
     title             String
@@ -235,12 +233,29 @@ model MaterialItem {
     answerAreas       AnswerArea[]
     vocabularyCards   VocabCard[]
     practiceQuestions Question[]
-    evaluationForms   EvaluationForm[]
-    zoomSessions      ZoomSession[]
-    course            Course?          @relation(fields: [courseId], references: [id])
-    courseId          String?          @db.ObjectId
-    updatedAt         DateTime         @updatedAt
-    createdAt         DateTime         @default(now())
+}
+
+type MaterialItemUpload {
+    title String
+    url   String
+}
+
+enum MaterialItemType {
+    manual
+    upload
+}
+
+model MaterialItem {
+    id              String              @id @default(auto()) @map("_id") @db.ObjectId
+    type            MaterialItemType
+    upload          MaterialItemUpload?
+    manual          MaterialItemManual?
+    evaluationForms EvaluationForm[]
+    zoomSessions    ZoomSession[]
+    course          Course?             @relation(fields: [courseId], references: [id])
+    courseId        String?             @db.ObjectId
+    updatedAt       DateTime            @updatedAt
+    createdAt       DateTime            @default(now())
 }
 
 type Question {

@@ -12,6 +12,7 @@ import { AlertModal } from "../modals/AlertModal";
 import { api } from "@/lib/api";
 import { useToast } from "../ui/use-toast";
 import Link from "next/link";
+import ModalInDropdownMenu from "../ui/modal-in-dropdown-menu";
 
 interface AgentCellActionProps {
     id: string;
@@ -47,12 +48,7 @@ const AgentCellAction: React.FC<AgentCellActionProps> = ({ id }) => {
 
     return (
         <>
-            <AlertModal
-                isOpen={open}
-                loading={loading}
-                onClose={() => setOpen(false)}
-                onConfirm={onDelete}
-            />
+
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button customeColor="mutedIcon" variant={"icon"} >
@@ -67,10 +63,29 @@ const AgentCellAction: React.FC<AgentCellActionProps> = ({ id }) => {
                             View
                         </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setOpen(true)}>
-                        <Trash className="w-4 h-4 mr-2" />
-                        Delete
-                    </DropdownMenuItem>
+                    <ModalInDropdownMenu
+                        title="Are you sure?"
+                        description="This action can't be undone!"
+                        isOpen={open}
+                        onOpen={() => setOpen(true)}
+                        onClose={() => setOpen(false)}
+                        children={
+                            <div className="flex w-full items-center justify-end space-x-2 pt-6">
+                                <Button disabled={loading} variant={"outline"} customeColor={"mutedOutlined"} onClick={() => setOpen(false)}>
+                                    Cancel
+                                </Button>
+                                <Button disabled={loading} customeColor="destructive" onClick={() => onDelete()}>
+                                    Continue
+                                </Button>
+                            </div>
+                        }
+                        itemChildren={
+                            <>
+                                <Trash className="w-4 h-4 mr-2" />
+                                Delete
+                            </>
+                        }
+                    />
                 </DropdownMenuContent>
             </DropdownMenu>
         </>

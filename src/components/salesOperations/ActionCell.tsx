@@ -12,9 +12,10 @@ import { AlertModal } from "../modals/AlertModal";
 import { api } from "@/lib/api";
 import { useToast } from "../ui/use-toast";
 import Link from "next/link";
-import { AssignModal } from "../modals/AssignModal";
 import { useSession } from "next-auth/react";
 import { SalesOperationStatus } from "@prisma/client";
+import ModalInDropdownMenu from "../ui/modal-in-dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 interface CellActionProps {
     id: string;
@@ -29,6 +30,7 @@ const CellAction: React.FC<CellActionProps> = ({ id, assigneeId, code, status })
 
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
+    const [assigneeIdForAssign, setAssigneeIdForAssign] = useState("");
 
     const onCopy = () => {
         navigator.clipboard.writeText(code);
@@ -38,6 +40,7 @@ const CellAction: React.FC<CellActionProps> = ({ id, assigneeId, code, status })
     const isOperationAssigned = useMemo(() => status === "created", [status])
     const isOperationManger = useMemo(() => session.data?.user.userType === "admin", [session.data?.user.userType])
     const operationAssignedForCurrentUser = useMemo(() => session.data?.user.id === assigneeId, [session.data?.user.id, assigneeId])
+    const { data: salesAgentsData } = api.users.getUsers.useQuery({ userType: "salesAgent" })
     const deleteMutation = api.salesOperations.deleteSalesOperations.useMutation()
     const trpcUtils = api.useContext()
 
@@ -92,18 +95,7 @@ const CellAction: React.FC<CellActionProps> = ({ id, assigneeId, code, status })
 
     return (
         <>
-            <AlertModal
-                isOpen={open}
-                loading={loading}
-                onClose={() => setOpen(false)}
-                onConfirm={onDelete}
-            />
-            <AssignModal
-                isOpen={assignIsOpen}
-                loading={loading}
-                onClose={() => setAssignIsOpen(false)}
-                onConfirm={handleCreateOperation}
-            />
+
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button customeColor="mutedIcon" variant={"icon"} >
@@ -113,13 +105,47 @@ const CellAction: React.FC<CellActionProps> = ({ id, assigneeId, code, status })
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     {isOperationManger ? (
-                        <DropdownMenuItem onClick={(e) => {
-                            e.preventDefault()
-                            setAssignIsOpen(true)
-                        }}>
-                            <Workflow className="w-4 h-4 mr-2" />
-                            Assign
-                        </DropdownMenuItem>
+                        <ModalInDropdownMenu
+                            title="Assign Task"
+                            description="Please select the assignee!"
+                            isOpen={assignIsOpen}
+                            onOpen={() => setAssignIsOpen(true)}
+                            onClose={() => setAssignIsOpen(false)}
+                            children={
+                                <>
+                                    <Select
+                                        disabled={loading}
+                                        // @ts-ignore
+                                        onValueChange={(e) => setAssigneeIdForAssign(e)}
+                                    >
+                                        <SelectTrigger className="pl-8">
+                                            <SelectValue
+                                                placeholder="Select assignee"
+                                            />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {salesAgentsData?.users.map(user => (
+                                                <SelectItem key={user.id} value={user.id}>{user.email}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <div className="flex w-full items-center justify-end space-x-2 pt-6">
+                                        <Button disabled={loading} variant="outline" customeColor={"mutedOutlined"} onClick={() => setAssignIsOpen(false)}>
+                                            Cancel
+                                        </Button>
+                                        <Button disabled={loading} variant="default" onClick={() => handleCreateOperation(assigneeIdForAssign)}>
+                                            Continue
+                                        </Button>
+                                    </div>
+                                </>
+                            }
+                            itemChildren={
+                                <>
+                                    <Workflow className="w-4 h-4 mr-2" />
+                                    Assign
+                                </>
+                            }
+                        />
                     ) : !operationAssignedForCurrentUser && !isOperationAssigned ? null : (
                         <DropdownMenuItem onClick={handleAssignToMe}>
                             <Workflow className="w-4 h-4 mr-2" />
@@ -136,10 +162,29 @@ const CellAction: React.FC<CellActionProps> = ({ id, assigneeId, code, status })
                         <Copy className="w-4 h-4 mr-2" />
                         Copy Code
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setOpen(true)}>
-                        <Trash className="w-4 h-4 mr-2" />
-                        Delete
-                    </DropdownMenuItem>
+                    <ModalInDropdownMenu
+                        title="Are you sure?"
+                        description="This action can't be undone!"
+                        isOpen={open}
+                        onOpen={() => setOpen(true)}
+                        onClose={() => setOpen(false)}
+                        children={
+                            <div className="flex w-full items-center justify-end space-x-2 pt-6">
+                                <Button disabled={loading} variant={"outline"} customeColor={"mutedOutlined"} onClick={() => setOpen(false)}>
+                                    Cancel
+                                </Button>
+                                <Button disabled={loading} customeColor="destructive" onClick={() => onDelete()}>
+                                    Continue
+                                </Button>
+                            </div>
+                        }
+                        itemChildren={
+                            <>
+                                <Trash className="w-4 h-4 mr-2" />
+                                Delete
+                            </>
+                        }
+                    />
                 </DropdownMenuContent>
             </DropdownMenu>
         </>

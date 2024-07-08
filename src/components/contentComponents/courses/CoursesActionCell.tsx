@@ -14,6 +14,7 @@ import Spinner from "@/components/Spinner";
 import Modal from "@/components/ui/modal";
 import CourseForm from "./CourseForm";
 import { Course } from "@prisma/client";
+import ModalInDropdownMenu from "@/components/ui/modal-in-dropdown-menu";
 
 interface CellActionProps {
     id: string;
@@ -97,13 +98,6 @@ const CoursesActionCell: React.FC<CellActionProps> = ({ id }) => {
 
     return (
         <>
-            <Modal
-                title="Edit Course"
-                description="Update the course details"
-                isOpen={isEditModalOpen}
-                onClose={() => setIsEditModalOpen(false)}
-                children={courseQuery.data?.course && <CourseForm initialData={courseQuery.data.course} setIsOpen={setIsEditModalOpen} />}
-            />
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button customeColor="mutedIcon" variant={"icon"} >
@@ -116,10 +110,20 @@ const CoursesActionCell: React.FC<CellActionProps> = ({ id }) => {
                         <CopyPlus className="w-4 h-4 mr-2" />
                         Dublicate
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setIsEditModalOpen(true)}>
-                        <Edit className="w-4 h-4 mr-2" />
-                        edit
-                    </DropdownMenuItem>
+                    <ModalInDropdownMenu
+                        title="Edit Course"
+                        description="Update the course details"
+                        isOpen={isEditModalOpen}
+                        onOpen={() => setIsEditModalOpen(true)}
+                        onClose={() => setIsEditModalOpen(false)}
+                        children={courseQuery.data?.course && <CourseForm initialData={courseQuery.data.course} setIsOpen={setIsEditModalOpen} />}
+                        itemChildren={
+                            <>
+                                <Edit className="w-4 h-4 mr-2" />
+                                edit
+                            </>
+                        }
+                    />
                     <DropdownMenuItem onClick={onCopy}>
                         <Copy className="w-4 h-4 mr-2" />
                         Copy user link

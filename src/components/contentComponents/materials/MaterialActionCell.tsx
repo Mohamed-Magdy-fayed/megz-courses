@@ -30,7 +30,7 @@ const MaterialActionCell: React.FC<CellActionProps> = ({ id, courseId }) => {
 
     const onCopy = () => {
         navigator.clipboard.writeText(`${window.location.host}/courses/${courseId}`);
-        toastInfo("User link copied to the clipboard");
+        toastInfo("View link copied to the clipboard");
     };
 
     const trpcUtils = api.useContext()
@@ -39,11 +39,11 @@ const MaterialActionCell: React.FC<CellActionProps> = ({ id, courseId }) => {
             const toastData = toast({ title: "Loading...", description: <Spinner className="w-4 h-4" />, duration: 30000, variant: "info" })
             setToastData(toastData)
         },
-        onSuccess: ({ materialItemDublication }) => trpcUtils.materials.invalidate().then(() => toastData?.update({
+        onSuccess: ({ materialItemDublication }) => trpcUtils.courses.invalidate().then(() => toastData?.update({
             id: toastData.id,
             title: "Success",
             variant: "success",
-            description: `Material item ${materialItemDublication.title} dublicated successfully`,
+            description: `Material item ${materialItemDublication.manual?.title} dublicated successfully`,
         })),
         onError: ({ message }) => toastData?.update({
             id: toastData.id,

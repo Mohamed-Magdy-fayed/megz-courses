@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
+import { deleteFiles } from "@/lib/firebaseStorage";
 
 export const materialItemsRouter = createTRPCRouter({
   getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -17,6 +18,11 @@ export const materialItemsRouter = createTRPCRouter({
     .query(async ({ ctx, input: { id } }) => {
       const materialItem = await ctx.prisma.materialItem.findUnique({
         where: { id },
+        include: {
+          course: true,
+          evaluationForms: true,
+          zoomSessions: true,
+        }
       });
       return { materialItem };
     }),
@@ -42,22 +48,25 @@ export const materialItemsRouter = createTRPCRouter({
         const materialItem = await ctx.prisma.materialItem.findUnique({ where: { id } })
         if (!materialItem) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to dublicate this material!" })
         if (!materialItem.courseId) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to dublicate this material!" })
+        if (!materialItem.manual) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to dublicate this material!" })
 
         const materialItemDublication = await ctx.prisma.materialItem.create({
           data: {
-            leadinText: materialItem.leadinText,
-            leadinImageUrl: materialItem.leadinImageUrl,
-            firstTestTitle: materialItem.firstTestTitle,
-            title: materialItem.title,
-            subTitle: materialItem.subTitle,
-            frameWorkName: materialItem.frameWorkName,
-            answerCards: materialItem.answerCards,
-            answerAreas: materialItem.answerAreas,
+            type: "manual",
             course: {
               connect: { id: materialItem.courseId },
             },
-            vocabularyCards: materialItem.vocabularyCards,
-            practiceQuestions: materialItem.practiceQuestions,
+            manual: {
+              leadinText: materialItem.manual?.leadinText!,
+              leadinImageUrl: materialItem.manual?.leadinImageUrl!,
+              firstTestTitle: materialItem.manual?.firstTestTitle!,
+              title: materialItem.manual?.title!,
+              subTitle: materialItem.manual?.subTitle!,
+              answerCards: materialItem.manual?.answerCards,
+              answerAreas: materialItem.manual?.answerAreas,
+              vocabularyCards: materialItem.manual?.vocabularyCards,
+              practiceQuestions: materialItem.manual?.practiceQuestions,
+            }
           },
         });
 
@@ -66,6 +75,30 @@ export const materialItemsRouter = createTRPCRouter({
         };
       }
     ),
+  uploadMaterialItem: protectedProcedure
+    .input(z.object({
+      courseId: z.string(),
+      title: z.string(),
+      url: z.string(),
+    }))
+    .mutation(async ({ ctx, input: { courseId, title, url } }) => {
+      const materialItem = await ctx.prisma.materialItem.create({
+        data: {
+          type: "upload",
+          course: {
+            connect: { id: courseId },
+          },
+          upload: {
+            title,
+            url,
+          },
+        },
+      });
+
+      return {
+        materialItem,
+      };
+    }),
   createMaterialItem: protectedProcedure
     .input(
       z.object({
@@ -130,22 +163,24 @@ export const materialItemsRouter = createTRPCRouter({
       }) => {
         const materialItem = await ctx.prisma.materialItem.create({
           data: {
-            leadinText,
-            leadinImageUrl,
-            firstTestTitle,
-            title,
-            subTitle,
-            frameWorkName: "TTT vocab",
-            answerCards,
-            answerAreas,
+            type: "manual",
             course: {
               connect: { id: courseId },
             },
-            vocabularyCards,
-            practiceQuestions: practiceQuestions.map((q) => ({
-              ...q,
-              type: "ControlledPracticeMultichoiceQuestion",
-            })),
+            manual: {
+              leadinText,
+              leadinImageUrl,
+              firstTestTitle,
+              title,
+              subTitle,
+              answerCards,
+              answerAreas,
+              vocabularyCards,
+              practiceQuestions: practiceQuestions.map((q) => ({
+                ...q,
+                type: "ControlledPracticeMultichoiceQuestion",
+              }))
+            },
           },
         });
 
@@ -221,18 +256,20 @@ export const materialItemsRouter = createTRPCRouter({
             id,
           },
           data: {
-            leadinText,
-            leadinImageUrl,
-            firstTestTitle,
-            title,
-            subTitle,
-            answerCards,
-            answerAreas,
-            vocabularyCards,
-            practiceQuestions: practiceQuestions.map((q) => ({
-              ...q,
-              type: "ControlledPracticeMultichoiceQuestion",
-            })),
+            manual: {
+              leadinText,
+              leadinImageUrl,
+              firstTestTitle,
+              title,
+              subTitle,
+              answerCards,
+              answerAreas,
+              vocabularyCards,
+              practiceQuestions: practiceQuestions.map((q) => ({
+                ...q,
+                type: "ControlledPracticeMultichoiceQuestion",
+              }))
+            },
           },
         });
 
@@ -243,6 +280,14 @@ export const materialItemsRouter = createTRPCRouter({
     .input(z.array(z.string()))
     .mutation(async ({ input, ctx }) => {
       if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+
+      const toBeDeleted = await ctx.prisma.materialItem.findMany({ where: { id: { in: input } } })
+      if (toBeDeleted.some(item => item.type === "upload")) {
+        toBeDeleted.filter(item => !!item.upload).map(item => {
+          deleteFiles(`uploads/content/courses/${item.courseId}/${item.upload?.title}`)
+        })
+      }
+
       const deletedMaterialItems = await ctx.prisma.materialItem.deleteMany({
         where: {
           id: {
@@ -250,6 +295,7 @@ export const materialItemsRouter = createTRPCRouter({
           },
         },
       });
+
 
       return { deletedMaterialItems };
     }),

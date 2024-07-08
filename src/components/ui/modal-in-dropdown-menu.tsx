@@ -36,6 +36,7 @@ export default function ModalInDropdownMenu({
       onClose();
     }
   };
+  
   return (
     <Dialog open={isOpen} onOpenChange={onChange}>
       <DialogTrigger asChild>

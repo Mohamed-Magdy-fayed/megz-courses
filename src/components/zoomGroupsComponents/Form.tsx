@@ -139,7 +139,7 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                                 .filter((order, index, self) => (index === self.findIndex(({ userId }) => order.user.id === userId))
                                     && order.user.courseStatus.some(state => state.courseId === initialData.courseId))
                                 .map(({ user: { email }, userId }) => (
-                                    <TooltipProvider>
+                                    <TooltipProvider key={userId}>
                                         <div className="flex items-center justify-between w-full gap-4">
                                             <Typography className="mr-auto">{email}</Typography>
                                             <Tooltip delayDuration={10}>

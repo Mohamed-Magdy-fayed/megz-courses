@@ -377,9 +377,17 @@ const GroupPage: NextPage = () => {
                                     <Separator className="mb-4" />
                                     <div className="flex items-center gap-4">
                                         <Image className="h-24" alt={data.zoomGroup.course?.name || ""} src={data.zoomGroup.course?.image || ""} width={100} height={100} />
-                                        <div className="space-y-2">
-                                            <Typography variant={"bodyText"}>{data.zoomGroup.course?.name}</Typography>
-                                            <Typography variant={"bodyText"}>{data.zoomGroup.course?.level}</Typography>
+                                        <div className="grid grid-cols-2">
+                                            <div>
+                                                <Typography variant={"secondary"}>Name</Typography>
+                                                <Typography variant={"bodyText"}>{data.zoomGroup.course?.name}</Typography>
+                                            </div>
+                                            <div>
+                                                <Typography variant={"secondary"}>Levels</Typography>
+                                                {data.zoomGroup.course?.levels.map(level => (
+                                                    <Typography key={`${level}courseLevel`} variant={"bodyText"}>{level}</Typography>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
                                 </PaperContainer>
@@ -424,12 +432,12 @@ const GroupPage: NextPage = () => {
                             <Typography className="whitespace-nowrap">
                                 {formatPercentage(data.zoomGroup.zoomSessions.filter(session => {
                                     return session.sessionStatus === "completedOnTime" || session.sessionStatus === "completedOffTime"
-                                }).length / 8 * 100)} Completed
+                                }).length / data.zoomGroup.zoomSessions.length * 100)} Completed
                             </Typography>
                             <Progress
                                 value={data.zoomGroup.zoomSessions.filter(session => {
                                     return session.sessionStatus === "completedOnTime" || session.sessionStatus === "completedOffTime"
-                                }).length / 8 * 100}
+                                }).length / data.zoomGroup.zoomSessions.length * 100}
                             />
                         </PaperContainer>
                     </div>

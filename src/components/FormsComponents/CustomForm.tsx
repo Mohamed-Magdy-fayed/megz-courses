@@ -113,7 +113,7 @@ const CustomForm: FC<{ initialData?: EvaluationForm & { questions: EvaluationFor
                                     disabled={item.evaluationForms.some(({ type }) => type === "assignment")
                                         && item.evaluationForms.some(({ type }) => type === "quiz")}
                                 >
-                                    {item.title}
+                                    {item.upload?.title || item.manual?.title}
                                 </SelectItem>
                             ))}
                         </SelectContent>

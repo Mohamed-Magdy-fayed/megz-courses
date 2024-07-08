@@ -20,6 +20,8 @@ const GroupsPage: NextPage = () => {
                     <div className="flex justify-between">
                         <div className="flex flex-col gap-2">
                             <ConceptTitle>Zoom Groups</ConceptTitle>
+                            <Typography>notes</Typography>
+                            <Typography>notes</Typography>
                             <div className="flex items-center gap-2">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
@@ -67,3 +69,15 @@ const GroupsPage: NextPage = () => {
 }
 
 export default GroupsPage
+
+/** Placment test */
+/** waiting list */
+/** group */
+/** attendance */
+/** move to next level */
+
+/** one click create order and user and payment */
+/** levels inside courses */
+/** placment test times */
+/** on hold students */
+/** zoom integration */

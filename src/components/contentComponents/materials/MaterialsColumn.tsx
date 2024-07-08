@@ -6,15 +6,15 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { Typography } from "@/components/ui/Typoghraphy";
 import MaterialActionCell from "./MaterialActionCell";
+import { MaterialItemType } from "@prisma/client";
 
 export type MaterialsColumn = {
     id: string,
     courseId: string | null,
     createdAt: Date,
     updatedAt: Date,
-    frameWorkName: string,
     title: string,
-    subTitle: string,
+    type: MaterialItemType,
 };
 
 export const columns: ColumnDef<MaterialsColumn>[] = [
@@ -59,17 +59,14 @@ export const columns: ColumnDef<MaterialsColumn>[] = [
                 >
                     {row.original.title}
                 </Typography>
-                <Typography variant={"secondary"} className="text-sm font-normal text-slate-500 whitespace-normal truncate max-h-14">
-                    {row.original.subTitle}
-                </Typography>
             </Link >
         ),
     },
     {
-        accessorKey: "frameWorkName",
-        header: "Framework Name",
+        accessorKey: "type",
+        header: "Type",
         cell: ({ row }) => (
-            <Typography>{row.original.frameWorkName}</Typography>
+            <Typography>{row.original.type === "manual" ? "Interactive" : "Downloadable"}</Typography>
         )
     },
     {

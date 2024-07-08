@@ -44,7 +44,7 @@ export const zoomGroupsRouter = createTRPCRouter({
                 }
             })
 
-            const completedGroups = ctx.prisma.zoomGroup.updateMany({
+            const completedGroups = await ctx.prisma.zoomGroup.updateMany({
                 where: {
                     AND: {
                         zoomSessions: {

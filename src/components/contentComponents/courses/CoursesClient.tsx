@@ -18,7 +18,7 @@ const CoursesClient = () => {
         groupPrice,
         privatePrice,
         instructorPrice,
-        level,
+        levels,
         oralTest,
         orders,
     }) => ({
@@ -31,7 +31,7 @@ const CoursesClient = () => {
         groupPrice,
         privatePrice,
         instructorPrice,
-        level,
+        levels,
         oralTest,
         orders,
     })) : []

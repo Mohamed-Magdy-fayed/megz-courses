@@ -115,28 +115,10 @@ const CoursePage = () => {
                             <Typography>{course.materialItems.length} Materials</Typography>
                             <Typography>-</Typography>
                             <Typography>
-                                {course.materialItems[0]!?.title || "No Material"}
+                                {course.materialItems[0]!?.manual?.title || "No Material"}
                             </Typography>
                         </div>
                     ) : courseQuery.isLoading ? <Spinner /> : <MaterialShowcase materialItem={course.materialItems[0]} />}
-                    {/* <div className="max-w-3xl self-center grid place-content-center">
-                        <video controls className="p-4 rounded-3xl " >
-                            <source src={exampleVideo.sources[0]} type="video/mp4" />
-                        </video>
-                    </div>
-                    <div className="p-4">
-                        <Typography variant={"secondary"}>Lesson agenda:</Typography>
-                        <ul className="space-y-2">
-                            <li>point 1</li>
-                            <li>point 2</li>
-                            <li>point 3</li>
-                            <li>point 4</li>
-                            <li>point 5</li>
-                            <li>point 6</li>
-                            <li>point 7</li>
-                            <li>point 8</li>
-                        </ul>
-                    </div> */}
                 </div>
             </div>
         </LandingLayout>

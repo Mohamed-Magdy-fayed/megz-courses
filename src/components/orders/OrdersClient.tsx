@@ -4,6 +4,7 @@ import { DataTable } from "../ui/DataTable";
 import { useToast } from "../ui/use-toast";
 import { api } from "@/lib/api";
 import { useState } from "react";
+import { validOrderStatuses } from "@/lib/enumsTypes";
 
 const OrdersClient = ({ data }: {
   data: (Order & {
@@ -70,6 +71,7 @@ const OrdersClient = ({ data }: {
       setData={setOrders}
       onDelete={onDelete}
       search={{ key: "orderNumber", label: "Order Number" }}
+      filters={[{ key: "status", label: "Status", values: [...validOrderStatuses] }]}
     />
   );
 };

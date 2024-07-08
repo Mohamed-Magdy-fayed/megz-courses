@@ -21,7 +21,7 @@ export type Course = {
     groupPrice: number,
     privatePrice: number,
     instructorPrice: number,
-    level: CourseLevels,
+    levels: CourseLevels[],
     oralTest: string,
     orders: (Order & { user: User })[],
 };
@@ -101,11 +101,11 @@ export const columns: ColumnDef<Course>[] = [
         )
     },
     {
-        accessorKey: "level",
-        header: "Level",
+        accessorKey: "levels",
+        header: "Levels",
         cell: ({ row }) => {
-            const getColor = (): SeverityPillProps["color"] => {
-                switch (row.original.level) {
+            const getColor = (level: CourseLevels): SeverityPillProps["color"] => {
+                switch (level) {
                     case "A0_A1_Beginner_Elementary":
                         return "success"
                     case "A2_Pre_Intermediate":
@@ -120,10 +120,15 @@ export const columns: ColumnDef<Course>[] = [
                         return "destructive"
                 }
             }
-            const color = getColor()
 
             return (
-                <SeverityPill color={color}>{row.original.level}</SeverityPill>
+                <div className="space-y-2">
+                    {
+                        row.original.levels.map(level => (
+                            <SeverityPill color={getColor(level)}>{level}</SeverityPill>
+                        ))
+                    }
+                </div>
             )
         }
     },
