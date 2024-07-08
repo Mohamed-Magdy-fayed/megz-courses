@@ -43,7 +43,7 @@ const MaterialActionCell: React.FC<CellActionProps> = ({ id, courseId }) => {
             id: toastData.id,
             title: "Success",
             variant: "success",
-            description: `Material item ${materialItemDublication.manual?.title} dublicated successfully`,
+            description: `Material item ${materialItemDublication.title} dublicated successfully`,
         })),
         onError: ({ message }) => toastData?.update({
             id: toastData.id,

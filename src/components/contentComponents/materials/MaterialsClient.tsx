@@ -10,17 +10,19 @@ const MaterialsClient = ({ data }: { data: MaterialItem[] }) => {
 
     const formattedData: MaterialsColumn[] = data.map(({
         id,
+        title,
+        subTitle,
         createdAt,
         updatedAt,
         manual,
         type,
-        upload,
+        uploads,
         courseId,
     }) => ({
         id,
         createdAt,
         updatedAt,
-        title: (type === "manual" ? manual?.title : upload?.title) || "",
+        title,
         type,
         courseId,
     }))

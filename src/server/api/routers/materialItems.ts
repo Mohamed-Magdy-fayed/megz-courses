@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { deleteFiles } from "@/lib/firebaseStorage";
+import { Prisma } from "@prisma/client";
 
 export const materialItemsRouter = createTRPCRouter({
   getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -48,26 +49,37 @@ export const materialItemsRouter = createTRPCRouter({
         const materialItem = await ctx.prisma.materialItem.findUnique({ where: { id } })
         if (!materialItem) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to dublicate this material!" })
         if (!materialItem.courseId) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to dublicate this material!" })
-        if (!materialItem.manual) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to dublicate this material!" })
 
-        const materialItemDublication = await ctx.prisma.materialItem.create({
-          data: {
+        const data: Prisma.MaterialItemCreateArgs["data"] = materialItem.type === "manual"
+          ? {
+            title: materialItem.title,
+            subTitle: materialItem.subTitle,
             type: "manual",
             course: {
               connect: { id: materialItem.courseId },
             },
             manual: {
-              leadinText: materialItem.manual?.leadinText!,
-              leadinImageUrl: materialItem.manual?.leadinImageUrl!,
-              firstTestTitle: materialItem.manual?.firstTestTitle!,
-              title: materialItem.manual?.title!,
-              subTitle: materialItem.manual?.subTitle!,
+              leadinText: materialItem.manual?.leadinText || "",
+              leadinImageUrl: materialItem.manual?.leadinImageUrl || "",
+              firstTestTitle: materialItem.manual?.firstTestTitle || "",
               answerCards: materialItem.manual?.answerCards,
               answerAreas: materialItem.manual?.answerAreas,
               vocabularyCards: materialItem.manual?.vocabularyCards,
               practiceQuestions: materialItem.manual?.practiceQuestions,
             }
-          },
+          }
+          : {
+            title: materialItem.title,
+            subTitle: materialItem.subTitle,
+            type: "upload",
+            course: {
+              connect: { id: materialItem.courseId },
+            },
+            uploads: materialItem.uploads
+          }
+
+        const materialItemDublication = await ctx.prisma.materialItem.create({
+          data,
         });
 
         return {
@@ -79,19 +91,19 @@ export const materialItemsRouter = createTRPCRouter({
     .input(z.object({
       courseId: z.string(),
       title: z.string(),
+      subTitle: z.string(),
       url: z.string(),
     }))
-    .mutation(async ({ ctx, input: { courseId, title, url } }) => {
+    .mutation(async ({ ctx, input: { courseId, title, subTitle, url } }) => {
       const materialItem = await ctx.prisma.materialItem.create({
         data: {
+          title,
+          subTitle,
           type: "upload",
           course: {
             connect: { id: courseId },
           },
-          upload: {
-            title,
-            url,
-          },
+          uploads: [url],
         },
       });
 
@@ -163,6 +175,8 @@ export const materialItemsRouter = createTRPCRouter({
       }) => {
         const materialItem = await ctx.prisma.materialItem.create({
           data: {
+            title,
+            subTitle,
             type: "manual",
             course: {
               connect: { id: courseId },
@@ -171,8 +185,6 @@ export const materialItemsRouter = createTRPCRouter({
               leadinText,
               leadinImageUrl,
               firstTestTitle,
-              title,
-              subTitle,
               answerCards,
               answerAreas,
               vocabularyCards,
@@ -256,12 +268,12 @@ export const materialItemsRouter = createTRPCRouter({
             id,
           },
           data: {
+            title,
+            subTitle,
             manual: {
               leadinText,
               leadinImageUrl,
               firstTestTitle,
-              title,
-              subTitle,
               answerCards,
               answerAreas,
               vocabularyCards,
@@ -283,8 +295,8 @@ export const materialItemsRouter = createTRPCRouter({
 
       const toBeDeleted = await ctx.prisma.materialItem.findMany({ where: { id: { in: input } } })
       if (toBeDeleted.some(item => item.type === "upload")) {
-        toBeDeleted.filter(item => !!item.upload).map(item => {
-          deleteFiles(`uploads/content/courses/${item.courseId}/${item.upload?.title}`)
+        toBeDeleted.filter(item => item.uploads.length > 0).map(item => {
+          deleteFiles(`uploads/content/courses/${item.courseId}/${item.title}`)
         })
       }
 

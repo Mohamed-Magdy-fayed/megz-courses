@@ -226,18 +226,11 @@ model EvaluationForm {
 type MaterialItemManual {
     leadinText        String
     leadinImageUrl    String
-    title             String
-    subTitle          String
     firstTestTitle    String
     answerCards       AnswerCard[]
     answerAreas       AnswerArea[]
     vocabularyCards   VocabCard[]
     practiceQuestions Question[]
-}
-
-type MaterialItemUpload {
-    title String
-    url   String
 }
 
 enum MaterialItemType {
@@ -247,8 +240,10 @@ enum MaterialItemType {
 
 model MaterialItem {
     id              String              @id @default(auto()) @map("_id") @db.ObjectId
+    title           String
+    subTitle        String?
     type            MaterialItemType
-    upload          MaterialItemUpload?
+    uploads         String[]
     manual          MaterialItemManual?
     evaluationForms EvaluationForm[]
     zoomSessions    ZoomSession[]

@@ -17,25 +17,23 @@ const EditMaterialsForm = ({ materialItem }: { materialItem: MaterialItem }) => 
   const {
     leadinText,
     leadinImageUrl,
-    title,
-    subTitle,
     firstTestTitle,
     answerCards,
     answerAreas,
     vocabularyCards,
     practiceQuestions,
-  } = materialItem;
+  } = materialItem.manual!;
 
   const form = useForm<MaterialsFormValues>({
     defaultValues: {
+      title: materialItem.title,
+      subTitle: materialItem.subTitle || "",
       answerAreas,
       answerCards,
       firstTestTitle,
       leadinImageUrl,
       leadinText,
       practiceQuestions,
-      subTitle,
-      title,
       vocabularyCards,
     },
   });

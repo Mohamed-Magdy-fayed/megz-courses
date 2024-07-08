@@ -31,7 +31,7 @@ const CreateMaterialsForm = ({
         onMutate: () => setLoading(true),
         onSuccess: ({ materialItem }) =>
             trpcUtils.courses.invalidate().then(() => {
-                toastSuccess(`Your new material (${materialItem.manual?.title}) is ready!`)
+                toastSuccess(`Your new material (${materialItem.title}) is ready!`)
                 setIsOpen(false)
             }),
         onError: ({ message }) => toastError(message),

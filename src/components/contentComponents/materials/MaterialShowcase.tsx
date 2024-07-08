@@ -29,10 +29,10 @@ const MaterialShowcase: FC<MaterialShowcaseProps> = ({ materialItem }) => {
             <div className="flex items-center justify-between">
                 <div className="flex flex-col items-center whitespace-nowrap p-4">
                     <Typography className="w-full text-left text-4xl font-bold text-cyan-600">
-                        {materialItem.manual?.title}
+                        {materialItem.title}
                     </Typography>
                     <Typography className="w-full text-left text-base text-warning">
-                        {materialItem.manual?.subTitle}
+                        {materialItem.subTitle}
                     </Typography>
                 </div>
                 {submission.completed && (

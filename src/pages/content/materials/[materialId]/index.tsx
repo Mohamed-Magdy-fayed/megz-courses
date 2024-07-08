@@ -46,7 +46,7 @@ const EditMaterialPage = () => {
     if (segment === "content") return "Content"
     if (segment === "courses") return "Courses"
     if (index === 3) return data?.materialItem?.course?.name || ""
-    if (index === 4) return data?.materialItem?.upload?.title || ""
+    if (index === 4) return data?.materialItem?.title || ""
     return ""
   }
 
@@ -94,10 +94,10 @@ const EditMaterialPage = () => {
   }
 
   useEffect(() => {
-    if (!data?.materialItem || !data?.materialItem?.upload) return
+    if (!data?.materialItem) return
     if (pathQuery !== "") return
 
-    const path = `uploads/content/courses/${data.materialItem.courseId}/${data.materialItem.upload?.title}`
+    const path = `uploads/content/courses/${data.materialItem.courseId}/${data.materialItem.title}`
     setPathQuery(path)
   }, [data?.materialItem])
 

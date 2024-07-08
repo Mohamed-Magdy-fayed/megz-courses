@@ -3,8 +3,6 @@ import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
 import { LoadingButton } from "@/components/ui/button";
-import { StorageReference, getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
-import { storage } from "@/config/firebase";
 import useFileUpload from "@/hooks/useFileUpload";
 
 export type UploadStatus = { state: "Idle" | "Working", progress: number }
@@ -18,12 +16,13 @@ const UploadMaterialForm = ({
 }) => {
     const [loading, setLoading] = useState(false);
     const [title, setTitle] = useState("");
+    const [subTitle, setSubTitle] = useState("");
     const [file, setFile] = useState<File>();
 
     const uploadMaterialMutation = api.materials.uploadMaterialItem.useMutation({
         onSuccess: ({ materialItem }) =>
             trpcUtils.courses.invalidate().then(() => {
-                toastSuccess(`Your new material (${materialItem.upload?.title}) is ready!`)
+                toastSuccess(`Your new material (${materialItem.title}) is ready!`)
                 setIsUploadOpen(false)
             }),
         onError: ({ message }) => toastError(message),
@@ -38,10 +37,10 @@ const UploadMaterialForm = ({
         if (title === "") return toastError("please enter a title")
 
         setLoading(true)
-        
+
         const url = await uploadFile(file, `uploads/content/courses/${id}/${title}/${file.name}`) || ""
-        
-        uploadMaterialMutation.mutateAsync({ title: title, url, courseId: id });
+
+        uploadMaterialMutation.mutateAsync({ title, subTitle, url, courseId: id });
     };
 
 
@@ -50,6 +49,10 @@ const UploadMaterialForm = ({
             <div className="p-4">
                 <label>Material Title</label>
                 <Input disabled={loading} placeholder="Vocab, Grammar, ...etc" value={title} onChange={(e) => setTitle(e.target.value)} />
+            </div>
+            <div className="p-4">
+                <label>Material Sub Title</label>
+                <Input disabled={loading} placeholder="Present Simple" value={subTitle} onChange={(e) => setSubTitle(e.target.value)} />
             </div>
             <div className="p-4">
                 <label>Upload Material</label>

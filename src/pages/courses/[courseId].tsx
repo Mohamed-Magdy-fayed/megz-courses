@@ -67,7 +67,12 @@ const CoursePage = () => {
                                 <div>{course.description}</div>
                             </div>
                             <div>
-                                <Typography variant={"secondary"}>Level: {course.level}</Typography>
+                                <Typography variant={"secondary"}>Levels: </Typography>
+                                <div className="flex gap-2 flex-wrap">
+                                    {course.levels.map(level => (
+                                        <Typography key={level}>{level}</Typography>
+                                    ))}
+                                </div>
                             </div>
                         </CardContent>
                         <CardFooter className="flex gap-4 items-center justify-between flex-wrap p-4">
@@ -115,7 +120,7 @@ const CoursePage = () => {
                             <Typography>{course.materialItems.length} Materials</Typography>
                             <Typography>-</Typography>
                             <Typography>
-                                {course.materialItems[0]!?.manual?.title || "No Material"}
+                                {course.materialItems[0]!?.title || "No Material"}
                             </Typography>
                         </div>
                     ) : courseQuery.isLoading ? <Spinner /> : <MaterialShowcase materialItem={course.materialItems[0]} />}
