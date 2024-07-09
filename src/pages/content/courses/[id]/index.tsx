@@ -39,7 +39,7 @@ const CoursePage = () => {
     const router = useRouter();
     const id = router.query?.id as string;
     const tabName = router.query.tab as string;
-    const { data, isLoading, isError, error } = api.courses.getById.useQuery({ id });
+    const { data, isLoading, isError } = api.courses.getById.useQuery({ id });
     const [tab, setTab] = useState("materials");
     const [isUploadOpen, setIsUploadOpen] = useState(false);
     const [isOpen, setIsOpen] = useState(false);

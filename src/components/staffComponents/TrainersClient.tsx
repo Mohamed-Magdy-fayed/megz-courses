@@ -29,7 +29,7 @@ const TrainersClient = ({ data }: { data: Trainers[] }) => {
 
   const onDelete = (callback?: () => void) => {
     deleteMutation.mutate(
-      trainers.map((user) => user.id),
+      trainers.map(({ userId }) => userId),
       {
         onSuccess: () => {
           trpcUtils.trainers.invalidate()

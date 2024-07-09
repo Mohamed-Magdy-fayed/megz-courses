@@ -11,12 +11,8 @@ import { ToasterToast, useToast } from "@/components/ui/use-toast";
 import { api } from "@/lib/api";
 import { useState } from "react";
 import Spinner from "@/components/Spinner";
-import Modal from "@/components/ui/modal";
 import CourseForm from "./CourseForm";
-import { Course } from "@prisma/client";
 import ModalInDropdownMenu from "@/components/ui/modal-in-dropdown-menu";
-import CreateQuickOrder from "./CreateQuickOrder";
-import { router } from "@trpc/server";
 import { useRouter } from "next/router";
 
 interface CellActionProps {
@@ -27,7 +23,6 @@ const CoursesActionCell: React.FC<CellActionProps> = ({ id }) => {
     const { toastInfo, toast } = useToast();
     const [isOpen, setIsOpen] = useState(false)
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-    const [isCreateOrderModalOpen, setIsCreateOrderModalOpen] = useState(false)
 
     const onCopy = () => {
         navigator.clipboard.writeText(`${window.location.host}/courses/${id}`);
@@ -112,26 +107,6 @@ const CoursesActionCell: React.FC<CellActionProps> = ({ id }) => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                {/* <ModalInDropdownMenu
-                    title="Create Order"
-                    description="Create an order for a new/existing user"
-                    isOpen={isCreateOrderModalOpen}
-                    onOpen={() => setIsCreateOrderModalOpen(true)}
-                    onClose={() => setIsCreateOrderModalOpen(false)}
-                    children={courseQuery.data?.course
-                        ? <CreateQuickOrder
-                            courseData={courseQuery.data.course}
-                            setOpen={setIsCreateOrderModalOpen}
-                        />
-                        : <Spinner className="w-4 h-4" />
-                    }
-                    itemChildren={
-                        <>
-                            <PlusSquare className="w-4 h-4 mr-2" />
-                            Quick Order
-                        </>
-                    }
-                /> */}
                 <DropdownMenuItem onClick={() => router.push(`/content/courses/${id}?tab=quick_order`)}>
                     <PlusSquare className="w-4 h-4 mr-2" />
                     Quick Order

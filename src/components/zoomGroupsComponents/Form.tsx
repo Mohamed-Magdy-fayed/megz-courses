@@ -215,14 +215,16 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                                 })
                                 .map(order => {
                                     const courseStatus = order.user.courseStatus.find(status => status.courseId === courseId[0])
+                                    const isPrivate = order.courseTypes.find(type => type.id === courseId[0])?.isPrivate
 
                                     return ({
                                         active: courseStatus?.state === "waiting",
-                                        label: order.user.email,
+                                        label: order.user.name,
                                         value: order.user.id,
                                         customLabel: (
                                             <TooltipProvider>
-                                                <Typography className="mr-auto">{order.user.email}</Typography>
+                                                <Typography className="mr-auto">{order.user.name}</Typography>
+                                                <Typography className="text-xs">{isPrivate ? "Private" : "Group"}</Typography>
                                                 <Tooltip delayDuration={10}>
                                                     <TooltipTrigger>
                                                         <Link

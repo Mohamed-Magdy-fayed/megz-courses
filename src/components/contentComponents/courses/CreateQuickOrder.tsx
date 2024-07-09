@@ -20,6 +20,7 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
     const [loading, setLoading] = useState(false)
     const [isPrivate, setIsPrivate] = useState(false)
     const [name, setName] = useState<string>("")
+    const [phone, setPhone] = useState<string>("")
     const [email, setEmail] = useState<string[]>([])
 
     const router = useRouter()
@@ -72,6 +73,7 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
         setLoading(true)
         quickOrderMutation.mutate({
             name,
+            phone,
             courseDetails: { courseId: courseData.id, isPrivate },
         }, {
             onSuccess: ({ order: { id, amount, orderNumber, user, courses, createdAt, courseTypes, salesOperationId }, paymentLink }) => {
@@ -146,6 +148,10 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
                 <div>
                     <Label htmlFor="name">Student Name</Label>
                     <Input placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} />
+                </div>
+                <div>
+                    <Label htmlFor="name">Student Phone</Label>
+                    <Input placeholder="01234567899" value={phone} onChange={(e) => setPhone(e.target.value)} />
                 </div>
                 <FormItem className="flex items-center gap-2 p-2">
                     <Checkbox

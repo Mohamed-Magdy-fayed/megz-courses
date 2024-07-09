@@ -156,7 +156,8 @@ export const ordersRouter = createTRPCRouter({
                 }),
                 email: z.string().email().optional(),
                 name: z.string().optional(),
-            }).refine(({ email, name }) => {
+                phone: z.string().optional(),
+            }).refine(({ email, name, phone }) => {
                 if (!email && !name) {
                     return false;
                 }
@@ -170,13 +171,13 @@ export const ordersRouter = createTRPCRouter({
                     path: ['email', 'name'],
                 })
         )
-        .mutation(async ({ input: { courseDetails, email, name }, ctx }) => {
+        .mutation(async ({ input: { courseDetails, email, name, phone }, ctx }) => {
             let user: User | null
             if (!email && !!name) {
                 console.log(`${name?.replaceAll(" ", "")}${(Math.random() * 10000).toFixed()}@temp.com`);
 
                 user = await ctx.prisma.user.create({
-                    data: { name, email: `${name?.replaceAll(" ", "")}${(Math.random() * 10000).toFixed()}@temp.com` }
+                    data: { name, email: `${name?.replaceAll(" ", "")}${(Math.random() * 10000).toFixed()}@temp.com`, phone }
                 })
             } else {
                 user = await ctx.prisma.user.findUnique({
