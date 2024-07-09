@@ -16,6 +16,7 @@ const CourseGroupsClient = ({ zoomGroups }: { zoomGroups: ZoomGroup[] }) => {
         trainer,
         zoomSessions,
         course,
+        courseLevel,
         createdAt,
         updatedAt,
     }) => ({
@@ -27,6 +28,7 @@ const CourseGroupsClient = ({ zoomGroups }: { zoomGroups: ZoomGroup[] }) => {
         trainer: trainer!,
         zoomSessions,
         course: course!,
+        courseLevel,
         createdAt,
         updatedAt,
     })) : []

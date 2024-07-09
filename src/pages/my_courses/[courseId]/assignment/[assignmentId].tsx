@@ -11,7 +11,6 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { useSession } from "next-auth/react";
 import { EvaluationFormSubmission, SubmissionAnswer } from "@prisma/client";
 import { SeverityPill } from "@/components/overview/SeverityPill";
 
@@ -20,10 +19,9 @@ const AssignmentPage: NextPage = () => {
     const courseId = router.query.courseId as string
     const id = router.query.assignmentId as string
     const { toastError, toastSuccess } = useToast()
-    const { data } = useSession()
     const trpcUtils = api.useContext()
     const assignmentQuery = api.evaluationForm.getEvalFormById.useQuery({ id })
-    const userQuery = api.users.getUserById.useQuery({ id: data?.user.id! }, { enabled: !!data?.user.id })
+    const userQuery = api.users.getCurrentUser.useQuery()
     const submitMutation = api.evaluationFormSubmissions.createEvalFormSubmission.useMutation({
         onMutate: () => setLoading(true),
         onSuccess: ({ evaluationFormSubmission }) => evaluationFormSubmission.rating > getEvalutaionFormFullMark(assignmentQuery.data?.evaluationForm?.questions!) / 2
@@ -47,14 +45,12 @@ const AssignmentPage: NextPage = () => {
     const [answers, setAnswers] = useState<SubmissionAnswer[] | undefined>()
 
     const handleSubmit = () => {
-        if (!data?.user) return toastError("not logged in!")
         if (!answers) return toastError("no answers!")
         if (!assignmentQuery.data?.evaluationForm?.type) return toastError("no form type!")
 
         submitMutation.mutate({
             answers,
             evaluationFormlId: id,
-            userId: data.user.id,
             type: assignmentQuery.data.evaluationForm.type,
             courseId,
         })
@@ -140,7 +136,7 @@ const AssignmentPage: NextPage = () => {
                         </div>
                     )}
                 </div>
-                {!userQuery.data?.user.zoomGroups.some(group => group.zoomSessions.some(session => session.materialItemId === assignmentQuery.data?.evaluationForm?.materialItemId))
+                {!userQuery.data?.user?.zoomGroups.some(group => group.zoomSessions.some(session => session.materialItemId === assignmentQuery.data?.evaluationForm?.materialItemId))
                     ? (
                         <div className="w-full text-center p-8">
                             <Typography variant={"secondary"}>

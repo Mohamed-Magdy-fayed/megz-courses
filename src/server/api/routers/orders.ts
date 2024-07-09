@@ -1,10 +1,11 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
-import { orderCodeGenerator } from "@/lib/utils";
+import { orderCodeGenerator, salesOperationCodeGenerator } from "@/lib/utils";
 import { CURRENCY } from "@/config";
 import { TRPCError } from "@trpc/server";
 import Stripe from 'stripe'
 import { formatAmountForStripe } from "@/lib/stripeHelpers";
+import { User } from "@prisma/client";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2023-08-16',
 })
@@ -133,6 +134,117 @@ export const ordersRouter = createTRPCRouter({
                     salesOperation: { connect: { id: salesOperationId } },
                     user: { connect: { email } },
                     courseTypes: coursesDetails.map(({ courseId, isPrivate }) => ({ id: courseId, isPrivate }))
+                },
+                include: {
+                    courses: true,
+                    user: true,
+                    salesOperation: { include: { assignee: true } }
+                },
+            });
+
+            return {
+                order,
+                paymentLink: `${process.env.NEXTAUTH_URL}payments?sessionId=${checkoutSession.id}`
+            };
+        }),
+    quickOrder: protectedProcedure
+        .input(
+            z.object({
+                courseDetails: z.object({
+                    courseId: z.string(),
+                    isPrivate: z.boolean(),
+                }),
+                email: z.string().email().optional(),
+                name: z.string().optional(),
+            }).refine(({ email, name }) => {
+                if (!email && !name) {
+                    return false;
+                }
+                if (email && name) {
+                    return false;
+                }
+                return true;
+            },
+                {
+                    message: 'Either email or name must be provided, but not both.',
+                    path: ['email', 'name'],
+                })
+        )
+        .mutation(async ({ input: { courseDetails, email, name }, ctx }) => {
+            let user: User | null
+            if (!email && !!name) {
+                console.log(`${name?.replaceAll(" ", "")}${(Math.random() * 10000).toFixed()}@temp.com`);
+
+                user = await ctx.prisma.user.create({
+                    data: { name, email: `${name?.replaceAll(" ", "")}${(Math.random() * 10000).toFixed()}@temp.com` }
+                })
+            } else {
+                user = await ctx.prisma.user.findUnique({
+                    where: { email },
+                })
+            }
+            if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to get user" })
+
+            const salesAgent = await ctx.prisma.user.findUnique({
+                where: {
+                    id: ctx.session.user.id
+                },
+            })
+            if (!salesAgent) throw new TRPCError({ code: "BAD_REQUEST", message: "Not a sales agent!" })
+            const salesAgentId = salesAgent.id
+
+            const course = await ctx.prisma.course.findUnique({
+                where: {
+                    id: courseDetails.courseId
+                }
+            })
+            if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "Course not found!" })
+
+            const totalPrice = courseDetails.isPrivate ? course.privatePrice : course.groupPrice
+
+            // Create Checkout Sessions from body params.
+            const params: Stripe.Checkout.SessionCreateParams = {
+                submit_type: 'pay',
+                payment_method_types: ['card'],
+                line_items: [{
+                    price_data: {
+                        currency: CURRENCY,
+                        unit_amount: formatAmountForStripe(totalPrice, CURRENCY),
+                        product_data: {
+                            name: course.name,
+                            description: course.description || `No description`,
+                            images: course.image ? [course.image] : undefined,
+                        },
+                    },
+                    quantity: 1
+                }],
+                mode: 'payment',
+                success_url: `${process.env.NEXTAUTH_URL}/payment_success?session_id={CHECKOUT_SESSION_ID}`,
+                cancel_url: `${process.env.NEXTAUTH_URL}/payment_fail`,
+            }
+            const checkoutSession: Stripe.Checkout.Session =
+                await stripe.checkout.sessions.create(params)
+
+            if (!checkoutSession) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "checkoutSession failed" })
+
+            const salesOperation = await ctx.prisma.salesOperation.create({
+                data: {
+                    assignee: { connect: { userId: salesAgentId } },
+                    code: salesOperationCodeGenerator(),
+                    status: "ongoing",
+                }
+            })
+            if (!salesOperation) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "create salesOperation failed" })
+
+            const order = await ctx.prisma.order.create({
+                data: {
+                    amount: totalPrice,
+                    orderNumber: orderCodeGenerator(),
+                    paymentId: checkoutSession.id,
+                    courses: { connect: { id: courseDetails.courseId } },
+                    salesOperation: { connect: { id: salesOperation.id } },
+                    user: { connect: { id: user.id } },
+                    courseTypes: [{ id: courseDetails.courseId, isPrivate: courseDetails.isPrivate }]
                 },
                 include: {
                     courses: true,

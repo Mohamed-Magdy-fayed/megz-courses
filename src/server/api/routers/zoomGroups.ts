@@ -5,7 +5,7 @@ import {
 } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { Course, MaterialItem, SessionStatus } from "@prisma/client";
-import { validGroupStatuses } from "@/lib/enumsTypes";
+import { validCourseLevels, validGroupStatuses } from "@/lib/enumsTypes";
 import { generateGroupNumnber } from "@/lib/utils";
 import { subHours } from "date-fns";
 
@@ -58,9 +58,45 @@ export const zoomGroupsRouter = createTRPCRouter({
                     }
                 },
                 data: {
-                    groupStatus: "completed"
+                    groupStatus: "completed",
                 }
             })
+
+            const updatedGroups = await ctx.prisma.zoomGroup.findMany({
+                where: {
+                    AND: {
+                        zoomSessions: {
+                            every: {
+                                sessionStatus: {
+                                    in: ["completedOffTime", "completedOnTime"]
+                                }
+                            },
+                        },
+                        groupStatus: "completed"
+                    }
+                },
+                include: { students: true }
+            })
+
+            for (let i = 0; i < updatedGroups.length; i++) {
+                const group = updatedGroups[i];
+
+                group?.students.forEach(async (student) => {
+                    if (!group?.courseId) return
+
+                    const updatedUser = await ctx.prisma.user.update({
+                        where: { id: student.id },
+                        data: {
+                            courseStatus: {
+                                updateMany: {
+                                    where: { courseId: group.courseId },
+                                    data: { state: "completed" }
+                                }
+                            }
+                        }
+                    })
+                })
+            }
 
             const ongoingSessions = await ctx.prisma.zoomSession.updateMany({
                 where: {
@@ -182,9 +218,10 @@ export const zoomGroupsRouter = createTRPCRouter({
                 studentIds: z.array(z.string()),
                 trainerId: z.string(),
                 courseId: z.string(),
+                courseLevel: z.enum(validCourseLevels),
             })
         )
-        .mutation(async ({ input: { courseId, startDate, studentIds, trainerId }, ctx }) => {
+        .mutation(async ({ input: { courseId, startDate, studentIds, trainerId, courseLevel }, ctx }) => {
             type ZoomSession = {
                 sessionDate: Date,
                 sessionLink: string,
@@ -237,6 +274,7 @@ export const zoomGroupsRouter = createTRPCRouter({
 
             const zoomGroup = await ctx.prisma.zoomGroup.create({
                 data: {
+                    courseLevel,
                     startDate: new Date(startDate),
                     groupNumber: generateGroupNumnber(startDate, trainer?.user.name, course?.name),
                     groupStatus: "waiting",

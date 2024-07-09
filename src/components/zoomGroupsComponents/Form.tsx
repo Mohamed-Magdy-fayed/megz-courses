@@ -1,5 +1,5 @@
 import { api } from "@/lib/api";
-import { FC, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Typography } from "../ui/Typoghraphy";
@@ -7,16 +7,18 @@ import { useToast } from "../ui/use-toast";
 import SelectField from "../salesOperation/SelectField";
 import Spinner from "../Spinner";
 import { DatePicker } from "../ui/DatePicker";
-import { getWaitingList } from "@/lib/utils";
+import { CourseType, getLevelWaitingList, getWaitingList } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
+import { CourseLevels } from "@prisma/client";
 
 interface ZoomGroupFormProps {
     setIsOpen: (val: boolean) => void;
     initialData?: {
         id: string;
         courseId: string,
+        courseLevel: CourseLevels,
         startDate: Date,
         studentIds: string[],
         trainerId: string,
@@ -24,7 +26,9 @@ interface ZoomGroupFormProps {
 }
 const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
     const [loading, setLoading] = useState(false);
+    const [course, setCourse] = useState<CourseType>();
     const [courseId, setCourseId] = useState<string[]>(initialData ? [initialData.courseId] : []);
+    const [courseLevel, setCourseLevel] = useState<CourseLevels[]>(initialData ? [initialData.courseLevel] : []);
     const [userIds, setUserIds] = useState<string[]>(initialData ? initialData.studentIds : []);
     const [trainerId, setTrainerId] = useState<string[]>(initialData ? [initialData.trainerId] : []);
     const [date, setDate] = useState<Date | undefined>(initialData ? initialData.startDate : new Date());
@@ -42,6 +46,7 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
         setLoading(true);
         createZoomGroupMutation.mutate({
             courseId: courseId[0]!,
+            courseLevel: courseLevel[0]!,
             startDate: date!,
             studentIds: userIds,
             trainerId: trainerId[0]!,
@@ -96,6 +101,10 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
         [coursesData?.courses]
     )
 
+    useEffect(() => {
+        setCourse(coursesData?.courses.find(course => course.id === courseId[0]))
+    }, [courseId])
+
     return (
         <div>
             {!trainersData || !coursesData ? <Spinner className="w-fit mx-auto" /> : (
@@ -108,30 +117,56 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                         data={trainersData.trainers.map(trainer => ({ active: trainer.groups.length < 10, label: trainer.user.email, value: trainer.id }))}
                     />
                     {initialData ? (
-                        <Typography>{coursesData.courses.find(({ id }) => id === initialData.courseId)?.name}</Typography>
+                        <Typography>{coursesData.courses.find(({ id }) => id === initialData.courseId)?.name} - {courseLevel}</Typography>
                     ) : (
-                        <SelectField
-                            values={courseId}
-                            setValues={setCourseId}
-                            placeholder="Select Course..."
-                            listTitle={(
-                                <div className="flex items-center justify-between w-full">
-                                    <Typography>Courses</Typography>
-                                    <Typography className="text-xs text-muted">Total waiting: {totalWaitingUsers}</Typography>
-                                </div>
-                            )}
-                            data={coursesData.courses.map(course => ({
-                                active: getWaitingList(course) >= 1,
-                                label: course.name,
-                                value: course.id,
-                                customLabel: (
+                        <div className="flex items-center justify-between w-full">
+                            <SelectField
+                                values={courseId}
+                                setValues={setCourseId}
+                                placeholder="Select Course..."
+                                listTitle={(
                                     <div className="flex items-center justify-between w-full">
-                                        <Typography>{course.name}</Typography>
-                                        <Typography className="text-xs text-muted">Waiting: {getWaitingList(course)}</Typography>
+                                        <Typography>Courses</Typography>
+                                        <Typography className="text-xs text-muted">Total waiting: {totalWaitingUsers}</Typography>
                                     </div>
-                                )
-                            }))}
-                        />
+                                )}
+                                data={coursesData.courses.map(course => ({
+                                    active: getWaitingList(course) >= 1,
+                                    label: course.name,
+                                    value: course.id,
+                                    customLabel: (
+                                        <div className="flex items-center justify-between w-full">
+                                            <Typography>{course.name}</Typography>
+                                            <Typography className="text-xs text-muted">Waiting: {getWaitingList(course)}</Typography>
+                                        </div>
+                                    )
+                                }))}
+                            />
+                            {course && (
+                                <SelectField
+                                    values={courseLevel}
+                                    setValues={setCourseLevel}
+                                    placeholder="Select Level..."
+                                    listTitle={(
+                                        <div className="flex items-center justify-between w-full">
+                                            <Typography>Levels</Typography>
+                                            <Typography className="text-xs text-muted">Total waiting for level: {totalWaitingUsers}</Typography>
+                                        </div>
+                                    )}
+                                    data={course.levels.map(level => ({
+                                        active: getLevelWaitingList(course, level) >= 1,
+                                        label: level,
+                                        value: level,
+                                        customLabel: (
+                                            <div className="flex items-center justify-between w-full space-x-4">
+                                                <Typography>{level}</Typography>
+                                                <Typography className="text-xs text-muted">Waiting: {getLevelWaitingList(course, level)}</Typography>
+                                            </div>
+                                        )
+                                    }))}
+                                />
+                            )}
+                        </div>
                     )}
                     {initialData ? (
                         <div className="flex flex-col gap-2" >
@@ -172,36 +207,44 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                             setValues={setUserIds}
                             placeholder="Select Users..."
                             listTitle="Users"
-                            data={(coursesData.courses.find(course => course.id === courseId[0])?.orders || [])
-                                .filter((order, index, self) => index === self.findIndex(({ userId }) => order.user.id === userId))
-                                .map(order => ({
-                                    active: order.user.courseStatus.find(status => status.courseId === courseId[0])?.state === "waiting",
-                                    label: order.user.email,
-                                    value: order.user.id,
-                                    customLabel: (
-                                        <TooltipProvider>
-                                            <Typography className="mr-auto">{order.user.email}</Typography>
-                                            <Tooltip delayDuration={10}>
-                                                <TooltipTrigger>
-                                                    <Link
-                                                        href={`/account/${order.userId}`}
-                                                        target="_blank"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation()
-                                                        }}
-                                                    >
-                                                        <ExternalLink className="w-4 h-4 text-info"></ExternalLink>
-                                                    </Link>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <Typography>
-                                                        Go to account
-                                                    </Typography>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TooltipProvider>
-                                    )
-                                }))
+                            data={(course?.orders || [])
+                                .filter((order, index, self) => {
+                                    const courseStatus = order.user.courseStatus.find(status => status.courseId === courseId[0])
+
+                                    return index === self.findIndex(({ userId }) => order.user.id === userId) && courseStatus?.level === courseLevel[0]
+                                })
+                                .map(order => {
+                                    const courseStatus = order.user.courseStatus.find(status => status.courseId === courseId[0])
+
+                                    return ({
+                                        active: courseStatus?.state === "waiting",
+                                        label: order.user.email,
+                                        value: order.user.id,
+                                        customLabel: (
+                                            <TooltipProvider>
+                                                <Typography className="mr-auto">{order.user.email}</Typography>
+                                                <Tooltip delayDuration={10}>
+                                                    <TooltipTrigger>
+                                                        <Link
+                                                            href={`/account/${order.userId}`}
+                                                            target="_blank"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                            }}
+                                                        >
+                                                            <ExternalLink className="w-4 h-4 text-info"></ExternalLink>
+                                                        </Link>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <Typography>
+                                                            Go to account
+                                                        </Typography>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        )
+                                    })
+                                })
                             }
                         />
                     )}

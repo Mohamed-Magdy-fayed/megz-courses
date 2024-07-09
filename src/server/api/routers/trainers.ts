@@ -37,6 +37,16 @@ export const trainersRouter = createTRPCRouter({
       });
       return { trainer };
     }),
+  getCurrentTrainer: protectedProcedure
+    .query(async ({ ctx }) => {
+      const id = ctx.session.user.id
+      const trainer = await ctx.prisma.trainer.findFirst({
+        where: { userId: id },
+        include: { user: true },
+      });
+
+      return { trainer };
+    }),
   createTrainer: protectedProcedure
     .input(
       z.object({
@@ -45,7 +55,7 @@ export const trainersRouter = createTRPCRouter({
         password: z.string(),
         image: z.string().optional(),
         phone: z.string().optional(),
-        trainerRoll: z.enum(validTrainerRoles).optional(),
+        trainerRole: z.enum(validTrainerRoles),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -69,7 +79,7 @@ export const trainersRouter = createTRPCRouter({
           userType: "teacher",
           trainer: {
             create: {
-              role: input.trainerRoll || "teacher",
+              role: input.trainerRole || "teacher",
             }
           }
         },

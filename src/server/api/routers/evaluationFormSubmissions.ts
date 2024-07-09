@@ -8,10 +8,15 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 export const evaluationFormSubmissionsRouter = createTRPCRouter({
+  getEvalFormSubmission: protectedProcedure
+    .query(async ({ ctx }) => {
+      const submissions = await ctx.prisma.evaluationFormSubmission.findMany()
+
+      return { submissions }
+    }),
   createEvalFormSubmission: protectedProcedure
     .input(z.object({
       evaluationFormlId: z.string(),
-      userId: z.string(),
       courseId: z.string().optional(),
       answers: z.array(z.object({
         text: z.string().nullable(),
@@ -20,11 +25,13 @@ export const evaluationFormSubmissionsRouter = createTRPCRouter({
       })),
       type: z.enum(validEvalFormTypes),
     }))
-    .mutation(async ({ ctx, input: { answers, evaluationFormlId, userId, type, courseId } }) => {
+    .mutation(async ({ ctx, input: { answers, evaluationFormlId, type, courseId } }) => {
       const evaluationForm = await ctx.prisma.evaluationForm.findUnique({
         where: { id: evaluationFormlId },
         include: { questions: true }
       })
+      const userId = ctx.session.user.id
+
       const user = await ctx.prisma.user.findUnique({
         where: { id: userId },
         include: {
@@ -38,7 +45,7 @@ export const evaluationFormSubmissionsRouter = createTRPCRouter({
                 }
               }
             }
-          }
+          },
         }
       })
 

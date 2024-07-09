@@ -19,7 +19,6 @@ const CoursesClient = () => {
         privatePrice,
         instructorPrice,
         levels,
-        oralTest,
         orders,
     }) => ({
         id,
@@ -32,7 +31,6 @@ const CoursesClient = () => {
         privatePrice,
         instructorPrice,
         levels,
-        oralTest,
         orders,
     })) : []
 

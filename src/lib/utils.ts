@@ -1,4 +1,4 @@
-import { Address, Course, EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, MaterialItem, Order, User, ZoomGroup, ZoomSession } from "@prisma/client";
+import { Address, Course, CourseLevels, EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, MaterialItem, Order, User, ZoomGroup, ZoomSession } from "@prisma/client";
 import { type ClassValue, clsx } from "clsx";
 import { compareAsc, format } from "date-fns";
 import { twMerge } from "tailwind-merge";
@@ -84,7 +84,7 @@ export const getDifferenceMargin = <T extends DataObject>(
   };
 }
 
-type CourseType = Course & {
+export type CourseType = Course & {
   orders: (Order & {
     user: User
   })[]
@@ -93,6 +93,18 @@ export const getWaitingList = (course: CourseType): number => {
   return course.orders
     .filter(order => order.user.courseStatus
       .find(status => status.courseId === course.id)?.state === "waiting")
+    .filter((order, i, self) => i === self.findIndex(({ userId }) => order.user.id === userId))
+    .length
+}
+
+export const getLevelWaitingList = (course: CourseType, level: CourseLevels): number => {
+  return course.orders
+    .filter(order => {
+      const courseStatus = order.user.courseStatus.find(status => status.courseId === course.id)
+      if(!courseStatus) return 0
+
+      return courseStatus.state === "waiting" && courseStatus.level === level
+    })
     .filter((order, i, self) => i === self.findIndex(({ userId }) => order.user.id === userId))
     .length
 }

@@ -35,7 +35,7 @@ export const DatePicker: FC<DatePickerProps> = ({ date, setDate, className, ...p
             </PopoverTrigger>
             <PopoverContent
                 align="start"
-                className="flex w-auto flex-col space-y-2 p-2 bg-background"
+                className="flex w-auto flex-col space-y-2 p-2 bg-background translate-y-20"
             >
                 <div className="rounded-md border">
                     <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />

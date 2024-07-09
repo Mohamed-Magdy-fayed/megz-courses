@@ -31,6 +31,30 @@ export const usersRouter = createTRPCRouter({
 
       return { users };
     }),
+  getRetintionsUsers: protectedProcedure
+    .query(async ({ ctx }) => {
+      const users = await ctx.prisma.user.findMany({
+        where: {
+          AND: {
+            userType: "student",
+            courseStatus: {
+              some: {
+                state: "completed"
+              }
+            }
+          }
+
+        },
+        orderBy: {
+          id: "desc"
+        },
+        include: {
+          orders: true,
+        },
+      });
+
+      return { users };
+    }),
   getUserById: protectedProcedure
     .input(
       z.object({

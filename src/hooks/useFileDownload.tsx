@@ -1,28 +1,37 @@
-import { useState, useEffect } from 'react';
-import { StorageReference, getDownloadURL, ref, uploadBytesResumable, } from 'firebase/storage';
+import { useState } from 'react';
+import { getDownloadURL, ref } from 'firebase/storage';
 import { storage } from '@/config/firebase';
 import { useToast } from '@/components/ui/use-toast';
+import { formatPercentage } from '@/lib/utils';
 
 export type UploadStatus = { state: 'Idle' | 'Working', progress: number };
 
 const useFileDownload = () => {
     const [progress, setProgress] = useState(0);
-    const { toastError } = useToast();
+    const { toastError, toast } = useToast();
 
     const downloadFile = async (path: string) => {
-        const starsRef = ref(storage, path);
+        const storageRef = ref(storage, path);
+
+        const downloadToast = toast({
+            title: "Downloading...",
+            description: "Starting...",
+            variant: "info",
+            duration: 100000,
+        })
 
         try {
-            getDownloadURL(starsRef)
+            getDownloadURL(storageRef)
                 .then((url) => {
                     const xhr = new XMLHttpRequest();
                     xhr.responseType = 'blob';
 
                     xhr.onprogress = (event) => {
-                        if (event.lengthComputable) {
-                            const downloadProgress = (event.loaded / event.total) * 100;
-                            setProgress(downloadProgress);
-                        }
+                        const downloadProgress = (event.loaded / event.total) * 100;
+                        downloadToast.update({
+                            id: downloadToast.id, description: formatPercentage(downloadProgress),
+                        })
+                        setProgress(downloadProgress);
                     };
 
                     xhr.onload = () => {
@@ -33,6 +42,13 @@ const useFileDownload = () => {
                         anchor.download = path.split('/').pop() || 'download';
                         anchor.click();
                         URL.revokeObjectURL(objectURL);
+                        downloadToast.update({
+                            id: downloadToast.id,
+                            title: "Success",
+                            description: "Your download is ready!",
+                            variant: "success",
+                            duration: 3000,
+                        })
                         setProgress(0);
                     };
 
@@ -63,12 +79,11 @@ const useFileDownload = () => {
 
 
         } catch (error) {
-
+            console.log(error);
         }
     };
 
     return {
-        progress,
         downloadFile,
     };
 };

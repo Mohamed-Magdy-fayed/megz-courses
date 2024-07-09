@@ -2,17 +2,20 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 import { Typography } from "../ui/Typoghraphy";
-import { CoursStatuses } from "@prisma/client";
 import Link from "next/link";
 import { SeverityPill, SeverityPillProps } from "../overview/SeverityPill";
 import { formatPercentage } from "@/lib/utils";
+import { format } from "date-fns";
 
 export type CourseRow = {
   id: string;
   name: string;
-  formTestStatus?: number | null | undefined;
-  oralTestStatus?: number | null | undefined;
-  courseStatus: CoursStatuses
+  placementTestLink: string;
+  isSubmitted: boolean;
+  score: string;
+  isOralTestScheduled: boolean;
+  oralTestTime: string;
+  status: string;
 }
 
 export const columns: ColumnDef<CourseRow>[] = [
@@ -40,7 +43,7 @@ export const columns: ColumnDef<CourseRow>[] = [
     ),
   },
   {
-    accessorKey: "courseStatus",
+    accessorKey: "status",
     header: ({ column }) => {
       return (
         <div className="flex items-center justify-between">
@@ -55,21 +58,22 @@ export const columns: ColumnDef<CourseRow>[] = [
       );
     },
     cell: ({ row }) => {
-      const status = row.original.courseStatus
+      const status = row.original.status
       const color: SeverityPillProps["color"] =
-        status === "waiting" ? "info"
-          : status === "ongoing" ? "primary"
-            : "info"
+        status === "Waiting Placement Test" ? "info"
+          : status === "Need Submission" ? "primary"
+            : status === "Oral Test No Scheduled" ? "primary"
+              : "success"
       return (
-        <SeverityPill className="max-w-fit p-2" color={color}>{row.original.courseStatus}</SeverityPill>
+        <SeverityPill className="max-w-fit p-2" color={color}>{status}</SeverityPill>
       )
     },
   },
   {
-    accessorKey: "form",
-    header: "Placement Test",
+    accessorKey: "isOralTestScheduled",
+    header: "Oral Test Time",
     cell: ({ row }) => {
-      if (row.original.formTestStatus) return <Typography>Score: {formatPercentage(row.original.formTestStatus)}</Typography>
+      if (row.original.isOralTestScheduled) return <Typography>{row.original.oralTestTime}</Typography>
 
       return (
         <Link href={`/placement_test/${row.original.id}`}>
@@ -81,13 +85,19 @@ export const columns: ColumnDef<CourseRow>[] = [
     },
   },
   {
-    accessorKey: "oralTest",
-    header: "Oral Placement Test",
+    accessorKey: "isSubmitted",
+    header: "Written Test",
     cell: ({ row }) => {
-      if (row.original.oralTestStatus) return <Typography>Score: {formatPercentage(row.original.oralTestStatus)}</Typography>
+      if (row.original.score === "Not Submitted") return (
+        <Link href={`/placement_test/${row.original.id}`}>
+          <Button customeColor={"primary"}>
+            Start
+          </Button>
+        </Link>
+      )
 
       return (
-        <Typography>NA</Typography>
+        <Typography>{row.original.score}</Typography>
       )
     },
   },

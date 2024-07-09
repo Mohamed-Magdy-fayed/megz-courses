@@ -1,7 +1,7 @@
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { api } from "@/lib/api";
 import { useState } from "react";
-import { FileDown, FileUp, PlusIcon } from "lucide-react";
+import { FileDown, FileUp, ListChecks, PlusIcon, Workflow } from "lucide-react";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
@@ -9,9 +9,11 @@ import AppLayout from "@/components/layout/AppLayout";
 import TrainerForm from "@/components/staffComponents/TrainerForm";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import TrainersClient from "@/components/staffComponents/TrainersClient";
+import Link from "next/link";
 
 const StaffPage = () => {
   const { data, isLoading, isError } = api.trainers.getTrainers.useQuery();
+  const { data: currentTrainerData } = api.trainers.getCurrentTrainer.useQuery();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -44,10 +46,20 @@ const StaffPage = () => {
                 </Tooltip>
               </div>
             </div>
-            <Button onClick={() => setIsOpen(true)} customeColor={"primary"}>
-              <PlusIcon className="mr-2"></PlusIcon>
-              <Typography variant={"buttonText"}>Add</Typography>
-            </Button>
+            <div className="space-x-4">
+              {currentTrainerData?.trainer && (
+                <Link href={`/staff/my_tasks`}>
+                  <Button customeColor={"primary"}>
+                    <ListChecks className="mr-2"></ListChecks>
+                    <Typography variant={"buttonText"}>My Tasks</Typography>
+                  </Button>
+                </Link>
+              )}
+              <Button onClick={() => setIsOpen(true)} customeColor={"primary"}>
+                <PlusIcon className="mr-2"></PlusIcon>
+                <Typography variant={"buttonText"}>Add</Typography>
+              </Button>
+            </div>
           </div>
           {isOpen && (
             <PaperContainer>

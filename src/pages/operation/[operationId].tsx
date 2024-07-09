@@ -7,12 +7,15 @@ import UserInfoPanel from "@/components/salesOperation/UserInfoPanel";
 import OperationStatus from "@/components/salesOperation/OperationStatus";
 import OrderInfoPanel from "@/components/salesOperation/OrderInfoPanel";
 import CreateOrder from "@/components/salesOperation/CreateOrder";
-import { Loader } from "lucide-react";
+import { Calendar, Loader } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useSession } from "next-auth/react";
 import Spinner from "@/components/Spinner";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
+import Modal from "@/components/ui/modal";
+import SelectField from "@/components/salesOperation/SelectField";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 const OperationPage = () => {
     const router = useRouter()
@@ -20,8 +23,12 @@ const OperationPage = () => {
     const { data, isLoading, isError } = api.salesOperations.getById.useQuery({ id })
     const { data: coursesData } = api.courses.getAll.useQuery()
     const { data: usersData } = api.users.getUsers.useQuery({ userType: "student" })
+    const { data: trainersData } = api.trainers.getTrainers.useQuery()
 
     const [open, setOpen] = useState(false)
+    const [testTime, setTestTime] = useState<Date | undefined>(new Date())
+    const [trainerId, setTrainerId] = useState<string[]>([])
+    const [isScheduleTestOpen, setIsScheduleTestOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const { toastSuccess, toastError } = useToast()
 
@@ -30,12 +37,14 @@ const OperationPage = () => {
     const updateSalesOperationMutation = api.salesOperations.editSalesOperations.useMutation()
     const createPlacementTestMutation = api.placementTests.startCourses.useMutation()
 
-    const handleCompleteOperation = () => {
+    const handleSchedulePlacementTest = () => {
         setLoading(true)
-        if (!data?.salesOperations?.orderDetails) return
+        if (!data?.salesOperations?.orderDetails || !trainerId[0] || !testTime) return toastError("Missing some information here!")
         createPlacementTestMutation.mutate({
             userId: data?.salesOperations?.orderDetails?.userId,
             courseIds: data?.salesOperations?.orderDetails?.courseIds,
+            testTime,
+            trainerId: trainerId[0],
         }, {
             onSuccess: (data) => {
                 updateSalesOperationMutation.mutate({
@@ -45,8 +54,9 @@ const OperationPage = () => {
                     onSettled: () => {
                         trpcUtils.salesOperations.invalidate()
                             .then(() => {
-                                toastSuccess(`${data.placementTests.count} Placement tests created!`)
+                                toastSuccess(`${data?.placementTests.length} Placement tests created!`)
                                 setLoading(false)
+                                setIsScheduleTestOpen(false)
                             })
                     }
                 })
@@ -60,6 +70,40 @@ const OperationPage = () => {
 
     return (
         <AppLayout>
+            <Modal
+                description="Select a time for the student test"
+                isOpen={isScheduleTestOpen}
+                onClose={() => setIsScheduleTestOpen(false)}
+                title="Schedule"
+            >
+                <div className="space-y-4">
+                    <SelectField
+                        data={
+                            trainersData?.trainers
+                                ? trainersData.trainers.map(trainer => ({
+                                    active: true,
+                                    label: trainer.user.name,
+                                    value: trainer.id,
+                                }))
+                                : []
+                        }
+                        listTitle="Testers"
+                        placeholder="Select Tester"
+                        setValues={setTrainerId}
+                        values={trainerId}
+                    />
+                    <DatePicker
+                        date={testTime}
+                        setDate={setTestTime}
+                    />
+                    <div>
+                        <Button onClick={() => handleSchedulePlacementTest()}>
+                            <Calendar className="w-4 h-4 mr-2" />
+                            Schedule
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
             {isLoading ? (
                 <div className="w-full grid place-content-center">
                     <Loader className="animate-spin" size={100}></Loader>
@@ -102,7 +146,7 @@ const OperationPage = () => {
                                         && session.data?.user.userType !== "admin"
                                     )
                                 }
-                                onClick={handleCompleteOperation}
+                                onClick={() => setIsScheduleTestOpen(true)}
                                 className="bg-success hover:bg-success/90"
                             >
                                 <Typography className={cn("", loading && "opacity-0")}>Complete</Typography>

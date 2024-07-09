@@ -1,5 +1,5 @@
 import { storage } from "@/config/firebase";
-import { ref, getDownloadURL, uploadBytesResumable, StorageReference, deleteObject, listAll } from "firebase/storage";
+import { ref, getDownloadURL, uploadBytesResumable, StorageReference, deleteObject, listAll, list } from "firebase/storage";
 
 export const upload = async (file: File) => {
     const filename = file.name;
@@ -31,10 +31,11 @@ export const upload = async (file: File) => {
     }
 };
 
-export const deleteFile = (path: string) => {
+export const deleteFile = async (path: string) => {
     const desertRef = ref(storage, path);
-
     deleteObject(desertRef)
+        .then((res) => console.log(res))
+        .catch((e) => console.log(e))
 }
 
 export const deleteFiles = (pathToFolder: string) => {

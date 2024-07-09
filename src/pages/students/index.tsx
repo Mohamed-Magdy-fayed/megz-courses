@@ -9,6 +9,7 @@ import AppLayout from "@/components/layout/AppLayout";
 import StudentForm from "@/components/studentComponents/StudentForm";
 import StudentClient from "@/components/studentComponents/StudentClient";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { csvMaker } from "@/lib/csvMaker";
 
 const StudentsPage = () => {
   const { data, isLoading, isError } = api.users.getUsers.useQuery({
@@ -38,7 +39,7 @@ const StudentsPage = () => {
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant={"icon"} customeColor={"infoIcon"}>
+                    <Button onClick={() => csvMaker(data?.users!)} variant={"icon"} customeColor={"infoIcon"}>
                       <FileUp />
                     </Button>
                   </TooltipTrigger>

@@ -69,15 +69,3 @@ const GroupsPage: NextPage = () => {
 }
 
 export default GroupsPage
-
-/** Placment test */
-/** waiting list */
-/** group */
-/** attendance */
-/** move to next level */
-
-/** one click create order and user and payment */
-/** levels inside courses */
-/** placment test times */
-/** on hold students */
-/** zoom integration */

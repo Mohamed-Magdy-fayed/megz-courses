@@ -164,10 +164,13 @@ function toast({ ...props }: Toast) {
 
   return {
     id: id,
+    props,
     dismiss,
     update,
   }
 }
+
+type toastType = ReturnType<typeof toast>
 
 function toastError(msg: string | undefined) {
   toast({ title: "an error occured", description: msg || "an error occured, please try again!", variant: "destructive" })
@@ -204,4 +207,4 @@ function useToast() {
   }
 }
 
-export { useToast, toast }
+export { useToast, toast, type toastType }

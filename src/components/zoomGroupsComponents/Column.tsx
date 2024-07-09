@@ -1,7 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Typography } from "../ui/Typoghraphy";
-import { Course, GroupStatus, Trainer, User } from "@prisma/client";
+import { Course, CourseLevels, GroupStatus, Trainer, User } from "@prisma/client";
 import { SeverityPill, SeverityPillProps } from "../overview/SeverityPill";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -14,6 +14,7 @@ import ActionCell from "./ActionCell";
 export type ColumnType = {
     id: string,
     course: Course,
+    courseLevel: CourseLevels,
     createdAt: Date,
     updatedAt: Date,
     groupNumber: string,
@@ -132,6 +133,7 @@ export const columns: ColumnDef<ColumnType>[] = [
         cell: ({ row }) => <ActionCell
             id={row.original.id}
             courseId={row.original.course.id}
+            courseLevel={row.original.courseLevel}
             startDate={row.original.startDate}
             trainerId={row.original.trainer?.id}
             studentIds={row.original.students.map(student => student.id)}

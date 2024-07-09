@@ -30,7 +30,6 @@ const formSchema = z.object({
   groupPrice: z.string().min(1, "groupPrice can't be empty"),
   privatePrice: z.string().min(1, "privatePrice can't be empty"),
   instructorPrice: z.string().min(1, "instructorPrice can't be empty"),
-  oralTest: z.string().min(1, "oralTest can't be empty"),
 });
 
 type CoursesFormValues = z.infer<typeof formSchema>;
@@ -50,7 +49,6 @@ const CourseForm = ({ initialData, setIsOpen }: { initialData?: Course, setIsOpe
         groupPrice: initialData.groupPrice.toString(),
         instructorPrice: initialData.instructorPrice.toString(),
         privatePrice: initialData.privatePrice.toString(),
-        oralTest: initialData.oralTest,
       }
       : {
         name: "",
@@ -59,7 +57,6 @@ const CourseForm = ({ initialData, setIsOpen }: { initialData?: Course, setIsOpe
         groupPrice: "",
         instructorPrice: "",
         privatePrice: "",
-        oralTest: "",
       }
   });
   const createCourseMutation = api.courses.createCourse.useMutation({
@@ -122,12 +119,11 @@ const CourseForm = ({ initialData, setIsOpen }: { initialData?: Course, setIsOpe
   });
   const trpcUtils = api.useContext();
 
-  const onSubmit = ({ name, oralTest, privatePrice, groupPrice, instructorPrice, description, image }: CoursesFormValues) => {
+  const onSubmit = ({ name, privatePrice, groupPrice, instructorPrice, description, image }: CoursesFormValues) => {
     initialData
       ? editCourseMutation.mutate({
         id: initialData.id,
         name,
-        oralTest,
         description,
         groupPrice: Number(groupPrice),
         instructorPrice: Number(instructorPrice),
@@ -142,7 +138,6 @@ const CourseForm = ({ initialData, setIsOpen }: { initialData?: Course, setIsOpe
         privatePrice: Number(privatePrice),
         groupPrice: Number(groupPrice),
         instructorPrice: Number(instructorPrice),
-        oralTest,
         levels,
       });
   };
@@ -242,19 +237,6 @@ const CourseForm = ({ initialData, setIsOpen }: { initialData?: Course, setIsOpe
             )}
           />
         </div>
-        <FormField
-          control={form.control}
-          name="oralTest"
-          render={({ field }) => (
-            <FormItem className="p-4">
-              <FormLabel>Oral test questions doc</FormLabel>
-              <FormControl>
-                <Input placeholder="doc url" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <FormItem className="p-4">
           <FormLabel>Course level</FormLabel>
           <SelectField

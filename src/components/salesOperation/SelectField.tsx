@@ -27,6 +27,7 @@ interface SelectFieldProps<T> extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const SelectField: FC<SelectFieldProps<any>> = ({ placeholder, listTitle, data, values, setValues, multiSelect, disableSearch, className, ...props }) => {
+    const [isOpen, setIsOpen] = useState(false)
     const [filteredData, setFilteredData] = useState(data)
     const [searchQuery, setSearchQuery] = useState("")
 
@@ -35,7 +36,7 @@ const SelectField: FC<SelectFieldProps<any>> = ({ placeholder, listTitle, data, 
     }, [data])
 
     return (
-        <DropdownMenu>
+        <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
             <DropdownMenuTrigger asChild>
                 <Button
                     variant="outline"
@@ -91,7 +92,6 @@ const SelectField: FC<SelectFieldProps<any>> = ({ placeholder, listTitle, data, 
                                         return
                                     }
                                     setValues([item.value])
-
                                 }}>
                                 <Check
                                     className={cn(

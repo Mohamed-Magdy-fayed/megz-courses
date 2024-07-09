@@ -11,12 +11,18 @@ import CreateMaterialForm from "@/components/contentComponents/materials/CreateM
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import WaitingListClient from "@/components/contentComponents/waitingList/WaitingListClient";
 import CourseGroupsClient from "@/components/contentComponents/courseGroups/CourseGroupsClient";
-import PlacmentTestClient from "@/components/contentComponents/placmentTests/Client";
-import AssignmentsClient from "@/components/contentComponents/assignments/Client";
-import QuizzesClient from "@/components/contentComponents/quizzes/Client";
 import Link from "next/link";
 import Modal from "@/components/ui/modal";
 import UploadMaterialForm from "@/components/contentComponents/materials/uploadForm/UploadMaterialForm";
+import CreateQuickOrder from "@/components/contentComponents/courses/CreateQuickOrder";
+import AssignmentsClient from "@/components/contentComponents/assignments/AssignmentsClient";
+import FinalTestClient from "@/components/contentComponents/finalTests/FinalTestsClient";
+import FinalTestSubmissionsClient from "@/components/contentComponents/finalTestSubmissions/FinalTestSubmissionsClient";
+import QuizzesClient from "@/components/contentComponents/quizzes/QuizzesClient";
+import PlacmentTestClient from "@/components/contentComponents/placmentTests/PlacmentTestsClient";
+import PlacmentTestSubmissionsClient from "@/components/contentComponents/placmentTestSubmissions/PlacmentTestSubmissionsClient";
+import PlacmentTestScheduleClient from "@/components/contentComponents/placmentTestSchedule/PlacmentTestScheduleClient";
+import { PaperContainer } from "@/components/ui/PaperContainers";
 
 const tabs = [
     { value: "materials", label: "Materials" },
@@ -25,6 +31,8 @@ const tabs = [
     { value: "waiting_list", label: "Waiting list" },
     { value: "groups", label: "Groups" },
     { value: "placement_tests", label: "Placement tests" },
+    { value: "final_tests", label: "Final tests" },
+    { value: "quick_order", label: "Quick Order" },
 ]
 
 const CoursePage = () => {
@@ -122,7 +130,7 @@ const CoursePage = () => {
                         </TabsContent>
                         <TabsContent value="assignments">
                             <div className="p-4">
-                                <Link href={`/content/courses/${id}/create-form`} target="_blank">
+                                <Link href={`/content/courses/${id}/create-form`}>
                                     <Button>
                                         <Plus />
                                         <Typography>Add Assignment</Typography>
@@ -133,7 +141,7 @@ const CoursePage = () => {
                         </TabsContent>
                         <TabsContent value="quizzes">
                             <div className="p-4">
-                                <Link href={`/content/courses/${id}/create-form`} target="_blank">
+                                <Link href={`/content/courses/${id}/create-form`}>
                                     <Button>
                                         <Plus />
                                         <Typography>Add Quiz</Typography>
@@ -148,8 +156,44 @@ const CoursePage = () => {
                         <TabsContent value="groups">
                             <CourseGroupsClient zoomGroups={data.course.zoomGroup} />
                         </TabsContent>
-                        <TabsContent value="placement_tests">
-                            <PlacmentTestClient courseId={data.course.id} />
+                        <TabsContent value="placement_tests" className="space-y-4">
+                            <div className="p-4">
+                                <Link href={`/content/courses/${id}/create-test`}>
+                                    <Button>
+                                        <Plus />
+                                        <Typography>Create Placement Test</Typography>
+                                    </Button>
+                                </Link>
+                            </div>
+                            <PaperContainer>
+                                <Typography variant={"secondary"}>The Tests</Typography>
+                                <PlacmentTestClient courseId={data.course.id} />
+                            </PaperContainer>
+                            <PaperContainer>
+                                <Typography variant={"secondary"}>Scheduled</Typography>
+                                <PlacmentTestScheduleClient courseId={data.course.id} />
+                            </PaperContainer>
+                            <PaperContainer>
+                                <Typography variant={"secondary"}>Submissions</Typography>
+                                <PlacmentTestSubmissionsClient courseId={data.course.id} />
+                            </PaperContainer>
+                        </TabsContent>
+                        <TabsContent value="final_tests">
+                            <div className="p-4">
+                                <Link href={`/content/courses/${id}/create-test`}>
+                                    <Button>
+                                        <Plus />
+                                        <Typography>Create Final Test</Typography>
+                                    </Button>
+                                </Link>
+                            </div>
+                            <FinalTestClient courseId={data.course.id} />
+                            <FinalTestSubmissionsClient courseId={data.course.id} />
+                        </TabsContent>
+                        <TabsContent value="quick_order">
+                            <CreateQuickOrder
+                                courseData={data.course}
+                            />
                         </TabsContent>
                     </Tabs>
                 )}

@@ -6,7 +6,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Copy, CopyPlus, Edit, MoreVertical, Trash } from "lucide-react";
+import { Copy, CopyPlus, Edit, MoreVertical, PlusSquare, Trash } from "lucide-react";
 import { ToasterToast, useToast } from "@/components/ui/use-toast";
 import { api } from "@/lib/api";
 import { useState } from "react";
@@ -15,6 +15,9 @@ import Modal from "@/components/ui/modal";
 import CourseForm from "./CourseForm";
 import { Course } from "@prisma/client";
 import ModalInDropdownMenu from "@/components/ui/modal-in-dropdown-menu";
+import CreateQuickOrder from "./CreateQuickOrder";
+import { router } from "@trpc/server";
+import { useRouter } from "next/router";
 
 interface CellActionProps {
     id: string;
@@ -22,7 +25,9 @@ interface CellActionProps {
 
 const CoursesActionCell: React.FC<CellActionProps> = ({ id }) => {
     const { toastInfo, toast } = useToast();
+    const [isOpen, setIsOpen] = useState(false)
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+    const [isCreateOrderModalOpen, setIsCreateOrderModalOpen] = useState(false)
 
     const onCopy = () => {
         navigator.clipboard.writeText(`${window.location.host}/courses/${id}`);
@@ -34,6 +39,8 @@ const CoursesActionCell: React.FC<CellActionProps> = ({ id }) => {
         dismiss: () => void;
         update: (props: ToasterToast) => void;
     }>()
+
+    const router = useRouter()
     const trpcUtils = api.useContext()
     const courseQuery = api.courses.getById.useQuery({ id })
     const dublicateMutation = api.courses.dublicateCourse.useMutation({
@@ -97,44 +104,66 @@ const CoursesActionCell: React.FC<CellActionProps> = ({ id }) => {
     };
 
     return (
-        <>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button customeColor="mutedIcon" variant={"icon"} >
-                        <MoreVertical className="w-4 h-4" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={onDublicate}>
-                        <CopyPlus className="w-4 h-4 mr-2" />
-                        Dublicate
-                    </DropdownMenuItem>
-                    <ModalInDropdownMenu
-                        title="Edit Course"
-                        description="Update the course details"
-                        isOpen={isEditModalOpen}
-                        onOpen={() => setIsEditModalOpen(true)}
-                        onClose={() => setIsEditModalOpen(false)}
-                        children={courseQuery.data?.course && <CourseForm initialData={courseQuery.data.course} setIsOpen={setIsEditModalOpen} />}
-                        itemChildren={
-                            <>
-                                <Edit className="w-4 h-4 mr-2" />
-                                edit
-                            </>
-                        }
-                    />
-                    <DropdownMenuItem onClick={onCopy}>
-                        <Copy className="w-4 h-4 mr-2" />
-                        Copy user link
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={onDelete}>
-                        <Trash className="w-4 h-4 mr-2" />
-                        Delete
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
-        </>
+        <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
+            <DropdownMenuTrigger asChild>
+                <Button customeColor="mutedIcon" variant={"icon"} >
+                    <MoreVertical className="w-4 h-4" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                {/* <ModalInDropdownMenu
+                    title="Create Order"
+                    description="Create an order for a new/existing user"
+                    isOpen={isCreateOrderModalOpen}
+                    onOpen={() => setIsCreateOrderModalOpen(true)}
+                    onClose={() => setIsCreateOrderModalOpen(false)}
+                    children={courseQuery.data?.course
+                        ? <CreateQuickOrder
+                            courseData={courseQuery.data.course}
+                            setOpen={setIsCreateOrderModalOpen}
+                        />
+                        : <Spinner className="w-4 h-4" />
+                    }
+                    itemChildren={
+                        <>
+                            <PlusSquare className="w-4 h-4 mr-2" />
+                            Quick Order
+                        </>
+                    }
+                /> */}
+                <DropdownMenuItem onClick={() => router.push(`/content/courses/${id}?tab=quick_order`)}>
+                    <PlusSquare className="w-4 h-4 mr-2" />
+                    Quick Order
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onDublicate}>
+                    <CopyPlus className="w-4 h-4 mr-2" />
+                    Dublicate
+                </DropdownMenuItem>
+                <ModalInDropdownMenu
+                    title="Edit Course"
+                    description="Update the course details"
+                    isOpen={isEditModalOpen}
+                    onOpen={() => setIsEditModalOpen(true)}
+                    onClose={() => setIsEditModalOpen(false)}
+                    children={courseQuery.data?.course && <CourseForm initialData={courseQuery.data.course} setIsOpen={setIsEditModalOpen} />}
+                    itemChildren={
+                        <>
+                            <Edit className="w-4 h-4 mr-2" />
+                            edit
+                        </>
+                    }
+                />
+                <DropdownMenuItem onClick={onCopy}>
+                    <Copy className="w-4 h-4 mr-2" />
+                    Copy user link
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onDelete}>
+                    <Trash className="w-4 h-4 mr-2" />
+                    Delete
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 };
 

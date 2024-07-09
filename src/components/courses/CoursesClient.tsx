@@ -3,6 +3,8 @@ import { DataTable } from "../ui/DataTable";
 import { api } from "@/lib/api";
 import Spinner from "../Spinner";
 import { useEffect } from "react";
+import { formatPercentage } from "@/lib/utils";
+import { format } from "date-fns";
 
 const CoursesClient = ({ userId }: { userId: string }) => {
   const { data, refetch } = api.courses.getStudentCourses.useQuery({ userId }, { enabled: false })
@@ -12,15 +14,25 @@ const CoursesClient = ({ userId }: { userId: string }) => {
     name,
   }) => {
     const filteredTest = data?.user.placementTests.find((test) => test.courseId === id);
-    const formTestStatus = filteredTest?.testStatus?.form ?? null;
-    const oralTestStatus = filteredTest?.testStatus?.oral ?? null;
+    const isSubmitted = data?.user.evaluationFormSubmissions.some(sub => sub.evaluationFormId === filteredTest?.evaluationFormId)
+    const studentPoints = data?.user.evaluationFormSubmissions.find(sub => sub.evaluationFormId === filteredTest?.evaluationFormId)?.rating
+    const totalPoints = filteredTest?.writtenTest.totalPoints
+    const isOralTestScheduled = !!filteredTest?.oralTestTime.testTime
+    const oralTestTime = filteredTest?.oralTestTime.testTime || new Date()
+    const status = !filteredTest ? "Waiting Placement Test"
+      : !isSubmitted ? "Need Submission"
+        : !isOralTestScheduled ? "Oral Test No Scheduled"
+          : data?.user.courseStatus.find(status => status.courseId === id && !!status.level)?.level as string
 
     return {
       id,
       name,
-      formTestStatus,
-      oralTestStatus,
-      courseStatus: data.user.courseStatus.find(state => state.courseId === id)?.state || "waiting"
+      placementTestLink: `/placement_test/${id}`,
+      isSubmitted,
+      score: (studentPoints && totalPoints) ? `Score: ${formatPercentage(studentPoints / totalPoints * 100)}` : "Not Submitted",
+      isOralTestScheduled,
+      oralTestTime: format(oralTestTime, "PPPp"),
+      status,
     }
   })
 

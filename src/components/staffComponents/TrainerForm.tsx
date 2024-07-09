@@ -217,7 +217,7 @@ const TrainerForm: React.FC<TrainerFormProps> = ({ setIsOpen }) => {
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger className="pl-8 bg-white">
+                      <SelectTrigger className="pl-8 bg-primary text-primary-foreground">
                         <SelectValue
                           defaultValue={field.value}
                           placeholder="Select trainer role"

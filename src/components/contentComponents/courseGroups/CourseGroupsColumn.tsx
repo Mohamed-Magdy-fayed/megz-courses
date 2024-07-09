@@ -5,7 +5,7 @@ import { ArrowUpDown } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { Typography } from "@/components/ui/Typoghraphy";
-import { Course, GroupStatus, Trainer, User, ZoomSession } from "@prisma/client";
+import { Course, CourseLevels, GroupStatus, Trainer, User, ZoomSession } from "@prisma/client";
 import CourseGroupsActionCell from "./CourseGroupsActionCell";
 import { SeverityPill, SeverityPillProps } from "@/components/overview/SeverityPill";
 
@@ -20,6 +20,7 @@ export type CourseGroups = {
     });
     zoomSessions: ZoomSession[];
     course: Course,
+    courseLevel: CourseLevels,
     createdAt: Date;
     updatedAt: Date;
 }
@@ -122,6 +123,7 @@ export const columns: ColumnDef<CourseGroups>[] = [
         ),
         cell: ({ row }) => <CourseGroupsActionCell
             id={row.original.id}
+            courseLevel={row.original.courseLevel}
             courseId={row.original.course?.id}
             startDate={row.original.startDate}
             trainerId={row.original.trainer?.id}

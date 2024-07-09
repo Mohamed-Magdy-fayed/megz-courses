@@ -65,6 +65,7 @@ enum Devices {
 
 type CoursStatus {
     courseId String        @db.ObjectId
+    level    CourseLevels
     state    CoursStatuses
 }
 
@@ -117,17 +118,28 @@ type TestTstatus {
     oral Int?
 }
 
+model PlacementTestTime {
+    id            String          @id @default(auto()) @map("_id") @db.ObjectId
+    testTime      DateTime
+    placementTest PlacementTest[]
+    updatedAt     DateTime        @updatedAt
+    createdAt     DateTime        @default(now())
+}
+
 model PlacementTest {
-    id            String      @id @default(auto()) @map("_id") @db.ObjectId
-    student       User        @relation(fields: [studentUserId], references: [id])
-    studentUserId String      @db.ObjectId
-    course        Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
-    courseId      String      @db.ObjectId
-    testStatus    TestTstatus
-    trainer       Trainer?    @relation(fields: [trainerId], references: [id])
-    trainerId     String?     @db.ObjectId
-    updatedAt     DateTime    @updatedAt
-    createdAt     DateTime    @default(now())
+    id                  String            @id @default(auto()) @map("_id") @db.ObjectId
+    student             User              @relation(fields: [studentUserId], references: [id])
+    studentUserId       String            @db.ObjectId
+    course              Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+    courseId            String            @db.ObjectId
+    writtenTest         EvaluationForm    @relation(fields: [evaluationFormId], references: [id])
+    evaluationFormId    String            @db.ObjectId
+    oralTestTime        PlacementTestTime @relation(fields: [placementTestTimeId], references: [id])
+    placementTestTimeId String            @db.ObjectId
+    trainer             Trainer           @relation(fields: [trainerId], references: [id])
+    trainerId           String            @db.ObjectId
+    updatedAt           DateTime          @updatedAt
+    createdAt           DateTime          @default(now())
 }
 
 model Trainer {
@@ -159,12 +171,11 @@ model Course {
     groupPrice      Float
     privatePrice    Float
     instructorPrice Float
-    oralTest        String
     placementTests  PlacementTest[]
     levels          CourseLevels[]
     materialItems   MaterialItem[]
     zoomGroup       ZoomGroup[]
-    EvaluationForm  EvaluationForm[]
+    evaluationForms EvaluationForm[]
     orders          Order[]          @relation(fields: [orderIds], references: [id])
     orderIds        String[]         @db.ObjectId
     updatedAt       DateTime         @updatedAt
@@ -211,6 +222,7 @@ model EvaluationForm {
     id             String                     @id @default(auto()) @map("_id") @db.ObjectId
     type           EvaluationFormTypes
     totalPoints    Int
+    PlacementTest  PlacementTest[]
     submissions    EvaluationFormSubmission[]
     questions      EvaluationFormQuestion[]
     updateHistory  EvaluationFormHistory[]
@@ -469,6 +481,7 @@ model ZoomGroup {
     studentIds   String[]                   @db.ObjectId
     course       Course?                    @relation(fields: [courseId], references: [id])
     courseId     String?                    @db.ObjectId
+    courseLevel  CourseLevels
     zoomSessions ZoomSession[]
     finalTests   EvaluationFormSubmission[]
     updatedAt    DateTime                   @updatedAt

@@ -8,8 +8,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Copy, MoreVertical } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import PlacmentTestModal from "@/components/modals/PlacmentTestModal";
-import OralTestModal from "@/components/modals/OralTestModal";
 import { RefundModal } from "@/components/modals/RefundModal";
 import { useState } from "react";
 
@@ -45,12 +43,6 @@ const WaitingListActionCell: React.FC<CellActionProps> = ({ id }) => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={(e) => e.preventDefault()}>
-                        <PlacmentTestModal id={id} />
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={(e) => e.preventDefault()}>
-                        <OralTestModal id={id} />
-                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={onCopy}>
                         <Copy className="w-4 h-4 mr-2" />
                         Copy ID

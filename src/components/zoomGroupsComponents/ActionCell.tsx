@@ -14,7 +14,7 @@ import { useToast } from "../ui/use-toast";
 import Link from "next/link";
 import Modal from "../ui/modal";
 import SelectField from "../salesOperation/SelectField";
-import { GroupStatus } from "@prisma/client";
+import { CourseLevels, GroupStatus } from "@prisma/client";
 import { upperFirst } from "lodash";
 import ZoomGroupForm from "./Form";
 import AddStudentsForm from "./AddStudentsForm";
@@ -29,6 +29,7 @@ import ModalInDropdownMenu from "../ui/modal-in-dropdown-menu";
 interface ActionCellProps {
     id: string;
     courseId: string;
+    courseLevel: CourseLevels;
     trainerId: string;
     studentIds: string[];
     startDate: Date;
@@ -36,7 +37,7 @@ interface ActionCellProps {
     isGroupPage?: boolean;
 }
 
-const ActionCell: FC<ActionCellProps> = ({ id, courseId, startDate, trainerId, status, studentIds, isGroupPage }) => {
+const ActionCell: FC<ActionCellProps> = ({ id, courseId, courseLevel, startDate, trainerId, status, studentIds, isGroupPage }) => {
     const { toastError, toastSuccess } = useToast();
 
     const [loading, setLoading] = useState(false);
@@ -80,6 +81,7 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, startDate, trainerId, s
     const onDublicate = () => {
         createZoomGroupMutation.mutate({
             courseId,
+            courseLevel,
             startDate,
             studentIds: [],
             trainerId,
@@ -266,6 +268,7 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, startDate, trainerId, s
                             <ZoomGroupForm setIsOpen={setIsEditFormOpen} initialData={{
                                 id,
                                 courseId,
+                                courseLevel,
                                 startDate,
                                 studentIds,
                                 trainerId,

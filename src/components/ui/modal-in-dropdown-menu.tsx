@@ -15,6 +15,7 @@ import { DialogOverlay, DialogPortal } from "@radix-ui/react-dialog";
 interface ModalProps {
   title: string;
   description: string;
+  disabled?: boolean;
   isOpen: boolean;
   onClose: () => void;
   onOpen: () => void;
@@ -24,6 +25,7 @@ interface ModalProps {
 
 export default function ModalInDropdownMenu({
   description,
+  disabled,
   isOpen,
   onClose,
   onOpen,
@@ -36,10 +38,10 @@ export default function ModalInDropdownMenu({
       onClose();
     }
   };
-  
+
   return (
     <Dialog open={isOpen} onOpenChange={onChange}>
-      <DialogTrigger asChild>
+      <DialogTrigger asChild disabled={disabled}>
         <DropdownMenuItem onClick={(e) => {
           e.preventDefault()
           onOpen()

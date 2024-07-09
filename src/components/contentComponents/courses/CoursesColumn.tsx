@@ -22,7 +22,6 @@ export type Course = {
     privatePrice: number,
     instructorPrice: number,
     levels: CourseLevels[],
-    oralTest: string,
     orders: (Order & { user: User })[],
 };
 
@@ -125,7 +124,7 @@ export const columns: ColumnDef<Course>[] = [
                 <div className="space-y-2">
                     {
                         row.original.levels.map(level => (
-                            <SeverityPill color={getColor(level)}>{level}</SeverityPill>
+                            <SeverityPill key={level} color={getColor(level)}>{level}</SeverityPill>
                         ))
                     }
                 </div>
@@ -143,17 +142,10 @@ export const columns: ColumnDef<Course>[] = [
                         <Info className="text-info" />
                     </TooltipTrigger>
                     <TooltipContent className="flex flex-col">
-                        {row.original.orders.map(({ user }) => (<Typography>{user.email}</Typography>))}
+                        {row.original.orders.map(({ user }) => (<Typography key={user.id}>{user.email}</Typography>))}
                     </TooltipContent>
                 </Tooltip>
             </div>
-        )
-    },
-    {
-        accessorKey: "oralTest",
-        header: "Oral Test",
-        cell: ({ row }) => (
-            <Link target="_blank" href={row.original.oralTest} >Go to document</Link>
         )
     },
     {

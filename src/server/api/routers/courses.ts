@@ -116,7 +116,8 @@ export const coursesRouter = createTRPCRouter({
         where: { id: userId },
         include: {
           orders: true,
-          placementTests: true,
+          placementTests: { include: { oralTestTime: true, trainer: true, writtenTest: true } },
+          evaluationFormSubmissions: true,
         },
       });
 
@@ -125,7 +126,7 @@ export const coursesRouter = createTRPCRouter({
       const courses = await ctx.prisma.course.findMany({
         where: {
           id: {
-            in: user.courseStatus.map(item => item.courseId),
+            in: user.orders.flatMap(order => order.courseIds),
           }
         },
         include: {
@@ -149,11 +150,19 @@ export const coursesRouter = createTRPCRouter({
           materialItems: {
             include: {
               evaluationForms: true,
-            }
+            },
           },
+          evaluationForms: { include: { questions: true } },
           zoomGroup: true,
           orders: { include: { user: true } },
-          placementTests: { include: { student: true, trainer: { include: { user: true } } } }
+          placementTests: {
+            include: {
+              student: true,
+              trainer: { include: { user: true } },
+              oralTestTime: true,
+              writtenTest: { include: { questions: true, submissions: true } }
+            }
+          }
         },
       });
       return { course };
@@ -167,7 +176,6 @@ export const coursesRouter = createTRPCRouter({
         groupPrice: z.number(),
         privatePrice: z.number(),
         instructorPrice: z.number(),
-        oralTest: z.string(),
         levels: z.array(z.enum(validLevelTypes)),
       })
     )
@@ -175,7 +183,6 @@ export const coursesRouter = createTRPCRouter({
       name,
       image,
       description,
-      oralTest,
       groupPrice,
       privatePrice,
       instructorPrice,
@@ -189,7 +196,6 @@ export const coursesRouter = createTRPCRouter({
           groupPrice,
           privatePrice,
           instructorPrice,
-          oralTest,
           levels,
         },
       });
@@ -216,7 +222,6 @@ export const coursesRouter = createTRPCRouter({
           groupPrice: existingCourse.groupPrice,
           privatePrice: existingCourse.privatePrice,
           instructorPrice: existingCourse.instructorPrice,
-          oralTest: existingCourse.oralTest,
           levels: existingCourse.levels,
         },
       });
@@ -235,18 +240,16 @@ export const coursesRouter = createTRPCRouter({
         groupPrice: z.number(),
         privatePrice: z.number(),
         instructorPrice: z.number(),
-        oralTest: z.string(),
         levels: z.array(z.enum(validLevelTypes)),
       })
     )
-    .mutation(async ({ ctx, input: { name, id, oralTest, description, groupPrice, image, instructorPrice, levels, privatePrice } }) => {
+    .mutation(async ({ ctx, input: { name, id, description, groupPrice, image, instructorPrice, levels, privatePrice } }) => {
       const updatedCourse = await ctx.prisma.course.update({
         where: {
           id,
         },
         data: {
           name,
-          oralTest,
           description,
           groupPrice,
           privatePrice,

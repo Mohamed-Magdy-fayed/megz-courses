@@ -8,18 +8,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Copy, MoreVertical } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import PlacmentTestModal from "@/components/modals/PlacmentTestModal";
-import OralTestModal from "@/components/modals/OralTestModal";
 import { RefundModal } from "@/components/modals/RefundModal";
 import { useState } from "react";
 
 interface ActionCellProps {
     id: string;
     studentId: string;
-    courseId: string;
 }
 
-const ActionCell: React.FC<ActionCellProps> = ({ id, studentId, courseId }) => {
+const ActionCell: React.FC<ActionCellProps> = ({ id, studentId }) => {
     const { toastInfo } = useToast();
     const [isOpen, setIsOpen] = useState(false)
 
@@ -47,12 +44,6 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, studentId, courseId }) => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={(e) => e.preventDefault()}>
-                        <PlacmentTestModal id={studentId} courseTestId={id} courseId={courseId} />
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={(e) => e.preventDefault()}>
-                        <OralTestModal id={studentId} courseTestId={id} courseId={courseId} />
-                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={onCopy}>
                         <Copy className="w-4 h-4 mr-2" />
                         Copy ID

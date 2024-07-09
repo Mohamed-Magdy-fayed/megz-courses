@@ -4,7 +4,7 @@ import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import Modal from "@/components/ui/modal";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { ArrowLeftToLineIcon, BookMarked, CalendarDays, ClipboardType, ExternalLink, MessageSquare, Users, VoteIcon } from "lucide-react";
+import { ArrowLeftToLineIcon, BookMarked, CalendarDays, ExternalLink, MessageSquare, Users, VoteIcon } from "lucide-react";
 import type { NextPage } from "next";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/router";
@@ -107,6 +107,7 @@ const GroupPage: NextPage = () => {
                                 <ActionCell
                                     isGroupPage
                                     courseId={data.zoomGroup.courseId!}
+                                    courseLevel={data.zoomGroup.courseLevel!}
                                     id={data.zoomGroup.id}
                                     startDate={data.zoomGroup.startDate}
                                     status={data.zoomGroup.groupStatus}
@@ -383,10 +384,8 @@ const GroupPage: NextPage = () => {
                                                 <Typography variant={"bodyText"}>{data.zoomGroup.course?.name}</Typography>
                                             </div>
                                             <div>
-                                                <Typography variant={"secondary"}>Levels</Typography>
-                                                {data.zoomGroup.course?.levels.map(level => (
-                                                    <Typography key={`${level}courseLevel`} variant={"bodyText"}>{level}</Typography>
-                                                ))}
+                                                <Typography variant={"secondary"}>Level</Typography>
+                                                <Typography variant={"bodyText"}>{data.zoomGroup.courseLevel}</Typography>
                                             </div>
                                         </div>
                                     </div>

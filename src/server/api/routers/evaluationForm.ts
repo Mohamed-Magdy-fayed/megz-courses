@@ -40,10 +40,50 @@ export const evaluationFormRouter = createTRPCRouter({
       const quizzes = await ctx.prisma.evaluationForm.findMany({
         where: { type: "quiz", materialItem: { courseId } },
         orderBy: { createdAt: "asc" },
-        include: { materialItem: true, questions: true, submissions: true }
+        include: { materialItem: true, questions: true, submissions: { include: { student: true } }, course: true }
       })
 
       return { quizzes }
+    }),
+  getPlacementTest: protectedProcedure
+    .input(z.object({
+      courseId: z.string(),
+    }))
+    .query(async ({ ctx, input: { courseId } }) => {
+      const placementTest = await ctx.prisma.evaluationForm.findFirst({
+        where: { type: "placementTest", courseId },
+        include: { materialItem: true, questions: true, submissions: { include: { student: true } }, course: true }
+      })
+
+      return { placementTest }
+    }),
+  getTrainerPlacementTest: protectedProcedure
+    .query(async ({ ctx }) => {
+      const userId = ctx.session.user.id
+      const placementTests = await ctx.prisma.placementTest.findMany({
+        where: { trainer: { userId } },
+        include: {
+          course: true,
+          oralTestTime: true,
+          student: true,
+          trainer: { include: { user: true } },
+          writtenTest: { include: { submissions: true, questions: true } }
+        }
+      })
+
+      return { placementTests }
+    }),
+  getFinalTest: protectedProcedure
+    .input(z.object({
+      courseId: z.string(),
+    }))
+    .query(async ({ ctx, input: { courseId } }) => {
+      const finalTest = await ctx.prisma.evaluationForm.findFirst({
+        where: { type: "finalTest", courseId },
+        include: { materialItem: true, questions: true, submissions: true }
+      })
+
+      return { finalTest }
     }),
   getSessionQuiz: protectedProcedure
     .input(z.object({
@@ -104,6 +144,59 @@ export const evaluationFormRouter = createTRPCRouter({
           totalPoints: fields.map(field => field.points).reduce((a, b) => a + b, 0),
           type,
           materialItem: { connect: { id: materialId } },
+          questions: {
+            createMany: {
+              data: fields.map(field => ({
+                points: field.points,
+                questionText: field.question,
+                type: field.type,
+                image: field.image,
+                options: field.options,
+              }))
+            }
+          },
+          createdBy: ctx.session.user.email,
+        },
+        include: { materialItem: true, questions: true, submissions: true }
+      })
+
+      return {
+        evaluationForm,
+      };
+    }),
+  createTestEvalForm: protectedProcedure
+    .input(z.object({
+      courseId: z.string(),
+      type: z.enum(validEvalFormTypes),
+      fields: z.array(z.object({
+        question: z.string(),
+        points: z.number().min(1).max(5),
+        type: z.enum(["multipleChoice", "trueFalse"]),
+        image: z.string().optional().nullable(),
+        options: z.array(z.object({
+          isTrue: z.boolean().nullable(),
+          text: z.string().nullable(),
+          isCorrect: z.boolean()
+        })).max(6).optional(),
+        correctAnswer: z.boolean().optional(),
+      }))
+    }))
+    .mutation(async ({ ctx, input: { courseId, fields, type } }) => {
+      if (!ctx.session.user.email) throw new TRPCError({ code: "UNAUTHORIZED", message: "UNAUTHORIZED" })
+      if (await ctx.prisma.evaluationForm.findFirst({
+        where: {
+          AND: {
+            courseId,
+            type,
+          }
+        }
+      })) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to create multible forms on the same type!" })
+
+      const evaluationForm = await ctx.prisma.evaluationForm.create({
+        data: {
+          totalPoints: fields.map(field => field.points).reduce((a, b) => a + b, 0),
+          type,
+          course: { connect: { id: courseId } },
           questions: {
             createMany: {
               data: fields.map(field => ({

@@ -1,16 +1,15 @@
 import Spinner from "@/components/Spinner";
 import { DataTable } from "@/components/ui/DataTable";
 import { api } from "@/lib/api";
-import { type Column, columns } from "./Column";
+import { type Column, columns } from "./FinalTestSubmissionsColumn";
 
-const PlacmentTestClient = ({ courseId }: { courseId: string }) => {
+const FinalTestSubmissionsClient = ({ courseId }: { courseId: string }) => {
     const { data } = api.placementTests.getCoursePlacementTest.useQuery({ courseId })
 
     const formattedData: Column[] = data?.tests ? data.tests.map(({
         id,
         course,
         student,
-        testStatus,
         trainer,
         createdAt,
         updatedAt,
@@ -19,8 +18,6 @@ const PlacmentTestClient = ({ courseId }: { courseId: string }) => {
         courseName: course.name,
         student,
         email: student.email,
-        testStatus,
-        testScore: testStatus.form && testStatus.oral ? (testStatus.form + testStatus.oral) / 2 * 100 : 0,
         trainer,
         trainerName: trainer?.user.name || "no trainer yet",
         courseId,
@@ -41,4 +38,4 @@ const PlacmentTestClient = ({ courseId }: { courseId: string }) => {
     );
 };
 
-export default PlacmentTestClient;
+export default FinalTestSubmissionsClient;

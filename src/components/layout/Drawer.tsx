@@ -14,6 +14,10 @@ export const mainNavLinks = [
     url: "dashboard",
   },
   {
+    label: "Retintions List",
+    url: "retintions",
+  },
+  {
     label: "Groups",
     url: "groups",
   },

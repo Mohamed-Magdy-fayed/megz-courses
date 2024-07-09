@@ -4,7 +4,6 @@ import { api } from "@/lib/api";
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
-import { PaperContainer } from "@/components/ui/PaperContainers";
 import CourseForm from "@/components/contentComponents/courses/CourseForm";
 import CoursesClient from "@/components/contentComponents/courses/CoursesClient";
 import Spinner from "@/components/Spinner";

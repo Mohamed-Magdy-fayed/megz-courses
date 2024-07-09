@@ -1,7 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Typography } from "@/components/ui/Typoghraphy";
-import ActionCell from "./ActionCell";
+import ActionCell from "./QuizzesActionCell";
 
 export type Column = {
     id: string,

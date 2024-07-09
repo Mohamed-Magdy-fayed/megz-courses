@@ -12,7 +12,7 @@ import Link from "next/link";
 import { AlertModal } from "@/components/modals/AlertModal";
 import { useState } from "react";
 import { api } from "@/lib/api";
-import { GroupStatus } from "@prisma/client";
+import { CourseLevels, GroupStatus } from "@prisma/client";
 import Modal from "@/components/ui/modal";
 import ZoomGroupForm from "@/components/zoomGroupsComponents/Form";
 import SelectField from "@/components/salesOperation/SelectField";
@@ -21,13 +21,14 @@ import { upperFirst } from "lodash";
 interface CellActionProps {
     id: string;
     courseId: string;
+    courseLevel: CourseLevels;
     trainerId: string;
     studentIds: string[];
     startDate: Date;
     status: GroupStatus;
 }
 
-const CourseGroupsActionCell: React.FC<CellActionProps> = ({ id, courseId, startDate, status, studentIds, trainerId }) => {
+const CourseGroupsActionCell: React.FC<CellActionProps> = ({ id, courseId, courseLevel, startDate, status, studentIds, trainerId }) => {
     const { toastError, toastSuccess } = useToast();
 
     const [loading, setLoading] = useState(false);
@@ -65,6 +66,7 @@ const CourseGroupsActionCell: React.FC<CellActionProps> = ({ id, courseId, start
     const onDublicate = () => {
         createZoomGroupMutation.mutate({
             courseId,
+            courseLevel,
             startDate,
             studentIds: [],
             trainerId,
@@ -103,6 +105,7 @@ const CourseGroupsActionCell: React.FC<CellActionProps> = ({ id, courseId, start
                     <ZoomGroupForm setIsOpen={setIsEditFormOpen} initialData={{
                         id,
                         courseId,
+                        courseLevel,
                         startDate,
                         studentIds,
                         trainerId,

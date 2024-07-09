@@ -5,10 +5,8 @@ import { ArrowUpDown } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { Typography } from "@/components/ui/Typoghraphy";
-import { Course, TestTstatus, Trainer, User } from "@prisma/client";
-import { formatPercentage } from "@/lib/utils";
-import { SeverityPill } from "@/components/overview/SeverityPill";
-import ActionCell from "./ActionCell";
+import { Trainer, User } from "@prisma/client";
+import ActionCell from "./FinalTestSubmissionsActionCell";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/getInitials";
 
@@ -17,8 +15,6 @@ export type Column = {
     email: string,
     courseName: string,
     student: User,
-    testStatus: TestTstatus,
-    testScore: number,
     trainer: Trainer & {
         user: User
     } | null,
@@ -108,43 +104,6 @@ export const columns: ColumnDef<Column>[] = [
         cell: ({ row }) => {
             return (
                 <Typography>{row.original.courseName}</Typography>
-            )
-        }
-    },
-    {
-        accessorKey: "testScore",
-        enableSorting: true,
-        header: ({ column }) => {
-            return (
-                <div className="flex items-center justify-between">
-                    Test Status
-                    <Button
-                        className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        <ArrowUpDown className="h-4 w-4 text-primary" />
-                    </Button>
-                </div>
-            );
-        },
-        cell: ({ row }) => {
-            return (
-                <div className="grid grid-cols-2 gap-2 justify-center">
-                    <Typography>
-                        Placement test:
-                    </Typography>
-                    {row.original.testStatus.form
-                        ? <SeverityPill className="w-full ml-2" color="success">{formatPercentage(row.original.testStatus.form)}</SeverityPill>
-                        : <SeverityPill className="w-full ml-2" color="destructive">Pending</SeverityPill>
-                    }
-                    <Typography>
-                        Oral test:
-                    </Typography>
-                    {row.original.testStatus.oral
-                        ? <SeverityPill className="w-full ml-2" color="success">{formatPercentage(row.original.testStatus.oral)}</SeverityPill>
-                        : <SeverityPill className="w-full ml-2" color="destructive">Pending</SeverityPill>
-                    }
-                </div>
             )
         }
     },

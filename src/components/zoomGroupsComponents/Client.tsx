@@ -43,6 +43,7 @@ const ZoomGroupsClient = () => {
             data={data.zoomGroups.map((zoomGroup) => ({
                 id: zoomGroup.id,
                 course: zoomGroup.course!,
+                courseLevel: zoomGroup.courseLevel,
                 createdAt: zoomGroup.createdAt,
                 updatedAt: zoomGroup.updatedAt,
                 groupNumber: zoomGroup.groupNumber,

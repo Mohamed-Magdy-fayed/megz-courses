@@ -11,7 +11,6 @@ import { api } from "@/lib/api";
 import { cn, getEvalutaionFormFullMark, getEvalutaionStatus } from "@/lib/utils";
 import { EvaluationFormSubmission, SubmissionAnswer } from "@prisma/client";
 import type { NextPage } from "next";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
@@ -20,10 +19,9 @@ const QuizPage: NextPage = () => {
     const courseId = router.query.courseId as string
     const id = router.query.quizId as string
     const { toastError, toastSuccess } = useToast()
-    const { data } = useSession()
     const trpcUtils = api.useContext()
     const quizQuery = api.evaluationForm.getEvalFormById.useQuery({ id })
-    const userQuery = api.users.getUserById.useQuery({ id: data?.user.id! }, { enabled: !!data?.user.id })
+    const userQuery = api.users.getCurrentUser.useQuery()
     const submitMutation = api.evaluationFormSubmissions.createEvalFormSubmission.useMutation({
         onMutate: () => setLoading(true),
         onSuccess: ({ evaluationFormSubmission }) => evaluationFormSubmission.rating > getEvalutaionFormFullMark(quizQuery.data?.evaluationForm?.questions!) / 2
@@ -47,14 +45,12 @@ const QuizPage: NextPage = () => {
     const [answers, setAnswers] = useState<SubmissionAnswer[] | undefined>()
 
     const handleSubmit = () => {
-        if (!data?.user) return toastError("not logged in!")
         if (!answers) return toastError("no answers!")
         if (!quizQuery.data?.evaluationForm?.type) return toastError("no form type!")
 
         submitMutation.mutate({
             answers,
             evaluationFormlId: id,
-            userId: data.user.id,
             type: quizQuery.data.evaluationForm.type,
             courseId,
         })
@@ -139,7 +135,7 @@ const QuizPage: NextPage = () => {
                         </div>
                     )}
                 </div>
-                {!userQuery.data?.user.zoomGroups.some(group => group.zoomSessions.some(session => session.materialItemId === quizQuery.data?.evaluationForm?.materialItemId))
+                {!userQuery.data?.user?.zoomGroups.some(group => group.zoomSessions.some(session => session.materialItemId === quizQuery.data?.evaluationForm?.materialItemId))
                     ? (
                         <div className="w-full text-center p-8">
                             <Typography variant={"secondary"}>
@@ -151,6 +147,7 @@ const QuizPage: NextPage = () => {
                         <>
                             {quizQuery.data.evaluationForm.questions.map((question, index) => (
                                 <EvaluationFormQuestionCard
+                                    key={`${question.questionText}questionCard${index}`}
                                     question={question}
                                     index={index}
                                     setAnswers={setAnswers}
