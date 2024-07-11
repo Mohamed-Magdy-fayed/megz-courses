@@ -29,14 +29,16 @@ import { DataTable } from "@/components/ui/DataTable";
 const statusMap: {
     scheduled: "primary";
     ongoing: "info";
+    starting: "secondary";
     completedOnTime: "success";
-    completedOffTime: "secondary";
+    completedOffTime: "success";
     cancelled: "destructive";
 } = {
     scheduled: "primary",
     ongoing: "info",
+    starting: "secondary",
     completedOnTime: "success",
-    completedOffTime: "secondary",
+    completedOffTime: "success",
     cancelled: "destructive"
 };
 

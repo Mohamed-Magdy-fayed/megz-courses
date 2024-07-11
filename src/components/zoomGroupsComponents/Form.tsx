@@ -12,6 +12,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { CourseLevels } from "@prisma/client";
+import { sendWhatsAppMessage } from "@/lib/whatsApp";
+import { format } from "date-fns";
 
 interface ZoomGroupFormProps {
     setIsOpen: (val: boolean) => void;
@@ -52,6 +54,18 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
             trainerId: trainerId[0]!,
         }, {
             onSuccess: (data) => {
+                data.zoomGroup.students.forEach(student => {
+                    sendWhatsAppMessage({
+                        toNumber: "201123862218",
+                        textBody: `Hi ${student.name},
+                        \n\nCongratulations, you have been added to a group to start your course.
+                        \nGroup start date: ${format(data.zoomGroup.startDate, "PPPp")}
+                        \nGroup days: ${format(data.zoomGroup.zoomSessions[0]?.sessionDate!, "iiii")} and ${format(data.zoomGroup.zoomSessions[1]?.sessionDate!, "iiii")}
+                        \nGroup Time: ${format(data.zoomGroup.startDate, "pp")}
+                        \nGroup Teacher: ${data.zoomGroup.trainer?.user.name}
+                        \n\nOur Team.`,
+                    })
+                })
                 trpcUtils.zoomGroups.invalidate()
                     .then(() => {
                         toastSuccess(`Group ${data.zoomGroup.groupNumber} created successfully!`)

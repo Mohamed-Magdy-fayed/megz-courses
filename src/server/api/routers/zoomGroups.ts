@@ -98,10 +98,75 @@ export const zoomGroupsRouter = createTRPCRouter({
                 })
             }
 
+            const thirtyMinutesFromNow = new Date(currentDate.getTime() + 30 * 60 * 1000);
+            const soonToStartSessionsData = await ctx.prisma.zoomSession.findMany({
+                where: {
+                    AND: [
+                        {
+                            sessionStatus: "scheduled",
+                        },
+                        {
+                            sessionDate: {
+                                gte: currentDate,
+                                lte: thirtyMinutesFromNow
+                            }
+                        }
+                    ]
+                },
+                include: {
+                    zoomGroup: { include: { students: true } },
+                    materialItem: { include: { evaluationForms: true } }
+                }
+            })
+
+            const soonToStartSessions = await ctx.prisma.zoomSession.updateMany({
+                where: {
+                    AND: [
+                        {
+                            sessionStatus: "scheduled",
+                        },
+                        {
+                            sessionDate: {
+                                gte: currentDate,
+                                lte: thirtyMinutesFromNow
+                            }
+                        }
+                    ]
+                },
+                data: {
+                    sessionStatus: "starting"
+                },
+            })
+
+            const ongoingSessionsData = await ctx.prisma.zoomSession.findMany({
+                where: {
+                    AND: [
+                        {
+                            sessionStatus: {
+                                in: ["scheduled", "starting"]
+                            }
+                        },
+                        {
+                            sessionDate: {
+                                lte: currentDate
+                            }
+                        }
+                    ]
+                },
+                include: {
+                    zoomGroup: {
+                        include: {
+                            students: true
+                        }
+                    },
+                }
+            })
             const ongoingSessions = await ctx.prisma.zoomSession.updateMany({
                 where: {
                     AND: {
-                        sessionStatus: "scheduled",
+                        sessionStatus: {
+                            in: ["scheduled", "starting"]
+                        },
                         sessionDate: {
                             lte: currentDate
                         }
@@ -109,6 +174,27 @@ export const zoomGroupsRouter = createTRPCRouter({
                 },
                 data: {
                     sessionStatus: "ongoing"
+                },
+            })
+
+            const completedSessionsData = await ctx.prisma.zoomSession.findMany({
+                where: {
+                    AND: [
+                        {
+                            sessionStatus: {
+                                in: ["ongoing", "scheduled", "starting"]
+                            }
+                        },
+                        {
+                            sessionDate: {
+                                lte: twoHoursAgo
+                            }
+                        }
+                    ]
+                },
+                include: {
+                    materialItem: { include: { evaluationForms: true } },
+                    zoomGroup: { include: { students: true } },
                 }
             })
 
@@ -125,14 +211,18 @@ export const zoomGroupsRouter = createTRPCRouter({
                 },
                 data: {
                     sessionStatus: "completedOnTime"
-                }
+                },
             })
 
             return {
                 ongoingGroups,
                 completedGroups,
                 ongoingSessions,
+                ongoingSessionsData,
                 completedSessions,
+                completedSessionsData,
+                soonToStartSessions,
+                soonToStartSessionsData,
             };
         }),
     getzoomGroups: protectedProcedure
@@ -291,7 +381,11 @@ export const zoomGroupsRouter = createTRPCRouter({
                     course: true,
                     zoomSessions: true,
                     students: true,
-                    trainer: true,
+                    trainer: {
+                        include: {
+                            user: true,
+                        }
+                    },
                 },
             });
 

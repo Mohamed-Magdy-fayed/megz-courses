@@ -413,6 +413,7 @@ model ChatAgent {
 
 enum SessionStatus {
     scheduled
+    starting
     ongoing
     completedOnTime
     completedOffTime

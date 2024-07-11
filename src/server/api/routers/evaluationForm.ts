@@ -80,7 +80,11 @@ export const evaluationFormRouter = createTRPCRouter({
     .query(async ({ ctx, input: { courseId } }) => {
       const finalTest = await ctx.prisma.evaluationForm.findFirst({
         where: { type: "finalTest", courseId },
-        include: { materialItem: true, questions: true, submissions: true }
+        include: {
+          materialItem: {
+            include: { zoomSessions: true }
+          }, questions: true, submissions: true
+        }
       })
 
       return { finalTest }

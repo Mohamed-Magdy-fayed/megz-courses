@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label"
 import { PaperContainer } from "@/components/ui/PaperContainers"
 import { Typography } from "@/components/ui/Typoghraphy"
 import { useRouter } from "next/router"
+import { sendWhatsAppMessage } from "@/lib/whatsApp"
 
 const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
     const [loading, setLoading] = useState(false)
@@ -76,7 +77,7 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
             phone,
             courseDetails: { courseId: courseData.id, isPrivate },
         }, {
-            onSuccess: ({ order: { id, amount, orderNumber, user, courses, createdAt, courseTypes, salesOperationId }, paymentLink }) => {
+            onSuccess: ({ password, order: { id, amount, orderNumber, user, courses, createdAt, courseTypes, salesOperationId }, paymentLink }) => {
                 const message = render(
                     <Email
                         orderCreatedAt={format(createdAt, "dd MMM yyyy")}
@@ -93,6 +94,19 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
                         }))}
                     />, { pretty: true }
                 )
+                sendWhatsAppMessage({
+                    toNumber: "201123862218",
+                    textBody: `*Thanks for your order ${orderNumber}*
+                    \n\nHello ${user.name}, Your order *${orderNumber}* is pending payment now for *${formatPrice(amount)}*
+                    \nOrder Number: *${orderNumber}*
+                    \nOrder Total: *${formatPrice(amount)}*
+                    \n\nYou can proceed to payment here: *${paymentLink}*
+                    \n\n*شكرًا لطلبك ${orderNumber}*
+                    \n\nمرحبًا ${user.name}، طلبك *${orderNumber}* قيد الانتظار للدفع الآن بمبلغ *${formatPrice(amount)}*
+                    \nرقم الطلب: *${orderNumber}*
+                    \nإجمالي الطلب: *${formatPrice(amount)}*
+                    \n\nيمكنك المتابعة إلى الدفع هنا: *${paymentLink}*`
+                })
                 handleSendEmail({
                     orderId: id,
                     email: user.email,
@@ -101,6 +115,17 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
                     salesOperationId,
                 })
                 toastSuccess(`Order ${orderNumber} has been submitted successfully!`)
+                sendWhatsAppMessage({
+                    toNumber: "201123862218",
+                    textBody: `Thank you for choosing us, here are your username and password for accessing the course materials.
+                    \n\n*Username*: ${user.email}
+                    \n*Password*: *${password}*
+                    \n\nYou can change your username and password at a later time and you can access your course on this link: *${window.location.host}/my_courses/*
+                    \n\nشكرا لاختيارك لنا، هتلاقي في الرسالة اسم المستخدم وكلمة السر عشان تقدر تشوف الكورس على موقعنا
+                    \n\n*اسم المستخدم*: ${user.email}
+                    \n*كلمة السر*: *${password}*
+                    \nطبعا تقدر تغير اسم المستخدم او كلمة السر في اي وقت تحبة وتقدر تشوف محتويات الكورس من اللينك ده: *${window.location.host}/my_courses/*`
+                })
             },
             onError: (error) => {
                 toastError(error.message)

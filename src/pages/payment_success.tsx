@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/components/ui/use-toast"
 import { api } from "@/lib/api"
 import { formatPrice } from "@/lib/utils"
+import { sendWhatsAppMessage } from "@/lib/whatsApp"
 import { Course, Order, SalesOperation, User } from "@prisma/client"
 import { render } from "@react-email/render"
 import { format } from "date-fns"
@@ -33,6 +34,7 @@ const SuccessfullPaymentPage = () => {
         email,
         subject,
         message,
+        courseLink,
         alreadyUpdated,
         updatedOrder,
     }: {
@@ -40,12 +42,18 @@ const SuccessfullPaymentPage = () => {
         email: string,
         subject: string,
         message: string,
+        courseLink: string,
         alreadyUpdated: boolean,
         updatedOrder: (Order & {
             salesOperation: SalesOperation;
         }),
     }) => {
         if (!updatedOrder) return
+        sendWhatsAppMessage({
+            textBody: `Payment successfull ${updatedOrder.orderNumber} with ${updatedOrder.amount}
+            \nYour can now access the content through this link: ${courseLink}`,
+            toNumber: "201123862218"
+        })
         sendEmailMutation.mutate({
             email,
             subject,
@@ -95,6 +103,7 @@ const SuccessfullPaymentPage = () => {
                     orderId: data.updatedOrder.id,
                     email: data.updatedOrder.user.email,
                     subject: `Payment successfull ${data.updatedOrder.orderNumber}`,
+                    courseLink: data.courseLink ? data.courseLink : "",
                     message,
                     alreadyUpdated: data.courseLink === null,
                     updatedOrder: data.updatedOrder,

@@ -8,6 +8,7 @@ import { ReactNode, useEffect } from "react";
 import Spinner from "../Spinner";
 import UnauthorizedAccess from "./UnauthorizedAccess";
 import { api } from "@/lib/api";
+import { sendWhatsAppMessage } from "@/lib/whatsApp";
 
 const AppLayout = ({ children }: { children: ReactNode }) => {
   const { opened, openNav, closeNav } = useNavStore();
@@ -17,7 +18,47 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
   const trpcUtils = api.useContext()
 
   useEffect(() => {
-    mutation.mutate(undefined, { onSettled: () => trpcUtils.invalidate() })
+    mutation.mutate(undefined, {
+      onSuccess: ({ ongoingSessionsData, completedSessionsData, soonToStartSessionsData }) => {
+        ongoingSessionsData.forEach(session => {
+          session.zoomGroup?.students.forEach(student => {
+            sendWhatsAppMessage({
+              toNumber: "201123862218",
+              textBody: `Hi ${student.name}, your session for today has started, Please join from here: ${session.sessionLink}`,
+            })
+          })
+        })
+        completedSessionsData.forEach(session => {
+          session.zoomGroup?.students.forEach(student => {
+            sendWhatsAppMessage({
+              toNumber: "201123862218",
+              textBody: `Hi ${student.name}, your session for today has been completed, don't forget to submit your assignment here: ${window.location.host}/my_courses/${session.zoomGroup?.courseId}/assignment/${session.materialItem?.evaluationForms.find(form => form.type === "assignment")?.id}
+              \nYou can also view the course materials here: ${window.location.host}/my_courses/${session.zoomGroup?.courseId}/session/${session.materialItemId}`,
+            })
+          })
+        })
+        soonToStartSessionsData.forEach((session, i) => {
+          if (i === soonToStartSessionsData.length - 1) return session.zoomGroup?.students.forEach(student => {
+            sendWhatsAppMessage({
+              toNumber: "201123862218",
+              textBody: `Hi ${student.name}, your final test is about to start, be ready!
+              \nPlease complete your test here: ${window.location.host}/my_courses/${session.zoomGroup?.courseId}/quiz/${session.materialItem?.evaluationForms.find(form => form.type === "quiz")?.id}
+              \nAnd join the meeting on time here: ${session.sessionLink}`,
+            })
+          })
+
+          session.zoomGroup?.students.forEach(student => {
+            sendWhatsAppMessage({
+              toNumber: "201123862218",
+              textBody: `Hi ${student.name}, your session for today is about to start, be ready!
+              \nPlease complete your quiz here: ${window.location.host}/my_courses/${session.zoomGroup?.courseId}/quiz/${session.materialItem?.evaluationForms.find(form => form.type === "quiz")?.id}
+              \nAnd join the meeting on time here: ${session.sessionLink}`,
+            })
+          })
+        })
+      },
+      onSettled: () => trpcUtils.invalidate()
+    })
   }, [new Date().getMinutes()])
 
   if (status === "loading" || !session.user) return (

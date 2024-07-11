@@ -8,6 +8,8 @@ import { Input } from "../ui/input";
 import MaterialImageUpload from "../ui/MaterialImageUpload";
 import { api } from "@/lib/api";
 import { useToast } from "../ui/use-toast";
+import { sendWhatsAppMessage } from "@/lib/whatsApp";
+import { formatPrice } from "@/lib/utils";
 
 interface PaymentFormProps {
     id?: string;
@@ -53,8 +55,12 @@ export const PaymentForm = ({
         setLoading(true)
         payOrderManuallyMutation.mutate({ amount: paymentAmount, id, paymentConfirmationImage: paymentConfirmation }, {
             onSuccess: ({ courseLink, updatedOrder }) => {
-                console.log({ courseLink, updatedOrder });
                 toastSuccess(`order ${updatedOrder.orderNumber} payment status updated!`)
+                sendWhatsAppMessage({
+                    textBody: `Payment successfull ${updatedOrder.orderNumber} with ${formatPrice(updatedOrder.amount)}
+                    \nYour can now access the content through this link: ${courseLink}`,
+                    toNumber: "201123862218"
+                })
                 trpcUtils.salesOperations.invalidate().then(() => {
                     setLoading(false)
                     onClose()

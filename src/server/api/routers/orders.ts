@@ -1,11 +1,13 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { orderCodeGenerator, salesOperationCodeGenerator } from "@/lib/utils";
+import bcrypt from "bcrypt";
 import { CURRENCY } from "@/config";
 import { TRPCError } from "@trpc/server";
 import Stripe from 'stripe'
 import { formatAmountForStripe } from "@/lib/stripeHelpers";
 import { User } from "@prisma/client";
+import { randomFillSync, randomUUID } from "crypto";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2023-08-16',
 })
@@ -157,7 +159,7 @@ export const ordersRouter = createTRPCRouter({
                 email: z.string().email().optional(),
                 name: z.string().optional(),
                 phone: z.string().optional(),
-            }).refine(({ email, name, phone }) => {
+            }).refine(({ email, name }) => {
                 if (!email && !name) {
                     return false;
                 }
@@ -173,11 +175,13 @@ export const ordersRouter = createTRPCRouter({
         )
         .mutation(async ({ input: { courseDetails, email, name, phone }, ctx }) => {
             let user: User | null
+            let password = ""
             if (!email && !!name) {
-                console.log(`${name?.replaceAll(" ", "")}${(Math.random() * 10000).toFixed()}@temp.com`);
+                password = randomUUID().toString().split("-")[0] as string;
+                const hashedPassword = await bcrypt.hash(password, 10);
 
                 user = await ctx.prisma.user.create({
-                    data: { name, email: `${name?.replaceAll(" ", "")}${(Math.random() * 10000).toFixed()}@temp.com`, phone }
+                    data: { name, email: `${name?.replaceAll(" ", "")}${(Math.random() * 10000).toFixed()}@temp.com`, phone, hashedPassword }
                 })
             } else {
                 user = await ctx.prisma.user.findUnique({
@@ -256,6 +260,7 @@ export const ordersRouter = createTRPCRouter({
 
             return {
                 order,
+                password,
                 paymentLink: `${process.env.NEXTAUTH_URL}payments?sessionId=${checkoutSession.id}`
             };
         }),

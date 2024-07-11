@@ -16,6 +16,8 @@ import { useToast } from "@/components/ui/use-toast";
 import Modal from "@/components/ui/modal";
 import SelectField from "@/components/salesOperation/SelectField";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { sendWhatsAppMessage } from "@/lib/whatsApp";
+import { format } from "date-fns";
 
 const OperationPage = () => {
     const router = useRouter()
@@ -40,6 +42,12 @@ const OperationPage = () => {
     const handleSchedulePlacementTest = () => {
         setLoading(true)
         if (!data?.salesOperations?.orderDetails || !trainerId[0] || !testTime) return toastError("Missing some information here!")
+        sendWhatsAppMessage({
+            toNumber: "201123862218",
+            textBody: `Hi ${data.salesOperations.orderDetails.user.name},
+            \nyour oral placement test is scheduled at ${format(testTime, "PPPPp")} with Mr. ${trainersData?.trainers.find(trainer => trainer.id === trainerId[0])?.user.name}
+            \nPlease access it on time through this link: https://us04web.zoom.us/j/3366561326?pwd=WnBvZGFlRHYvZktQc0hUaHBtS2I1QT09`,
+        })
         createPlacementTestMutation.mutate({
             userId: data?.salesOperations?.orderDetails?.userId,
             courseIds: data?.salesOperations?.orderDetails?.courseIds,

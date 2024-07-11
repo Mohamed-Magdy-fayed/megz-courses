@@ -15,6 +15,7 @@ import SelectField from "@/components/salesOperation/SelectField";
 import { api } from "@/lib/api";
 import Spinner from "@/components/Spinner";
 import { Typography } from "@/components/ui/Typoghraphy";
+import { sendWhatsAppMessage } from "@/lib/whatsApp";
 
 interface ActionCellProps {
     id: string;
@@ -46,15 +47,23 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, testLink, courseId, userId,
             )
             setLoading(true)
         },
-        onSuccess: ({ updatedUser, course, level }) => addToWaitingListToast?.update({
-            id: addToWaitingListToast.id,
-            title: "Success",
-            description: <Typography>
-                Adde student {updatedUser.name} to waiting list of course {course.name} at level {level}
-            </Typography>,
-            duration: 3000,
-            variant: "success",
-        }),
+        onSuccess: ({ updatedUser, course, level }) => {
+            addToWaitingListToast?.update({
+                id: addToWaitingListToast.id,
+                title: "Success",
+                description: <Typography>
+                    Added student {updatedUser.name} to waiting list of course {course.name} at level {level}
+                </Typography>,
+                duration: 3000,
+                variant: "success",
+            })
+            sendWhatsAppMessage({
+                toNumber: "201123862218",
+                textBody: `Hi ${updatedUser.name}, congtulations your placement test result for course ${course.name} has been submitted and placed you at level ${level}
+                \nYou're now just one step away from starting your course.
+                \nOur Team.`,
+            })
+        },
         onError: ({ message }) => addToWaitingListToast?.update({
             id: addToWaitingListToast.id,
             title: "An error occured",
@@ -77,7 +86,6 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, testLink, courseId, userId,
     };
 
     const handleSubmitLevel = () => {
-        console.log(level);
         if (!level[0]) return toastError("Please select a Level")
         addToWaitingListMutation.mutate({ courseId, level: level[0], userId })
     };
