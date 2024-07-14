@@ -8,40 +8,11 @@ import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
 import SalesAgentsClient from "@/components/salesAgentComponents/SalesAgentsClient";
 import SalesAgentForm from "@/components/salesAgentComponents/SalesAgentForm";
-import SalesOperationsClient from "@/components/salesOperations/SalesOperationsClient";
-import { AssignModal } from "@/components/modals/AssignModal";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useToast } from "@/components/ui/use-toast";
 
 const SalesAgentsPage = () => {
   const salesAgents = api.salesAgents.getSalesAgents.useQuery();
-  const salesOperations = api.salesOperations.getAll.useQuery();
-  const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [assignIsOpen, setAssingIsOpen] = useState(false);
-
-  const { toastError, toastSuccess } = useToast()
-  const trpcUtils = api.useContext()
-  const createOperationMutation = api.salesOperations.createSalesOperation.useMutation()
-  const handleCreateOperation = (assigneeId: string) => {
-    setLoading(true)
-    createOperationMutation.mutate(
-      { assigneeId, status: "assigned" },
-      {
-        onSuccess: (data) => {
-          toastSuccess(`Operation ID: ${data.salesOperations.code}`)
-        },
-        onError: (error) => {
-          toastError(error.message)
-        },
-        onSettled: () => {
-          trpcUtils.salesOperations.invalidate()
-          setAssingIsOpen(false)
-          setLoading(false)
-        }
-      }
-    )
-  }
 
   return (
     <AppLayout>
