@@ -24,6 +24,8 @@ const CoursesClient = ({ userId }: { userId: string }) => {
         : !isOralTestScheduled ? "Oral Test No Scheduled"
           : data?.user.courseStatus.find(status => status.courseId === id && !!status.level)?.level as string
 
+    const user = data.user
+    formatPercentage
     return {
       id,
       name,
@@ -33,6 +35,15 @@ const CoursesClient = ({ userId }: { userId: string }) => {
       isOralTestScheduled,
       oralTestTime: format(oralTestTime, "PPPp"),
       status,
+      group: user.zoomGroups.filter(group => group.courseId === id).map(group => ({
+        userName: user.name,
+        userEmail: user.email,
+        groupNumber: group.groupNumber,
+        meetingNumber: group.meetingNumber,
+        meetingPassword: group.meetingPassword,
+        isSessionOngoing: group.zoomSessions.some(session => session.sessionStatus === "ongoing"),
+        ongoingSession: group.zoomSessions.find(session => session.sessionStatus === "ongoing"),
+      }))[0]
     }
   })
 

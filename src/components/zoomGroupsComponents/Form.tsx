@@ -3,7 +3,7 @@ import { FC, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Typography } from "../ui/Typoghraphy";
-import { useToast } from "../ui/use-toast";
+import { toastType, useToast } from "../ui/use-toast";
 import SelectField from "../salesOperation/SelectField";
 import Spinner from "../Spinner";
 import { DatePicker } from "../ui/DatePicker";
@@ -34,50 +34,122 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
     const [userIds, setUserIds] = useState<string[]>(initialData ? initialData.studentIds : []);
     const [trainerId, setTrainerId] = useState<string[]>(initialData ? [initialData.trainerId] : []);
     const [date, setDate] = useState<Date | undefined>(initialData ? initialData.startDate : new Date());
+    const [loadingToast, setLoadingToast] = useState<toastType>()
+    const { toast } = useToast()
 
     const action = initialData ? "Edit" : "Create";
 
     const { data: trainersData } = api.trainers.getTrainers.useQuery();
     const { data: coursesData } = api.courses.getAll.useQuery();
+    const availableZoomClientMutation = api.zoomAccounts.getAvailableZoomClient.useMutation({
+        onMutate: () => {
+            setLoading(true)
+            setLoadingToast(toast({
+                title: "Loading...",
+                variant: "info",
+                description: (
+                    <Spinner className="h-4 w-4" />
+                ),
+                duration: 30000,
+            }))
+        },
+        onSuccess: ({ zoomClient }) => {
+            if (!zoomClient?.id) {
+                loadingToast?.update({
+                    id: loadingToast.id,
+                    title: "Error",
+                    description: "No available Zoom Accounts at the selected time!",
+                    duration: 2000,
+                    variant: "destructive",
+                })
+                setLoading(false)
+                return
+            }
+            refreshTokenMutation.mutate({ zoomClientId: zoomClient.id }, {
+                onSuccess: ({ updatedZoomClient }) => {
+                    createMeetingMutation.mutate({
+                        courseId: courseId[0]!,
+                        trainerId: trainerId[0]!,
+                        startDate: date!,
+                        courseLevel: courseLevel[0]!,
+                        zoomClientId: updatedZoomClient.id!,
+                    }, {
+                        onSuccess: ({ meetingNumber, meetingPassword, groupNumber, meetingLink }) => {
+                            createZoomGroupMutation.mutate({
+                                groupNumber,
+                                meetingNumber,
+                                meetingPassword,
+                                meetingLink,
+                                zoomClientId: updatedZoomClient.id!,
+                                courseId: courseId[0]!,
+                                trainerId: trainerId[0]!,
+                                courseLevel: courseLevel[0]!,
+                                startDate: date!,
+                                studentIds: userIds,
+                            }, {
+                                onSuccess: (data) => {
+                                    data.zoomGroup.students.forEach(student => {
+                                        sendWhatsAppMessage({
+                                            toNumber: "201123862218",
+                                            textBody: `Hi ${student.name},
+                                            \n\nCongratulations, you have been added to a group to start your course.
+                                            \nGroup start date: ${format(data.zoomGroup.startDate, "PPPp")}
+                                            \nGroup days: ${format(data.zoomGroup.zoomSessions[0]?.sessionDate!, "iiii")} and ${format(data.zoomGroup.zoomSessions[1]?.sessionDate!, "iiii")}
+                                            \nGroup Time: ${format(data.zoomGroup.startDate, "pp")}
+                                            \nGroup Teacher: ${data.zoomGroup.trainer?.user.name}
+                                            \n\nOur Team.`,
+                                        })
+                                    })
+                                    trpcUtils.zoomGroups.invalidate()
+                                        .then(() => {
+                                            loadingToast?.update({
+                                                id: loadingToast.id,
+                                                title: "Success",
+                                                description: `Group ${data.zoomGroup.groupNumber} created successfully!`,
+                                                variant: "success",
+                                                duration: 2000,
+                                            })
+                                            setIsOpen(false);
+                                            setLoading(false);
+                                        })
+                                },
+                                onError: ({ message }) => {
+                                    loadingToast?.update({
+                                        id: loadingToast.id,
+                                        title: "Error",
+                                        description: message,
+                                        duration: 2000,
+                                        variant: "destructive",
+                                    })
+                                    setLoading(false);
+                                },
+                            })
+                        },
+                        onError: ({ message }) => {
+                            loadingToast?.update({
+                                id: loadingToast.id,
+                                title: "Error",
+                                description: message,
+                                duration: 2000,
+                                variant: "destructive",
+                            })
+                            setLoading(false)
+                        },
+                    })
+                },
+            })
+        },
+    });
+    const refreshTokenMutation = api.zoomMeetings.refreshToken.useMutation();
+    const createMeetingMutation = api.zoomMeetings.createMeeting.useMutation();
     const createZoomGroupMutation = api.zoomGroups.createZoomGroup.useMutation();
     const editZoomGroupMutation = api.zoomGroups.editZoomGroup.useMutation();
     const trpcUtils = api.useContext();
     const { toastError, toastSuccess } = useToast()
 
     const onCreate = () => {
-        setLoading(true);
-        createZoomGroupMutation.mutate({
-            courseId: courseId[0]!,
-            courseLevel: courseLevel[0]!,
-            startDate: date!,
-            studentIds: userIds,
-            trainerId: trainerId[0]!,
-        }, {
-            onSuccess: (data) => {
-                data.zoomGroup.students.forEach(student => {
-                    sendWhatsAppMessage({
-                        toNumber: "201123862218",
-                        textBody: `Hi ${student.name},
-                        \n\nCongratulations, you have been added to a group to start your course.
-                        \nGroup start date: ${format(data.zoomGroup.startDate, "PPPp")}
-                        \nGroup days: ${format(data.zoomGroup.zoomSessions[0]?.sessionDate!, "iiii")} and ${format(data.zoomGroup.zoomSessions[1]?.sessionDate!, "iiii")}
-                        \nGroup Time: ${format(data.zoomGroup.startDate, "pp")}
-                        \nGroup Teacher: ${data.zoomGroup.trainer?.user.name}
-                        \n\nOur Team.`,
-                    })
-                })
-                trpcUtils.zoomGroups.invalidate()
-                    .then(() => {
-                        toastSuccess(`Group ${data.zoomGroup.groupNumber} created successfully!`)
-                        setIsOpen(false);
-                        setLoading(false);
-                    })
-            },
-            onError: (error) => {
-                toastError(error.message)
-                setLoading(false);
-            },
-        });
+        if (!date) return toastError("Please select the start date!")
+        availableZoomClientMutation.mutate({ startDate: date })
     };
 
     const onEdit = () => {

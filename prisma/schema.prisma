@@ -451,10 +451,12 @@ model ZoomSession {
     sessionStatus  SessionStatus
     subTrainer     Trainer?                   @relation(fields: [subTrainerId], references: [id])
     subTrainerId   String?                    @db.ObjectId
-    zoomGroup      ZoomGroup?                 @relation(fields: [groupId], references: [id])
+    zoomGroup      ZoomGroup?                 @relation(fields: [groupId], references: [id], onDelete: Cascade)
     groupId        String?                    @db.ObjectId
     materialItem   MaterialItem?              @relation(fields: [materialItemId], references: [id])
     materialItemId String?                    @db.ObjectId
+    zoomClient     ZoomClient?                @relation(fields: [zoomClientId], references: [id], onDelete: Cascade)
+    zoomClientId   String?                    @db.ObjectId
     attenders      String[]
     assignments    EvaluationFormSubmission[] @relation("Assignments")
     quizzes        EvaluationFormSubmission[] @relation("Quizzes")
@@ -472,19 +474,32 @@ enum GroupStatus {
 }
 
 model ZoomGroup {
-    id           String                     @id @default(auto()) @map("_id") @db.ObjectId
-    groupNumber  String
-    startDate    DateTime
-    groupStatus  GroupStatus
-    trainer      Trainer?                   @relation(fields: [trainerId], references: [id])
-    trainerId    String?                    @db.ObjectId
-    students     User[]                     @relation("UserToGroup", fields: [studentIds], references: [id])
-    studentIds   String[]                   @db.ObjectId
-    course       Course?                    @relation(fields: [courseId], references: [id])
-    courseId     String?                    @db.ObjectId
-    courseLevel  CourseLevels
-    zoomSessions ZoomSession[]
-    finalTests   EvaluationFormSubmission[]
-    updatedAt    DateTime                   @updatedAt
-    createdAt    DateTime                   @default(now())
+    id              String                     @id @default(auto()) @map("_id") @db.ObjectId
+    groupNumber     String
+    startDate       DateTime
+    meetingNumber   String
+    meetingPassword String
+    groupStatus     GroupStatus
+    trainer         Trainer?                   @relation(fields: [trainerId], references: [id])
+    trainerId       String?                    @db.ObjectId
+    students        User[]                     @relation("UserToGroup", fields: [studentIds], references: [id])
+    studentIds      String[]                   @db.ObjectId
+    course          Course?                    @relation(fields: [courseId], references: [id])
+    courseId        String?                    @db.ObjectId
+    courseLevel     CourseLevels
+    zoomSessions    ZoomSession[]
+    finalTests      EvaluationFormSubmission[]
+    updatedAt       DateTime                   @updatedAt
+    createdAt       DateTime                   @default(now())
+}
+
+model ZoomClient {
+    id              String        @id @default(auto()) @map("_id") @db.ObjectId
+    name            String
+    encodedIdSecret String
+    accessToken     String
+    refreshToken    String
+    zoomSessions    ZoomSession[]
+    updatedAt       DateTime      @updatedAt
+    createdAt       DateTime      @default(now())
 }

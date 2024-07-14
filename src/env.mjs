@@ -29,6 +29,9 @@ export const env = createEnv({
     NEXT_PUBLIC_WHATSAPP_VERSION: z.string(),
     NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER_ID: z.string(),
     NEXT_PUBLIC_WHATSAPP_ACCESS_TOKEN: z.string(),
+    NEXT_PUBLIC_ZOOM_CLIENT_ID: z.string(),
+    NEXT_PUBLIC_ZOOM_CLIENT_SECRET: z.string(),
+    NEXT_PUBLIC_ZOOM_REDIRECT_URI: z.string(),
   },
 
   /**
@@ -46,6 +49,7 @@ export const env = createEnv({
     NEXT_PUBLIC_WHATSAPP_VERSION: z.string(),
     NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER_ID: z.string(),
     NEXT_PUBLIC_WHATSAPP_ACCESS_TOKEN: z.string(),
+    NEXT_PUBLIC_ZOOM_REDIRECT_URI: z.string(),
     // NEXT_PUBLIC_CLIENTVAR: z.string().min(1),
   },
 
@@ -75,6 +79,9 @@ export const env = createEnv({
     NEXT_PUBLIC_WHATSAPP_VERSION: process.env.NEXT_PUBLIC_WHATSAPP_VERSION,
     NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER_ID: process.env.NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER_ID,
     NEXT_PUBLIC_WHATSAPP_ACCESS_TOKEN: process.env.NEXT_PUBLIC_WHATSAPP_ACCESS_TOKEN,
+    NEXT_PUBLIC_ZOOM_CLIENT_ID: process.env.NEXT_PUBLIC_ZOOM_CLIENT_ID,
+    NEXT_PUBLIC_ZOOM_CLIENT_SECRET: process.env.NEXT_PUBLIC_ZOOM_CLIENT_SECRET,
+    NEXT_PUBLIC_ZOOM_REDIRECT_URI: process.env.NEXT_PUBLIC_ZOOM_REDIRECT_URI,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.

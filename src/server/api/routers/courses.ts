@@ -118,6 +118,7 @@ export const coursesRouter = createTRPCRouter({
           orders: true,
           placementTests: { include: { oralTestTime: true, trainer: true, writtenTest: true } },
           evaluationFormSubmissions: true,
+          zoomGroups: { include: { zoomSessions: { include: { materialItem: true } } } }
         },
       });
 

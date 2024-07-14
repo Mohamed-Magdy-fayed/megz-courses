@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Copy, CopyPlus, Edit, MoreVertical, PlusSquare, Trash } from "lucide-react";
-import { ToasterToast, useToast } from "@/components/ui/use-toast";
+import { ToasterToast, toastType, useToast } from "@/components/ui/use-toast";
 import { api } from "@/lib/api";
 import { useState } from "react";
 import Spinner from "@/components/Spinner";
@@ -29,11 +29,7 @@ const CoursesActionCell: React.FC<CellActionProps> = ({ id }) => {
         toastInfo("User link copied to the clipboard");
     };
 
-    const [loadingToast, setLoadingToast] = useState<{
-        id: string;
-        dismiss: () => void;
-        update: (props: ToasterToast) => void;
-    }>()
+    const [loadingToast, setLoadingToast] = useState<toastType>()
 
     const router = useRouter()
     const trpcUtils = api.useContext()

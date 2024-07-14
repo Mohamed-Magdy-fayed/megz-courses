@@ -20,8 +20,6 @@ const GroupsPage: NextPage = () => {
                     <div className="flex justify-between">
                         <div className="flex flex-col gap-2">
                             <ConceptTitle>Zoom Groups</ConceptTitle>
-                            <Typography>notes</Typography>
-                            <Typography>notes</Typography>
                             <div className="flex items-center gap-2">
                                 <Tooltip>
                                     <TooltipTrigger asChild>

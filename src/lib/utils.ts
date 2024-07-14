@@ -101,7 +101,7 @@ export const getLevelWaitingList = (course: CourseType, level: CourseLevels): nu
   return course.orders
     .filter(order => {
       const courseStatus = order.user.courseStatus.find(status => status.courseId === course.id)
-      if(!courseStatus) return 0
+      if (!courseStatus) return 0
 
       return courseStatus.state === "waiting" && courseStatus.level === level
     })
@@ -151,4 +151,42 @@ export const getEvalutaionStatus = (formDueDate: Date, submitted: boolean = fals
 
   console.log(value);
   return value
+}
+
+export const getZoomSessionDays = (startDay: number) => {
+  switch (startDay) {
+    case 0:
+      return [1, 4] as const;
+    case 1:
+      return [2, 5] as const;
+    case 2:
+      return [3, 7] as const;
+    case 3:
+      return [4, 1] as const;
+    case 4:
+      return [5, 2] as const;
+    case 6:
+      return [7, 3] as const;
+    default:
+      return [7, 3] as const;
+  }
+}
+
+export const getGroupSessionDays = (startDay: number) => {
+  switch (startDay) {
+    case 0:
+      return [0, 3] as const;
+    case 1:
+      return [1, 4] as const;
+    case 2:
+      return [2, 6] as const;
+    case 3:
+      return [3, 0] as const;
+    case 4:
+      return [4, 1] as const;
+    case 6:
+      return [6, 2] as const;
+    default:
+      return [6, 2] as const;
+  }
 }

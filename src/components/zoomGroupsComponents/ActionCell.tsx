@@ -59,12 +59,6 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, courseLevel, startDate,
         onSettled: () => trpcUtils.zoomGroups.invalidate().then(() => setLoading(false)),
     })
     const deleteMutation = api.zoomGroups.deleteZoomGroup.useMutation()
-    const createZoomGroupMutation = api.zoomGroups.createZoomGroup.useMutation({
-        onMutate: () => setLoading(true),
-        onSuccess: ({ zoomGroup }) => toastSuccess(`group dublicated successfully ${zoomGroup.groupNumber}`),
-        onError: ({ message }) => toastError(message),
-        onSettled: () => trpcUtils.zoomGroups.invalidate().then(() => setLoading(false)),
-    })
 
     const onChangeStatus = () => {
         editMutation.mutate({
@@ -75,16 +69,6 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, courseLevel, startDate,
                 setChangeStatusOpen(false)
                 toastSuccess(`status updated successfully ${updatedZoomGroup.groupStatus}`)
             },
-        })
-    };
-
-    const onDublicate = () => {
-        createZoomGroupMutation.mutate({
-            courseId,
-            courseLevel,
-            startDate,
-            studentIds: [],
-            trainerId,
         })
     };
 
@@ -281,10 +265,6 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, courseLevel, startDate,
                             </>
                         }
                     />
-                    <DropdownMenuItem onClick={onDublicate}>
-                        <Copy className="w-4 h-4 mr-2" />
-                        Dublicate
-                    </DropdownMenuItem>
                     <ModalInDropdownMenu
                         isOpen={open}
                         onOpen={() => setOpen(true)}

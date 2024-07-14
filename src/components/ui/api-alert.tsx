@@ -28,7 +28,7 @@ export const ApiAlert: React.FC<ApiAlertProps> = ({
         <code className="relative rounded bg-foreground/10 px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold">
           {description}
         </code>
-        <Button variant="icon" customeColor={"primaryIcon"} onClick={onCopy}>
+        <Button type="button" variant="icon" customeColor={"primaryIcon"} onClick={onCopy}>
           <Copy className="h-4 w-4" />
         </Button>
       </AlertDescription>

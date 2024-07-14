@@ -4,8 +4,10 @@ import { ArrowUpDown } from "lucide-react";
 import { Typography } from "../ui/Typoghraphy";
 import Link from "next/link";
 import { SeverityPill, SeverityPillProps } from "../overview/SeverityPill";
-import { formatPercentage } from "@/lib/utils";
-import { format } from "date-fns";
+import { MouseEvent } from "react";
+import useZoomMeeting from "@/hooks/useZoomMeeting";
+import { api } from "@/lib/api";
+import { MaterialItem, ZoomSession } from "@prisma/client";
 
 export type CourseRow = {
   id: string;
@@ -16,6 +18,17 @@ export type CourseRow = {
   isOralTestScheduled: boolean;
   oralTestTime: string;
   status: string;
+  group?: {
+    userName: string;
+    userEmail: string;
+    groupNumber: string;
+    meetingNumber: string;
+    meetingPassword: string;
+    isSessionOngoing: boolean;
+    ongoingSession: ZoomSession & {
+      materialItem: MaterialItem | null
+    } | undefined;
+  }
 }
 
 export const columns: ColumnDef<CourseRow>[] = [
@@ -41,6 +54,68 @@ export const columns: ColumnDef<CourseRow>[] = [
         </Typography>
       </Link>
     ),
+  },
+  {
+    accessorKey: "group",
+    header: ({ column }) => {
+      return (
+        <div className="flex items-center justify-between">
+          Zoom Group
+          <Button
+            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            <ArrowUpDown className="h-4 w-4 text-primary" />
+          </Button>
+        </div>
+      );
+    },
+    cell: ({ row }) => {
+      const group = row.original.group
+
+      const { createClient, userId, zoomClient } = useZoomMeeting()
+
+      const generateSDKSignatureQuery = api.zoomMeetings.generateSDKSignature.useMutation({
+        onSuccess: ({ meetingConfig, sdkKey }) => {
+          console.log(meetingConfig.signature);
+          createClient(meetingConfig, sdkKey || "")
+        },
+      })
+
+      if (group) {
+        const join = (e: MouseEvent<HTMLButtonElement>) => {
+          e.preventDefault();
+
+          const meetingConfig = {
+            mn: group.meetingNumber,
+            name: group.userName,
+            pwd: group.meetingPassword,
+            role: 0,
+            email: group.userEmail,
+            lang: "en-US",
+            signature: "",
+            china: 0,
+          }
+
+          generateSDKSignatureQuery.mutate({
+            meetingConfig,
+          })
+        }
+
+        return (
+          <div className="flex flex-col gap-2">
+            <Typography>{group.groupNumber}</Typography>
+            {group.isSessionOngoing && (
+              <Link href={`/meeting/?mn=${group.meetingNumber}&pwd=${group.meetingPassword}&session_title=${group.ongoingSession?.materialItem?.title}&session_id=${group.ongoingSession?.id}`}>
+                <Button type="button" customeColor={"info"}>Join Ongoing Session</Button>
+              </Link>
+            )}
+          </div>
+        )
+      }
+
+      return <Typography>No in a group for this course yet</Typography>
+    },
   },
   {
     accessorKey: "status",

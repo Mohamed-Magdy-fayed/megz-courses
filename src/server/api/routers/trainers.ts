@@ -47,6 +47,16 @@ export const trainersRouter = createTRPCRouter({
 
       return { trainer };
     }),
+  getCurrentTrainerSessions: protectedProcedure
+    .query(async ({ ctx }) => {
+      const id = ctx.session.user.id
+      const trainer = await ctx.prisma.trainer.findFirst({
+        where: { userId: id },
+        include: { user: true, groups: { include: { zoomSessions: { include: { zoomGroup: true, materialItem: true } } } } },
+      });
+
+      return { trainer };
+    }),
   createTrainer: protectedProcedure
     .input(
       z.object({

@@ -47,11 +47,19 @@ const StaffPage = () => {
               </div>
             </div>
             <div className="space-x-4">
-              {currentTrainerData?.trainer && (
+              {currentTrainerData?.trainer?.role === "tester" && (
                 <Link href={`/staff/my_tasks`}>
                   <Button customeColor={"primary"}>
                     <ListChecks className="mr-2"></ListChecks>
                     <Typography variant={"buttonText"}>My Tasks</Typography>
+                  </Button>
+                </Link>
+              )}
+              {currentTrainerData?.trainer?.role === "teacher" && (
+                <Link href={`/staff/my_sessions`}>
+                  <Button customeColor={"primary"}>
+                    <ListChecks className="mr-2"></ListChecks>
+                    <Typography variant={"buttonText"}>My Sessions</Typography>
                   </Button>
                 </Link>
               )}

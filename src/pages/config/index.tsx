@@ -33,6 +33,11 @@ const ConfigPage: NextPage = () => {
                         Placement Test Times
                     </TabsTrigger>
                 </TabsList>
+                <div>
+                    <Link href={`/config/zoom`}>
+                        <Button>Zoom Accounts</Button>
+                    </Link>
+                </div>
                 <TabsContent value="config">
                     <ConceptTitle>Configure Facebook webhooks</ConceptTitle>
                     <ApiAlert title="webhook callback url" description="https://megz-courses.vercel.app/api/facebook" />

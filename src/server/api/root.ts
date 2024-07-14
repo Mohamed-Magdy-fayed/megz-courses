@@ -19,6 +19,8 @@ import { evaluationFormRouter } from "./routers/evaluationForm";
 import { evaluationFormSubmissionsRouter } from "./routers/evaluationFormSubmissions";
 import { placementTestsTimesRouter } from "./routers/placementTestsTimes";
 import { waitingListRouter } from "./routers/waitingList";
+import { zoomMeetingsRouter } from "./routers/zoomMeetings";
+import { zoomAccountsRouter } from "@/server/api/routers/zoomAccounts";
 
 /**
  * This is the primary router for your server.
@@ -46,6 +48,8 @@ export const appRouter = createTRPCRouter({
   evaluationForm: evaluationFormRouter,
   evaluationFormSubmissions: evaluationFormSubmissionsRouter,
   waitingList: waitingListRouter,
+  zoomMeetings: zoomMeetingsRouter,
+  zoomAccounts: zoomAccountsRouter,
 });
 
 // export type definition of API
