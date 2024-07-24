@@ -30,15 +30,13 @@ const statusMap: {
     scheduled: "primary";
     ongoing: "info";
     starting: "secondary";
-    completedOnTime: "success";
-    completedOffTime: "success";
+    completed: "success";
     cancelled: "destructive";
 } = {
     scheduled: "primary",
     ongoing: "info",
     starting: "secondary",
-    completedOnTime: "success",
-    completedOffTime: "success",
+    completed: "success",
     cancelled: "destructive"
 };
 
@@ -193,7 +191,7 @@ const GroupPage: NextPage = () => {
                                                     disabled={isLoading}
                                                     multiSelect
                                                     data={data.zoomGroup.students.map(student => ({
-                                                        active: student.courseStatus.some(({ courseId, state }) => courseId === data.zoomGroup?.courseId && state === "ongoing"),
+                                                        active: student.courseStatus.some(({ courseId, status }) => courseId === data.zoomGroup?.courseId && status === "ongoing"),
                                                         label: student.email,
                                                         value: student.id,
                                                     }))}
@@ -387,7 +385,7 @@ const GroupPage: NextPage = () => {
                                             </div>
                                             <div>
                                                 <Typography variant={"secondary"}>Level</Typography>
-                                                <Typography variant={"bodyText"}>{data.zoomGroup.courseLevel}</Typography>
+                                                <Typography variant={"bodyText"}>{data.zoomGroup.courseLevel?.name}</Typography>
                                             </div>
                                         </div>
                                     </div>
@@ -432,12 +430,12 @@ const GroupPage: NextPage = () => {
                         <PaperContainer className="flex items-center gap-4">
                             <Typography className="whitespace-nowrap">
                                 {formatPercentage(data.zoomGroup.zoomSessions.filter(session => {
-                                    return session.sessionStatus === "completedOnTime" || session.sessionStatus === "completedOffTime"
+                                    return session.sessionStatus === "completed"
                                 }).length / data.zoomGroup.zoomSessions.length * 100)} Completed
                             </Typography>
                             <Progress
                                 value={data.zoomGroup.zoomSessions.filter(session => {
-                                    return session.sessionStatus === "completedOnTime" || session.sessionStatus === "completedOffTime"
+                                    return session.sessionStatus === "completed"
                                 }).length / data.zoomGroup.zoomSessions.length * 100}
                             />
                         </PaperContainer>

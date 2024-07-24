@@ -41,8 +41,8 @@ const SelectField: FC<SelectFieldProps<any>> = ({ placeholder, listTitle, data, 
                 <Button
                     variant="outline"
                     customeColor={"foregroundOutlined"}
+                    className={cn('max-w-sm flex flex-wrap items-center h-fit gap-2 justify-start', className)}
                     {...props}
-                    className={cn('max-w-sm flex flex-wrap items-center h-fit gap-2 justify-start hover:bg-slate-50 hover:text-primary hover:border-primary', className)}
                 >
                     {values.length === 0 ? (
                         <Typography>

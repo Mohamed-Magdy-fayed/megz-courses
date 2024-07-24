@@ -7,6 +7,7 @@ import { getInitials } from "@/lib/getInitials";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Typography } from "../ui/Typoghraphy";
 import AgentCellAction from "./AgentActionCell";
+import { SalesAgents } from "@/components/salesAgentComponents/SalesAgentsClient";
 
 export type SalesAgentsColumn = {
   id: string
@@ -16,6 +17,7 @@ export type SalesAgentsColumn = {
   phone: string
   salary: string
   tasks: number
+  agent: SalesAgents
   createdAt: string
 }
 
@@ -120,7 +122,7 @@ export const columns: ColumnDef<SalesAgentsColumn>[] = [
     header: "Actions",
     cell: ({ row }) => {
       return (
-        <AgentCellAction id={row.original.id} />
+        <AgentCellAction id={row.original.id} agent={row.original.agent} />
       )
     }
   }

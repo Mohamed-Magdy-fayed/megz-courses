@@ -24,21 +24,23 @@ export default function ImageUploadButton({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <ImageUploader
-          onChange={handleUpload}
-          disabled={loading}
-          value={result}
-          customeImage={<></>}
-          customeButton={(
-            <>
-              <ImagePlus className="mr-2"></ImagePlus>
-              {isAccount
-                ? "Change Image"
-                : "Choose an image"
-              }
-            </>
-          )}
-        />
+        <div>
+          <ImageUploader
+            onChange={handleUpload}
+            disabled={loading}
+            value={result}
+            customeImage={<></>}
+            customeButton={(
+              <>
+                <ImagePlus className="mr-2"></ImagePlus>
+                {isAccount
+                  ? "Change Image"
+                  : "Choose an image"
+                }
+              </>
+            )}
+          />
+        </div>
       </TooltipTrigger>
       <TooltipContent>
         {!result && !isAccount ? "upload an image" : "change"}

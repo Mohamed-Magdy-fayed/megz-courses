@@ -59,6 +59,23 @@ export const ordersRouter = createTRPCRouter({
             });
             return { order };
         }),
+    getByOrderNumber: protectedProcedure
+        .input(
+            z.object({
+                orderNumber: z.string(),
+            })
+        )
+        .query(async ({ ctx, input: { orderNumber } }) => {
+            const order = await ctx.prisma.order.findFirst({
+                where: { orderNumber },
+                include: {
+                    user: true,
+                    salesOperation: { include: { assignee: true } },
+                    courses: true,
+                },
+            });
+            return { order };
+        }),
     createOrder: protectedProcedure
         .input(
             z.object({
@@ -75,6 +92,7 @@ export const ordersRouter = createTRPCRouter({
                 where: {
                     email
                 },
+                include: { courseStatus: true }
             })
 
             const foundMatchingCourse = coursesDetails.some(({ courseId }) => {
@@ -416,13 +434,14 @@ export const ordersRouter = createTRPCRouter({
         }),
     refundOrder: protectedProcedure
         .input(z.object({
-            userId: z.string(),
             orderId: z.string(),
             reason: z.enum(["requested_by_customer", "duplicate", "fraudulent"]),
         }))
-        .mutation(async ({ input: { orderId, userId, reason }, ctx }) => {
+        .mutation(async ({ input: { orderId, reason }, ctx }) => {
+            const userId = ctx.session.user.id
             const user = await ctx.prisma.user.findUnique({ where: { id: userId } })
             if (!user?.email) throw new TRPCError({ code: "BAD_REQUEST", message: "Requester user don't exist!" })
+
             const order = await ctx.prisma.order.findUnique({ where: { id: orderId } })
             if (!order?.paymentId) throw new TRPCError({ code: "BAD_REQUEST", message: "order don't have a payment id, please refund manually" })
 
@@ -452,10 +471,8 @@ export const ordersRouter = createTRPCRouter({
                 data: {
                     courseStatus: {
                         deleteMany: {
-                            where: {
-                                courseId: {
-                                    in: order.courseIds
-                                }
+                            courseId: {
+                                in: order.courseIds
                             }
                         }
                     }

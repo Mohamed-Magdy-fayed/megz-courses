@@ -50,6 +50,7 @@ export const env = createEnv({
     NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER_ID: z.string(),
     NEXT_PUBLIC_WHATSAPP_ACCESS_TOKEN: z.string(),
     NEXT_PUBLIC_ZOOM_REDIRECT_URI: z.string(),
+    NEXT_PUBLIC_NEXTAUTH_URL: z.string().url(),
     // NEXT_PUBLIC_CLIENTVAR: z.string().min(1),
   },
 
@@ -82,10 +83,11 @@ export const env = createEnv({
     NEXT_PUBLIC_ZOOM_CLIENT_ID: process.env.NEXT_PUBLIC_ZOOM_CLIENT_ID,
     NEXT_PUBLIC_ZOOM_CLIENT_SECRET: process.env.NEXT_PUBLIC_ZOOM_CLIENT_SECRET,
     NEXT_PUBLIC_ZOOM_REDIRECT_URI: process.env.NEXT_PUBLIC_ZOOM_REDIRECT_URI,
+    NEXT_PUBLIC_NEXTAUTH_URL: process.env.NEXT_PUBLIC_NEXTAUTH_URL,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.
    * This is especially useful for Docker builds.
-   */
+  */
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
 });

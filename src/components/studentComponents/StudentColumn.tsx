@@ -8,6 +8,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Typography } from "../ui/Typoghraphy";
 import CellAction from "./ActionCell";
 import { format } from "date-fns";
+import { Course, EvaluationFormSubmission, Order, User, ZoomGroup, ZoomSession } from "@prisma/client";
+import { Users } from "@/components/studentComponents/StudentClient";
 
 export type Student = {
   id: string;
@@ -16,6 +18,16 @@ export type Student = {
   image?: string;
   phone?: string;
   address?: string;
+  coursesData: {
+    courses: (Course & {
+      orders: (Order & {
+        user: User;
+      })[];
+    })[];
+  } | undefined;
+  userData: {
+    user: Users
+  }
   createdAt: Date;
 };
 
@@ -113,6 +125,8 @@ export const columns: ColumnDef<Student>[] = [
     ),
     cell: ({ row }) => <CellAction
       id={row.original.id}
+      coursesData={row.original.coursesData}
+      userData={row.original.userData}
     />,
   },
 ];

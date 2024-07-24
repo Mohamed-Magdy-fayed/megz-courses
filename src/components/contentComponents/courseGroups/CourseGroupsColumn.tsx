@@ -5,27 +5,34 @@ import { ArrowUpDown } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { Typography } from "@/components/ui/Typoghraphy";
-import { Course, CourseLevels, GroupStatus, Trainer, User, ZoomSession } from "@prisma/client";
+import { GroupStatus } from "@prisma/client";
 import CourseGroupsActionCell from "./CourseGroupsActionCell";
 import { SeverityPill, SeverityPillProps } from "@/components/overview/SeverityPill";
 
-export type CourseGroups = {
+export type CourseRow = {
     id: string;
     groupNumber: string;
     groupStatus: GroupStatus;
     startDate: Date;
-    students: User[];
-    trainer: (Trainer & {
-        user: User;
-    });
-    zoomSessions: ZoomSession[];
-    course: Course,
-    courseLevel: CourseLevels,
+    levelSlugs: {
+        value: string;
+        label: string;
+    }[],
+    levelSlug: string,
+    levelName: string,
+    studentIds: string[];
+    trainerId: string;
+    courseId: string,
+    courseLevel: {
+        id: string;
+        name: string;
+        slug: string;
+    },
     createdAt: Date;
     updatedAt: Date;
 }
 
-export const columns: ColumnDef<CourseGroups>[] = [
+export const columns: ColumnDef<CourseRow>[] = [
     {
         id: "select",
         header: ({ table }) => (
@@ -117,18 +124,19 @@ export const columns: ColumnDef<CourseGroups>[] = [
         enableSorting: true
     },
     {
+        accessorKey: "levelSlug",
+        header: "Level",
+        cell: ({ row }) => (
+            <Typography>{row.original.levelName}</Typography>
+        ),
+    },
+    {
         id: "actions",
         header: () => (
             <Typography variant={"secondary"}>Actions</Typography>
         ),
         cell: ({ row }) => <CourseGroupsActionCell
-            id={row.original.id}
-            courseLevel={row.original.courseLevel}
-            courseId={row.original.course?.id}
-            startDate={row.original.startDate}
-            trainerId={row.original.trainer?.id}
-            studentIds={row.original.students.map(student => student.id)}
-            status={row.original.groupStatus}
+            {...row.original}
         />,
     },
 ];

@@ -6,14 +6,14 @@ import Link from "next/link";
 import { format } from "date-fns";
 import CoursesActionCell from "./CoursesActionCell";
 import { Typography } from "@/components/ui/Typoghraphy";
-import { CourseLevels, Order, User } from "@prisma/client";
+import { Course, CourseLevel, Order, User } from "@prisma/client";
 import { formatPrice } from "@/lib/utils";
-import { SeverityPill, SeverityPillProps } from "@/components/overview/SeverityPill";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-export type Course = {
+export type CourseRow = {
     id: string,
     name: string,
+    slug: string,
     image: string | null,
     createdAt: Date,
     updatedAt: Date,
@@ -21,11 +21,11 @@ export type Course = {
     groupPrice: number,
     privatePrice: number,
     instructorPrice: number,
-    levels: CourseLevels[],
+    levels: CourseLevel[],
     orders: (Order & { user: User })[],
 };
 
-export const columns: ColumnDef<Course>[] = [
+export const columns: ColumnDef<CourseRow>[] = [
     {
         id: "select",
         header: ({ table }) => (
@@ -61,7 +61,7 @@ export const columns: ColumnDef<Course>[] = [
             );
         },
         cell: ({ row }) => (
-            <Link className="block w-fit" href={`/content/courses/${row.original.id}`}>
+            <Link className="block w-fit" href={`/content/courses/${row.original.slug}`}>
                 <div className="flex items-center gap-2" >
                     <img alt={row.original.name} src={row.original.image!} className="max-h-12" />
                     <div className="flex flex-col gap-2">
@@ -102,34 +102,15 @@ export const columns: ColumnDef<Course>[] = [
     {
         accessorKey: "levels",
         header: "Levels",
-        cell: ({ row }) => {
-            const getColor = (level: CourseLevels): SeverityPillProps["color"] => {
-                switch (level) {
-                    case "A0_A1_Beginner_Elementary":
-                        return "success"
-                    case "A2_Pre_Intermediate":
-                        return "info"
-                    case "B1_Intermediate":
-                        return "foreground"
-                    case "B2_Upper_Intermediate":
-                        return "muted"
-                    case "C1_Advanced":
-                        return "primary"
-                    case "C2_Proficient":
-                        return "destructive"
+        cell: ({ row }) => (
+            <div className="space-y-2 flex flex-col">
+                {
+                    row.original.levels.map(level => (
+                        <Typography key={level.id}>{level.name}</Typography>
+                    ))
                 }
-            }
-
-            return (
-                <div className="space-y-2">
-                    {
-                        row.original.levels.map(level => (
-                            <SeverityPill key={level} color={getColor(level)}>{level}</SeverityPill>
-                        ))
-                    }
-                </div>
-            )
-        }
+            </div>
+        )
     },
     {
         accessorKey: "orders",
@@ -170,12 +151,30 @@ export const columns: ColumnDef<Course>[] = [
         }
     },
     {
+        accessorKey: "slug",
+        header: undefined,
+        cell: undefined,
+    },
+    {
+        accessorKey: "description",
+        header: undefined,
+        cell: undefined,
+    },
+    {
         id: "actions",
         header: () => (
             <Typography variant={"secondary"}>Actions</Typography>
         ),
         cell: ({ row }) => <CoursesActionCell
             id={row.original.id}
+            slug={row.original.slug}
+            levels={row.original.levels.map(level => level.id)}
+            name={row.original.name}
+            description={row.original.description || ""}
+            image={row.original.image || ""}
+            privatePrice={row.original.privatePrice}
+            groupPrice={row.original.groupPrice}
+            instructorPrice={row.original.instructorPrice}
         />,
     },
 ];

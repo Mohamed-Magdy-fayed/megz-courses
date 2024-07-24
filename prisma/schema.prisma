@@ -48,7 +48,7 @@ enum UserType {
     chatAgent
 }
 
-enum CoursStatuses {
+enum CourseStatuses {
     waiting
     ongoing
     completed
@@ -63,10 +63,17 @@ enum Devices {
     desktop
 }
 
-type CoursStatus {
-    courseId String        @db.ObjectId
-    level    CourseLevels
-    state    CoursStatuses
+model CourseStatus {
+    id            String         @id @default(auto()) @map("_id") @db.ObjectId
+    course        Course         @relation(fields: [courseId], references: [id])
+    courseId      String         @db.ObjectId
+    level         CourseLevel    @relation(fields: [courseLevelId], references: [id])
+    courseLevelId String         @db.ObjectId
+    user          User           @relation(fields: [userId], references: [id])
+    userId        String         @db.ObjectId
+    status        CourseStatuses
+    updatedAt     DateTime       @updatedAt
+    createdAt     DateTime       @default(now())
 }
 
 model User {
@@ -82,19 +89,24 @@ model User {
     accounts                  Account[]
     sessions                  Session[]
     orders                    Order[]
-    courseStatus              CoursStatus[]
-    address                   Address?
+    courseStatus              CourseStatus[]
     placementTests            PlacementTest[]
+    certificates              Certificate[]
+    evaluationFormSubmissions EvaluationFormSubmission[]
+    studentNotes              UserNote[]                 @relation("CreatedForStudent")
+    userNotes                 UserNote[]                 @relation("CreatedByUser")
+    userNoteMention           UserNote[]                 @relation("MentionedUser", fields: [userNoteId], references: [id])
+    userNoteId                String[]                   @db.ObjectId
+    zoomGroups                ZoomGroup[]                @relation("UserToGroup", fields: [zoomGroupIds], references: [id])
+    zoomGroupIds              String[]                   @db.ObjectId
     trainer                   Trainer?                   @relation("UserToTrainer")
     trainerId                 String?                    @db.ObjectId
     salesAgent                SalesAgent?                @relation("UserToSalesAgent")
+    salesAgentId              String?                    @db.ObjectId
     chatAgent                 ChatAgent?                 @relation("UserToChatAgent")
     supportChat               SupportChat?               @relation("UserToChat")
-    salesAgentId              String?                    @db.ObjectId
+    address                   Address?
     device                    Devices?
-    zoomGroups                ZoomGroup[]                @relation("UserToGroup", fields: [zoomGroupIds], references: [id])
-    zoomGroupIds              String[]                   @db.ObjectId
-    evaluationFormSubmissions EvaluationFormSubmission[]
     updatedAt                 DateTime                   @updatedAt
     createdAt                 DateTime                   @default(now())
 }
@@ -113,17 +125,17 @@ enum TrainerRole {
     tester
 }
 
-type TestTstatus {
-    form Int?
-    oral Int?
+model PlacementTestTime {
+    id             String          @id @default(auto()) @map("_id") @db.ObjectId
+    testTime       DateTime
+    placementTests PlacementTest[]
+    updatedAt      DateTime        @updatedAt
+    createdAt      DateTime        @default(now())
 }
 
-model PlacementTestTime {
-    id            String          @id @default(auto()) @map("_id") @db.ObjectId
-    testTime      DateTime
-    placementTest PlacementTest[]
-    updatedAt     DateTime        @updatedAt
-    createdAt     DateTime        @default(now())
+type Meeting {
+    meetingNumber   String
+    meetingPassword String
 }
 
 model PlacementTest {
@@ -132,8 +144,9 @@ model PlacementTest {
     studentUserId       String            @db.ObjectId
     course              Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
     courseId            String            @db.ObjectId
-    writtenTest         EvaluationForm    @relation(fields: [evaluationFormId], references: [id])
+    writtenTest         EvaluationForm    @relation(fields: [evaluationFormId], references: [id], onDelete: Cascade)
     evaluationFormId    String            @db.ObjectId
+    oralTestMeeting     Meeting
     oralTestTime        PlacementTestTime @relation(fields: [placementTestTimeId], references: [id])
     placementTestTimeId String            @db.ObjectId
     trainer             Trainer           @relation(fields: [trainerId], references: [id])
@@ -147,35 +160,43 @@ model Trainer {
     role          TrainerRole
     assignedTests PlacementTest[]
     groups        ZoomGroup[]
-    zoomSession   ZoomSession[]
+    zoomSessions  ZoomSession[]
     user          User            @relation("UserToTrainer", fields: [userId], references: [id], onDelete: Cascade)
     userId        String          @unique @db.ObjectId
     updatedAt     DateTime        @updatedAt
     createdAt     DateTime        @default(now())
 }
 
-enum CourseLevels {
-    A0_A1_Beginner_Elementary
-    A2_Pre_Intermediate
-    B1_Intermediate
-    B2_Upper_Intermediate
-    C1_Advanced
-    C2_Proficient
+model CourseLevel {
+    id              String           @id @default(auto()) @map("_id") @db.ObjectId
+    name            String
+    slug            String           @unique
+    course          Course           @relation(fields: [courseId], references: [id])
+    courseId        String           @db.ObjectId
+    evaluationForms EvaluationForm[]
+    zoomGroups      ZoomGroup[]
+    certificates    Certificate[]
+    courseStatus    CourseStatus[]
+    materialItems   MaterialItem[]
+    updatedAt       DateTime         @updatedAt
+    createdAt       DateTime         @default(now())
 }
 
 model Course {
     id              String           @id @default(auto()) @map("_id") @db.ObjectId
     name            String
+    slug            String           @unique
     description     String?
     image           String?
     groupPrice      Float
     privatePrice    Float
     instructorPrice Float
+    levels          CourseLevel[]
     placementTests  PlacementTest[]
-    levels          CourseLevels[]
-    materialItems   MaterialItem[]
-    zoomGroup       ZoomGroup[]
+    zoomGroups      ZoomGroup[]
     evaluationForms EvaluationForm[]
+    certificates    Certificate[]
+    courseStatus    CourseStatus[]
     orders          Order[]          @relation(fields: [orderIds], references: [id])
     orderIds        String[]         @db.ObjectId
     updatedAt       DateTime         @updatedAt
@@ -200,7 +221,7 @@ model EvaluationFormQuestion {
     points           Int
     questionText     String
     type             EvaluationFormQuestionType
-    EvaluationForm   EvaluationForm?            @relation(fields: [evaluationFormId], references: [id])
+    evaluationForm   EvaluationForm?            @relation(fields: [evaluationFormId], references: [id])
     evaluationFormId String?                    @db.ObjectId
     updatedAt        DateTime                   @updatedAt
     createdAt        DateTime                   @default(now())
@@ -222,7 +243,10 @@ model EvaluationForm {
     id             String                     @id @default(auto()) @map("_id") @db.ObjectId
     type           EvaluationFormTypes
     totalPoints    Int
-    PlacementTest  PlacementTest[]
+    externalLink   String?
+    courseLevel    CourseLevel?               @relation(fields: [courseLevelId], references: [id])
+    courseLevelId  String?                    @db.ObjectId
+    placementTests PlacementTest[]
     submissions    EvaluationFormSubmission[]
     questions      EvaluationFormQuestion[]
     updateHistory  EvaluationFormHistory[]
@@ -254,13 +278,14 @@ model MaterialItem {
     id              String              @id @default(auto()) @map("_id") @db.ObjectId
     title           String
     subTitle        String?
+    slug            String              @unique
     type            MaterialItemType
     uploads         String[]
     manual          MaterialItemManual?
     evaluationForms EvaluationForm[]
     zoomSessions    ZoomSession[]
-    course          Course?             @relation(fields: [courseId], references: [id])
-    courseId        String?             @db.ObjectId
+    courseLevel     CourseLevel?        @relation(fields: [courseLevelId], references: [id])
+    courseLevelId   String?             @db.ObjectId
     updatedAt       DateTime            @updatedAt
     createdAt       DateTime            @default(now())
 }
@@ -415,8 +440,7 @@ enum SessionStatus {
     scheduled
     starting
     ongoing
-    completedOnTime
-    completedOffTime
+    completed
     cancelled
 }
 
@@ -486,7 +510,8 @@ model ZoomGroup {
     studentIds      String[]                   @db.ObjectId
     course          Course?                    @relation(fields: [courseId], references: [id])
     courseId        String?                    @db.ObjectId
-    courseLevel     CourseLevels
+    courseLevel     CourseLevel?               @relation(fields: [courseLevelId], references: [id])
+    courseLevelId   String?                    @db.ObjectId
     zoomSessions    ZoomSession[]
     finalTests      EvaluationFormSubmission[]
     updatedAt       DateTime                   @updatedAt
@@ -502,4 +527,65 @@ model ZoomClient {
     zoomSessions    ZoomSession[]
     updatedAt       DateTime      @updatedAt
     createdAt       DateTime      @default(now())
+}
+
+model GoogleClient {
+    id           String   @id @default(auto()) @map("_id") @db.ObjectId
+    name         String
+    accessToken  String?
+    expiryDate   Int?
+    refreshToken String?
+    idToken      String?
+    scope        String?
+    updatedAt    DateTime @updatedAt
+    createdAt    DateTime @default(now())
+}
+
+type NoteUpdate {
+    text       String
+    sla        Int
+    updatedFor UserType[]
+    updatedBy  String
+    updatedAt  DateTime
+}
+
+enum UserNoteTypes {
+    Info
+    Query
+    ComplainLevel1
+    ComplainLevel2
+    ComplainLevel3
+    Followup
+    Feedback
+}
+
+model UserNote {
+    id                  String        @id @default(auto()) @map("_id") @db.ObjectId
+    text                String
+    sla                 Int
+    type                UserNoteTypes
+    mentions            User[]        @relation("MentionedUser", references: [id], fields: [mentionsUserIds])
+    mentionsUserIds     String[]      @db.ObjectId
+    updateHistory       NoteUpdate[]
+    createdFor          UserType[]
+    createdByUser       User          @relation("CreatedByUser", fields: [createdByUserId], references: [id])
+    createdByUserId     String        @db.ObjectId
+    createdForStudent   User          @relation("CreatedForStudent", fields: [createdForStudentId], references: [id])
+    createdForStudentId String        @db.ObjectId
+    updatedAt           DateTime      @updatedAt
+    createdAt           DateTime      @default(now())
+}
+
+model Certificate {
+    id             String       @id @default(auto()) @map("_id") @db.ObjectId
+    user           User         @relation(fields: [userId], references: [id])
+    userId         String       @db.ObjectId
+    course         Course       @relation(fields: [courseId], references: [id])
+    courseId       String       @db.ObjectId
+    certificateId  String
+    courseLevel    CourseLevel? @relation(fields: [courseLevelId], references: [id])
+    courseLevelId  String?      @db.ObjectId
+    completionDate DateTime
+    updatedAt      DateTime     @updatedAt
+    createdAt      DateTime     @default(now())
 }

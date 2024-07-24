@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import { CoursStatus, PlacementTest, Prisma, User } from "@prisma/client";
+import { PlacementTest } from "@prisma/client";
 
 export const placementTestsRouter = createTRPCRouter({
     getUserCoursePlacementTest: protectedProcedure
@@ -19,7 +19,7 @@ export const placementTestsRouter = createTRPCRouter({
                 },
                 include: {
                     course: true,
-                    student: true,
+                    student: { include: { courseStatus: { include: { level: true, course: true } } } },
                     trainer: { include: { user: true } },
                     oralTestTime: true,
                     writtenTest: { include: { submissions: true } },
@@ -48,21 +48,50 @@ export const placementTestsRouter = createTRPCRouter({
 
             return { tests }
         }),
+    getUserPlacementTest: protectedProcedure
+        .input(z.object({
+            userId: z.string(),
+        }))
+        .query(async ({ ctx, input: { userId } }) => {
+            const tests = await ctx.prisma.placementTest.findMany({
+                where: {
+                    studentUserId: userId,
+                },
+                include: {
+                    course: true,
+                    student: true,
+                    trainer: { include: { user: true } },
+                    oralTestTime: true,
+                    writtenTest: { include: { submissions: true } },
+                }
+            })
+
+            return { tests }
+        }),
     startCourses: protectedProcedure
         .input(z.object({
             userId: z.string(),
             trainerId: z.string(),
+            meetingNumber: z.string(),
+            meetingPassword: z.string(),
             testTime: z.date(),
             courseIds: z.array(z.string()),
         }))
-        .mutation(async ({ input: { userId, courseIds, testTime, trainerId }, ctx }) => {
+        .mutation(async ({ input: { userId, courseIds, testTime, trainerId, meetingNumber, meetingPassword }, ctx }) => {
             let placementTests: PlacementTest[] = []
 
             for (let i = 0; i < courseIds.length; i++) {
                 const courseId = courseIds[i];
                 if (!courseId) return
 
-                const evaluationForm = await ctx.prisma.evaluationForm.findFirst({ where: { courseId } })
+                const evaluationForm = await ctx.prisma.evaluationForm.findFirst({
+                    where: {
+                        AND: {
+                            courseId,
+                            type: "placementTest"
+                        }
+                    }
+                })
                 if (!evaluationForm) throw new TRPCError({ code: "BAD_REQUEST", message: "No Evaluation Form" })
                 const evaluationFormId = evaluationForm.id
                 const placementTestTimeId = (await ctx.prisma.placementTestTime.create({ data: { testTime } })).id
@@ -74,6 +103,10 @@ export const placementTestsRouter = createTRPCRouter({
                         evaluationFormId,
                         placementTestTimeId,
                         trainerId,
+                        oralTestMeeting: {
+                            meetingNumber,
+                            meetingPassword,
+                        },
                     },
                     include: { oralTestTime: true, writtenTest: true }
                 })
@@ -111,6 +144,37 @@ export const placementTestsRouter = createTRPCRouter({
                 },
                 data: {
 
+                }
+            })
+
+            return { updatedPlacementTest };
+        }),
+    editPlacementTest: protectedProcedure
+        .input(z.object({
+            testId: z.string(),
+            testTime: z.date(),
+            trainerId: z.string(),
+            meetingNumber: z.string(),
+            meetingPassword: z.string(),
+        }))
+        .mutation(async ({ input: { testId, meetingNumber, meetingPassword, testTime, trainerId }, ctx }) => {
+            const updatedPlacementTest = await ctx.prisma.placementTest.update({
+                where: {
+                    id: testId,
+                },
+                data: {
+                    oralTestMeeting: {
+                        meetingNumber,
+                        meetingPassword,
+                    },
+                    trainer: {
+                        connect: { id: trainerId }
+                    },
+                    oralTestTime: {
+                        create: {
+                            testTime,
+                        }
+                    }
                 }
             })
 

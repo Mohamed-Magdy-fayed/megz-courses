@@ -21,6 +21,10 @@ import { placementTestsTimesRouter } from "./routers/placementTestsTimes";
 import { waitingListRouter } from "./routers/waitingList";
 import { zoomMeetingsRouter } from "./routers/zoomMeetings";
 import { zoomAccountsRouter } from "@/server/api/routers/zoomAccounts";
+import { notesRouter } from "@/server/api/routers/notes";
+import { googleAccountsRouter } from "@/server/api/routers/googleAccounts";
+import { certificatesRouter } from "@/server/api/routers/certificates";
+import { levelsRouter } from "@/server/api/routers/levels";
 
 /**
  * This is the primary router for your server.
@@ -31,6 +35,7 @@ export const appRouter = createTRPCRouter({
   auth: authRouter,
   users: usersRouter,
   courses: coursesRouter,
+  levels: levelsRouter,
   materials: materialItemsRouter,
   potintialCustomers: potintialCustomerRouter,
   salesOperations: salesOperationsRouter,
@@ -50,6 +55,9 @@ export const appRouter = createTRPCRouter({
   waitingList: waitingListRouter,
   zoomMeetings: zoomMeetingsRouter,
   zoomAccounts: zoomAccountsRouter,
+  googleAccounts: googleAccountsRouter,
+  notes: notesRouter,
+  certificates: certificatesRouter,
 });
 
 // export type definition of API

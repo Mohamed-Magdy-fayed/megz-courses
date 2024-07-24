@@ -1,42 +1,16 @@
 import Spinner from "@/components/Spinner";
 import { DataTable } from "@/components/ui/DataTable";
 import { api } from "@/lib/api";
-import { Course, columns } from "./CoursesColumn";
+import { CourseRow, columns } from "./CoursesColumn";
 import { useState } from "react";
-import { ToasterToast, useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 
-const CoursesClient = () => {
-    const { data } = api.courses.getAll.useQuery()
-
-    const formattedData: Course[] = data?.courses ? data.courses.map(({
-        id,
-        name,
-        image,
-        createdAt,
-        updatedAt,
-        description,
-        groupPrice,
-        privatePrice,
-        instructorPrice,
-        levels,
-        orders,
-    }) => ({
-        id,
-        name,
-        image,
-        createdAt,
-        updatedAt,
-        description,
-        groupPrice,
-        privatePrice,
-        instructorPrice,
-        levels,
-        orders,
-    })) : []
-
+const CoursesClient = ({ formattedData }: { formattedData: CourseRow[] }) => {
     const [loadingToast, setLoadingToast] = useState<ReturnType<typeof toast>>()
-    const [courses, setCourses] = useState<Course[]>([])
+    const [courses, setCourses] = useState<CourseRow[]>([])
+
     const { toast } = useToast()
+
     const trpcUtils = api.useContext()
     const deleteMutation = api.courses.deleteCourses.useMutation({
         onMutate: () => {
@@ -64,13 +38,12 @@ const CoursesClient = () => {
             duration: 2000,
         }),
     })
+
     const onDelete = (callback?: () => void) => {
         deleteMutation.mutate(courses.map(({ id }) => id), {
             onSuccess: () => callback?.(),
         })
     }
-
-    if (!data?.courses) return <div className="w-full h-full grid place-content-center"><Spinner /></div>
 
     return (
         <DataTable
@@ -78,7 +51,9 @@ const CoursesClient = () => {
             data={formattedData || []}
             setData={setCourses}
             onDelete={onDelete}
-            search={{ key: "name", label: "Course Name" }}
+            searches={[
+                { key: "name", label: "Name" },
+            ]}
         />
     );
 };

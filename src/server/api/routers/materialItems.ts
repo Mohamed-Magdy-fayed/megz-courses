@@ -20,22 +20,51 @@ export const materialItemsRouter = createTRPCRouter({
       const materialItem = await ctx.prisma.materialItem.findUnique({
         where: { id },
         include: {
-          course: true,
           evaluationForms: true,
           zoomSessions: true,
         }
       });
       return { materialItem };
     }),
-  getByCourseId: protectedProcedure
+  getBySlug: protectedProcedure
     .input(
       z.object({
-        courseId: z.string(),
+        slug: z.string(),
       })
     )
-    .query(async ({ ctx, input: { courseId } }) => {
+    .query(async ({ ctx, input: { slug } }) => {
+      const materialItem = await ctx.prisma.materialItem.findFirst({
+        where: { slug },
+        include: {
+          evaluationForms: true,
+          zoomSessions: true,
+          courseLevel: { include: { course: true } },
+        }
+      });
+      return { materialItem };
+    }),
+  getBycourseLevelId: protectedProcedure
+    .input(
+      z.object({
+        courseLevelId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input: { courseLevelId } }) => {
       const materialItems = await ctx.prisma.materialItem.findMany({
-        where: { courseId },
+        where: { courseLevelId },
+        include: { evaluationForms: true },
+      });
+      return { materialItems };
+    }),
+  getByCourseSlug: protectedProcedure
+    .input(
+      z.object({
+        slug: z.string(),
+      })
+    )
+    .query(async ({ ctx, input: { slug } }) => {
+      const materialItems = await ctx.prisma.materialItem.findMany({
+        where: { courseLevel: { course: { slug } } },
         include: { evaluationForms: true },
       });
       return { materialItems };
@@ -48,15 +77,15 @@ export const materialItemsRouter = createTRPCRouter({
       async ({ input: { id }, ctx }) => {
         const materialItem = await ctx.prisma.materialItem.findUnique({ where: { id } })
         if (!materialItem) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to dublicate this material!" })
-        if (!materialItem.courseId) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to dublicate this material!" })
+        if (!materialItem.courseLevelId) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to dublicate this material!" })
 
         const data: Prisma.MaterialItemCreateArgs["data"] = materialItem.type === "manual"
           ? {
             title: materialItem.title,
             subTitle: materialItem.subTitle,
             type: "manual",
-            course: {
-              connect: { id: materialItem.courseId },
+            courseLevel: {
+              connect: { id: materialItem.courseLevelId },
             },
             manual: {
               leadinText: materialItem.manual?.leadinText || "",
@@ -66,16 +95,18 @@ export const materialItemsRouter = createTRPCRouter({
               answerAreas: materialItem.manual?.answerAreas,
               vocabularyCards: materialItem.manual?.vocabularyCards,
               practiceQuestions: materialItem.manual?.practiceQuestions,
-            }
+            },
+            slug: materialItem.slug,
           }
           : {
             title: materialItem.title,
             subTitle: materialItem.subTitle,
             type: "upload",
-            course: {
-              connect: { id: materialItem.courseId },
+            courseLevel: {
+              connect: { id: materialItem.courseLevelId },
             },
-            uploads: materialItem.uploads
+            uploads: materialItem.uploads,
+            slug: materialItem.slug,
           }
 
         const materialItemDublication = await ctx.prisma.materialItem.create({
@@ -89,21 +120,52 @@ export const materialItemsRouter = createTRPCRouter({
     ),
   uploadMaterialItem: protectedProcedure
     .input(z.object({
-      courseId: z.string(),
       title: z.string(),
       subTitle: z.string(),
-      url: z.string(),
+      slug: z.string(),
+      levelSlug: z.string(),
+      uploads: z.array(z.string()),
     }))
-    .mutation(async ({ ctx, input: { courseId, title, subTitle, url } }) => {
+    .mutation(async ({ ctx, input: { title, subTitle, slug, levelSlug, uploads } }) => {
       const materialItem = await ctx.prisma.materialItem.create({
         data: {
           title,
           subTitle,
+          slug,
           type: "upload",
-          course: {
-            connect: { id: courseId },
+          courseLevel: {
+            connect: { slug: levelSlug },
           },
-          uploads: [url],
+          uploads,
+        },
+      });
+
+      return {
+        materialItem,
+      };
+    }),
+  editUploadMaterialItem: protectedProcedure
+    .input(z.object({
+      id: z.string(),
+      title: z.string(),
+      subTitle: z.string(),
+      slug: z.string(),
+      levelSlug: z.string(),
+    }))
+    .mutation(async ({ ctx, input: { id, title, subTitle, slug, levelSlug } }) => {
+      await ctx.prisma.materialItem.update({ where: { id }, data: { courseLevel: { disconnect: true } } })
+
+      const materialItem = await ctx.prisma.materialItem.update({
+        where: {
+          id,
+        },
+        data: {
+          title,
+          subTitle,
+          slug,
+          courseLevel: {
+            connect: { slug: levelSlug },
+          },
         },
       });
 
@@ -114,11 +176,12 @@ export const materialItemsRouter = createTRPCRouter({
   createMaterialItem: protectedProcedure
     .input(
       z.object({
-        courseId: z.string(),
+        courseLevelId: z.string(),
         leadinText: z.string(),
         leadinImageUrl: z.string(),
         firstTestTitle: z.string(),
         title: z.string(),
+        slug: z.string(),
         subTitle: z.string(),
         answerCards: z.array(
           z.object({
@@ -165,10 +228,11 @@ export const materialItemsRouter = createTRPCRouter({
           firstTestTitle,
           leadinImageUrl,
           leadinText,
-          courseId,
+          courseLevelId,
           practiceQuestions,
           subTitle,
           title,
+          slug,
           vocabularyCards,
         },
         ctx,
@@ -178,8 +242,9 @@ export const materialItemsRouter = createTRPCRouter({
             title,
             subTitle,
             type: "manual",
-            course: {
-              connect: { id: courseId },
+            slug,
+            courseLevel: {
+              connect: { id: courseLevelId },
             },
             manual: {
               leadinText,
@@ -209,6 +274,7 @@ export const materialItemsRouter = createTRPCRouter({
         leadinImageUrl: z.string(),
         firstTestTitle: z.string(),
         title: z.string(),
+        slug: z.string(),
         subTitle: z.string(),
         answerCards: z.array(
           z.object({
@@ -260,6 +326,7 @@ export const materialItemsRouter = createTRPCRouter({
           practiceQuestions,
           subTitle,
           title,
+          slug,
           vocabularyCards,
         },
       }) => {
@@ -269,6 +336,7 @@ export const materialItemsRouter = createTRPCRouter({
           },
           data: {
             title,
+            slug,
             subTitle,
             manual: {
               leadinText,
@@ -296,7 +364,7 @@ export const materialItemsRouter = createTRPCRouter({
       const toBeDeleted = await ctx.prisma.materialItem.findMany({ where: { id: { in: input } } })
       if (toBeDeleted.some(item => item.type === "upload")) {
         toBeDeleted.filter(item => item.uploads.length > 0).map(item => {
-          deleteFiles(`uploads/content/courses/${item.courseId}/${item.title}`)
+          deleteFiles(`uploads/content/courses/${item.courseLevelId}/${item.title}`)
         })
       }
 

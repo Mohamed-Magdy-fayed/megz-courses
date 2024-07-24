@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import { validCourseStatuses, validLevelTypes } from "@/lib/enumsTypes";
+import { validCourseStatuses } from "@/lib/enumsTypes";
 
 export const coursesRouter = createTRPCRouter({
   getUsersWithStatus: publicProcedure
@@ -20,10 +20,11 @@ export const coursesRouter = createTRPCRouter({
         where: { id: { in: userIds } },
         include: {
           orders: true,
+          courseStatus: true,
         }
       })
 
-      const usersWithStatus = users.filter(u => u.courseStatus.some(({ courseId, state }) => courseId === course?.id && state === status))
+      const usersWithStatus = users.filter(u => u.courseStatus.some((courseStatus) => courseStatus.courseId === course?.id && courseStatus.status === status))
 
       return { usersWithStatus };
     }),
@@ -43,10 +44,11 @@ export const coursesRouter = createTRPCRouter({
         where: { id: { in: userIds } },
         include: {
           orders: true,
+          courseStatus: true,
         }
       })
 
-      const watingUsers = users.filter(u => u.courseStatus.some(({ courseId, state }) => courseId === course?.id && state === "waiting"))
+      const watingUsers = users.filter(u => u.courseStatus.some(({ courseId, status }) => courseId === course?.id && status === "waiting"))
 
       return { watingUsers };
     }),
@@ -60,10 +62,11 @@ export const coursesRouter = createTRPCRouter({
         const userIds = course?.orders.map(order => order.userId)
 
         const users = await ctx.prisma.user.findMany({
-          where: { id: { in: userIds } }
+          where: { id: { in: userIds } },
+          include: { courseStatus: true }
         })
 
-        const watingUsers = users.filter(user => user.courseStatus.some(({ courseId, state }) => courseId === course?.id && state === "waiting"))
+        const watingUsers = users.filter(user => user.courseStatus.some(({ courseId, status }) => courseId === course?.id && status === "waiting"))
         return {
           courseId: course.id,
           waitingList: watingUsers.length,
@@ -80,7 +83,7 @@ export const coursesRouter = createTRPCRouter({
           createdAt: "desc",
         },
         take: 10,
-        include: { orders: true, materialItems: true }
+        include: { orders: true, levels: true }
       });
 
       return { courses };
@@ -95,30 +98,38 @@ export const coursesRouter = createTRPCRouter({
             mode: "insensitive"
           },
         },
+        include: { levels: true }
       });
 
       return { courses };
     }),
   getAll: protectedProcedure.query(async ({ ctx }) => {
     const courses = await ctx.prisma.course.findMany({
-      include: { orders: { include: { user: true } } },
+      include: {
+        orders: {
+          include: {
+            user: {
+              include: { orders: true, courseStatus: true }
+            }
+          }
+        },
+        levels: true,
+      },
       orderBy: { createdAt: "desc" }
     });
 
     return { courses };
   }),
   getStudentCourses: protectedProcedure
-    .input(z.object({
-      userId: z.string(),
-    }))
-    .query(async ({ ctx, input: { userId } }) => {
+    .query(async ({ ctx }) => {
       const user = await ctx.prisma.user.findUnique({
-        where: { id: userId },
+        where: { id: ctx.session.user.id },
         include: {
           orders: true,
           placementTests: { include: { oralTestTime: true, trainer: true, writtenTest: true } },
           evaluationFormSubmissions: true,
-          zoomGroups: { include: { zoomSessions: { include: { materialItem: true } } } }
+          zoomGroups: { include: { zoomSessions: { include: { materialItem: true } } } },
+          courseStatus: { include: { level: true } },
         },
       });
 
@@ -130,10 +141,8 @@ export const coursesRouter = createTRPCRouter({
             in: user.orders.flatMap(order => order.courseIds),
           }
         },
-        include: {
-          materialItems: true
-        },
-        orderBy: { createdAt: "desc" }
+        include: { levels: true },
+        orderBy: { createdAt: "desc" },
       });
 
       return { courses, user };
@@ -148,56 +157,134 @@ export const coursesRouter = createTRPCRouter({
       const course = await ctx.prisma.course.findUnique({
         where: { id },
         include: {
-          materialItems: {
-            include: {
-              evaluationForms: true,
-            },
-          },
           evaluationForms: { include: { questions: true } },
-          zoomGroup: true,
+          zoomGroups: true,
           orders: { include: { user: true } },
           placementTests: {
             include: {
               student: true,
               trainer: { include: { user: true } },
               oralTestTime: true,
-              writtenTest: { include: { questions: true, submissions: true } }
+              writtenTest: { include: { questions: true, submissions: true } },
+              course: true,
             }
-          }
+          },
+          levels: { include: { materialItems: { include: { evaluationForms: true, zoomSessions: true } } } },
         },
       });
       return { course };
+    }),
+  getBySlug: protectedProcedure
+    .input(
+      z.object({
+        slug: z.string(),
+      })
+    )
+    .query(async ({ ctx, input: { slug } }) => {
+      const course = await ctx.prisma.course.findUnique({
+        where: { slug },
+        include: {
+          levels: {
+            include: {
+              materialItems: {
+                include: {
+                  courseLevel: true,
+                  evaluationForms: { include: { materialItem: { include: { courseLevel: true } }, questions: true, submissions: true } }
+                }
+              },
+              evaluationForms: { include: { materialItem: true, questions: true, submissions: true, courseLevel: true } },
+              course: true,
+              zoomGroups: true,
+            },
+          },
+          evaluationForms: {
+            include: {
+              questions: true,
+              submissions: {
+                include: {
+                  student: { include: { certificates: true } },
+                  evaluationForm: { include: { materialItem: { include: { courseLevel: true } } } }
+                }
+              },
+              materialItem: true
+            }
+          },
+          zoomGroups: { include: { zoomSessions: true, courseLevel: true } },
+          orders: { include: { user: true } },
+          placementTests: {
+            include: {
+              student: { include: { courseStatus: { include: { level: true } } } },
+              trainer: { include: { user: true } },
+              oralTestTime: true,
+              writtenTest: { include: { questions: true, submissions: true } },
+              course: { include: { levels: true } },
+            }
+          },
+          courseStatus: { include: { user: { include: { orders: true } }, level: true } }
+        },
+      });
+      return { course };
+    }),
+  getLearningLayoutData: protectedProcedure
+    .input(
+      z.object({
+        courseSlug: z.string(),
+        levelSlug: z.string(),
+      })
+    )
+    .query(async ({ ctx, input: { courseSlug, levelSlug } }) => {
+      const course = await ctx.prisma.course.findUnique({
+        where: {
+          slug: courseSlug,
+        },
+        include: {
+
+        }
+      });
+
+      const level = await ctx.prisma.courseLevel.findUnique({
+        where: {
+          slug: levelSlug,
+        },
+        include: {
+          evaluationForms: true,
+          materialItems: { include: { evaluationForms: true } }
+        }
+      })
+      if (!course || !level) throw new TRPCError({ code: "BAD_REQUEST", message: "no course or level found" })
+
+      return { course, level };
     }),
   createCourse: protectedProcedure
     .input(
       z.object({
         name: z.string(),
+        slug: z.string(),
         image: z.string(),
         description: z.string(),
         groupPrice: z.number(),
         privatePrice: z.number(),
         instructorPrice: z.number(),
-        levels: z.array(z.enum(validLevelTypes)),
       })
     )
     .mutation(async ({ input: {
       name,
+      slug,
       image,
       description,
       groupPrice,
       privatePrice,
       instructorPrice,
-      levels,
     }, ctx }) => {
       const course = await ctx.prisma.course.create({
         data: {
           name,
+          slug,
           image,
           description,
           groupPrice,
           privatePrice,
           instructorPrice,
-          levels,
         },
       });
 
@@ -212,18 +299,22 @@ export const coursesRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input: { id }, ctx }) => {
-      const existingCourse = await ctx.prisma.course.findUnique({ where: { id } })
+      const existingCourse = await ctx.prisma.course.findUnique({ where: { id }, include: { levels: true } })
       if (!existingCourse) throw new TRPCError({ code: "BAD_REQUEST", message: "can't find course" })
 
+      const randoSlug = Math.random().toString(36).substring(2, 4)
       const course = await ctx.prisma.course.create({
         data: {
           name: existingCourse.name,
+          slug: `${existingCourse.slug}_${randoSlug}`,
           image: existingCourse.image,
           description: existingCourse.description,
           groupPrice: existingCourse.groupPrice,
           privatePrice: existingCourse.privatePrice,
           instructorPrice: existingCourse.instructorPrice,
-          levels: existingCourse.levels,
+          levels: {
+            connect: existingCourse.levels.map(({ id }) => ({ id }))
+          },
         },
       });
 
@@ -236,25 +327,25 @@ export const coursesRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         name: z.string(),
+        slug: z.string(),
         image: z.string(),
         description: z.string(),
         groupPrice: z.number(),
         privatePrice: z.number(),
         instructorPrice: z.number(),
-        levels: z.array(z.enum(validLevelTypes)),
       })
     )
-    .mutation(async ({ ctx, input: { name, id, description, groupPrice, image, instructorPrice, levels, privatePrice } }) => {
+    .mutation(async ({ ctx, input: { name, slug, id, description, groupPrice, image, instructorPrice, privatePrice } }) => {
       const updatedCourse = await ctx.prisma.course.update({
         where: {
           id,
         },
         data: {
           name,
+          slug,
           description,
           groupPrice,
           privatePrice,
-          levels,
           instructorPrice,
           image,
         },

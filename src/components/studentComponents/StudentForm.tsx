@@ -1,6 +1,5 @@
 import { api } from "@/lib/api";
 import { useState } from "react";
-import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
@@ -16,7 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Typography } from "../ui/Typoghraphy";
-import { useToast } from "../ui/use-toast";
+import { toastType, useToast } from "../ui/use-toast";
 import ImageUploader from "../ui/ImageUploader";
 
 const formSchema = z.object({
@@ -35,15 +34,16 @@ type UsersFormValues = z.infer<typeof formSchema>;
 
 interface StudentFormProps {
   setIsOpen: (val: boolean) => void;
+  initialData?: UsersFormValues;
 }
-const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
-  const [loading, setLoading] = useState(false);
+const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen, initialData }) => {
+  const [loadingToast, setLoadingToast] = useState<toastType>();
 
-  const title = "Create User";
-  const description = "Add a new User";
-  const action = "Create";
+  const { toast } = useToast()
 
-  const defaultValues: z.infer<typeof formSchema> = {
+  const action = initialData ? "Edit" : "Create";
+
+  const defaultValues: UsersFormValues = initialData ? initialData : {
     name: "",
     email: "",
     password: "",
@@ -60,65 +60,57 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
     defaultValues,
   });
 
-  const addUserMutation = api.users.createUser.useMutation();
+  const addUserMutation = api.users.createUser.useMutation({
+    onMutate: () => setLoadingToast(toast({
+      title: "Loading...",
+      duration: 30000,
+      variant: "info",
+    })),
+    onSuccess: ({ user }) => trpcUtils.courses.invalidate()
+      .then(() => trpcUtils.invalidate()
+        .then(() => {
+          setIsOpen(false);
+          loadingToast?.update({
+            id: loadingToast.id,
+            title: "Success",
+            description: `User created with email: ${user.email}`,
+            duration: 2000,
+            variant: "success",
+          })
+        })
+      ),
+    onError: ({ message }) => loadingToast?.update({
+      id: loadingToast.id,
+      title: "Error",
+      description: message,
+      duration: 2000,
+      variant: "destructive",
+    }),
+    onSettled: () => setLoadingToast(undefined)
+  });
   const trpcUtils = api.useContext();
-  const { toastError, toastSuccess } = useToast()
 
   const onSubmit = (data: UsersFormValues) => {
-    setLoading(true);
-    addUserMutation.mutate(data, {
-      onSuccess: (data) => {
-        trpcUtils.invalidate()
-          .then(() => {
-            toastSuccess(`User created with email: ${data.user.email}`)
-            setIsOpen(false);
-            setLoading(false);
-          })
-      },
-      onError: (error) => {
-        toastError(error.message)
-        setLoading(false);
-      },
-    });
+    addUserMutation.mutate(data);
   };
 
   return (
     <div>
-      <div className="flex items-center justify-between p-4">
-        <div className="space-y-2 flex-col flex">
-          <Typography className="text-left text-xl font-medium">
-            {title}
-          </Typography>
-          <Typography className="text-left text-sm">
-            {description}
-          </Typography>
-        </div>
-        <Button
-          disabled={loading}
-          variant="x"
-          customeColor={"destructive"}
-          onClick={() => setIsOpen(false)}
-          type="button"
-        >
-          <X />
-        </Button>
-      </div>
-      <Separator />
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           className="flex w-full flex-col justify-between p-0 md:h-full"
         >
-          <div className="scrollbar-thumb-rounded-lg grid grid-cols-1 gap-4 overflow-auto p-4 transition-all scrollbar-thin scrollbar-track-transparent scrollbar-thumb-primary/50 md:grid-cols-2 lg:grid-cols-3">
+          <div className="scrollbar-thumb-rounded-lg flex flex-col gap-4 overflow-auto p-4 transition-all scrollbar-thin scrollbar-track-transparent scrollbar-thumb-primary/50">
             <FormField
               control={form.control}
               name="image"
               render={({ field }) => (
-                <FormItem className="md:col-span-2">
+                <FormItem>
                   <FormControl>
                     <ImageUploader
                       value={field.value}
-                      disabled={loading}
+                      disabled={!!loadingToast}
                       onChange={(url) => field.onChange(url)}
                       onRemove={() => field.onChange("")}
                     />
@@ -135,7 +127,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
                   <FormLabel>Name</FormLabel>
                   <FormControl>
                     <Input
-                      disabled={loading}
+                      disabled={!!loadingToast}
                       placeholder="Jon Doe"
                       {...field}
                       className="pl-8"
@@ -154,7 +146,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
                   <FormControl>
                     <Input
                       type="text"
-                      disabled={loading}
+                      disabled={!!loadingToast}
                       placeholder="Example@mail.com"
                       {...field}
                       className="pl-8"
@@ -164,25 +156,27 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      disabled={loading}
-                      placeholder="Password"
-                      {...field}
-                      className="pl-8"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {!initialData && (
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        disabled={!!loadingToast}
+                        placeholder="Password"
+                        {...field}
+                        className="pl-8"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             <FormField
               control={form.control}
               name="phone"
@@ -192,7 +186,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
                   <FormControl>
                     <Input
                       type="tel"
-                      disabled={loading}
+                      disabled={!!loadingToast}
                       placeholder="01234567899"
                       {...field}
                       className="pl-8"
@@ -210,7 +204,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
                   <FormControl>
                     <Input
                       type="text"
-                      disabled={loading}
+                      disabled={!!loadingToast}
                       placeholder="Street Name"
                       {...field}
                       className="pl-8"
@@ -229,7 +223,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
                   <FormControl>
                     <Input
                       type="text"
-                      disabled={loading}
+                      disabled={!!loadingToast}
                       placeholder="City Name"
                       {...field}
                       className="pl-8"
@@ -248,7 +242,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
                   <FormControl>
                     <Input
                       type="text"
-                      disabled={loading}
+                      disabled={!!loadingToast}
                       placeholder="State Name"
                       {...field}
                       className="pl-8"
@@ -267,7 +261,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
                   <FormControl>
                     <Input
                       type="text"
-                      disabled={loading}
+                      disabled={!!loadingToast}
                       placeholder="Country Name"
                       {...field}
                       className="pl-8"
@@ -281,7 +275,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
           <Separator></Separator>
           <div className="flex p-4 justify-end items-center gap-4 h-full">
             <Button
-              disabled={loading}
+              disabled={!!loadingToast}
               customeColor="destructive"
               onClick={() => setIsOpen(false)}
               type="button"
@@ -289,14 +283,14 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
               <Typography variant={"buttonText"}>Cancel</Typography>
             </Button>
             <Button
-              disabled={loading}
+              disabled={!!loadingToast}
               customeColor="accent"
               type="reset"
               onClick={() => form.reset()}
             >
               <Typography variant={"buttonText"}>Reset</Typography>
             </Button>
-            <Button disabled={loading} type="submit">
+            <Button disabled={!!loadingToast} type="submit">
               <Typography variant={"buttonText"}>{action}</Typography>
             </Button>
           </div>

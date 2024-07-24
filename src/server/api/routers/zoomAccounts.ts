@@ -19,7 +19,7 @@ export const zoomAccountsRouter = createTRPCRouter({
             startDate: z.date()
         }))
         .mutation(async ({ ctx, input: { startDate } }) => {
-            const zoomClients = await ctx.prisma.zoomClient.findMany({ include: { zoomSessions: true } })
+            const zoomClients = await ctx.prisma.zoomClient.findMany({ include: { zoomSessions: true }, orderBy: { id: "desc" } })
 
             const availableClient = zoomClients.find(client => {
                 return !client.zoomSessions.some(session => {

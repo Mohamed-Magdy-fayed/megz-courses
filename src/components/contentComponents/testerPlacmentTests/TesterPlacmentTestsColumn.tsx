@@ -8,26 +8,41 @@ import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/getInitials";
 import { SeverityPill, SeverityPillProps } from "@/components/overview/SeverityPill";
-import { formatPercentage } from "@/lib/utils";
-import { CourseLevels } from "@prisma/client";
+import { formatPercentage, isTimePassed } from "@/lib/utils";
+import { CourseLevel, Meeting } from "@prisma/client";
+import { format } from "date-fns";
+import { useState } from "react";
+import Modal from "@/components/ui/modal";
+import SelectField from "@/components/salesOperation/SelectField";
+import { DatePicker } from "@/components/ui/DatePicker";
+import { Calendar } from "lucide-react";
+import { api } from "@/lib/api";
+import { toastType, useToast } from "@/components/ui/use-toast";
+import Spinner from "@/components/Spinner";
+import { sendWhatsAppMessage } from "@/lib/whatsApp";
 
 export type Column = {
     id: string,
     isLevelSubmitted: boolean,
     isLevelSubmittedString: "Completed" | "Waiting",
-    level: CourseLevels | undefined,
+    level: string | undefined,
     courseId: string,
-    courseLevels: CourseLevels[],
+    courseLevels: CourseLevel[],
     testLink: string,
+    trainersData: {
+        id: string;
+        name: string;
+    }[],
     studentUserId: string,
     studentName: string,
     studentEmail: string,
     studentPhone: string,
     studentImage: string,
-    testTime: string,
+    testTime: Date,
     isWrittenTestDone?: boolean,
     writtenTestResult?: number,
     writtenTestTotalPoints?: number,
+    oralTestMeeting: Meeting,
     createdBy: string,
     createdAt: string,
     updatedAt: string,
@@ -99,7 +114,113 @@ export const columns: ColumnDef<Column>[] = [
         accessorKey: "testTime",
         header: "Oral Test Time",
         cell: ({ row }) => {
-            const isOralTestTimePassed = (new Date(row.original.testTime).getDay() || 32) < new Date().getDay()
+            const [isOpen, setIsOpen] = useState(false)
+            const [trainerId, setTrainerId] = useState<string[]>([])
+            const [testTime, setTestTime] = useState<Date | undefined>(new Date())
+            const [loadingToast, setLoadingToast] = useState<toastType>()
+
+
+            const currentTestTime = new Date(row.original.testTime).getTime();
+
+            const isOralTestTimePassed = isTimePassed(currentTestTime)
+
+            const { toastError, toast } = useToast()
+
+            const trpcUtils = api.useContext()
+            const createPlacementTestMeetingMutation = api.zoomMeetings.createPlacementTestMeeting.useMutation()
+            const editPlacementTestMutation = api.placementTests.editPlacementTest.useMutation()
+            const availableZoomClientMutation = api.zoomAccounts.getAvailableZoomClient.useMutation({
+                onMutate: () => {
+                    setLoadingToast(toast({
+                        title: "Loading...",
+                        variant: "info",
+                        description: (
+                            <Spinner className="h-4 w-4" />
+                        ),
+                        duration: 30000,
+                    }))
+                },
+                onSuccess: ({ zoomClient }) => {
+                    if (!zoomClient?.id) return loadingToast?.update({
+                        id: loadingToast.id,
+                        title: "Error",
+                        description: "No available Zoom Accounts at the selected time!",
+                        duration: 2000,
+                        variant: "destructive",
+                    })
+                    refreshTokenMutation.mutate({ zoomClientId: zoomClient.id }, {
+                        onSuccess: ({ updatedZoomClient }) => {
+                            if (!trainerId[0] || !testTime) return loadingToast?.update({
+                                id: loadingToast.id,
+                                title: "Error",
+                                description: "Missing some information here!",
+                                duration: 2000,
+                                variant: "destructive",
+                            })
+                            createPlacementTestMeetingMutation.mutate({
+                                zoomClientId: updatedZoomClient.id,
+                                courseId: row.original.courseId,
+                                testTime,
+                                trainerId: trainerId[0],
+                            }, {
+                                onSuccess: ({ meetingNumber, meetingPassword, meetingLink }) => {
+                                    sendWhatsAppMessage({
+                                        toNumber: "201123862218",
+                                        textBody: `Hi ${row.original.studentName},
+                                        \nyour oral placement test is scheduled at ${format(testTime, "PPPPp")} with Mr. ${row.original.trainersData.find(trainer => trainer.id === trainerId[0])?.name}
+                                        \nPlease access it on time through this link: ${meetingLink}`,
+                                    })
+                                    editPlacementTestMutation.mutate({
+                                        testId: row.original.id,
+                                        testTime,
+                                        trainerId: trainerId[0]!,
+                                        meetingNumber,
+                                        meetingPassword,
+                                    }, {
+                                        onSuccess: () => {
+                                            trpcUtils.invalidate()
+                                                .then(() => {
+                                                    setIsOpen(false)
+                                                    loadingToast?.update({
+                                                        id: loadingToast.id,
+                                                        title: "Success",
+                                                        description: "New time scheduled successfully",
+                                                        duration: 2000,
+                                                        variant: "success",
+                                                    })
+                                                })
+                                        },
+                                        onError: ({ message }) => {
+                                            loadingToast?.update({
+                                                id: loadingToast.id,
+                                                title: "Error",
+                                                description: message,
+                                                duration: 2000,
+                                                variant: "destructive",
+                                            })
+                                        },
+                                    })
+                                },
+                                onError: ({ message }) => {
+                                    loadingToast?.update({
+                                        id: loadingToast.id,
+                                        title: "Error",
+                                        description: message,
+                                        duration: 2000,
+                                        variant: "destructive",
+                                    })
+                                },
+                            })
+                        },
+                    })
+                },
+            });
+            const refreshTokenMutation = api.zoomMeetings.refreshToken.useMutation();
+
+            const handleSchedulePlacementTest = () => {
+                if (!trainerId[0] || !testTime) return toastError("Missing some information here!")
+                availableZoomClientMutation.mutate({ startDate: testTime })
+            }
 
             if (row.original.isLevelSubmitted) {
                 const level = row.original.level
@@ -114,8 +235,47 @@ export const columns: ColumnDef<Column>[] = [
 
             return (
                 <div className="flex flex-col gap-2">
-                    <Typography>{row.original.testTime}</Typography>
-                    <Button disabled={isOralTestTimePassed}>Join Meeting</Button>
+                    <Modal
+                        title="Reschedule"
+                        description="Reschedule a placement test"
+                        isOpen={isOpen}
+                        onClose={() => setIsOpen(false)}
+                        children={(
+                            <div className="space-y-4">
+                                <SelectField
+                                    data={
+                                        row.original.trainersData.map(({ id, name }) => ({
+                                            active: true,
+                                            label: name,
+                                            value: id,
+                                        }))
+                                    }
+                                    listTitle="Testers"
+                                    placeholder="Select Tester"
+                                    setValues={setTrainerId}
+                                    values={trainerId}
+                                />
+                                <DatePicker
+                                    date={testTime}
+                                    setDate={setTestTime}
+                                />
+                                <div>
+                                    <Button onClick={() => handleSchedulePlacementTest()}>
+                                        <Calendar className="w-4 h-4 mr-2" />
+                                        Schedule
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    />
+                    <Typography>{format(row.original.testTime, "PPPp")}</Typography>
+                    {isOralTestTimePassed ? (
+                        <Button onClick={() => setIsOpen(true)}>Reschedule</Button>
+                    ) : (
+                        <Link className="w-fit" href={`/meeting/?mn=${row.original.oralTestMeeting.meetingNumber}&pwd=${row.original.oralTestMeeting.meetingPassword}&session_title=Placement_Test`}>
+                            <Button disabled={isOralTestTimePassed}>Join Meeting</Button>
+                        </Link>
+                    )}
                 </div>
             )
         }

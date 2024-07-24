@@ -41,7 +41,7 @@ const CreateMaterialsForm = ({
     const { toastError, toastSuccess } = useToast();
 
     const onSubmit = (data: MaterialsFormValues) => {
-        createMaterialMutation.mutate({ ...data, courseId: id },);
+        createMaterialMutation.mutate({ ...data, courseLevelId: id, slug: "" },);
     };
 
     return (

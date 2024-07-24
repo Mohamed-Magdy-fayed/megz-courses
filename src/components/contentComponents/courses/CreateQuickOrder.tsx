@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Course } from "@prisma/client"
+import { Course, SalesAgent, SalesOperation } from "@prisma/client"
 import { api } from "@/lib/api"
 import { render } from "@react-email/render"
 import { format } from "date-fns"
@@ -38,7 +38,7 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
             email: email[0],
             courseDetails: { courseId: courseData.id, isPrivate },
         }, {
-            onSuccess: ({ order: { id, amount, orderNumber, user, courses, createdAt, courseTypes, salesOperationId }, paymentLink }) => {
+            onSuccess: ({ order: { id, amount, orderNumber, user, courses, createdAt, courseTypes, salesOperationId, salesOperation }, paymentLink }) => {
                 const message = render(
                     <Email
                         orderCreatedAt={format(createdAt, "dd MMM yyyy")}
@@ -61,6 +61,7 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
                     subject: `Thanks for your order ${orderNumber}`,
                     message,
                     salesOperationId,
+                    salesOperation,
                 })
                 toastSuccess(`Order ${orderNumber} has been submitted successfully!`)
             },
@@ -77,7 +78,7 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
             phone,
             courseDetails: { courseId: courseData.id, isPrivate },
         }, {
-            onSuccess: ({ password, order: { id, amount, orderNumber, user, courses, createdAt, courseTypes, salesOperationId }, paymentLink }) => {
+            onSuccess: ({ password, order: { id, amount, orderNumber, user, courses, createdAt, courseTypes, salesOperationId, salesOperation }, paymentLink }) => {
                 const message = render(
                     <Email
                         orderCreatedAt={format(createdAt, "dd MMM yyyy")}
@@ -113,6 +114,7 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
                     subject: `Thanks for your order ${orderNumber}`,
                     message,
                     salesOperationId,
+                    salesOperation,
                 })
                 toastSuccess(`Order ${orderNumber} has been submitted successfully!`)
                 sendWhatsAppMessage({
@@ -140,12 +142,16 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
         subject,
         message,
         salesOperationId,
+        salesOperation,
     }: {
         orderId: string,
         email: string,
         subject: string,
         message: string,
         salesOperationId: string,
+        salesOperation: SalesOperation & {
+            assignee: SalesAgent | null;
+        },
     }) => {
         sendEmailMutation.mutate({
             email,
@@ -160,7 +166,7 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
                 trpcUtils.invalidate()
                     .then(() => {
                         setLoading(false)
-                        router.push(`/operation/${salesOperationId}`)
+                        router.push(`/operation/${salesOperation.code}`)
                     })
             }
         })

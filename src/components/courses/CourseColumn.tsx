@@ -4,14 +4,13 @@ import { ArrowUpDown } from "lucide-react";
 import { Typography } from "../ui/Typoghraphy";
 import Link from "next/link";
 import { SeverityPill, SeverityPillProps } from "../overview/SeverityPill";
-import { MouseEvent } from "react";
 import useZoomMeeting from "@/hooks/useZoomMeeting";
 import { api } from "@/lib/api";
-import { MaterialItem, ZoomSession } from "@prisma/client";
 
 export type CourseRow = {
   id: string;
   name: string;
+  slug: string;
   placementTestLink: string;
   isSubmitted: boolean;
   score: string;
@@ -25,8 +24,9 @@ export type CourseRow = {
     meetingNumber: string;
     meetingPassword: string;
     isSessionOngoing: boolean;
-    ongoingSession: ZoomSession & {
-      materialItem: MaterialItem | null
+    ongoingSession: {
+      materialItemTitle: string;
+      id: string
     } | undefined;
   }
 }
@@ -48,7 +48,7 @@ export const columns: ColumnDef<CourseRow>[] = [
       );
     },
     cell: ({ row }) => (
-      <Link href={`/my_courses/${row.original.id}`} className="hover:text-primary">
+      <Link href={`/my_courses/${row.original.slug}`} className="hover:text-primary">
         <Typography>
           {row.original.name}
         </Typography>
@@ -83,30 +83,11 @@ export const columns: ColumnDef<CourseRow>[] = [
       })
 
       if (group) {
-        const join = (e: MouseEvent<HTMLButtonElement>) => {
-          e.preventDefault();
-
-          const meetingConfig = {
-            mn: group.meetingNumber,
-            name: group.userName,
-            pwd: group.meetingPassword,
-            role: 0,
-            email: group.userEmail,
-            lang: "en-US",
-            signature: "",
-            china: 0,
-          }
-
-          generateSDKSignatureQuery.mutate({
-            meetingConfig,
-          })
-        }
-
         return (
           <div className="flex flex-col gap-2">
             <Typography>{group.groupNumber}</Typography>
             {group.isSessionOngoing && (
-              <Link href={`/meeting/?mn=${group.meetingNumber}&pwd=${group.meetingPassword}&session_title=${group.ongoingSession?.materialItem?.title}&session_id=${group.ongoingSession?.id}`}>
+              <Link href={`/meeting/?mn=${group.meetingNumber}&pwd=${group.meetingPassword}&session_title=${group.ongoingSession?.materialItemTitle}&session_id=${group.ongoingSession?.id}`}>
                 <Button type="button" customeColor={"info"}>Join Ongoing Session</Button>
               </Link>
             )}
@@ -114,7 +95,7 @@ export const columns: ColumnDef<CourseRow>[] = [
         )
       }
 
-      return <Typography>No in a group for this course yet</Typography>
+      return <Typography>Not in a group for this course yet</Typography>
     },
   },
   {
@@ -163,8 +144,8 @@ export const columns: ColumnDef<CourseRow>[] = [
     accessorKey: "isSubmitted",
     header: "Written Test",
     cell: ({ row }) => {
-      if (row.original.score === "Not Submitted") return (
-        <Link href={`/placement_test/${row.original.id}`}>
+      if (!row.original.isSubmitted) return (
+        <Link href={`/placement_test/${row.original.slug}`}>
           <Button customeColor={"primary"}>
             Start
           </Button>

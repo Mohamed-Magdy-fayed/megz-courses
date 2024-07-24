@@ -8,16 +8,23 @@ import { Typography } from "@/components/ui/Typoghraphy";
 import MaterialActionCell from "./MaterialActionCell";
 import { MaterialItemType } from "@prisma/client";
 
-export type MaterialsColumn = {
+export type MaterialsRow = {
     id: string,
-    courseId: string | null,
+    courseSlug: string,
+    levelSlugs: { label: string, value: string }[],
+    levelSlug: string,
+    levelName: string,
+    materialItemSlug: string,
     createdAt: Date,
     updatedAt: Date,
     title: string,
+    subTitle: string,
+    slug: string,
+    uploads: string[],
     type: MaterialItemType,
 };
 
-export const columns: ColumnDef<MaterialsColumn>[] = [
+export const columns: ColumnDef<MaterialsRow>[] = [
     {
         id: "select",
         header: ({ table }) => (
@@ -53,7 +60,7 @@ export const columns: ColumnDef<MaterialsColumn>[] = [
             );
         },
         cell: ({ row }) => (
-            <Link className="block w-fit" href={`/content/materials/${row.original.id}?path=uploads/content/courses/${row.original.courseId}/${row.original.title}`}>
+            <Link className="block w-fit" href={`/content/materials/${row.original.materialItemSlug}?path=uploads/content/courses/${row.original.courseSlug}/${row.original.levelSlug}/${row.original.materialItemSlug}`}>
                 <Typography
                     className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
                 >
@@ -91,13 +98,19 @@ export const columns: ColumnDef<MaterialsColumn>[] = [
         }
     },
     {
+        accessorKey: "levelSlug",
+        header: "Level",
+        cell: ({ row }) => (
+            <Typography>{row.original.levelName}</Typography>
+        ),
+    },
+    {
         id: "actions",
         header: () => (
             <Typography variant={"secondary"}>Actions</Typography>
         ),
         cell: ({ row }) => <MaterialActionCell
-            id={row.original.id}
-            courseId={row.original.courseId!}
+            {...row.original}
         />,
     },
 ];

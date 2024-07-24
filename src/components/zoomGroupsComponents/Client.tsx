@@ -3,12 +3,21 @@ import { useState } from "react";
 import { DataTable } from "@/components/ui/DataTable";
 import { useToast } from "@/components/ui/use-toast";
 import { type ColumnType, columns } from "./Column";
-import Spinner from "../Spinner";
 import { validGroupStatuses } from "@/lib/enumsTypes";
+import { Course, CourseLevel, Trainer, User, ZoomGroup, ZoomSession } from "@prisma/client";
+import { upperFirst } from "lodash";
 
-const ZoomGroupsClient = () => {
-    const { data, isLoading, isError } = api.zoomGroups.getzoomGroups.useQuery()
-
+const ZoomGroupsClient = ({ zoomGroupsData }: {
+    zoomGroupsData: (ZoomGroup & {
+        trainer: (Trainer & {
+            user: User;
+        }) | null;
+        course: Course | null;
+        zoomSessions: ZoomSession[];
+        students: User[];
+        courseLevel: CourseLevel | null;
+    })[];
+}) => {
     const [zoomGroups, setZoomGroups] = useState<ColumnType[]>([]);
 
     const deleteMutation = api.zoomGroups.deleteZoomGroup.useMutation();
@@ -34,16 +43,13 @@ const ZoomGroupsClient = () => {
         );
     };
 
-    if (!data || isLoading /*|| data.zoomGroups.some(({ course, trainer }) => !course || !trainer)*/) return <Spinner className=" mx-auto" />
-    if (isError) return <>Error</>
-
     return (
         <DataTable
             columns={columns}
-            data={data.zoomGroups.map((zoomGroup) => ({
+            data={zoomGroupsData.map((zoomGroup) => ({
                 id: zoomGroup.id,
                 course: zoomGroup.course!,
-                courseLevel: zoomGroup.courseLevel,
+                courseLevel: zoomGroup.courseLevel!,
                 createdAt: zoomGroup.createdAt,
                 updatedAt: zoomGroup.updatedAt,
                 groupNumber: zoomGroup.groupNumber,
@@ -54,8 +60,13 @@ const ZoomGroupsClient = () => {
             }))}
             setData={setZoomGroups}
             onDelete={onDelete}
-            search={{ key: "groupNumber", label: "Group Number" }}
-            filters={[{ key: "groupStatus", label: "Group Status", values: [...validGroupStatuses] }]}
+            searches={[{ key: "groupNumber", label: "Group Number" }]}
+            filters={[{
+                key: "groupStatus", filterName: "Group Status", values: [...validGroupStatuses.map(status => ({
+                    label: upperFirst(status),
+                    value: status,
+                }))]
+            }]}
         />
     );
 };

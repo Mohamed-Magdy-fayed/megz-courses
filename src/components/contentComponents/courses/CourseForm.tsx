@@ -18,52 +18,50 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import ImageUploader from "@/components/ui/ImageUploader";
-import { validLevelTypes } from "@/lib/enumsTypes";
 import { z } from "zod";
-import { Course } from "@prisma/client";
 import SelectField from "@/components/salesOperation/SelectField";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name can't be empty"),
+  slug: z.string().min(1, "Please add a slug").regex(/^\S*$/, "No spaces allowed"),
   description: z.string().min(1, "description can't be empty"),
   image: z.string().min(1, "image can't be empty"),
-  groupPrice: z.string().min(1, "groupPrice can't be empty"),
-  privatePrice: z.string().min(1, "privatePrice can't be empty"),
-  instructorPrice: z.string().min(1, "instructorPrice can't be empty"),
+  groupPrice: z.number().min(1, "groupPrice can't be empty"),
+  privatePrice: z.number().min(1, "privatePrice can't be empty"),
+  instructorPrice: z.number().min(1, "instructorPrice can't be empty"),
 });
 
 type CoursesFormValues = z.infer<typeof formSchema>;
 
-const CourseForm = ({ initialData, setIsOpen }: { initialData?: Course, setIsOpen: Dispatch<SetStateAction<boolean>> }) => {
+const CourseForm = ({ initialData, setIsOpen }: {
+  initialData?: CoursesFormValues & {
+    id: string;
+  };
+  setIsOpen: Dispatch<SetStateAction<boolean>>;
+}) => {
   const [loading, setLoading] = useState(false);
-  const [levels, setLevels] = useState(initialData ? initialData.levels : []);
   const [loadingToast, setLoadingToast] = useState<ReturnType<typeof toast>>()
+
   const { toast } = useToast()
 
   const form = useForm<CoursesFormValues>({
     defaultValues: initialData
-      ? {
-        name: initialData.name,
-        description: initialData.description || "",
-        image: initialData.image || "",
-        groupPrice: initialData.groupPrice.toString(),
-        instructorPrice: initialData.instructorPrice.toString(),
-        privatePrice: initialData.privatePrice.toString(),
-      }
+      ? initialData
       : {
         name: "",
+        slug: "",
         description: "",
         image: "",
-        groupPrice: "",
-        instructorPrice: "",
-        privatePrice: "",
+        groupPrice: 0,
+        instructorPrice: 0,
+        privatePrice: 0,
       }
   });
   const createCourseMutation = api.courses.createCourse.useMutation({
     onMutate: () => {
       setLoadingToast(toast({
         title: "Loading...",
-        duration: 30000,
+        duration: 3000,
         variant: "info",
       }))
       setLoading(true)
@@ -74,7 +72,6 @@ const CourseForm = ({ initialData, setIsOpen }: { initialData?: Course, setIsOpe
           id: loadingToast.id,
           title: "Success",
           description: `Course ${course.name} created successfully`,
-          duration: 2000,
           variant: "success",
         })
         setIsOpen(false)
@@ -83,16 +80,16 @@ const CourseForm = ({ initialData, setIsOpen }: { initialData?: Course, setIsOpe
       id: loadingToast.id,
       title: "Error",
       description: message,
-      duration: 2000,
       variant: "destructive",
     }),
     onSettled: () => setLoading(false)
   });
+
   const editCourseMutation = api.courses.editCourse.useMutation({
     onMutate: () => {
       setLoadingToast(toast({
         title: "Loading...",
-        duration: 30000,
+        duration: 3000,
         variant: "info",
       }))
       setLoading(true)
@@ -103,7 +100,6 @@ const CourseForm = ({ initialData, setIsOpen }: { initialData?: Course, setIsOpe
           id: loadingToast.id,
           title: "Success",
           description: `updated ${updatedCourse.name} course successfully`,
-          duration: 2000,
           variant: "success",
         })
         setIsOpen(false)
@@ -112,33 +108,35 @@ const CourseForm = ({ initialData, setIsOpen }: { initialData?: Course, setIsOpe
       id: loadingToast.id,
       title: "Error",
       description: message,
-      duration: 2000,
       variant: "destructive",
     }),
-    onSettled: () => setLoading(false),
+    onSettled: () => {
+      setLoading(false)
+      setTimeout(() => loadingToast?.dismiss(), 1000)
+    },
   });
   const trpcUtils = api.useContext();
 
-  const onSubmit = ({ name, privatePrice, groupPrice, instructorPrice, description, image }: CoursesFormValues) => {
+  const onSubmit = ({ name, slug, privatePrice, groupPrice, instructorPrice, description, image }: CoursesFormValues) => {
     initialData
       ? editCourseMutation.mutate({
         id: initialData.id,
         name,
+        slug,
         description,
         groupPrice: Number(groupPrice),
         instructorPrice: Number(instructorPrice),
         privatePrice: Number(privatePrice),
         image,
-        levels,
       })
       : createCourseMutation.mutate({
         name: name,
+        slug,
         description: description,
         image: image,
         privatePrice: Number(privatePrice),
         groupPrice: Number(groupPrice),
         instructorPrice: Number(instructorPrice),
-        levels,
       });
   };
 
@@ -178,6 +176,19 @@ const CourseForm = ({ initialData, setIsOpen }: { initialData?: Course, setIsOpe
               <FormLabel>Course Name</FormLabel>
               <FormControl>
                 <Input placeholder="Begginers Course" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="slug"
+          render={({ field }) => (
+            <FormItem className="p-4">
+              <FormLabel>URL segment for this course</FormLabel>
+              <FormControl>
+                <Input placeholder="course_name (no spaces)" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -237,24 +248,6 @@ const CourseForm = ({ initialData, setIsOpen }: { initialData?: Course, setIsOpe
             )}
           />
         </div>
-        <FormItem className="p-4">
-          <FormLabel>Course level</FormLabel>
-          <SelectField
-            multiSelect
-            data={validLevelTypes.map(level => ({
-              active: true,
-              label: level,
-              value: level,
-            }))}
-            listTitle="Level"
-            placeholder="Select Course Levels"
-            setValues={setLevels}
-            values={levels}
-          >
-
-          </SelectField>
-          <FormMessage />
-        </FormItem>
         <Separator />
         <div className="flex w-full justify-end gap-4 self-end p-4">
           <Button

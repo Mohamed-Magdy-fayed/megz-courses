@@ -8,9 +8,15 @@ import { Typography } from "@/components/ui/Typoghraphy";
 import { Devices, Order } from "@prisma/client";
 import WaitingListActionCell from "./WaitingListActionCell";
 
-export type WaitingList = {
+export type WaitingListRow = {
     id: string,
     name: string,
+    levelSlugs: {
+        value: string;
+        label: string;
+    }[],
+    levelSlug: string,
+    levelName: string,
     image: string | null,
     device: Devices | null,
     email: string,
@@ -21,7 +27,7 @@ export type WaitingList = {
     updatedAt: Date,
 };
 
-export const columns: ColumnDef<WaitingList>[] = [
+export const columns: ColumnDef<WaitingListRow>[] = [
     {
         id: "select",
         header: ({ table }) => (
@@ -94,6 +100,13 @@ export const columns: ColumnDef<WaitingList>[] = [
                 <>{format(row.original.orders?.find(order => order.courseIds.some(id => id === row.original.courseId))?.createdAt || new Date(), "dd MMM yyyy")}</>
             )
         }
+    },
+    {
+        accessorKey: "levelSlug",
+        header: "Level",
+        cell: ({ row }) => (
+            <Typography>{row.original.levelName}</Typography>
+        )
     },
     {
         id: "actions",

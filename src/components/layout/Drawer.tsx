@@ -18,6 +18,10 @@ export const mainNavLinks = [
     url: "retintions",
   },
   {
+    label: "Notes",
+    url: "notes",
+  },
+  {
     label: "Groups",
     url: "groups",
   },

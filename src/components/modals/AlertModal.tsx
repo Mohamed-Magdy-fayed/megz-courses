@@ -30,7 +30,7 @@ export const AlertModal = ({
       isOpen={isOpen}
       onClose={onClose}
     >
-      <div className="flex w-full items-center justify-end space-x-2 pt-6">
+      <div className="flex w-full items-center justify-end space-x-2 pt-6 pb-2">
         <Button disabled={loading} variant={"outline"} customeColor={"mutedOutlined"} onClick={onClose}>
           Cancel
         </Button>

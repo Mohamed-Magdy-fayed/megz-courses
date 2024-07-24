@@ -5,19 +5,18 @@ import { ArrowUpDown } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { Typography } from "@/components/ui/Typoghraphy";
-import ActionCell from "./PlacmentTestSubmissionsActionCell";
 import { User } from "@prisma/client";
 
-export type Column = {
+export type PlacementTestSubmissionsRow = {
     id: string,
     student: User,
     studentName: string,
-    rating: number,
+    rating: string,
     createdAt: Date,
     updatedAt: Date,
 };
 
-export const columns: ColumnDef<Column>[] = [
+export const columns: ColumnDef<PlacementTestSubmissionsRow>[] = [
     {
         id: "select",
         header: ({ table }) => (
@@ -93,21 +92,11 @@ export const columns: ColumnDef<Column>[] = [
     },
     {
         accessorKey: "rating",
-        header: "Course",
+        header: "Rating",
         cell: ({ row }) => {
             return (
                 <Typography>{row.original.rating}</Typography>
             )
         }
-    },
-    {
-        id: "actions",
-        header: () => (
-            <Typography variant={"secondary"}>Actions</Typography>
-        ),
-        cell: ({ row }) => <ActionCell
-            id={row.original.id}
-            studentId={row.original.student.id}
-        />,
     },
 ];

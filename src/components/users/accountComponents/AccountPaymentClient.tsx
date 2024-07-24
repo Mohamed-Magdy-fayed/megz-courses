@@ -42,7 +42,7 @@ const AccountPaymentClient = ({ data }: { data: Order[] }) => {
       data={formattedData}
       setData={setOrders}
       onDelete={onDelete}
-      search={{ key: "orderNumber", label: "Order Number" }}
+      searches={[{ key: "orderNumber", label: "Order Number" }]}
     />
   );
 };

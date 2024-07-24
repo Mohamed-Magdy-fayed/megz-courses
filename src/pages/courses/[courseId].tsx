@@ -32,6 +32,7 @@ const CoursePage = () => {
         enabled: false,
     })
     const course = courseQuery.data?.course
+    const level = courseQuery.data?.course?.levels[0]
 
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -70,7 +71,7 @@ const CoursePage = () => {
                                 <Typography variant={"secondary"}>Levels: </Typography>
                                 <div className="flex gap-2 flex-wrap">
                                     {course.levels.map(level => (
-                                        <Typography key={level}>{level}</Typography>
+                                        <Typography key={level.id}>{level.name}</Typography>
                                     ))}
                                 </div>
                             </div>
@@ -115,15 +116,18 @@ const CoursePage = () => {
                         <Typography variant={"secondary"}>{course.name}</Typography>
                         <Typography>Added on {format(course.createdAt, "do MMM yyyy")}</Typography>
                     </div>
-                    {!course.materialItems[0] ? (
+                    {!level?.materialItems[0] ? (
                         <div className="p-4 space-x-4">
-                            <Typography>{course.materialItems.length} Materials</Typography>
+                            <Typography>{level?.materialItems.length} Materials</Typography>
                             <Typography>-</Typography>
                             <Typography>
-                                {course.materialItems[0]!?.title || "No Material"}
+                                {level?.materialItems[0]!?.title || "No Material"}
                             </Typography>
                         </div>
-                    ) : courseQuery.isLoading ? <Spinner /> : <MaterialShowcase materialItem={course.materialItems[0]} />}
+                    ) : courseQuery.isLoading ? <Spinner /> : (
+                        // <MaterialShowcase materialItem={level.materialItems[0]} />
+                        "Comming Soon"
+                    )}
                 </div>
             </div>
         </LandingLayout>

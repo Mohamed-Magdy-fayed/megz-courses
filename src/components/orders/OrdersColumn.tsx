@@ -11,6 +11,9 @@ import Link from "next/link";
 import { SeverityPill, SeverityPillProps } from "../overview/SeverityPill";
 import { format } from "date-fns";
 import { Checkbox } from "../ui/checkbox";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useEffect } from "react";
+import { api } from "@/lib/api";
 
 export type OrderRow = {
   id: string;
@@ -20,9 +23,11 @@ export type OrderRow = {
   salesOperationId: string;
   salesOperationCode: string;
   status: Order["status"];
+  userId: string;
   userName: string;
   userEmail: string;
   userImage: string;
+  refundRequester: string | null;
   courses: Course[];
   updatedAt: Date;
 }
@@ -63,7 +68,7 @@ export const columns: ColumnDef<OrderRow>[] = [
       );
     },
     cell: ({ row }) => (
-      <Link href={`/orders/${row.original.id}`}>
+      <Link href={`/orders/${row.original.orderNumber}`}>
         <Typography>
           {row.original.orderNumber}
         </Typography>
@@ -86,7 +91,7 @@ export const columns: ColumnDef<OrderRow>[] = [
       );
     },
     cell: ({ row }) => (
-      <Link className="block w-fit" href={`/account/${row.original.id}`}>
+      <Link className="block w-fit" href={`/account/${row.original.userId}`}>
         <div className="flex items-center gap-2" >
           <Avatar>
             <AvatarImage src={`${row.original.userImage}`} />
@@ -172,10 +177,24 @@ export const columns: ColumnDef<OrderRow>[] = [
           : status === "refunded" ? "primary"
             : status === "paid" ? "success"
               : status === "pending" ? "muted" : "destructive"
+
+      const refundedByUser = api.users.getUserById.useQuery({ id: row.original.refundRequester || "" }, { enabled: false });
+
+      useEffect(() => {
+        if (row.original.refundRequester) refundedByUser.refetch()
+      }, [row.original.refundRequester])
+
       return (
-        <SeverityPill color={color}>
-          {status}
-        </SeverityPill>
+        <Tooltip>
+          <TooltipTrigger>
+            <SeverityPill color={color}>
+              {status}
+            </SeverityPill>
+          </TooltipTrigger>
+          <TooltipContent>
+            Refunded By: {refundedByUser.data?.user.email ? refundedByUser.data?.user.email : format(row.original.updatedAt, "PPP")}
+          </TooltipContent>
+        </Tooltip>
       )
     },
   },

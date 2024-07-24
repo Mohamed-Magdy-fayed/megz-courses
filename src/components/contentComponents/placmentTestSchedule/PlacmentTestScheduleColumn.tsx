@@ -5,14 +5,12 @@ import { ArrowUpDown } from "lucide-react";
 import Link from "next/link";
 import { Typography } from "@/components/ui/Typoghraphy";
 import ActionCell from "./PlacmentTestScheduleActionCell";
-import { CourseLevels } from "@prisma/client";
 
-export type Column = {
+export type PlacmentTestScheduleRow = {
     id: string;
     isLevelSubmitted: boolean,
-    level: CourseLevels | undefined,
     courseId: string,
-    courseLevels: CourseLevels[],
+    courseLevels: { label: string, value: string }[],
     testLink: string,
     studentUserId: string;
     studentName: string;
@@ -29,7 +27,7 @@ export type Column = {
     updatedAt: string;
 };
 
-export const columns: ColumnDef<Column>[] = [
+export const columns: ColumnDef<PlacmentTestScheduleRow>[] = [
     {
         id: "select",
         header: ({ table }) => (

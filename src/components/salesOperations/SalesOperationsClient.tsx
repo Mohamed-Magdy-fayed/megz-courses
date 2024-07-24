@@ -6,6 +6,7 @@ import { SalesOperationColumn, columns } from "./SalesOperationColumn";
 import { format } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
 import { validOperationStatus } from "@/lib/enumsTypes";
+import { upperFirst } from "lodash";
 
 interface SalesOperations extends SalesOperation {
   assignee: SalesAgent | null;
@@ -49,8 +50,13 @@ const SalesOperationsClient = ({ data }: { data: SalesOperations[] }) => {
       data={formattedData}
       setData={setSalesOperations}
       onDelete={onDelete}
-      search={{ key: "code", label: "Code" }}
-      filters={[{ key: "status", label: "Status", values: [...validOperationStatus] }]}
+      searches={[{ key: "code", label: "Code" }]}
+      filters={[{
+        key: "status", filterName: "Status", values: [...validOperationStatus.map(status => ({
+          label: upperFirst(status),
+          value: status,
+        }))]
+      }]}
     />
   );
 };

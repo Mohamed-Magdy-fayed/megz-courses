@@ -8,15 +8,23 @@ import {
 import { Button } from "@/components/ui/button";
 import { Copy, Edit, MoreVertical } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { RefundModal } from "@/components/modals/RefundModal";
 import { useState } from "react";
 import Modal from "@/components/ui/modal";
+import ConnectGoogleForm from "@/components/FormsComponents/ConnectGoogleForm";
+import { EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, MaterialItem } from "@prisma/client";
+import CustomForm from "@/components/FormsComponents/CustomForm";
 
 interface ActionCellProps {
     id: string;
+    externalLink: string | null;
+    evalForm: EvaluationForm & {
+        materialItem: MaterialItem | null;
+        submissions: EvaluationFormSubmission[];
+        questions: EvaluationFormQuestion[];
+    };
 }
 
-const ActionCell: React.FC<ActionCellProps> = ({ id }) => {
+const ActionCell: React.FC<ActionCellProps> = ({ id, externalLink, evalForm }) => {
     const { toastInfo } = useToast();
     const [isOpen, setIsOpen] = useState(false)
     const [isEditOpen, setIsEditOpen] = useState(false)
@@ -28,25 +36,18 @@ const ActionCell: React.FC<ActionCellProps> = ({ id }) => {
 
     return (
         <>
-            <RefundModal
-                isOpen={isOpen}
-                loading={false}
-                onClose={() => setIsOpen(false)}
-                onConfirm={(data) => {
-                    console.log(data)
-                    setIsOpen(false)
-                }}
-            />
             <Modal
                 title="Edit"
                 description="edit evaluation form"
                 isOpen={isEditOpen}
                 onClose={() => setIsEditOpen(false)}
                 children={(
-                    <>asdajshdb</>
+                    <div>
+                        {externalLink ? <ConnectGoogleForm setIsOpen={setIsEditOpen} initialData={evalForm} /> : <CustomForm initialData={evalForm} />}
+                    </div>
                 )}
             />
-            <DropdownMenu>
+            <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
                 <DropdownMenuTrigger asChild>
                     <Button customeColor="mutedIcon" variant={"icon"} >
                         <MoreVertical className="w-4 h-4" />
@@ -58,7 +59,10 @@ const ActionCell: React.FC<ActionCellProps> = ({ id }) => {
                         <Copy className="w-4 h-4 mr-2" />
                         Copy ID
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
+                    <DropdownMenuItem onClick={() => {
+                        setIsEditOpen(true)
+                        setIsOpen(false)
+                    }}>
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
                     </DropdownMenuItem>

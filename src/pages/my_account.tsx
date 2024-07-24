@@ -1,5 +1,4 @@
 import { api } from "@/lib/api";
-import { useSession } from "next-auth/react";
 import { Account } from "@/components/users/accountComponents/Account";
 import { AccountDetails } from "@/components/users/accountComponents/AccountDetails";
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
@@ -10,12 +9,9 @@ import Spinner from "@/components/Spinner";
 import LandingLayout from "@/components/landingPageComponents/LandingLayout";
 
 const Page = () => {
-  const session = useSession();
   const router = useRouter();
 
-  const userLoader = api.users.getUserByEmail.useQuery({
-    email: session.data?.user.email || "",
-  });
+  const userLoader = api.users.getCurrentUser.useQuery();
 
   return (
     <LandingLayout>

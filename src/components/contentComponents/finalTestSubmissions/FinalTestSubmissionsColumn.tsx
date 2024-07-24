@@ -5,26 +5,27 @@ import { ArrowUpDown } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { Typography } from "@/components/ui/Typoghraphy";
-import { Trainer, User } from "@prisma/client";
-import ActionCell from "./FinalTestSubmissionsActionCell";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getInitials } from "@/lib/getInitials";
+import { Certificate, EvaluationForm, SubmissionAnswer, User } from "@prisma/client";
+import { formatPercentage } from "@/lib/utils";
 
-export type Column = {
-    id: string,
-    email: string,
-    courseName: string,
-    student: User,
-    trainer: Trainer & {
-        user: User
-    } | null,
-    trainerName: string,
-    courseId: string,
-    createdAt: Date,
-    updatedAt: Date,
+export type FinalTestSubmissionRow = {
+    id: string;
+    answers: SubmissionAnswer[];
+    student: User;
+    levelSlugs: { label: string, value: string }[],
+    levelSlug: string,
+    certificate: Certificate | undefined;
+    email: string;
+    courseId: string;
+    courseName: string;
+    rating: number;
+    evaluationForm: EvaluationForm;
+    createdAt: Date;
+    updatedAt: Date;
+
 };
 
-export const columns: ColumnDef<Column>[] = [
+export const columns: ColumnDef<FinalTestSubmissionRow>[] = [
     {
         id: "select",
         header: ({ table }) => (
@@ -82,7 +83,7 @@ export const columns: ColumnDef<Column>[] = [
         header: ({ column }) => {
             return (
                 <div className="flex items-center justify-between">
-                    Created at
+                    Submitted at
                     <Button
                         className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
                         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
@@ -108,54 +109,34 @@ export const columns: ColumnDef<Column>[] = [
         }
     },
     {
-        accessorKey: "trainerName",
-        header: ({ column }) => {
+        accessorKey: "rating",
+        header: "Score",
+        cell: ({ row }) => {
+            const evalForm = row.original.evaluationForm
+            const totalPoints = evalForm.totalPoints
+
             return (
-                <div className="flex items-center justify-between">
-                    Trainer Info
-                    <Button
-                        className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        <ArrowUpDown className="h-4 w-4 text-primary" />
-                    </Button>
-                </div>
-            );
-        },
-        cell: ({ row }) => !row.original.trainer ? (
-            <Typography>No trainer yet</Typography>
-        ) : (
-            <Link className="block w-fit" href={`/account/${row.original.trainer?.user.id}`}>
-                <div className="flex items-center gap-2" >
-                    <Avatar>
-                        <AvatarImage src={`${row.original.trainer?.user.image}`} />
-                        <AvatarFallback>
-                            {getInitials(`${row.original.trainer?.user.name}`)}
-                        </AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col gap-2">
-                        <Typography
-                            className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
-                        >
-                            {row.original.trainer?.user.name}
-                        </Typography>
-                        <Typography variant={"secondary"} className="text-sm font-normal text-slate-500">
-                            {row.original.trainer?.user.email}
-                        </Typography>
-                    </div>
-                </div>
-            </Link>
-        ),
+                <>{formatPercentage(row.original.rating / totalPoints * 100)}</>
+            )
+        }
     },
     {
-        id: "actions",
-        header: () => (
-            <Typography variant={"secondary"}>Actions</Typography>
-        ),
-        cell: ({ row }) => <ActionCell
-            id={row.original.id}
-            studentId={row.original.student.id}
-            courseId={row.original.courseId}
-        />,
+        accessorKey: "certificate",
+        header: "Certificate",
+        cell: ({ row }) => {
+            const certificate = row.original.certificate
+            if (!certificate) return "No Certificate yet"
+
+            return (
+                <Link href={`/certificates/${certificate.certificateId}`} className="flex flex-col gap-2">
+                    <Typography>
+                        {certificate.certificateId}
+                    </Typography>
+                    <Typography>
+                        {format(certificate.completionDate, "PPP")}
+                    </Typography>
+                </Link>
+            )
+        }
     },
 ];

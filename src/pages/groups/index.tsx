@@ -9,9 +9,13 @@ import ZoomGroupsClient from "@/components/zoomGroupsComponents/Client";
 import { FileDown, FileUp, PlusIcon } from "lucide-react";
 import type { NextPage } from "next";
 import { useState } from "react";
+import { api } from "@/lib/api";
+import Spinner from "@/components/Spinner";
 
 const GroupsPage: NextPage = () => {
     const [isOpen, setIsOpen] = useState(false);
+
+    const { data: zoomGroupsData, isLoading, isError } = api.zoomGroups.getzoomGroups.useQuery()
 
     return (
         <AppLayout>
@@ -58,7 +62,11 @@ const GroupsPage: NextPage = () => {
                         )}
                     />
                     <PaperContainer>
-                        <ZoomGroupsClient></ZoomGroupsClient>
+                        {zoomGroupsData?.zoomGroups ? (
+                            <ZoomGroupsClient zoomGroupsData={zoomGroupsData.zoomGroups} />
+                        ) : (
+                            <Spinner />
+                        )}
                     </PaperContainer>
                 </div>
             </main>

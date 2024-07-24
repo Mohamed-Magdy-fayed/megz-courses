@@ -54,8 +54,18 @@ export const trainersRouter = createTRPCRouter({
         where: { userId: id },
         include: { user: true, groups: { include: { zoomSessions: { include: { zoomGroup: true, materialItem: true } } } } },
       });
+      if (!trainer) throw new TRPCError({ code: "BAD_REQUEST", message: "Trainer not found!" })
 
-      return { trainer };
+      const sessions = await ctx.prisma.zoomSession.findMany({
+        where: { zoomGroup: { trainerId: trainer.id } },
+        orderBy: { sessionDate: "asc" },
+        include: {
+          zoomGroup: { include: { trainer: { include: { user: true } } } },
+          materialItem: true
+        }
+      })
+
+      return { sessions };
     }),
   createTrainer: protectedProcedure
     .input(

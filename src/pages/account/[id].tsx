@@ -7,6 +7,27 @@ import { ArrowLeftFromLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import Spinner from "@/components/Spinner";
+import { UserAccountTabs } from "@/components/users/accountComponents/AccountTabs";
+import { Prisma } from "@prisma/client";
+
+export type UserGetPayload = Prisma.UserGetPayload<{
+  include: {
+    orders: { include: { courses: { include: { levels: true, orders: { include: { user: true } } } } } },
+    evaluationFormSubmissions: true,
+    zoomGroups: { include: { zoomSessions: true, trainer: { include: { user: true } }, course: true, students: true, courseLevel: true }, },
+    placementTests: {
+      include: {
+        trainer: { include: { user: true } },
+        course: { include: { levels: true } },
+        student: { include: { courseStatus: { include: { level: true } } } },
+        oralTestTime: true,
+        writtenTest: { include: { submissions: true } }
+      }
+    },
+    studentNotes: { include: { createdByUser: true, mentions: true } },
+    courseStatus: true,
+  },
+}>
 
 export default function Page() {
   const router = useRouter();
@@ -19,7 +40,7 @@ export default function Page() {
       {isLoading || !data?.user
         ? (<div className="w-full h-full grid place-content-center"><Spinner /></div>)
         : (
-          <main className="flex-grow py-2">
+          <main className="flex-grow py-2 flex flex-col gap-4">
             <div className="grid space-x-4 space-y-4 grid-cols-12">
               <div className="col-span-12 md:col-span-4 md:border-r-2 border-muted md:p-4">
                 <div className="flex items-center gap-4 mb-8">
@@ -35,6 +56,7 @@ export default function Page() {
                 <AccountDetails user={data.user} />
               </div>
             </div>
+            <UserAccountTabs user={data.user} />
           </main>
         )}
     </AppLayout>

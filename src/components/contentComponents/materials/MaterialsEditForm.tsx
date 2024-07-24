@@ -46,7 +46,7 @@ const EditMaterialsForm = ({ materialItem }: { materialItem: MaterialItem }) => 
     setLoading(true);
 
     editMaterialMutation.mutate(
-      { ...data, id: materialItem.id },
+      { ...data, id: materialItem.id, slug: "" },
       {
         onSuccess: ({ updatedmaterialItem }) => {
           toastSuccess(`Your material (${updatedmaterialItem.title}) is updated!`);

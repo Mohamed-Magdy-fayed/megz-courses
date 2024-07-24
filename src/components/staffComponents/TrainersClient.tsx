@@ -5,6 +5,8 @@ import { format } from "date-fns";
 import { DataTable } from "../ui/DataTable";
 import { TrainerColumn, columns } from "./StaffColumns";
 import { useToast } from "../ui/use-toast";
+import { validTrainerRoles } from "@/lib/enumsTypes";
+import { upperFirst } from "lodash";
 
 export interface Trainers extends Trainer {
   user: User;
@@ -51,10 +53,18 @@ const TrainersClient = ({ data }: { data: Trainers[] }) => {
       data={formattedData}
       setData={setTraiers}
       onDelete={onDelete}
-      search={{
+      searches={[{
         key: "email",
         label: "Email"
-      }}
+      }]}
+      filters={[{
+        key: "role",
+        filterName: "Role",
+        values: [...validTrainerRoles.map(role => ({
+          label: upperFirst(role),
+          value: role,
+        }))]
+      }]}
     />
   );
 };

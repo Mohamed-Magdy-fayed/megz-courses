@@ -6,15 +6,13 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Copy, Trash, SearchSlash, MoreVertical, List, Edit, UserPlus, UserMinus, PauseCircle, PlayCircle } from "lucide-react";
+import { Trash, SearchSlash, MoreVertical, List, Edit, UserPlus, UserMinus, PauseCircle, PlayCircle } from "lucide-react";
 import { FC, useState } from "react";
-import { AlertModal } from "../modals/AlertModal";
 import { api } from "@/lib/api";
 import { useToast } from "../ui/use-toast";
 import Link from "next/link";
-import Modal from "../ui/modal";
 import SelectField from "../salesOperation/SelectField";
-import { CourseLevels, GroupStatus } from "@prisma/client";
+import { CourseLevel, GroupStatus } from "@prisma/client";
 import { upperFirst } from "lodash";
 import ZoomGroupForm from "./Form";
 import AddStudentsForm from "./AddStudentsForm";
@@ -29,7 +27,7 @@ import ModalInDropdownMenu from "../ui/modal-in-dropdown-menu";
 interface ActionCellProps {
     id: string;
     courseId: string;
-    courseLevel: CourseLevels;
+    courseLevel: CourseLevel;
     trainerId: string;
     studentIds: string[];
     startDate: Date;
@@ -43,6 +41,7 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, courseLevel, startDate,
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
     const [newStatus, setNewStatus] = useState<GroupStatus[]>([status]);
+    const [isOpen, setIsOpen] = useState(false);
     const [isAddFormOpen, setIsAddFormOpen] = useState(false);
     const [isRemoveFormOpen, setIsRemoveFormOpen] = useState(false);
     const [isMoveFormOpen, setIsMoveFormOpen] = useState(false);
@@ -96,8 +95,7 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, courseLevel, startDate,
 
     return (
         <div>
-
-            <DropdownMenu>
+            <DropdownMenu defaultOpen={false} onOpenChange={(val) => setIsOpen(val)} open={isOpen}>
                 <DropdownMenuTrigger asChild>
                     <Button customeColor="mutedIcon" variant={"icon"} >
                         <MoreVertical className="w-4 h-4" />

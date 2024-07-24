@@ -11,7 +11,6 @@ import { CourseType, getLevelWaitingList, getWaitingList } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
-import { CourseLevels } from "@prisma/client";
 import { sendWhatsAppMessage } from "@/lib/whatsApp";
 import { format } from "date-fns";
 
@@ -20,7 +19,11 @@ interface ZoomGroupFormProps {
     initialData?: {
         id: string;
         courseId: string,
-        courseLevel: CourseLevels,
+        courseLevel: {
+            id: string;
+            name: string;
+            slug: string;
+        },
         startDate: Date,
         studentIds: string[],
         trainerId: string,
@@ -30,7 +33,7 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
     const [loading, setLoading] = useState(false);
     const [course, setCourse] = useState<CourseType>();
     const [courseId, setCourseId] = useState<string[]>(initialData ? [initialData.courseId] : []);
-    const [courseLevel, setCourseLevel] = useState<CourseLevels[]>(initialData ? [initialData.courseLevel] : []);
+    const [courseLevelId, setCourseLevelId] = useState<string[]>(initialData ? [initialData.courseLevel.id] : []);
     const [userIds, setUserIds] = useState<string[]>(initialData ? initialData.studentIds : []);
     const [trainerId, setTrainerId] = useState<string[]>(initialData ? [initialData.trainerId] : []);
     const [date, setDate] = useState<Date | undefined>(initialData ? initialData.startDate : new Date());
@@ -50,7 +53,7 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                 description: (
                     <Spinner className="h-4 w-4" />
                 ),
-                duration: 30000,
+                duration: 3000,
             }))
         },
         onSuccess: ({ zoomClient }) => {
@@ -59,7 +62,6 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                     id: loadingToast.id,
                     title: "Error",
                     description: "No available Zoom Accounts at the selected time!",
-                    duration: 2000,
                     variant: "destructive",
                 })
                 setLoading(false)
@@ -71,7 +73,7 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                         courseId: courseId[0]!,
                         trainerId: trainerId[0]!,
                         startDate: date!,
-                        courseLevel: courseLevel[0]!,
+                        courseLevelId: courseLevelId[0]!,
                         zoomClientId: updatedZoomClient.id!,
                     }, {
                         onSuccess: ({ meetingNumber, meetingPassword, groupNumber, meetingLink }) => {
@@ -83,7 +85,7 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                                 zoomClientId: updatedZoomClient.id!,
                                 courseId: courseId[0]!,
                                 trainerId: trainerId[0]!,
-                                courseLevel: courseLevel[0]!,
+                                courseLevelId: courseLevelId[0]!,
                                 startDate: date!,
                                 studentIds: userIds,
                             }, {
@@ -178,7 +180,7 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
         () => coursesData?.courses.map(course => {
             const userIds = new Set();
             course.orders.forEach(order => {
-                if (order.user.courseStatus.some(({ courseId, state }) => courseId === course.id && state === "waiting")) {
+                if (order.user.courseStatus.some(({ courseId, status }) => courseId === course.id && status === "waiting")) {
                     userIds.add(order.user.id);
                 }
             });
@@ -203,7 +205,7 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                         data={trainersData.trainers.map(trainer => ({ active: trainer.groups.length < 10, label: trainer.user.email, value: trainer.id }))}
                     />
                     {initialData ? (
-                        <Typography>{coursesData.courses.find(({ id }) => id === initialData.courseId)?.name} - {courseLevel}</Typography>
+                        <Typography>{coursesData.courses.find(({ id }) => id === initialData.courseId)?.name} - {initialData.courseLevel.name}</Typography>
                     ) : (
                         <div className="flex items-center justify-between w-full">
                             <SelectField
@@ -230,8 +232,8 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                             />
                             {course && (
                                 <SelectField
-                                    values={courseLevel}
-                                    setValues={setCourseLevel}
+                                    values={courseLevelId}
+                                    setValues={setCourseLevelId}
                                     placeholder="Select Level..."
                                     listTitle={(
                                         <div className="flex items-center justify-between w-full">
@@ -240,13 +242,13 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                                         </div>
                                     )}
                                     data={course.levels.map(level => ({
-                                        active: getLevelWaitingList(course, level) >= 1,
-                                        label: level,
-                                        value: level,
+                                        active: getLevelWaitingList(course, level.id) >= 1,
+                                        label: level.name,
+                                        value: level.id,
                                         customLabel: (
                                             <div className="flex items-center justify-between w-full space-x-4">
-                                                <Typography>{level}</Typography>
-                                                <Typography className="text-xs text-muted">Waiting: {getLevelWaitingList(course, level)}</Typography>
+                                                <Typography>{level.name}</Typography>
+                                                <Typography className="text-xs text-muted">Waiting: {getLevelWaitingList(course, level.id)}</Typography>
                                             </div>
                                         )
                                     }))}
@@ -297,14 +299,14 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                                 .filter((order, index, self) => {
                                     const courseStatus = order.user.courseStatus.find(status => status.courseId === courseId[0])
 
-                                    return index === self.findIndex(({ userId }) => order.user.id === userId) && courseStatus?.level === courseLevel[0]
+                                    return index === self.findIndex(({ userId }) => order.user.id === userId) && courseStatus?.courseLevelId === courseLevelId[0]
                                 })
                                 .map(order => {
                                     const courseStatus = order.user.courseStatus.find(status => status.courseId === courseId[0])
                                     const isPrivate = order.courseTypes.find(type => type.id === courseId[0])?.isPrivate
 
                                     return ({
-                                        active: courseStatus?.state === "waiting",
+                                        active: courseStatus?.status === "waiting",
                                         label: order.user.name,
                                         value: order.user.id,
                                         customLabel: (

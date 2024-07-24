@@ -33,9 +33,7 @@ export const upload = async (file: File) => {
 
 export const deleteFile = async (path: string) => {
     const desertRef = ref(storage, path);
-    deleteObject(desertRef)
-        .then((res) => console.log(res))
-        .catch((e) => console.log(e))
+    return await deleteObject(desertRef)
 }
 
 export const deleteFiles = (pathToFolder: string) => {

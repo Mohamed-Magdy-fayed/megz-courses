@@ -2,19 +2,32 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Typography } from "@/components/ui/Typoghraphy";
 import ActionCell from "./AssignmentsActionCell";
+import { EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, MaterialItem } from "@prisma/client";
+import Link from "next/link";
+import { ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-export type Column = {
+export type AssignmentRow = {
     id: string,
     materialItemTitle: string,
+    levelSlugs: { label: string, value: string }[],
+    levelName: string,
+    levelSlug: string,
     questions: number,
     submissions: number,
     totalPoints: number,
+    externalLink: string | null,
+    evalForm: EvaluationForm & {
+        materialItem: MaterialItem | null;
+        submissions: EvaluationFormSubmission[];
+        questions: EvaluationFormQuestion[];
+    },
     createdBy: string,
     createdAt: string,
     updatedAt: string,
 };
 
-export const columns: ColumnDef<Column>[] = [
+export const columns: ColumnDef<AssignmentRow>[] = [
     {
         id: "select",
         header: ({ table }) => (
@@ -39,6 +52,17 @@ export const columns: ColumnDef<Column>[] = [
         header: "Material Item Title"
     },
     {
+        accessorKey: "externalLink",
+        header: "Google Form",
+        cell: ({ row }) => !!row.original.externalLink && (
+            <Link href={row.original.externalLink} target="_blank">
+                <Button variant={"icon"} customeColor={"infoIcon"}>
+                    <ExternalLink className="w-4 h-4" />
+                </Button>
+            </Link>
+        )
+    },
+    {
         accessorKey: "questions",
         header: "Questions"
     },
@@ -55,6 +79,13 @@ export const columns: ColumnDef<Column>[] = [
         header: "Created on"
     },
     {
+        accessorKey: "levelSlug",
+        header: "Level",
+        cell: ({ row }) => (
+            <Typography>{row.original.levelName}</Typography>
+        ),
+    },
+    {
         accessorKey: "createdBy",
         header: "Created by"
     },
@@ -65,6 +96,8 @@ export const columns: ColumnDef<Column>[] = [
         ),
         cell: ({ row }) => <ActionCell
             id={row.original.id}
+            externalLink={row.original.externalLink}
+            evalForm={row.original.evalForm}
         />,
     },
 ];

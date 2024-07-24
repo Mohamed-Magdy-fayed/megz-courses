@@ -28,6 +28,7 @@ export const selfServeRouter = createTRPCRouter({
                 where: {
                     email
                 },
+                include: { courseStatus: true }
             })
 
             const foundMatchingCourse = user?.courseStatus.some((status) => status.courseId === courseId)

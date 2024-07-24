@@ -5,6 +5,7 @@ import { useToast } from "../ui/use-toast";
 import { api } from "@/lib/api";
 import { useState } from "react";
 import { validOrderStatuses } from "@/lib/enumsTypes";
+import { upperFirst } from "lodash";
 
 const OrdersClient = ({ data }: {
   data: (Order & {
@@ -26,6 +27,7 @@ const OrdersClient = ({ data }: {
     salesOperation,
     status,
     user,
+    refundRequester,
     updatedAt,
   }) => ({
     id,
@@ -35,9 +37,11 @@ const OrdersClient = ({ data }: {
     salesOperationId: salesOperation.id,
     salesOperationCode: salesOperation.code,
     status,
+    userId: user.id,
     userName: user.name,
     userEmail: user.email,
     userImage: user.image || "",
+    refundRequester,
     courses,
     updatedAt,
   }))
@@ -70,8 +74,13 @@ const OrdersClient = ({ data }: {
       data={formattedData}
       setData={setOrders}
       onDelete={onDelete}
-      search={{ key: "orderNumber", label: "Order Number" }}
-      filters={[{ key: "status", label: "Status", values: [...validOrderStatuses] }]}
+      searches={[{ key: "orderNumber", label: "Order Number" }]}
+      filters={[{
+        key: "status", filterName: "Status", values: [...validOrderStatuses.map(status => ({
+          label: upperFirst(status),
+          value: status,
+        }))]
+      }]}
     />
   );
 };

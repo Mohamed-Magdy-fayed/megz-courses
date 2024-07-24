@@ -1,32 +1,36 @@
-import Spinner from "@/components/Spinner";
 import { DataTable } from "@/components/ui/DataTable";
 import { api } from "@/lib/api";
-import { type Column, columns } from "./FinalTestsColumn";
-import { format } from "date-fns";
+import { type FinalTestRow, columns } from "./FinalTestsColumn";
+import { useToast } from "@/components/ui/use-toast";
+import { useState } from "react";
 
-const FinalTestClient = ({ courseId }: { courseId: string }) => {
-    const { data } = api.evaluationForm.getFinalTest.useQuery({ courseId })
+const FinalTestClient = ({ formattedData }: { formattedData: FinalTestRow[] }) => {
+    const { toastSuccess, toastError } = useToast()
 
-    const formattedData: Column[] = data?.finalTest
-        ? [{
-            id: data.finalTest.id,
-            questions: data.finalTest.questions.length,
-            submissions: data.finalTest.submissions.length,
-            totalPoints: data.finalTest.totalPoints,
-            createdBy: data.finalTest.createdBy,
-            createdAt: format(data.finalTest.createdAt, "PPPp"),
-            updatedAt: format(data.finalTest.updatedAt, "PPPp"),
-        }]
-        : []
+    const [ids, setIds] = useState<string[]>([])
 
-    if (!data?.finalTest) return <div className="w-full h-full grid place-content-center"><Spinner /></div>
+    const trpcUtils = api.useContext()
+    const deleteMutation = api.evaluationForm.deleteEvalForm.useMutation()
+
+    const onDelete = (callback?: () => void) => {
+        deleteMutation.mutate({ ids }, {
+            onSuccess: (data) => {
+                trpcUtils.courses.invalidate()
+                    .then(() => {
+                        toastSuccess(`${data.deletedEvalForms.count} forms deleted`)
+                        callback?.()
+                    })
+            },
+            onError: ({ message }) => toastError(message),
+        })
+    }
 
     return (
         <DataTable
             columns={columns}
-            data={formattedData || []}
-            setData={() => { }}
-            onDelete={() => { }}
+            data={formattedData}
+            setData={(data) => setIds(data.map(item => item.id))}
+            onDelete={onDelete}
         />
     );
 };

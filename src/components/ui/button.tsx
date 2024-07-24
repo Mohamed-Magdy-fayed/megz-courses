@@ -26,8 +26,8 @@ const buttonVariants = cva(
                 destructive: "bg-destructive text-destructive-foreground hover:bg-destructive-hover",
                 success: "bg-success text-success-foreground hover:bg-success-hover",
                 info: "bg-info text-info-foreground hover:bg-info-hover",
-                backgroundOutlined: "text-background hover:border-foreground border-background",
-                foregroundOutlined: "text-foreground hover:border-background border-foreground",
+                backgroundOutlined: "text-background hover:border-primary border-muted",
+                foregroundOutlined: "text-foreground hover:border-primary border-muted",
                 primaryOutlined: "text-primary hover:bg-primary hover:text-primary-foreground border-primary",
                 secondaryOutlined: "text-secondary hover:bg-secondary hover:text-secondary-foreground border-secondary",
                 accentOutlined: "text-accent hover:bg-accent hover:text-accent-foreground border-accent",
@@ -92,6 +92,7 @@ const LoadingButton = React.forwardRef<HTMLButtonElement, ButtonProps & { progre
             <Comp
                 className={cn("!whitespace-nowrap !overflow-hidden !relative", buttonVariants({ variant, size, className, customeColor }))}
                 ref={ref}
+                disabled={disabled}
                 {...props}
             >
                 <div className={cn(disabled ? "opacity-0" : "opacity-100")}>{children}</div>

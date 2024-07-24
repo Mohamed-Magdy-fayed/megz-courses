@@ -1,47 +1,19 @@
-import Spinner from "@/components/Spinner";
 import { DataTable } from "@/components/ui/DataTable";
-import { api } from "@/lib/api";
-import { CourseGroups, columns } from "./CourseGroupsColumn";
-import { ZoomGroup } from "@prisma/client";
+import { CourseRow, columns } from "./CourseGroupsColumn";
 
-const CourseGroupsClient = ({ zoomGroups }: { zoomGroups: ZoomGroup[] }) => {
-    const { data } = api.zoomGroups.getzoomGroups.useQuery({ ids: zoomGroups.map(group => group.id) })
-
-    const formattedData: CourseGroups[] = data?.zoomGroups ? data.zoomGroups.map(({
-        id,
-        groupNumber,
-        groupStatus,
-        startDate,
-        students,
-        trainer,
-        zoomSessions,
-        course,
-        courseLevel,
-        createdAt,
-        updatedAt,
-    }) => ({
-        id,
-        groupNumber,
-        groupStatus,
-        startDate,
-        students,
-        trainer: trainer!,
-        zoomSessions,
-        course: course!,
-        courseLevel,
-        createdAt,
-        updatedAt,
-    })) : []
-
-    if (!data?.zoomGroups) return <div className="w-full h-full grid place-content-center"><Spinner /></div>
-
+const CourseGroupsClient = ({ formattedData }: { formattedData: CourseRow[] }) => {
     return (
         <DataTable
             columns={columns}
             data={formattedData || []}
             setData={() => { }}
             onDelete={() => { }}
-            search={{ key: "groupNumber", label: "Group name" }}
+            searches={[
+                { key: "groupNumber", label: "Group name" }
+            ]}
+            filters={[
+                { key: "levelSlug", filterName: "Level", values: formattedData[0]?.levelSlugs || [] }
+            ]}
         />
     );
 };

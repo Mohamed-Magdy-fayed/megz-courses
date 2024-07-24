@@ -48,7 +48,7 @@ const ZoomAccountsClient = () => {
             data={formattedData}
             setData={setAccounts}
             onDelete={onDelete}
-            search={{ key: "name", label: "Name" }}
+            searches={[{ key: "name", label: "Name" }]}
         />
     );
 };

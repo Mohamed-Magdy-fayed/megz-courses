@@ -2,10 +2,15 @@ import { LogoPrimary } from '../layout/Logo'
 import Copyright from '@/components/Copyright'
 import { Progress } from '../ui/progress'
 import { Typography } from '../ui/Typoghraphy'
-import { LearningBreadcrumb } from './LearningBreadcrumb'
-import { FullCourseType } from '@/lib/PrismaFullTypes'
+import { LearningLayoutCourseType, LearningLayoutLevelType, LearningLayoutUserType } from '@/components/LearningLayout/LearningLayout'
+import { LearningBreadcrumb } from '@/components/LearningLayout/LearningBreadcrumb'
 
-const LandingFooter = ({ course }: { course: FullCourseType }) => {
+const LandingFooter = ({ course, level }: {
+    level?: LearningLayoutLevelType;
+    course: LearningLayoutCourseType;
+}) => {
+    if (!course) return <Typography>No Course Found!</Typography>;
+
     return (
         <div className='w-full'>
             <div className='p-4 max-w-7xl lg:mx-auto'>
@@ -22,7 +27,7 @@ const LandingFooter = ({ course }: { course: FullCourseType }) => {
                             <Progress value={50} />
                         </div>
                         <div className='flex items-center justify-center gap-4'>
-                            <LearningBreadcrumb course={course} />
+                            {!!level && <LearningBreadcrumb course={course} level={level} />}
                         </div>
                     </div>
                 </div>

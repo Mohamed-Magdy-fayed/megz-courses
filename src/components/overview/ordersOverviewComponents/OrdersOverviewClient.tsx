@@ -29,10 +29,10 @@ const LatestOrdersClient = ({ data }: { data: Orders[] }) => {
       data={formattedData}
       setData={() => { }}
       onDelete={() => { }}
-      search={{
+      searches={[{
         key: "orderNumber",
         label: "Order Number"
-      }}
+      }]}
     />
   );
 };

@@ -1,0 +1,189 @@
+import { z } from "zod";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
+import { TRPCError } from "@trpc/server";
+
+export const levelsRouter = createTRPCRouter({
+  getWaitingList: publicProcedure
+    .input(z.object({ slug: z.string() }))
+    .query(async ({ input: { slug }, ctx }) => {
+      const level = await ctx.prisma.courseLevel.findUnique({
+        where: {
+          slug,
+        },
+        include: { courseStatus: { include: { user: true } } }
+      });
+
+      const userIds = level?.courseStatus.map(s => s.userId || "")
+
+      const users = await ctx.prisma.user.findMany({
+        where: { id: { in: userIds } },
+        include: {
+          orders: true,
+          courseStatus: true,
+        }
+      })
+
+      const watingUsers = users.filter(u => u.courseStatus.some(({ courseLevelId, status }) => courseLevelId === level?.id && status === "waiting"))
+
+      return { watingUsers };
+    }),
+  getWaitingLists: publicProcedure
+    .query(async ({ ctx }) => {
+      const levels = await ctx.prisma.courseLevel.findMany({
+        include: { courseStatus: true }
+      });
+
+      const coursesWaitingUsers = await Promise.all(levels.map(async (level) => {
+        const userIds = level?.courseStatus.map(s => s.userId || "")
+
+        const users = await ctx.prisma.user.findMany({
+          where: { id: { in: userIds } },
+          include: { courseStatus: true }
+        })
+
+        const watingUsers = users.filter(user => user.courseStatus.some(({ courseLevelId, status }) => courseLevelId === level?.id && status === "waiting"))
+        return {
+          courseId: level.id,
+          waitingList: watingUsers.length,
+        }
+      }))
+
+
+      return { coursesWaitingUsers };
+    }),
+  getAll: protectedProcedure.query(async ({ ctx }) => {
+    const levels = await ctx.prisma.courseLevel.findMany({
+      include: { courseStatus: { include: { user: true } } },
+      orderBy: { createdAt: "desc" }
+    });
+
+    return { levels };
+  }),
+  getById: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .query(async ({ ctx, input: { id } }) => {
+      const level = await ctx.prisma.courseLevel.findUnique({
+        where: { id },
+        include: {
+          zoomGroups: true,
+          certificates: true,
+          course: true,
+          courseStatus: true,
+          evaluationForms: true,
+        },
+      });
+      return { level };
+    }),
+  getBySlug: protectedProcedure
+    .input(
+      z.object({
+        slug: z.string(),
+      })
+    )
+    .query(async ({ ctx, input: { slug } }) => {
+      const level = await ctx.prisma.courseLevel.findUnique({
+        where: { slug },
+        include: {
+          zoomGroups: true,
+          certificates: true,
+          course: true,
+          courseStatus: true,
+          evaluationForms: { include: { questions: true, submissions: true } },
+          materialItems: { include: { evaluationForms: true } },
+        },
+      });
+      return { level };
+    }),
+  getByCourseSlug: protectedProcedure
+    .input(
+      z.object({
+        courseSlug: z.string(),
+      })
+    )
+    .query(async ({ ctx, input: { courseSlug } }) => {
+      const levels = await ctx.prisma.courseLevel.findMany({
+        where: {
+          course: {
+            slug: courseSlug
+          }
+        },
+        include: {
+          zoomGroups: true,
+          certificates: true,
+          course: true,
+          courseStatus: true,
+          evaluationForms: { include: { questions: true, submissions: true } },
+          materialItems: { include: { evaluationForms: true } },
+        },
+      });
+      return { levels };
+    }),
+  createLevel: protectedProcedure
+    .input(
+      z.object({
+        name: z.string(),
+        slug: z.string(),
+        courseSlug: z.string(),
+      })
+    )
+    .mutation(async ({ input: {
+      name,
+      slug,
+      courseSlug,
+    }, ctx }) => {
+      const level = await ctx.prisma.courseLevel.create({
+        data: {
+          name,
+          slug,
+          course: {
+            connect: {
+              slug: courseSlug,
+            }
+          }
+        },
+      });
+
+      return {
+        level,
+      };
+    }),
+  editLevel: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        slug: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input: { name, slug, id } }) => {
+      const updatedCourse = await ctx.prisma.course.update({
+        where: {
+          id,
+        },
+        data: {
+          name,
+          slug,
+        },
+      });
+
+      return { updatedCourse };
+    }),
+  deleteLevels: protectedProcedure
+    .input(z.array(z.string()))
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+      const deletedLevels = await ctx.prisma.courseLevel.deleteMany({
+        where: {
+          id: {
+            in: input,
+          },
+        },
+      });
+
+      return { deletedLevels };
+    }),
+});

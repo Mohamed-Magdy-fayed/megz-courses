@@ -9,13 +9,13 @@ import { Button } from "@/components/ui/button";
 import { CheckSquare, Copy, MoreVertical } from "lucide-react";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
-import { CourseLevels } from "@prisma/client";
 import { api } from "@/lib/api";
 import Spinner from "@/components/Spinner";
 import { Typography } from "@/components/ui/Typoghraphy";
-import ModalInDropdownMenu from "@/components/ui/modal-in-dropdown-menu";
 import SelectField from "@/components/salesOperation/SelectField";
 import { sendWhatsAppMessage } from "@/lib/whatsApp";
+import Modal from "@/components/ui/modal";
+import { env } from "@/env.mjs";
 
 interface ActionCellProps {
     id: string;
@@ -23,14 +23,15 @@ interface ActionCellProps {
     testLink: string;
     userId: string;
     courseId: string;
-    courseLevels: CourseLevels[]
+    courseLevels: { label: string, value: string }[]
 }
 
 const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, isLevelSubmitted, testLink, userId }) => {
     const { toastInfo, toast, toastError } = useToast();
     const [loading, setLoading] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
-    const [level, setLevel] = useState<CourseLevels[]>([])
+    const [isSubmitLevelOpen, setIsSubmitLevelOpen] = useState(false)
+    const [level, setLevel] = useState<string[]>([])
     const [addToWaitingListToast, setAddToWaitingListToast] = useState<toastType>()
 
     const trpcUtils = api.useContext()
@@ -39,21 +40,20 @@ const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, isL
             setAddToWaitingListToast(
                 toast({
                     title: "Loading...",
-                    description: <Spinner />,
-                    duration: 100000,
+                    description: <Spinner className="w-4 h-4" />,
+                    duration: 3000,
                     variant: "info",
                 })
             )
             setLoading(true)
         },
-        onSuccess: ({ updatedUser, course, level }) => {
+        onSuccess: ({ updatedUser, course }) => {
             addToWaitingListToast?.update({
                 id: addToWaitingListToast.id,
                 title: "Success",
                 description: <Typography>
-                    Added student {updatedUser.name} to waiting list of course {course.name} at level {level}
+                    Added student {updatedUser.name} to waiting list of course {course.name} at level {courseLevels.find(courseLevel => courseLevel.value === level[0])?.label}
                 </Typography>,
-                duration: 3000,
                 variant: "success",
             })
             sendWhatsAppMessage({
@@ -65,73 +65,74 @@ const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, isL
         },
         onError: ({ message }) => addToWaitingListToast?.update({
             id: addToWaitingListToast.id,
-            title: "An error occured",
+            title: "Error",
             description: message,
-            duration: 3000,
             variant: "destructive",
         }),
         onSettled: () => {
             trpcUtils.invalidate().then(() => {
                 setLoading(false)
-                setIsOpen(false)
+                setIsSubmitLevelOpen(false)
+                setAddToWaitingListToast(undefined)
             })
         },
     })
 
     const onCopy = () => {
-        navigator.clipboard.writeText(`${window.location.host}${testLink}`);
+        navigator.clipboard.writeText(`${env.NEXT_PUBLIC_NEXTAUTH_URL}${testLink}`);
         toastInfo("Link copied to the clipboard");
     };
 
     const handleSubmitLevel = () => {
         if (!level[0]) return toastError("Please select a Level")
-        addToWaitingListMutation.mutate({ courseId, level: level[0], userId })
+        addToWaitingListMutation.mutate({ courseId, levelId: level[0], userId })
     };
+
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button customeColor="mutedIcon" variant={"icon"} >
-                    <MoreVertical className="w-4 h-4" />
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem onClick={onCopy}>
-                    <Copy className="w-4 h-4 mr-2" />
-                    Copy Link
-                </DropdownMenuItem>
-                <ModalInDropdownMenu
-                    disabled={isLevelSubmitted}
-                    title="Submit student level"
-                    description="Select the appropriate level for the student"
-                    isOpen={isOpen}
-                    onClose={() => setIsOpen(false)}
-                    onOpen={() => setIsOpen(true)}
-                    itemChildren={(
-                        <>
-                            <CheckSquare className="w-4 h-4 mr-2" />
-                            Submit Level
-                        </>
-                    )}
-                >
-                    <div className="flex items-center justify-between">
-                        <SelectField
-                            disabled={loading}
-                            placeholder="Select Level"
-                            listTitle="Level"
-                            values={level}
-                            setValues={setLevel}
-                            data={courseLevels.map(level => ({
-                                active: true,
-                                label: level,
-                                value: level,
-                            }))}
-                        />
-                        <Button type="button" onClick={handleSubmitLevel}>Add to waiting list</Button>
-                    </div>
-                </ModalInDropdownMenu>
-            </DropdownMenuContent>
-        </DropdownMenu>
+        <>
+            <Modal
+                title="Submit student level"
+                description="Select the appropriate level for the student"
+                isOpen={isSubmitLevelOpen}
+                onClose={() => setIsSubmitLevelOpen(false)}
+            >
+                <div className="flex items-center justify-between p-2">
+                    <SelectField
+                        disabled={loading}
+                        placeholder="Select Level"
+                        listTitle="Level"
+                        values={level}
+                        setValues={setLevel}
+                        data={courseLevels.map(level => ({
+                            active: true,
+                            ...level
+                        }))}
+                    />
+                    <Button type="button" onClick={handleSubmitLevel}>Add to waiting list</Button>
+                </div>
+            </Modal>
+            <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
+                <DropdownMenuTrigger asChild>
+                    <Button customeColor="mutedIcon" variant={"icon"} >
+                        <MoreVertical className="w-4 h-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={onCopy}>
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy Link
+                    </DropdownMenuItem>
+                    <DropdownMenuItem disabled={isLevelSubmitted} onClick={() => {
+                        setIsOpen(false)
+                        setIsSubmitLevelOpen(true)
+                    }}>
+                        <CheckSquare className="w-4 h-4 mr-2" />
+                        Submit Level
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </>
     );
 };
 

@@ -1,7 +1,7 @@
 import { Dispatch, FC, SetStateAction, useEffect, useState } from "react"
 import Modal from "../ui/modal"
 import SelectField from "./SelectField"
-import { Address, Course, Order, User } from "@prisma/client"
+import { Address, Course, CourseStatus, Order, User } from "@prisma/client"
 import { Button } from "../ui/button"
 import { api } from "@/lib/api"
 import { render } from "@react-email/render"
@@ -19,6 +19,7 @@ interface CreateOrderProps {
     usersdata: (User & {
         address: Address | null;
         orders: Order[];
+        courseStatus: CourseStatus[];
     })[];
     coursesData: Course[];
     salesOperationId: string;

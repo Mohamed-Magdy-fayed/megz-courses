@@ -4,18 +4,25 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowUpDown } from "lucide-react";
 import { Typography } from "@/components/ui/Typoghraphy";
 import ActionCell from "./PlacmentTestsActionCell";
+import { EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, MaterialItem } from "@prisma/client";
 
-export type Column = {
+export type PlacmentTestRow = {
     id: string,
     questions: number,
     submissions: number,
     totalPoints: number,
+    externalLink: string | null,
+    evalForm: EvaluationForm & {
+        materialItem: MaterialItem | null;
+        submissions: EvaluationFormSubmission[];
+        questions: EvaluationFormQuestion[];
+    },
     createdBy: string,
     createdAt: string,
     updatedAt: string,
 };
 
-export const columns: ColumnDef<Column>[] = [
+export const columns: ColumnDef<PlacmentTestRow>[] = [
     {
         id: "select",
         header: ({ table }) => (
@@ -83,6 +90,8 @@ export const columns: ColumnDef<Column>[] = [
         ),
         cell: ({ row }) => <ActionCell
             id={row.original.id}
+            externalLink={row.original.externalLink}
+            evalForm={row.original.evalForm}
         />,
     },
 ];

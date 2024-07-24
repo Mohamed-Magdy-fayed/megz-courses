@@ -37,6 +37,9 @@ const ConfigPage: NextPage = () => {
                     <Link href={`/config/zoom`}>
                         <Button>Zoom Accounts</Button>
                     </Link>
+                    <Link href={`/config/levels`}>
+                        <Button>Course Levels</Button>
+                    </Link>
                 </div>
                 <TabsContent value="config">
                     <ConceptTitle>Configure Facebook webhooks</ConceptTitle>

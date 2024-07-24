@@ -77,6 +77,10 @@ export const columns: ColumnDef<TrainerColumn>[] = [
     ),
   },
   {
+    accessorKey: "role",
+    header: "Role",
+  },
+  {
     accessorKey: "taskCount",
     header: "Tasks",
   },

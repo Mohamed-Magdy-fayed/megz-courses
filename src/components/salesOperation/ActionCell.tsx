@@ -16,8 +16,8 @@ import Email from "../emails/Email";
 import { format } from "date-fns";
 import { formatPrice } from "@/lib/utils";
 import SelectField from "./SelectField";
-import { useSession } from "next-auth/react";
 import ModalInDropdownMenu from "../ui/modal-in-dropdown-menu";
+import Modal from "@/components/ui/modal";
 
 interface CellActionProps {
     status: OrderStatus;
@@ -27,9 +27,9 @@ interface CellActionProps {
 }
 
 const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId }) => {
-    const sesstion = useSession();
     const { toastInfo, toastSuccess, toastError, toast } = useToast();
     const [refundReason, setRefundReason] = useState<("requested_by_customer" | "duplicate" | "fraudulent")[]>([])
+    const [isOpen, setIsOpen] = useState(false)
     const [isRefundModalOpen, setIsRefundModalOpen] = useState(false)
     const [loading, setLoading] = useState(false)
 
@@ -119,81 +119,82 @@ const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId })
         if (!refundReason[0]) return toastError("please select a reason")
         refundOrderMutation.mutate({
             orderId,
-            userId: sesstion.data?.user.id || "",
             reason: refundReason[0],
         })
     }
 
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button customeColor="mutedIcon" variant={"icon"} >
-                    <MoreVertical className="w-4 h-4" />
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem disabled={!id || status !== "pending"} onClick={onCopy}>
-                    <Copy className="w-4 h-4 mr-2" />
-                    Copy payment link
-                </DropdownMenuItem>
-                <DropdownMenuItem disabled={status !== "pending"} onClick={() => setOpen(true)}>
-                    <LucideDollarSign className="w-4 h-4 mr-2" />
-                    Manual payment
-                </DropdownMenuItem>
-                <DropdownMenuItem disabled={status !== "pending"} onClick={handleResendPaymentLink}>
-                    <Send className="w-4 h-4 mr-2" />
-                    Resend payment link
-                </DropdownMenuItem>
-                <ModalInDropdownMenu
-                    title="Refund"
-                    description="Select refund reason"
-                    isOpen={isRefundModalOpen}
-                    onOpen={() => setIsRefundModalOpen(true)}
-                    onClose={() => setIsRefundModalOpen(false)}
-                    children={(
-                        <div className="flex gap-4 items-center justify-between">
-                            <SelectField
+        <>
+            <Modal
+                title="Refund"
+                description="Select refund reason"
+                isOpen={isRefundModalOpen}
+                onClose={() => setIsRefundModalOpen(false)}
+                children={(
+                    <div className="flex gap-4 items-center justify-between">
+                        <SelectField
+                            disabled={loading}
+                            data={[
+                                { active: true, label: "Customer request", value: "requested_by_customer" },
+                                { active: true, label: "Dublicate", value: "duplicate" },
+                                { active: true, label: "Fraud", value: "fraudulent" },
+                            ]}
+                            listTitle="Reasons"
+                            placeholder="Select Refund Reason"
+                            values={refundReason}
+                            setValues={setRefundReason}
+                            disableSearch
+                        />
+                        <div className="flex items-center gap-4">
+                            <Button
                                 disabled={loading}
-                                data={[
-                                    { active: true, label: "Customer request", value: "requested_by_customer" },
-                                    { active: true, label: "Dublicate", value: "duplicate" },
-                                    { active: true, label: "Fraud", value: "fraudulent" },
-                                ]}
-                                listTitle="Reasons"
-                                placeholder="Select Refund Reason"
-                                values={refundReason}
-                                setValues={setRefundReason}
-                                disableSearch
-                            />
-                            <div className="flex items-center gap-4">
-                                <Button
-                                    disabled={loading}
-                                    onClick={() => setIsRefundModalOpen(false)}
-                                    variant={"outline"}
-                                    customeColor={"destructiveOutlined"}
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    disabled={loading}
-                                    onClick={handleRefund}
-                                    customeColor={"success"}
-                                >
-                                    Confirm
-                                </Button>
-                            </div>
+                                onClick={() => setIsRefundModalOpen(false)}
+                                variant={"outline"}
+                                customeColor={"destructiveOutlined"}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                disabled={loading}
+                                onClick={handleRefund}
+                                customeColor={"success"}
+                            >
+                                Confirm
+                            </Button>
                         </div>
-                    )}
-                    itemChildren={
-                        <>
-                            <Coins className="w-4 h-4 mr-2" />
-                            Refund
-                        </>
-                    }
-                />
-            </DropdownMenuContent>
-        </DropdownMenu>
+                    </div>
+                )}
+            />
+            <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
+                <DropdownMenuTrigger asChild>
+                    <Button customeColor="mutedIcon" variant={"icon"} >
+                        <MoreVertical className="w-4 h-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuItem disabled={!id || status !== "pending"} onClick={onCopy}>
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy payment link
+                    </DropdownMenuItem>
+                    <DropdownMenuItem disabled={status !== "pending"} onClick={() => setOpen(true)}>
+                        <LucideDollarSign className="w-4 h-4 mr-2" />
+                        Manual payment
+                    </DropdownMenuItem>
+                    <DropdownMenuItem disabled={status !== "pending"} onClick={handleResendPaymentLink}>
+                        <Send className="w-4 h-4 mr-2" />
+                        Resend payment link
+                    </DropdownMenuItem>
+                    <DropdownMenuItem disabled={status === "refunded"} onClick={() => {
+                        setIsRefundModalOpen(true)
+                        setIsOpen(false)
+                    }}>
+                        <Coins className="w-4 h-4 mr-2" />
+                        Refund
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </>
     );
 };
 

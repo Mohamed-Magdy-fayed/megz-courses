@@ -7,22 +7,18 @@ import Email from "../emails/Email"
 import { format } from "date-fns"
 import { useToast } from "../ui/use-toast"
 import { formatPrice } from "@/lib/utils"
-import SelectField from "../salesOperation/SelectField"
 import CoursesSelectField from "../salesOperation/CoursesSelectField"
-import ModalInDropdownMenu from "../ui/modal-in-dropdown-menu"
-import { PackagePlus } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { Typography } from "../ui/Typoghraphy"
+import Modal from "@/components/ui/modal"
+import { Users } from "@/components/studentComponents/StudentClient"
 
 interface CreateOrderForStudentProps {
     loading: boolean
     setLoading: Dispatch<SetStateAction<boolean>>
     open: boolean
     setOpen: Dispatch<SetStateAction<boolean>>
-    userData: User & {
-        address: Address | null;
-        orders: Order[];
-    };
+    userData: Users;
     coursesData: Course[];
 }
 
@@ -140,13 +136,11 @@ const CreateOrderForStudent: FC<CreateOrderForStudentProps> = ({
     }, [userData])
 
     return (
-        <ModalInDropdownMenu
+        <Modal
             title="Add courses"
             description="select courses to be added to this order"
             isOpen={open}
             onClose={() => setOpen(false)}
-            onOpen={() => setOpen(true)}
-            itemChildren={<><PackagePlus className="w-4 h-4 mr-2" />Create Order</>}
         >
             <div className="flex items-center justify-between gap-4">
                 <div className="space-y-4 [&>*]:w-full">
@@ -189,7 +183,7 @@ const CreateOrderForStudent: FC<CreateOrderForStudentProps> = ({
                     </Button>
                 </div>
             </div>
-        </ModalInDropdownMenu>
+        </Modal>
     )
 }
 

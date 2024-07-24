@@ -10,6 +10,30 @@ import { Prisma } from "@prisma/client";
 import { validDeviceTypes, validUserTypes } from "@/lib/enumsTypes";
 
 export const usersRouter = createTRPCRouter({
+  queryUsers: protectedProcedure
+    .input(
+      z.object({
+        userName: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input: { userName } }) => {
+      const users = await ctx.prisma.user.findMany({
+        where: {
+          name: {
+            contains: userName,
+            mode: "insensitive",
+          },
+        },
+        orderBy: {
+          id: "desc"
+        },
+        include: {
+          orders: true,
+        },
+      });
+
+      return { users };
+    }),
   getUsers: protectedProcedure
     .input(
       z.object({
@@ -26,6 +50,9 @@ export const usersRouter = createTRPCRouter({
         },
         include: {
           orders: true,
+          zoomGroups: { include: { zoomSessions: true } },
+          evaluationFormSubmissions: true,
+          courseStatus: true
         },
       });
 
@@ -39,7 +66,7 @@ export const usersRouter = createTRPCRouter({
             userType: "student",
             courseStatus: {
               some: {
-                state: "completed"
+                status: "completed"
               }
             }
           }
@@ -50,6 +77,9 @@ export const usersRouter = createTRPCRouter({
         },
         include: {
           orders: true,
+          zoomGroups: { include: { zoomSessions: true } },
+          evaluationFormSubmissions: true,
+          courseStatus: true,
         },
       });
 
@@ -64,7 +94,22 @@ export const usersRouter = createTRPCRouter({
     .query(async ({ ctx, input: { id } }) => {
       const user = await ctx.prisma.user.findUnique({
         where: { id },
-        include: { orders: true, evaluationFormSubmissions: true, zoomGroups: { include: { zoomSessions: true } } },
+        include: {
+          orders: { include: { courses: { include: { levels: true, orders: { include: { user: true } } } } } },
+          evaluationFormSubmissions: true,
+          zoomGroups: { include: { zoomSessions: true, trainer: { include: { user: true } }, course: true, students: true, courseLevel: true }, },
+          placementTests: {
+            include: {
+              trainer: { include: { user: true } },
+              course: { include: { levels: true } },
+              student: { include: { courseStatus: { include: { level: true } } } },
+              oralTestTime: true,
+              writtenTest: { include: { submissions: true } }
+            }
+          },
+          studentNotes: { include: { createdByUser: true, mentions: true } },
+          courseStatus: true,
+        },
       });
 
       if (!user) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "didn't find user" })
@@ -75,7 +120,24 @@ export const usersRouter = createTRPCRouter({
       const id = ctx.session.user.id
       const user = await ctx.prisma.user.findUnique({
         where: { id },
-        include: { orders: true, evaluationFormSubmissions: true, zoomGroups: { include: { zoomSessions: true } } },
+
+        include: {
+          orders: { include: { courses: { include: { levels: true, orders: { include: { user: true } } } } } },
+          evaluationFormSubmissions: true,
+          zoomGroups: { include: { zoomSessions: true, trainer: { include: { user: true } }, course: true, students: true, courseLevel: true }, },
+          placementTests: {
+            include: {
+              trainer: { include: { user: true } },
+              course: { include: { levels: true } },
+              student: { include: { courseStatus: { include: { level: true } } } },
+              oralTestTime: true,
+              writtenTest: { include: { submissions: true } }
+            }
+          },
+          studentNotes: { include: { createdByUser: true, mentions: true } },
+          courseStatus: { include: { level: true } },
+          certificates: { include: { course: true, courseLevel: true } },
+        },
       });
       return { user };
     }),
@@ -90,7 +152,28 @@ export const usersRouter = createTRPCRouter({
         where: {
           email,
         },
-        include: { orders: true },
+        include: {
+          orders: { include: { courses: { include: { orders: { include: { user: true } } } } } },
+          studentNotes: { include: { createdByUser: true, mentions: true } },
+          placementTests: {
+            include: {
+              trainer: { include: { user: true } },
+              writtenTest: { include: { submissions: true } },
+              course: true,
+              student: true,
+              oralTestTime: true,
+            }
+          },
+          evaluationFormSubmissions: true,
+          zoomGroups: {
+            include: {
+              trainer: { include: { user: true } },
+              course: true,
+              students: true,
+              zoomSessions: true,
+            }
+          }
+        },
       });
 
       return { user };

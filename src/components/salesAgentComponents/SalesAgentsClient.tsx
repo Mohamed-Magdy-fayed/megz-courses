@@ -6,7 +6,7 @@ import { SalesAgentsColumn, columns } from "./SalesAgentColumn";
 import { SalesAgent, SalesOperation, User } from "@prisma/client";
 import { useToast } from "../ui/use-toast";
 
-interface SalesAgents extends SalesAgent {
+export interface SalesAgents extends SalesAgent {
   user: User;
   tasks: SalesOperation[];
 }
@@ -21,6 +21,7 @@ const SalesAgentClient = ({ data }: { data: SalesAgents[] }) => {
     phone: agent.user.phone || "no phone",
     tasks: agent?.tasks.length || 0,
     salary: agent?.salary || "no salary",
+    agent,
     createdAt: format(agent.user.createdAt, "MMMM do, yyyy"),
   }));
 

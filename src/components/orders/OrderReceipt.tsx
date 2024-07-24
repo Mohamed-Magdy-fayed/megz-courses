@@ -1,6 +1,6 @@
 import { formatPrice } from '@/lib/utils'
 import { Copy, Printer, Home, ExternalLink } from 'lucide-react'
-import { FC, useRef } from 'react'
+import { FC, useEffect, useRef } from 'react'
 import { Typography } from '../ui/Typoghraphy'
 import { Card, CardHeader, CardContent, CardFooter } from '../ui/card'
 import { TableCaption, TableBody, TableRow, TableCell, Table } from '../ui/table'
@@ -10,6 +10,7 @@ import Link from 'next/link'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { SeverityPill, SeverityPillProps } from '../overview/SeverityPill'
 import { Order, SalesOperation, Course, User } from '@prisma/client'
+import { api } from '@/lib/api'
 
 interface OrderReceiptProps {
     order: Order & {
@@ -35,11 +36,18 @@ const OrderReceipt: FC<OrderReceiptProps> = ({ order, adminView }) => {
         }
     };
 
+    const status = order.status
     const color: SeverityPillProps["color"] =
-        order?.status === "cancelled" ? "destructive"
-            : order?.status === "refunded" ? "primary"
-                : order?.status === "paid" ? "success"
-                    : "muted"
+        status === "cancelled" ? "destructive"
+            : status === "refunded" ? "primary"
+                : status === "paid" ? "success"
+                    : status === "pending" ? "muted" : "destructive"
+
+    const { data: refundedByUserdata, refetch } = api.users.getUserById.useQuery({ id: order.refundRequester || "" }, { enabled: false });
+
+    useEffect(() => {
+        if (order.refundRequester) refetch()
+    }, [order.refundRequester])
 
     return (
         <Card ref={printRef} className="max-w-4xl mx-auto">
@@ -132,6 +140,22 @@ const OrderReceipt: FC<OrderReceiptProps> = ({ order, adminView }) => {
                                 {formatPrice(order.amount!)}
                             </TableCell>
                         </TableRow>
+                        <TableRow>
+                            <TableCell className="whitespace-nowrap">Status:</TableCell>
+                            <TableCell className="text-right">
+                                <SeverityPill className='w-fit ml-auto' color={color}>
+                                    {status}
+                                </SeverityPill>
+                            </TableCell>
+                        </TableRow>
+                        {refundedByUserdata?.user.email && (
+                            <TableRow>
+                                <TableCell className="whitespace-nowrap">Refunded By:</TableCell>
+                                <TableCell className="text-right">
+                                    Refunded By: {refundedByUserdata.user.email}
+                                </TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </CardContent>

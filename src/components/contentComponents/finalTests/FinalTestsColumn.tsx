@@ -2,24 +2,27 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowUpDown } from "lucide-react";
-import Link from "next/link";
-import { format } from "date-fns";
 import { Typography } from "@/components/ui/Typoghraphy";
 import ActionCell from "./FinalTestsActionCell";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getInitials } from "@/lib/getInitials";
+import { EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, MaterialItem } from "@prisma/client";
 
-export type Column = {
+export type FinalTestRow = {
     id: string,
     questions: number,
     submissions: number,
     totalPoints: number,
+    externalLink: string | null,
+    evalForm: EvaluationForm & {
+        materialItem: MaterialItem | null;
+        submissions: EvaluationFormSubmission[];
+        questions: EvaluationFormQuestion[];
+    },
     createdBy: string,
     createdAt: string,
     updatedAt: string,
 };
 
-export const columns: ColumnDef<Column>[] = [
+export const columns: ColumnDef<FinalTestRow>[] = [
     {
         id: "select",
         header: ({ table }) => (
@@ -87,6 +90,8 @@ export const columns: ColumnDef<Column>[] = [
         ),
         cell: ({ row }) => <ActionCell
             id={row.original.id}
+            externalLink={row.original.externalLink}
+            evalForm={row.original.evalForm}
         />,
     },
 ];

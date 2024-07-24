@@ -1,4 +1,5 @@
 import { validEvalFormTypes } from "@/lib/enumsTypes";
+import { generateCertificateId } from "@/lib/utils";
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -14,10 +15,38 @@ export const evaluationFormSubmissionsRouter = createTRPCRouter({
 
       return { submissions }
     }),
+  getFinalTestSubmissions: protectedProcedure
+    .input(z.object({
+      slug: z.string().optional(),
+    }))
+    .query(async ({ ctx, input: { slug } }) => {
+      const course = await ctx.prisma.course.findUnique({
+        where: { slug },
+        include: {
+          evaluationForms: {
+            include: {
+              submissions: {
+                include: {
+                  student: {
+                    include: {
+                      certificates: { where: { course: { slug } }, take: 1 }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      })
+      if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "Course not found!" })
+
+      return { submissions: course.evaluationForms.find(form => form.type === "finalTest")?.submissions, course }
+    }),
   createEvalFormSubmission: protectedProcedure
     .input(z.object({
-      evaluationFormlId: z.string(),
+      evaluationFormId: z.string(),
       courseId: z.string().optional(),
+      levelId: z.string().optional(),
       answers: z.array(z.object({
         text: z.string().nullable(),
         isTrue: z.boolean().nullable(),
@@ -25,9 +54,9 @@ export const evaluationFormSubmissionsRouter = createTRPCRouter({
       })),
       type: z.enum(validEvalFormTypes),
     }))
-    .mutation(async ({ ctx, input: { answers, evaluationFormlId, type, courseId } }) => {
+    .mutation(async ({ ctx, input: { answers, evaluationFormId, type, courseId, levelId } }) => {
       const evaluationForm = await ctx.prisma.evaluationForm.findUnique({
-        where: { id: evaluationFormlId },
+        where: { id: evaluationFormId },
         include: { questions: true }
       })
       const userId = ctx.session.user.id
@@ -46,6 +75,16 @@ export const evaluationFormSubmissionsRouter = createTRPCRouter({
               }
             }
           },
+        }
+      })
+
+      if (type === "finalTest") await ctx.prisma.certificate.create({
+        data: {
+          certificateId: generateCertificateId(),
+          completionDate: new Date(),
+          user: { connect: { id: userId } },
+          course: { connect: { id: courseId } },
+          courseLevel: { connect: { id: levelId } },
         }
       })
 
@@ -78,7 +117,7 @@ export const evaluationFormSubmissionsRouter = createTRPCRouter({
           student: {
             connect: { id: userId },
           },
-          evaluationForm: { connect: { id: evaluationFormlId } },
+          evaluationForm: { connect: { id: evaluationFormId } },
           zoomGroup: (type === "placementTest" || type === "finalTest") && zoomGroupId
             ? { connect: { id: zoomGroupId } }
             : undefined,

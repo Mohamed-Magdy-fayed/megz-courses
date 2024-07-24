@@ -1,6 +1,5 @@
 import ImageUploadButton from "@/components/students/ImageUploadButton";
 import { api } from "@/lib/api";
-import { Address, User } from "@prisma/client";
 import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
 import { getInitials } from "@/lib/getInitials";
 import { Loader } from "lucide-react";
@@ -11,15 +10,9 @@ import ChangePassword from "../UserDataForm/ChangePasswordForm";
 import { useToast } from "@/components/ui/use-toast";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import { UserGetPayload } from "@/pages/account/[id]";
 
-export const Account = ({
-  user,
-}: {
-  user:
-  | User & {
-    address: Address | null;
-  };
-}) => {
+export const Account = ({ user }: {user: UserGetPayload}) => {
   const { toastError, toastSuccess } = useToast()
   const session = useSession()
   const pathname = useRouter().pathname
@@ -43,8 +36,10 @@ export const Account = ({
 
   const handleChange = (url: string) => {
     if (!user?.email) return toastError("no email");
-    editUserImage.mutate({ url, email: user.email }, {onSuccess: () => {
-    }});
+    editUserImage.mutate({ url, email: user.email }, {
+      onSuccess: () => {
+      }
+    });
   };
 
   return (

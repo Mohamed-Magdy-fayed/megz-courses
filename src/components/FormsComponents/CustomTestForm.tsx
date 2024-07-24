@@ -12,20 +12,22 @@ import {
     FormControl,
     FormMessage,
 } from "@/components/ui/form";
-import { FC, useState } from "react";
+import { Dispatch, FC, SetStateAction, useState } from "react";
 import ImageUploader from "../ui/ImageUploader";
 import { Plus, Trash, Upload } from "lucide-react";
 import { CheckCircle2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useRouter } from "next/router";
-import { EvaluationForm, EvaluationFormQuestion, EvaluationFormTypes } from "@prisma/client";
-import { useToast } from "../ui/use-toast";
+import { EvaluationForm, EvaluationFormQuestion, EvaluationFormTypes, MaterialItem } from "@prisma/client";
+import { toastType, useToast } from "../ui/use-toast";
 import Image from "next/image";
 import { getInitials } from "@/lib/getInitials";
+import { cn } from "@/lib/utils";
+import SelectField from "@/components/salesOperation/SelectField";
 
 const QuestionSchema = z.object({
     fields: z.array(z.object({
-        question: z.string(),
+        questionText: z.string(),
         points: z.number().min(1).max(5),
         type: z.enum(["multipleChoice", "trueFalse"]),
         image: z.string().optional().nullable(),
@@ -40,17 +42,23 @@ const QuestionSchema = z.object({
 
 export interface IFormInput extends z.infer<typeof QuestionSchema> { }
 
-const CustomTestForm: FC<{ initialData?: EvaluationForm & { questions: EvaluationFormQuestion[] } }> = ({ initialData }) => {
+const CustomTestForm: FC<{
+    initialData?: EvaluationForm & {
+        questions: EvaluationFormQuestion[],
+        materialItem: MaterialItem | null,
+    },
+    setIsOpen?: Dispatch<SetStateAction<boolean>>
+}> = ({ initialData, setIsOpen }) => {
     const router = useRouter();
-    const courseId = router.query?.id as string;
+    const courseSlug = router.query?.courseSlug as string;
 
-    const [isLoading, setIsLoading] = useState(false)
-    const [materialId, setMaterialId] = useState(initialData?.materialItemId ? initialData.materialItemId : undefined)
+    const [loadingToast, setLoadingToast] = useState<toastType>()
+    const [levelId, setLevelId] = useState<string[]>(initialData?.materialItem?.courseLevelId ? [initialData.materialItem?.courseLevelId] : [])
     const [type, setType] = useState<EvaluationFormTypes | undefined>(initialData ? initialData.type : undefined)
 
     const defaultQuestion: IFormInput["fields"][number] = {
         type: "multipleChoice",
-        question: "",
+        questionText: "",
         points: 1,
         options: [
             { text: "", isTrue: null, isCorrect: false },
@@ -72,36 +80,85 @@ const CustomTestForm: FC<{ initialData?: EvaluationForm & { questions: Evaluatio
         name: "fields",
     });
 
-    const { toastSuccess, toastError } = useToast()
+    const { toast } = useToast()
     const trpcUtils = api.useContext()
-    const { data: coursesData } = api.courses.getById.useQuery({ id: courseId })
+    const { data: courseData } = api.courses.getBySlug.useQuery({ slug: courseSlug }, { enabled: !!courseSlug })
+    const { data: levelsData } = api.levels.getByCourseSlug.useQuery({ courseSlug }, { enabled: !!courseSlug })
     const createTestEvalFormMutation = api.evaluationForm.createTestEvalForm.useMutation({
-        onMutate: () => setIsLoading(true),
-        onSuccess: ({ evaluationForm }) => trpcUtils.materials.invalidate()
+        onMutate: () => setLoadingToast(toast({
+            title: "Loading...",
+            duration: 3000,
+            variant: "info",
+        })),
+        onSuccess: ({ evaluationForm }) => trpcUtils.courses.invalidate()
             .then(() => {
-                toastSuccess(`Test created with total points ${evaluationForm.totalPoints}`)
+                loadingToast?.update({
+                    id: loadingToast.id,
+                    title: "Success",
+                    description: `Test created with total points ${evaluationForm.totalPoints}`,
+                    variant: "success",
+                })
+                setIsOpen?.(false)
             }),
-        onError: ({ message }) => toastError(message),
-        onSettled: () => setIsLoading(false),
+        onError: ({ message }) => loadingToast?.update({
+            id: loadingToast.id,
+            title: "Error",
+            description: message,
+            variant: "destructive",
+        }),
+        onSettled: () => setLoadingToast(undefined),
+    })
+
+    const editTestEvalFormMutation = api.evaluationForm.editEvalForm.useMutation({
+        onMutate: () => setLoadingToast(toast({
+            title: "Loading...",
+            duration: 3000,
+            variant: "info",
+        })),
+        onSuccess: ({ evaluationForm }) => trpcUtils.invalidate()
+            .then(() => {
+                loadingToast?.update({
+                    id: loadingToast.id,
+                    title: "Success",
+                    description: `Test created with total points ${evaluationForm.totalPoints}`,
+                    variant: "success",
+                })
+                setIsOpen?.(false)
+            }),
+        onError: ({ message }) => loadingToast?.update({
+            id: loadingToast.id,
+            title: "Error",
+            description: message,
+            variant: "destructive",
+        }),
     })
 
     const onSubmit: SubmitHandler<IFormInput> = (data) => {
         if (!type) return
-        createTestEvalFormMutation.mutate({
+        if (!initialData) return createTestEvalFormMutation.mutate({
             fields: data.fields.map(field => field.type === "trueFalse" ? ({
                 ...field,
                 options: [{ text: null, isTrue: true, isCorrect: !!field.trueOrFalse }, { text: null, isTrue: false, isCorrect: !field.trueOrFalse }]
             }) : field),
             type,
-            courseId,
+            slug: courseSlug,
+            courseLevel: (type === "finalTest" && !!levelId[0]) ? levelId[0] : undefined,
+        })
+        editTestEvalFormMutation.mutate({
+            id: initialData.id,
+            fields: data.fields.map(field => field.type === "trueFalse" ? ({
+                ...field,
+                options: [{ text: null, isTrue: true, isCorrect: !!field.trueOrFalse }, { text: null, isTrue: false, isCorrect: !field.trueOrFalse }]
+            }) : field),
         })
     };
 
     return (
-        <Form {...methods} >
+        <Form {...methods}>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-2">
-                <div className="flex items-center gap-4 xl:justify-start">
+                <div className={"flex items-center gap-4 xl:justify-start"}>
                     <Select
+                        value={type}
                         onValueChange={(val) => setType(val === EvaluationFormTypes.finalTest
                             ? EvaluationFormTypes.finalTest
                             : EvaluationFormTypes.placementTest)
@@ -112,14 +169,16 @@ const CustomTestForm: FC<{ initialData?: EvaluationForm & { questions: Evaluatio
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem
-                                disabled={coursesData?.course?.evaluationForms
-                                    .some(({ type }) => type === "finalTest")}
+                                disabled={courseData?.course?.evaluationForms
+                                    .filter(({ type }) => type === "finalTest")
+                                    .length === levelsData?.levels.length
+                                }
                                 value={EvaluationFormTypes.finalTest}
                             >
                                 Final Test
                             </SelectItem>
                             <SelectItem
-                                disabled={coursesData?.course?.evaluationForms
+                                disabled={courseData?.course?.evaluationForms
                                     .some(({ type }) => type === "placementTest")}
                                 value={EvaluationFormTypes.placementTest}
                             >
@@ -127,13 +186,26 @@ const CustomTestForm: FC<{ initialData?: EvaluationForm & { questions: Evaluatio
                             </SelectItem>
                         </SelectContent>
                     </Select>
+                    {type === "finalTest" && (
+                        <SelectField
+                            values={levelId}
+                            setValues={setLevelId}
+                            placeholder="Select Course Level"
+                            listTitle="Level"
+                            data={levelsData?.levels.map(level => ({
+                                active: !courseData?.course?.evaluationForms.some(({ type, courseLevelId }) => type === "finalTest" && courseLevelId === level.id),
+                                label: level.name,
+                                value: level.id,
+                            })) || []}
+                        />
+                    )}
                 </div>
                 {fields.map(({ id }, i) => {
                     const questionType = watch(`fields.${i}.type`);
                     const imageUrl = watch(`fields.${i}.image`);
                     return (
                         <div key={id}>
-                            <div className="flex items-center gap-2 justify-between">
+                            <div className={cn("flex items-center gap-2 justify-between", initialData && "flex-col items-start")}>
                                 <FormField
                                     control={control}
                                     name={`fields.${i}.type`}
@@ -164,7 +236,7 @@ const CustomTestForm: FC<{ initialData?: EvaluationForm & { questions: Evaluatio
                                 />
                                 <div className="flex items-center gap-2">
                                     {imageUrl
-                                        ? <Image className="max-h-40 w-auto m-auto" src={imageUrl} alt={getInitials(fields[i]?.question)} height={100} width={100} />
+                                        ? <Image className="max-h-40 w-auto m-auto" src={imageUrl} alt={getInitials(fields[i]?.questionText)} height={100} width={100} />
                                         : null
                                     }
                                     <FormField
@@ -177,7 +249,7 @@ const CustomTestForm: FC<{ initialData?: EvaluationForm & { questions: Evaluatio
                                                     <ImageUploader
                                                         noPadding
                                                         value={!field.value ? "" : field.value}
-                                                        disabled={isLoading}
+                                                        disabled={!!loadingToast?.id}
                                                         onChange={(url) => {
                                                             field.onChange(url)
 
@@ -238,7 +310,7 @@ const CustomTestForm: FC<{ initialData?: EvaluationForm & { questions: Evaluatio
 
                             <FormField
                                 control={control}
-                                name={`fields.${i}.question`}
+                                name={`fields.${i}.questionText`}
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Question {i + 1}</FormLabel>
@@ -246,8 +318,8 @@ const CustomTestForm: FC<{ initialData?: EvaluationForm & { questions: Evaluatio
                                             <Input {...field} />
                                         </FormControl>
                                         <FormMessage>
-                                            {errors.fields && errors.fields[i]?.question?.message
-                                                && <span>{errors.fields![i]?.question?.message}</span>
+                                            {errors.fields && errors.fields[i]?.questionText?.message
+                                                && <span>{errors.fields![i]?.questionText?.message}</span>
                                             }
                                         </FormMessage>
                                     </FormItem>
@@ -297,7 +369,11 @@ const CustomTestForm: FC<{ initialData?: EvaluationForm & { questions: Evaluatio
                         <Plus className="w-4 h-4" />
                         Add Question
                     </Button>
-                    <Button customeColor={"success"} type="submit">Submit</Button>
+                    <Button
+                        customeColor={"success"}
+                        type="submit"
+                        disabled={!!loadingToast?.id}
+                    >Submit</Button>
                 </div>
             </form>
         </Form>

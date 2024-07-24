@@ -1,6 +1,6 @@
-import { Address, Course, CourseLevels, EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, MaterialItem, Order, User, ZoomGroup, ZoomSession } from "@prisma/client";
+import { Address, Course, CourseLevel, CourseStatus, EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, MaterialItem, Order, User, ZoomGroup, ZoomSession } from "@prisma/client";
 import { type ClassValue, clsx } from "clsx";
-import { compareAsc, format } from "date-fns";
+import { format } from "date-fns";
 import { twMerge } from "tailwind-merge";
 import { getInitials } from "./getInitials";
 
@@ -8,9 +8,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const getAddress = (address: Address) => `${address?.city || "no city"
-  }, ${address?.state || "no state"}, 
-${address?.country || "no country"}`;
+export const getAddress = (address: Address) => `${address?.city || "no city"} - ${address?.state || "no state"} - ${address?.country || "no country"}`;
 
 export const salesOperationCodeGenerator = () => `SO-${Date.now()}`
 
@@ -85,25 +83,29 @@ export const getDifferenceMargin = <T extends DataObject>(
 }
 
 export type CourseType = Course & {
+  levels: CourseLevel[];
   orders: (Order & {
-    user: User
-  })[]
+    user: User & {
+      courseStatus: CourseStatus[];
+      orders: Order[];
+    };
+  })[];
 }
 export const getWaitingList = (course: CourseType): number => {
   return course.orders
     .filter(order => order.user.courseStatus
-      .find(status => status.courseId === course.id)?.state === "waiting")
+      .find(status => status.courseId === course.id)?.status === "waiting")
     .filter((order, i, self) => i === self.findIndex(({ userId }) => order.user.id === userId))
     .length
 }
 
-export const getLevelWaitingList = (course: CourseType, level: CourseLevels): number => {
+export const getLevelWaitingList = (course: CourseType, levelId: string): number => {
   return course.orders
     .filter(order => {
       const courseStatus = order.user.courseStatus.find(status => status.courseId === course.id)
       if (!courseStatus) return 0
 
-      return courseStatus.state === "waiting" && courseStatus.level === level
+      return courseStatus.status === "waiting" && courseStatus.courseLevelId === levelId
     })
     .filter((order, i, self) => i === self.findIndex(({ userId }) => order.user.id === userId))
     .length
@@ -148,8 +150,6 @@ export const isQuestionCorrect = (question: EvaluationFormQuestion, submission: 
 export const getEvalutaionStatus = (formDueDate: Date, submitted: boolean = false) => {
   const now = new Date()
   let value = submitted ? "Submitted" : (formDueDate.getTime() - now.getTime()) < 0 ? "Due now" : "Upcoming"
-
-  console.log(value);
   return value
 }
 
@@ -189,4 +189,22 @@ export const getGroupSessionDays = (startDay: number) => {
     default:
       return [6, 2] as const;
   }
+}
+
+export const generateCertificateId = () => {
+  const timestamp = Date.now().toString(36); // Convert timestamp to base36
+  const randomString = Math.random().toString(36).substring(2, 8); // Generate a random string
+  return `${timestamp}-${randomString}`.toUpperCase();
+};
+
+export const isTimePassed = (testTime: number) => {
+  const currentTime = new Date().getTime();
+  // Calculate the time difference in milliseconds
+  const timeDifference = currentTime - testTime;
+
+  // Convert 30 minutes to milliseconds (30 minutes * 60 seconds * 1000 milliseconds)
+  const thirtyMinutesInMilliseconds = 30 * 60 * 1000;
+
+  // Check if the time difference is greater than 30 minutes
+  return timeDifference > thirtyMinutesInMilliseconds;
 }

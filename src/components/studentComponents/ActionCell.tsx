@@ -9,25 +9,30 @@ import { Button } from "@/components/ui/button";
 import { Copy, MoreVertical, PackagePlus } from "lucide-react";
 import { useToast } from "../ui/use-toast";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "../ui/dialog";
-import { DialogPortal, DialogOverlay } from "@radix-ui/react-dialog";
-import ModalInDropdownMenu from "../ui/modal-in-dropdown-menu";
-import CreateOrder from "../salesOperation/CreateOrder";
 import CreateOrderForStudent from "./CreateOrderForStudent";
-import { api } from "@/lib/api";
 import Spinner from "../Spinner";
+import { Course, Order, User } from "@prisma/client";
+import { Users } from "@/components/studentComponents/StudentClient";
 
 interface CellActionProps {
     id: string;
+    coursesData: {
+        courses: (Course & {
+            orders: (Order & {
+                user: User;
+            })[];
+        })[];
+    } | undefined;
+    userData: {
+        user: Users
+    }
 }
 
-const CellAction: React.FC<CellActionProps> = ({ id }) => {
+const CellAction: React.FC<CellActionProps> = ({ id, coursesData, userData }) => {
     const { toastInfo } = useToast();
     const [loading, setLoading] = useState(false)
+    const [isOpen, setIsOpen] = useState(false)
     const [isCreateOrderModalOpen, setIsCreateOrderModalOpen] = useState(false)
-
-    const { data: coursesData } = api.courses.getAll.useQuery()
-    const { data: userData } = api.users.getUserById.useQuery({ id })
 
     const onCopy = () => {
         navigator.clipboard.writeText(id);
@@ -35,35 +40,41 @@ const CellAction: React.FC<CellActionProps> = ({ id }) => {
     };
 
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button customeColor="mutedIcon" variant={"icon"} >
-                    <MoreVertical className="w-4 h-4" />
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                {coursesData?.courses && userData?.user
-                    ? (
-                        <CreateOrderForStudent
-                            coursesData={coursesData.courses}
-                            loading={loading}
-                            open={isCreateOrderModalOpen}
-                            setLoading={setLoading}
-                            setOpen={setIsCreateOrderModalOpen}
-                            userData={userData.user}
-                        />
-                    )
-                    : (
-                        <Spinner className="w-4 h-4" />
-                    )
-                }
-                <DropdownMenuItem onClick={onCopy}>
-                    <Copy className="w-4 h-4 mr-2" />
-                    Copy ID
-                </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
+        <>
+            {coursesData?.courses && userData?.user
+                && (
+                    <CreateOrderForStudent
+                        coursesData={coursesData.courses}
+                        loading={loading}
+                        open={isCreateOrderModalOpen}
+                        setLoading={setLoading}
+                        setOpen={setIsCreateOrderModalOpen}
+                        userData={userData.user}
+                    />
+                )
+            }
+            <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
+                <DropdownMenuTrigger asChild>
+                    <Button customeColor="mutedIcon" variant={"icon"} >
+                        <MoreVertical className="w-4 h-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={() => {
+                        setIsCreateOrderModalOpen(true)
+                        setIsOpen(false)
+                    }}>
+                        <PackagePlus className="w-4 h-4 mr-2" />
+                        Create Order
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={onCopy}>
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy ID
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </>
     );
 };
 

@@ -4,6 +4,7 @@ import {
   protectedProcedure,
 } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
+import { google } from "googleapis";
 import { z } from "zod";
 
 export const evaluationFormRouter = createTRPCRouter({
@@ -19,13 +20,28 @@ export const evaluationFormRouter = createTRPCRouter({
 
       return { evaluationForm }
     }),
+  getEvalFormByMaterialItemSlug: protectedProcedure
+    .input(z.object({
+      slug: z.string(),
+      type: z.enum(validEvalFormTypes).optional(),
+    }))
+    .query(async ({ ctx, input: { slug, type } }) => {
+      if (!type) throw new TRPCError({ code: "BAD_REQUEST", message: "no type specified" })
+
+      const evaluationForm = await ctx.prisma.evaluationForm.findFirst({
+        where: { materialItem: { slug }, type },
+        include: { materialItem: { include: { zoomSessions: true } }, questions: true, submissions: true }
+      })
+
+      return { evaluationForm }
+    }),
   getEvalFormsAssginments: protectedProcedure
     .input(z.object({
-      courseId: z.string(),
+      levelId: z.string(),
     }))
-    .query(async ({ ctx, input: { courseId } }) => {
+    .query(async ({ ctx, input: { levelId } }) => {
       const assignments = await ctx.prisma.evaluationForm.findMany({
-        where: { type: "assignment", materialItem: { courseId } },
+        where: { type: "assignment", materialItem: { courseLevelId: levelId } },
         orderBy: { createdAt: "asc" },
         include: { materialItem: true, questions: true, submissions: true }
       })
@@ -34,11 +50,11 @@ export const evaluationFormRouter = createTRPCRouter({
     }),
   getEvalFormsQuizzes: protectedProcedure
     .input(z.object({
-      courseId: z.string(),
+      levelId: z.string(),
     }))
-    .query(async ({ ctx, input: { courseId } }) => {
+    .query(async ({ ctx, input: { levelId } }) => {
       const quizzes = await ctx.prisma.evaluationForm.findMany({
-        where: { type: "quiz", materialItem: { courseId } },
+        where: { type: "quiz", materialItem: { courseLevelId: levelId } },
         orderBy: { createdAt: "asc" },
         include: { materialItem: true, questions: true, submissions: { include: { student: true } }, course: true }
       })
@@ -63,9 +79,9 @@ export const evaluationFormRouter = createTRPCRouter({
       const placementTests = await ctx.prisma.placementTest.findMany({
         where: { trainer: { userId } },
         include: {
-          course: true,
+          course: { include: { levels: true } },
           oralTestTime: true,
-          student: true,
+          student: { include: { courseStatus: { include: { course: true, level: true } } } },
           trainer: { include: { user: true } },
           writtenTest: { include: { submissions: true, questions: true } }
         }
@@ -75,11 +91,11 @@ export const evaluationFormRouter = createTRPCRouter({
     }),
   getFinalTest: protectedProcedure
     .input(z.object({
-      courseId: z.string(),
+      courseSlug: z.string(),
     }))
-    .query(async ({ ctx, input: { courseId } }) => {
+    .query(async ({ ctx, input: { courseSlug } }) => {
       const finalTest = await ctx.prisma.evaluationForm.findFirst({
-        where: { type: "finalTest", courseId },
+        where: { type: "finalTest", course: { slug: courseSlug } },
         include: {
           materialItem: {
             include: { zoomSessions: true }
@@ -115,12 +131,68 @@ export const evaluationFormRouter = createTRPCRouter({
 
       return { quiz }
     }),
+  createGoogleEvalForm: protectedProcedure
+    .input(z.object({
+      url: z.string(),
+      materialId: z.string(),
+      type: z.enum(validEvalFormTypes),
+    }))
+    .mutation(async ({ ctx, input: { url, materialId, type } }) => {
+      if (!ctx.session.user.email) throw new TRPCError({ code: "UNAUTHORIZED", message: "UNAUTHORIZED" })
+      if (await ctx.prisma.evaluationForm.findFirst({
+        where: {
+          AND: {
+            materialItemId: materialId,
+            type,
+          }
+        }
+      })) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to create multible forms on the same type!" })
+
+      const evaluationForm = await ctx.prisma.evaluationForm.create({
+        data: {
+          totalPoints: 0,
+          type,
+          externalLink: url,
+          materialItem: { connect: { id: materialId } },
+          createdBy: ctx.session.user.email,
+        },
+        include: { materialItem: true, questions: true, submissions: true }
+      })
+
+      return {
+        evaluationForm,
+      };
+    }),
+  editGoogleEvalForm: protectedProcedure
+    .input(z.object({
+      id: z.string(),
+      url: z.string(),
+    }))
+    .mutation(async ({ ctx, input: { url, id } }) => {
+      if (!ctx.session.user.email) throw new TRPCError({ code: "UNAUTHORIZED", message: "UNAUTHORIZED" })
+
+      const evaluationForm = await ctx.prisma.evaluationForm.update({
+        where: {
+          id
+        },
+        data: {
+          totalPoints: 0,
+          externalLink: url,
+          createdBy: ctx.session.user.email,
+        },
+        include: { materialItem: true, questions: true, submissions: true }
+      })
+
+      return {
+        evaluationForm,
+      };
+    }),
   createEvalForm: protectedProcedure
     .input(z.object({
       materialId: z.string(),
       type: z.enum(validEvalFormTypes),
       fields: z.array(z.object({
-        question: z.string(),
+        questionText: z.string(),
         points: z.number().min(1).max(5),
         type: z.enum(["multipleChoice", "trueFalse"]),
         image: z.string().optional().nullable(),
@@ -150,14 +222,8 @@ export const evaluationFormRouter = createTRPCRouter({
           materialItem: { connect: { id: materialId } },
           questions: {
             createMany: {
-              data: fields.map(field => ({
-                points: field.points,
-                questionText: field.question,
-                type: field.type,
-                image: field.image,
-                options: field.options,
-              }))
-            }
+              data: fields
+            },
           },
           createdBy: ctx.session.user.email,
         },
@@ -170,10 +236,11 @@ export const evaluationFormRouter = createTRPCRouter({
     }),
   createTestEvalForm: protectedProcedure
     .input(z.object({
-      courseId: z.string(),
+      slug: z.string(),
+      courseLevel: z.string().optional(),
       type: z.enum(validEvalFormTypes),
       fields: z.array(z.object({
-        question: z.string(),
+        questionText: z.string(),
         points: z.number().min(1).max(5),
         type: z.enum(["multipleChoice", "trueFalse"]),
         image: z.string().optional().nullable(),
@@ -182,16 +249,19 @@ export const evaluationFormRouter = createTRPCRouter({
           text: z.string().nullable(),
           isCorrect: z.boolean()
         })).max(6).optional(),
-        correctAnswer: z.boolean().optional(),
+        correctAnswer: z.boolean().optional().optional(),
       }))
     }))
-    .mutation(async ({ ctx, input: { courseId, fields, type } }) => {
+    .mutation(async ({ ctx, input: { slug, fields, type, courseLevel } }) => {
       if (!ctx.session.user.email) throw new TRPCError({ code: "UNAUTHORIZED", message: "UNAUTHORIZED" })
       if (await ctx.prisma.evaluationForm.findFirst({
         where: {
           AND: {
-            courseId,
+            course: {
+              slug,
+            },
             type,
+            courseLevelId: courseLevel,
           }
         }
       })) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to create multible forms on the same type!" })
@@ -200,18 +270,51 @@ export const evaluationFormRouter = createTRPCRouter({
         data: {
           totalPoints: fields.map(field => field.points).reduce((a, b) => a + b, 0),
           type,
-          course: { connect: { id: courseId } },
+          course: { connect: { slug } },
           questions: {
             createMany: {
-              data: fields.map(field => ({
-                points: field.points,
-                questionText: field.question,
-                type: field.type,
-                image: field.image,
-                options: field.options,
-              }))
+              data: fields,
             }
           },
+          createdBy: ctx.session.user.email,
+          courseLevel: courseLevel && type === "finalTest" ? {
+            connect: {
+              id: courseLevel
+            }
+          } : undefined
+        },
+        include: { materialItem: true, questions: true, submissions: true }
+      })
+
+      return {
+        evaluationForm,
+      };
+    }),
+  createTestEvalGoogleForm: protectedProcedure
+    .input(z.object({
+      slug: z.string(),
+      type: z.enum(validEvalFormTypes),
+      url: z.string(),
+    }))
+    .mutation(async ({ ctx, input: { slug, url, type } }) => {
+      if (!ctx.session.user.email) throw new TRPCError({ code: "UNAUTHORIZED", message: "UNAUTHORIZED" })
+      if (await ctx.prisma.evaluationForm.findFirst({
+        where: {
+          AND: {
+            course: {
+              slug,
+            },
+            type,
+          }
+        }
+      })) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to create multible forms on the same type!" })
+
+      const evaluationForm = await ctx.prisma.evaluationForm.create({
+        data: {
+          totalPoints: 0,
+          type,
+          course: { connect: { slug } },
+          externalLink: url,
           createdBy: ctx.session.user.email,
         },
         include: { materialItem: true, questions: true, submissions: true }
@@ -225,14 +328,16 @@ export const evaluationFormRouter = createTRPCRouter({
     .input(z.object({
       id: z.string(),
       fields: z.array(z.object({
-        question: z.string(),
+        questionText: z.string(),
         points: z.number().min(1).max(5),
         type: z.enum(["multipleChoice", "trueFalse"]),
         image: z.string().optional().nullable(),
         options: z.array(z.object({
-          text: z.string(),
+          isTrue: z.boolean().nullable(),
+          text: z.string().nullable(),
           isCorrect: z.boolean()
         })).max(6).optional(),
+        correctAnswer: z.boolean().optional(),
       }))
     }))
     .mutation(async ({ ctx, input: { fields, id } }) => {
@@ -242,13 +347,7 @@ export const evaluationFormRouter = createTRPCRouter({
           totalPoints: fields.map(field => field.points).reduce((a, b) => a + b, 0),
           questions: {
             createMany: {
-              data: fields.map(field => ({
-                points: field.points,
-                questionText: field.question,
-                type: field.type,
-                image: field.image,
-                options: field.options,
-              }))
+              data: fields,
             }
           },
         },

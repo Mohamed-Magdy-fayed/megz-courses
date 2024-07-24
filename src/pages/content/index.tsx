@@ -10,7 +10,7 @@ import Spinner from "@/components/Spinner";
 import Modal from "@/components/ui/modal";
 
 const ContentPage = () => {
-  const { data, isLoading, isError } = api.courses.getAll.useQuery();
+  const { data: coursesData, isLoading, isError } = api.courses.getAll.useQuery();
   const [isOpen, setIsOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -35,7 +35,7 @@ const ContentPage = () => {
             <div className="flex flex-col gap-2">
               <ConceptTitle>Courses</ConceptTitle>
               <Typography className="text-sm font-medium text-gray-500">
-                total courses: {data?.courses.length}
+                total courses: {coursesData?.courses.length}
               </Typography>
             </div>
             <Button onClick={() => setIsOpen(true)} customeColor={"primary"}>
@@ -48,7 +48,20 @@ const ContentPage = () => {
           ) : isError ? (
             <>Error</>
           ) : (
-            <CoursesClient />
+            <CoursesClient formattedData={coursesData?.courses ? coursesData.courses.map(course => ({
+              id: course.id,
+              name: course.name,
+              slug: course.slug,
+              image: course.image,
+              createdAt: course.createdAt,
+              updatedAt: course.updatedAt,
+              description: course.description,
+              groupPrice: course.groupPrice,
+              privatePrice: course.privatePrice,
+              instructorPrice: course.instructorPrice,
+              levels: course.levels,
+              orders: course.orders,
+            })) : []} />
           )}
         </div>
       </div>

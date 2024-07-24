@@ -12,20 +12,20 @@ import {
     FormControl,
     FormMessage,
 } from "@/components/ui/form";
-import { FC, useState } from "react";
+import { Dispatch, FC, SetStateAction, useState } from "react";
 import ImageUploader from "../ui/ImageUploader";
 import { Plus, Trash, Upload } from "lucide-react";
 import { CheckCircle2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useRouter } from "next/router";
-import { EvaluationForm, EvaluationFormQuestion, EvaluationFormTypes } from "@prisma/client";
-import { useToast } from "../ui/use-toast";
+import { EvaluationForm, EvaluationFormQuestion, EvaluationFormTypes, MaterialItem } from "@prisma/client";
+import { toastType, useToast } from "../ui/use-toast";
 import Image from "next/image";
 import { getInitials } from "@/lib/getInitials";
 
 const QuestionSchema = z.object({
     fields: z.array(z.object({
-        question: z.string(),
+        questionText: z.string(),
         points: z.number().min(1).max(5),
         type: z.enum(["multipleChoice", "trueFalse"]),
         image: z.string().optional().nullable(),
@@ -34,23 +34,30 @@ const QuestionSchema = z.object({
             text: z.string().nullable(),
             isCorrect: z.boolean()
         })).max(6).optional(),
-        trueOrFalse: z.boolean().optional(),
+        correctAnswer: z.boolean().optional(),
     }))
 });
 
 export interface IFormInput extends z.infer<typeof QuestionSchema> { }
 
-const CustomForm: FC<{ initialData?: EvaluationForm & { questions: EvaluationFormQuestion[] } }> = ({ initialData }) => {
+const CustomForm: FC<{
+    initialData?: EvaluationForm & {
+        questions: EvaluationFormQuestion[],
+        materialItem: MaterialItem | null,
+    },
+    setIsOpen?: Dispatch<SetStateAction<boolean>>,
+}> = ({ initialData, setIsOpen }) => {
     const router = useRouter();
-    const courseId = router.query?.id as string;
+    const courseSlug = router.query?.courseSlug as string;
 
-    const [isLoading, setIsLoading] = useState(false)
+    const [loadingToast, setLoadingToast] = useState<toastType>()
+    const [levelId, setLevelId] = useState(initialData?.materialItem?.courseLevelId ? initialData.materialItem?.courseLevelId : undefined)
     const [materialId, setMaterialId] = useState(initialData?.materialItemId ? initialData.materialItemId : undefined)
     const [type, setType] = useState<EvaluationFormTypes | undefined>(initialData ? initialData.type : undefined)
 
     const defaultQuestion: IFormInput["fields"][number] = {
         type: "multipleChoice",
-        question: "",
+        questionText: "",
         points: 1,
         options: [
             { text: "", isTrue: null, isCorrect: false },
@@ -72,119 +79,193 @@ const CustomForm: FC<{ initialData?: EvaluationForm & { questions: EvaluationFor
         name: "fields",
     });
 
-    const { toastSuccess, toastError } = useToast()
+    const { toast } = useToast()
     const trpcUtils = api.useContext()
-    const { data: materialsData } = api.materials.getByCourseId.useQuery({ courseId })
+    const { data: levelsData } = api.levels.getByCourseSlug.useQuery({ courseSlug }, { enabled: !!courseSlug })
+    const { data: materialsData } = api.materials.getByCourseSlug.useQuery({ slug: courseSlug }, { enabled: !!courseSlug })
     const createEvalFormMutation = api.evaluationForm.createEvalForm.useMutation({
-        onMutate: () => setIsLoading(true),
-        onSuccess: ({ evaluationForm }) => trpcUtils.materials.invalidate()
+        onMutate: () => setLoadingToast(toast({
+            title: "Loading...",
+            duration: 3000,
+            variant: "info",
+        })),
+        onSuccess: ({ evaluationForm }) => trpcUtils.courses.invalidate()
             .then(() => {
-                toastSuccess(`Evaluation form total points ${evaluationForm.totalPoints}`)
+                loadingToast?.update({
+                    id: loadingToast.id,
+                    title: "Success",
+                    description: `Evaluation form total points ${evaluationForm.totalPoints}`,
+                    variant: "success",
+                })
+                setIsOpen?.(false)
             }),
-        onError: ({ message }) => toastError(message),
-        onSettled: () => setIsLoading(false),
+        onError: ({ message }) => loadingToast?.update({
+            id: loadingToast.id,
+            title: "Error",
+            description: message,
+            variant: "destructive",
+        }),
+        onSettled: () => setLoadingToast(undefined),
+    })
+
+    const editEvalFormMutation = api.evaluationForm.editEvalForm.useMutation({
+        onMutate: () => setLoadingToast(toast({
+            title: "Loading...",
+            duration: 3000,
+            variant: "info",
+        })),
+        onSuccess: ({ evaluationForm }) => trpcUtils.invalidate()
+            .then(() => {
+                loadingToast?.update({
+                    id: loadingToast.id,
+                    title: "Success",
+                    description: `Evaluation form total points ${evaluationForm.totalPoints}`,
+                    variant: "success",
+                })
+                setIsOpen?.(false)
+            }),
+        onError: ({ message }) => loadingToast?.update({
+            id: loadingToast.id,
+            title: "Error",
+            description: message,
+            variant: "destructive",
+        }),
+        onSettled: () => setLoadingToast(undefined),
     })
 
     const onSubmit: SubmitHandler<IFormInput> = (data) => {
         if (!type || !materialId) return
-        createEvalFormMutation.mutate({
+        if (!initialData) return createEvalFormMutation.mutate({
             fields: data.fields.map(field => field.type === "trueFalse" ? ({
                 ...field,
-                options: [{ text: null, isTrue: true, isCorrect: !!field.trueOrFalse }, { text: null, isTrue: false, isCorrect: !field.trueOrFalse }]
+                options: [{ text: null, isTrue: true, isCorrect: !!field.correctAnswer }, { text: null, isTrue: false, isCorrect: !field.correctAnswer }]
             }) : field),
             materialId,
             type,
+        })
+        editEvalFormMutation.mutate({
+            fields: data.fields.map(field => field.type === "trueFalse" ? ({
+                ...field,
+                options: [{ text: null, isTrue: true, isCorrect: !!field.correctAnswer }, { text: null, isTrue: false, isCorrect: !field.correctAnswer }]
+            }) : field),
+            id: initialData.id,
         })
     };
 
     return (
         <Form {...methods} >
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-2">
-                <div className="flex items-center gap-4 xl:justify-start">
-                    <Select onValueChange={(val) => setMaterialId(val)}>
+                <div className="flex flex-col gap-2">
+                    <Select
+                        disabled={!!initialData}
+                        value={levelId}
+                        onValueChange={(val) => setLevelId(val)}
+                    >
                         <SelectTrigger className="xl:w-fit">
-                            <SelectValue placeholder="Select Material item"></SelectValue>
+                            <SelectValue placeholder="Select Level"></SelectValue>
                         </SelectTrigger>
                         <SelectContent>
-                            {materialsData?.materialItems.map(item => (
+                            {levelsData?.levels.map(item => (
                                 <SelectItem
                                     key={item.id}
                                     value={item.id}
-                                    disabled={item.evaluationForms.some(({ type }) => type === "assignment")
-                                        && item.evaluationForms.some(({ type }) => type === "quiz")}
                                 >
-                                    {item.title}
+                                    {item.name}
                                 </SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
-                    <Select
-                        disabled={!materialId}
-                        onValueChange={(val) => setType(val === EvaluationFormTypes.assignment
-                            ? EvaluationFormTypes.assignment
-                            : EvaluationFormTypes.quiz)
-                        }
-                    >
-                        <SelectTrigger className="xl:w-fit">
-                            <SelectValue placeholder="Assignment or Quiz?"></SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem
-                                disabled={materialsData?.materialItems
-                                    .find(({ id }) => id === materialId)?.evaluationForms
-                                    .some(({ type }) => type === "assignment")}
-                                value={EvaluationFormTypes.assignment}
-                            >
-                                Assignemnt
-                            </SelectItem>
-                            <SelectItem
-                                disabled={materialsData?.materialItems
-                                    .find(({ id }) => id === materialId)?.evaluationForms
-                                    .some(({ type }) => type === "quiz")}
-                                value={EvaluationFormTypes.quiz}
-                            >
-                                Quiz
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
+                    <div className="flex items-center gap-4">
+                        <Select
+                            disabled={!levelId || !!initialData}
+                            value={materialId}
+                            onValueChange={(val) => setMaterialId(val)}
+                        >
+                            <SelectTrigger className="xl:w-fit">
+                                <SelectValue placeholder="Select Material item"></SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                                {materialsData?.materialItems.filter(item => item.courseLevelId === levelId).map(item => (
+                                    <SelectItem
+                                        key={item.id}
+                                        value={item.id}
+                                        disabled={item.evaluationForms.some(({ type }) => type === "assignment")
+                                            && item.evaluationForms.some(({ type }) => type === "quiz")}
+                                    >
+                                        {item.title}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Select
+                            disabled={!materialId || !!initialData}
+                            value={type}
+                            onValueChange={(val) => setType(val === EvaluationFormTypes.assignment
+                                ? EvaluationFormTypes.assignment
+                                : EvaluationFormTypes.quiz)
+                            }
+                        >
+                            <SelectTrigger className="xl:w-fit">
+                                <SelectValue placeholder="Assignment or Quiz?"></SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem
+                                    disabled={materialsData?.materialItems
+                                        .find(({ id }) => id === materialId)?.evaluationForms
+                                        .some(({ type }) => type === "assignment")}
+                                    value={EvaluationFormTypes.assignment}
+                                >
+                                    Assignemnt
+                                </SelectItem>
+                                <SelectItem
+                                    disabled={materialsData?.materialItems
+                                        .find(({ id }) => id === materialId)?.evaluationForms
+                                        .some(({ type }) => type === "quiz")}
+                                    value={EvaluationFormTypes.quiz}
+                                >
+                                    Quiz
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
                 {fields.map(({ id }, i) => {
                     const questionType = watch(`fields.${i}.type`);
                     const imageUrl = watch(`fields.${i}.image`);
                     return (
-                        <div key={id}>
-                            <div className="flex items-center gap-2 justify-between">
-                                <FormField
-                                    control={control}
-                                    name={`fields.${i}.type`}
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Type</FormLabel>
-                                            <FormControl>
-                                                <Select
-                                                    onValueChange={(value: IFormInput["fields"][number]["type"]) => field.onChange(value)}
-                                                    value={field.value}
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select type" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="multipleChoice">Multiple Choice</SelectItem>
-                                                        <SelectItem value="trueFalse">True/False</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </FormControl>
-                                            {errors.fields && errors.fields[i]?.type &&
-                                                <FormMessage>
-                                                    This field is required
-                                                </FormMessage>
-                                            }
-                                        </FormItem>
-                                    )}
-                                />
-                                <div className="flex items-center gap-2">
+                        <div key={id} className="space-y-2">
+                            <FormField
+                                control={control}
+                                name={`fields.${i}.type`}
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Type</FormLabel>
+                                        <FormControl>
+                                            <Select
+                                                onValueChange={(value: IFormInput["fields"][number]["type"]) => field.onChange(value)}
+                                                value={field.value}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select type" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="multipleChoice">Multiple Choice</SelectItem>
+                                                    <SelectItem value="trueFalse">True/False</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </FormControl>
+                                        {errors.fields && errors.fields[i]?.type &&
+                                            <FormMessage>
+                                                This field is required
+                                            </FormMessage>
+                                        }
+                                    </FormItem>
+                                )}
+                            />
+                            <div className="flex items-center gap-2 justify-between w-full">
+                                <div className="w-auto m-auto flex items-center gap-2">
                                     {imageUrl
-                                        ? <Image className="max-h-40 w-auto m-auto" src={imageUrl} alt={getInitials(fields[i]?.question)} height={100} width={100} />
+                                        ? <Image className="max-h-40 w-auto m-auto" src={imageUrl} alt={getInitials(fields[i]?.questionText)} height={100} width={100} />
                                         : null
                                     }
                                     <FormField
@@ -197,7 +278,7 @@ const CustomForm: FC<{ initialData?: EvaluationForm & { questions: EvaluationFor
                                                     <ImageUploader
                                                         noPadding
                                                         value={!field.value ? "" : field.value}
-                                                        disabled={isLoading}
+                                                        disabled={!!loadingToast?.id}
                                                         onChange={(url) => {
                                                             field.onChange(url)
 
@@ -212,6 +293,8 @@ const CustomForm: FC<{ initialData?: EvaluationForm & { questions: EvaluationFor
                                             </FormItem>
                                         )}
                                     />
+                                </div>
+                                <div className="flex gap-2 items-center">
                                     <FormField
                                         control={control}
                                         name={`fields.${i}.points`}
@@ -258,7 +341,7 @@ const CustomForm: FC<{ initialData?: EvaluationForm & { questions: EvaluationFor
 
                             <FormField
                                 control={control}
-                                name={`fields.${i}.question`}
+                                name={`fields.${i}.questionText`}
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Question {i + 1}</FormLabel>
@@ -266,8 +349,8 @@ const CustomForm: FC<{ initialData?: EvaluationForm & { questions: EvaluationFor
                                             <Input {...field} />
                                         </FormControl>
                                         <FormMessage>
-                                            {errors.fields && errors.fields[i]?.question?.message
-                                                && <span>{errors.fields![i]?.question?.message}</span>
+                                            {errors.fields && errors.fields[i]?.questionText?.message
+                                                && <span>{errors.fields![i]?.questionText?.message}</span>
                                             }
                                         </FormMessage>
                                     </FormItem>
@@ -281,7 +364,7 @@ const CustomForm: FC<{ initialData?: EvaluationForm & { questions: EvaluationFor
                             {questionType === "trueFalse" && (
                                 <FormField
                                     control={control}
-                                    name={`fields.${i}.trueOrFalse`}
+                                    name={`fields.${i}.correctAnswer`}
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Correct Answer</FormLabel>
@@ -300,7 +383,7 @@ const CustomForm: FC<{ initialData?: EvaluationForm & { questions: EvaluationFor
                                                     </SelectContent>
                                                 </Select>
                                             </FormControl>
-                                            {errors.fields && errors.fields[i]?.trueOrFalse &&
+                                            {errors.fields && errors.fields[i]?.correctAnswer &&
                                                 <FormMessage>
                                                     This field is required
                                                 </FormMessage>
@@ -317,7 +400,7 @@ const CustomForm: FC<{ initialData?: EvaluationForm & { questions: EvaluationFor
                         <Plus className="w-4 h-4" />
                         Add Question
                     </Button>
-                    <Button customeColor={"success"} type="submit">Submit</Button>
+                    <Button disabled={!!loadingToast?.id} customeColor={"success"} type="submit">Submit</Button>
                 </div>
             </form>
         </Form>

@@ -25,15 +25,13 @@ const statusMap: {
     scheduled: "primary";
     ongoing: "info";
     starting: "secondary";
-    completedOnTime: "success";
-    completedOffTime: "success";
+    completed: "success";
     cancelled: "destructive";
 } = {
     scheduled: "primary",
     ongoing: "info",
     starting: "secondary",
-    completedOnTime: "success",
-    completedOffTime: "success",
+    completed: "success",
     cancelled: "destructive"
 };
 

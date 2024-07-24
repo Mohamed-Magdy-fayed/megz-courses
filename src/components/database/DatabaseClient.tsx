@@ -24,7 +24,7 @@ const DatabaseClient = ({ data }: { data: PotintialCustomer[] }) => {
       data={formattedData}
       setData={() => { }}
       onDelete={() => { }}
-      search={{ key: "firstName", label: "Name" }}
+      searches={[{ key: "firstName", label: "Name" }]}
     />
   );
 };

@@ -3,7 +3,6 @@ import {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
-  filterFns,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -15,7 +14,6 @@ import {
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -25,21 +23,24 @@ import { AlertModal } from "../modals/AlertModal";
 import { Input } from "./input";
 import { Typography } from "./Typoghraphy";
 import { Button } from "./button";
-import { ArrowLeft, ArrowRight, CheckCircle, Trash } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, FileDown, FileUp, Trash } from "lucide-react";
 import { SeverityPill } from "../overview/SeverityPill";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { csvMaker } from "@/lib/csvMaker";
+import { Separator } from "@/components/ui/separator";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   setData: (data: TData[]) => void;
-  onDelete: (callback?: () => void) => void;
-  search?: {
+  onDelete?: (callback?: () => void) => void;
+  searches?: {
     label: string
     key: Extract<keyof TData, string>
-  }
+  }[];
   filters?: {
-    label: string
-    values: (Extract<TData[keyof TData], string>)[]
+    filterName: string
+    values: { label: string, value: (Extract<TData[keyof TData], string>) }[]
     key: Extract<keyof TData, string>
   }[]
 }
@@ -49,7 +50,7 @@ export function DataTable<TData, TValue>({
   data,
   setData,
   onDelete,
-  search,
+  searches,
   filters,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -85,7 +86,21 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <AlertModal
+      <div className="flex items-center gap-2 py-2">
+        <Typography variant={"secondary"}>Data</Typography>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button onClick={() => csvMaker(table.getSelectedRowModel().rows.length > 0 ? table.getSelectedRowModel().rows.map(row => row.original) : table.getCoreRowModel().rows.map(row => row.original))} variant={"icon"} customeColor={"infoIcon"}>
+              <FileUp />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <Typography>Export</Typography>
+          </TooltipContent>
+        </Tooltip>
+      </div>
+      <Separator />
+      {onDelete && <AlertModal
         isOpen={open}
         onClose={() => setOpen(false)}
         onConfirm={() => {
@@ -97,43 +112,61 @@ export function DataTable<TData, TValue>({
           });
         }}
         loading={loading}
-      />
-      {search && (
-        <div className="p-4">
-          <Input
-            value={(table.getColumn(search.key)?.getFilterValue() as string) ?? ""}
-            onChange={(event) =>
-              table.getColumn(search.key)?.setFilterValue(event.target.value)
-            }
-            placeholder={`Search by ${search.label}`}
-            className="w-full hover:shadow-0 rounded-full p-2 text-sm font-medium leading-6 outline-none outline-1 outline-offset-0 outline-slate-300 focus-within:!bg-white focus-within:outline-2 focus-within:outline-primary hover:bg-slate-100"
-          />
-        </div>
-      )}
-      {filters && (
-        <div className="p-4 flex flex-col gap-2">
-          <Typography>Filter by</Typography>
-          {filters.map(filter => (
-            <div key={filter.key} className="flex items-center gap-4">
-              {filter.values.map((value, i) => (
-                <div key={`${value}filters${i}`} className="flex items-center gap-4">
-                  <Button
-                    onClick={() => {
-                      const isSameFilter = table.getColumn(filter.key)?.getFilterValue() === value
-                      table.getColumn(filter.key)?.setFilterValue(isSameFilter ? "" : value)
-                    }}
-                    placeholder={`Filter by ${filter.label}`}
-                    customeColor={table.getColumn(filter.key)?.getFilterValue() as string === value ? "primary" : "accent"}
-                  >
-                    <CheckCircle className="w-4 h-4" />
-                    <Typography>{value}</Typography>
-                  </Button>
-                  {i === filter.values.length - 1 && <SeverityPill color="info" className="aspect-square">{table.getRowModel().rows.length}</SeverityPill>}
+      />}
+      {searches && (
+        <>
+          <div className="py-2">
+            <Typography variant={"secondary"}>Search</Typography>
+            <div className="flex items-center gap-2 flex-wrap">
+              {searches.map(search => (
+                <div key={search.key} className="py-2 space-y-2">
+                  <Typography>{search.label}</Typography>
+                  <Input
+                    value={(table.getColumn(search.key)?.getFilterValue() as string) ?? ""}
+                    onChange={(event) =>
+                      table.getColumn(search.key)?.setFilterValue(event.target.value)
+                    }
+                    placeholder={`Search by ${search.label}`}
+                    className="w-full hover:shadow-0 rounded-full p-2 text-sm font-medium leading-6 outline-none outline-1 outline-offset-0 outline-slate-300 focus-within:!bg-white focus-within:outline-2 focus-within:outline-primary hover:bg-slate-100"
+                  />
                 </div>
               ))}
             </div>
-          ))}
-        </div>
+          </div>
+          <Separator />
+        </>
+      )}
+      {filters && (
+        <>
+          <div className="py-2">
+            <Typography variant={"secondary"}>Filters</Typography>
+            <div className="py-4 flex flex-col gap-2">
+              {filters.map(filter => (
+                <div key={filter.key} className="space-y-2">
+                  <Typography>Filter by {filter.filterName}</Typography>
+                  <div className="flex items-center gap-4 flex-wrap">
+                    {filter.values.map((item, i) => (
+                      <div key={`${item.value}filters${i}`} className="flex items-center gap-4">
+                        <Button
+                          onClick={() => {
+                            const isSameFilter = table.getColumn(filter.key)?.getFilterValue() === item.value
+                            table.getColumn(filter.key)?.setFilterValue(isSameFilter ? "" : item.value)
+                          }}
+                          customeColor={table.getColumn(filter.key)?.getFilterValue() as string === item.value ? "primary" : "accent"}
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                          <Typography>{item.label}</Typography>
+                          <SeverityPill color="info" className="aspect-square">{table.getCoreRowModel().rows.filter(row => row.original[filter.key] === item.value).length}</SeverityPill>
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <Separator />
+        </>
       )}
       <div className="whitespace-nowrap grid">
         {table.getSelectedRowModel().rows.length > 0 && (
@@ -142,9 +175,9 @@ export function DataTable<TData, TValue>({
               {table.getFilteredSelectedRowModel().rows.length} of{" "}
               {table.getFilteredRowModel().rows.length} row(s) selected.
             </Typography>
-            <Button variant={"icon"} onClick={handleOpen} customeColor={"destructiveIcon"}>
+            {onDelete && <Button variant={"icon"} onClick={handleOpen} customeColor={"destructiveIcon"}>
               <Trash />
-            </Button>
+            </Button>}
           </div>
         )}
         <Table>

@@ -19,6 +19,8 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardFooter } from "../ui/card";
 import ImageUploader from "../ui/ImageUploader";
+import { SalesAgents } from "@/components/salesAgentComponents/SalesAgentsClient";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name can't be empty"),
@@ -33,23 +35,23 @@ type UsersFormValues = z.infer<typeof formSchema>;
 
 interface StudentFormProps {
   setIsOpen: (val: boolean) => void;
+  initialData?: SalesAgents;
 }
 
-const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
+const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen, initialData }) => {
   const [loading, setLoading] = useState(false);
-  const [out, setOut] = useState<any>();
 
   const title = "Sales Operator";
-  const description = "Create Sales Operator Account";
-  const action = "Create";
+  const description = initialData ? "Edit Sales Operator Account" : "Create Sales Operator Account";
+  const action = initialData ? "Edit" : "Create";
 
   const defaultValues: z.infer<typeof formSchema> = {
-    name: "",
-    email: "",
+    name: initialData?.user.name || "",
+    email: initialData?.user.email || "",
     password: "",
-    image: "",
-    phone: "",
-    salary: "",
+    image: initialData?.user.image || "",
+    phone: initialData?.user.phone || "",
+    salary: initialData?.salary || "",
   };
 
   const form = useForm<UsersFormValues>({
@@ -105,19 +107,15 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
           onSubmit={form.handleSubmit(onSubmit)}
           className="flex w-full flex-col justify-between p-0"
         >
-          <div className="w-full">
-            <pre>
-              {JSON.stringify(out)}
-            </pre>
-          </div>
           <CardContent className="grid grid-cols-12 gap-4 p-4">
             <FormField
               control={form.control}
               name="image"
               render={({ field }) => (
-                <FormItem className="col-span-12 lg:col-span-8">
+                <FormItem className={cn(initialData ? "col-span-12" : "col-span-12 lg:col-span-8")}>
                   <FormControl>
                     <ImageUploader
+                      value={field.value}
                       onChange={(url) => field.onChange(url)}
                       onRemove={() => field.onChange("")}
                       disabled={loading}
@@ -131,7 +129,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
               control={form.control}
               name="salary"
               render={({ field }) => (
-                <FormItem className="col-span-12 md:col-span-6 lg:col-span-4">
+                <FormItem className={cn(initialData ? "col-span-12" : "col-span-12 md:col-span-6 lg:col-span-4")}>
                   <FormLabel>Salary</FormLabel>
                   <FormControl>
                     <Input
@@ -149,7 +147,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
               control={form.control}
               name="name"
               render={({ field }) => (
-                <FormItem className="col-span-12 md:col-span-6 xl:col-span-4">
+                <FormItem className={cn(initialData ? "col-span-12" : "col-span-12 md:col-span-6 xl:col-span-4")}>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
                     <Input
@@ -167,7 +165,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
               control={form.control}
               name="email"
               render={({ field }) => (
-                <FormItem className="col-span-12 md:col-span-6 xl:col-span-4">
+                <FormItem className={cn(initialData ? "col-span-12" : "col-span-12 md:col-span-6 xl:col-span-4")}>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
@@ -182,30 +180,32 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen }) => {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem className="col-span-12 md:col-span-6 xl:col-span-4">
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      disabled={loading}
-                      placeholder="Password"
-                      {...field}
+            {!initialData && (
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem className={cn(initialData ? "col-span-12" : "col-span-12 md:col-span-6 xl:col-span-4")}>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        disabled={loading}
+                        placeholder="Password"
+                        {...field}
 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             <FormField
               control={form.control}
               name="phone"
               render={({ field }) => (
-                <FormItem className="col-span-12 md:col-span-6 xl:col-span-4">
+                <FormItem className={cn(initialData ? "col-span-12" : "col-span-12 md:col-span-6 xl:col-span-4")}>
                   <FormLabel>Phone</FormLabel>
                   <FormControl>
                     <Input

@@ -19,9 +19,12 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { usePathname } from "next/navigation"
-import { FullCourseType } from "@/lib/PrismaFullTypes"
+import { LearningLayoutCourseType, LearningLayoutLevelType } from "@/components/LearningLayout/LearningLayout"
 
-export function LearningBreadcrumb({ course }: { course: FullCourseType }) {
+export function LearningBreadcrumb({ level, course }: {
+    level: LearningLayoutLevelType;
+    course: LearningLayoutCourseType;
+}) {
     const [open, setOpen] = React.useState(false)
     const [breadcrumbData, setBreadcrumbData] = React.useState<{ label: string, href: string | undefined }[]>([])
     const pathname = usePathname()
@@ -31,16 +34,17 @@ export function LearningBreadcrumb({ course }: { course: FullCourseType }) {
         if (segment === "") return "Home"
         if (segment === "my_courses") return "My Courses"
         if (index === 2) return course.name
-        if (index === 3 && pathSegments[3] === "quiz") return `Session ${course.materialItems.findIndex(({ evaluationForms }) => evaluationForms.find(({ id }) => id === pathSegments[pathSegments.length - 1])?.id) + 1} Quiz`
-        if (index === 3 && pathSegments[3] === "assignment") return `Session ${course.materialItems.findIndex(({ evaluationForms }) => evaluationForms.find(({ id }) => id === pathSegments[pathSegments.length - 1])?.id) + 1} Assignment`
-        if (index === 3 && pathSegments[3] === "session") return `Session: ${course.materialItems.find(({ id }) => id === pathSegments[pathSegments.length - 1])?.title || "no title"}`
+        if (index === 3) return level.name
+        if (index === 4 && pathSegments[4] === "quiz") return `Session ${level.materialItems.findIndex(({ evaluationForms }) => evaluationForms.find(({ id }) => id === pathSegments[pathSegments.length - 1])?.id) + 1} Quiz`
+        if (index === 4 && pathSegments[4] === "assignment") return `Session ${level.materialItems.findIndex(({ evaluationForms }) => evaluationForms.find(({ id }) => id === pathSegments[pathSegments.length - 1])?.id) + 1} Assignment`
+        if (index === 4 && pathSegments[4] === "session") return `Session: ${level.materialItems.find(({ slug }) => slug === pathSegments[pathSegments.length - 1])?.title || "no title"}`
         return ""
     }
 
-    React.useEffect(() => {
-        const items = pathSegments.filter((_, i) => i !== 3)
+    const processBreadcrumbData = () => {
+        const items = pathSegments.filter((_, i) => i !== 4)
         const data = items.map((segment, index) => {
-            const href = index === 0 ? "/" : index === 3 ? undefined : pathSegments.slice(0, index + 1).join('/');
+            const href = index === 0 ? "/" : index === 4 ? undefined : (index === 3 && index === pathSegments.length - 1) ? undefined : pathSegments.slice(0, index + 1).join('/');
             const label = getBreadcrumbLabel(segment, index)
 
             return {
@@ -48,8 +52,13 @@ export function LearningBreadcrumb({ course }: { course: FullCourseType }) {
                 href,
             };
         })
+        console.log(data);
 
         setBreadcrumbData(data)
+    }
+
+    React.useEffect(() => {
+        processBreadcrumbData()
     }, [])
 
     return (
@@ -103,6 +112,6 @@ export function LearningBreadcrumb({ course }: { course: FullCourseType }) {
                     </div>
                 ))}
             </BreadcrumbList>
-        </Breadcrumb >
+        </Breadcrumb>
     )
 }

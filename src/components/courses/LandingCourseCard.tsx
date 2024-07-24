@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Course } from '@prisma/client'
+import { Course, CourseLevel } from '@prisma/client'
 import { Card, CardContent, CardFooter, CardHeader } from '../ui/card'
 import Link from 'next/link'
 import { Button } from '../ui/button'
@@ -12,7 +12,7 @@ import EnrollmentModal from './EnrollmentModal'
 import { api } from '@/lib/api'
 import { useSession } from 'next-auth/react'
 
-const LandingCourseCard = ({ course }: { course: Course }) => {
+const LandingCourseCard = ({ course }: { course: Course & { levels: CourseLevel[] } }) => {
     const imageUrl = !course.image ? "" : `url(${course.image})`
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false)
@@ -53,7 +53,7 @@ const LandingCourseCard = ({ course }: { course: Course }) => {
                     </div>
                     <div className="grid grid-cols-2 px-4 py-2 bg-muted/10 whitespace-nowrap">
                         <Typography >{formatPrice(course.groupPrice)}</Typography>
-                        <Typography className="text-success truncate">{course.levels[0]}</Typography>
+                        <Typography className="text-success truncate">{course.levels[0]?.name}</Typography>
                     </div>
                 </CardContent>
                 <CardFooter className="flex items-center justify-between">

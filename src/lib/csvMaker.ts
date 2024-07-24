@@ -10,7 +10,7 @@ export const csvMaker = function <Data>(data: Data[]) {
         const values = headers.map(e => {
             return row[e as keyof typeof data[0]]
         })
-        csvRows.push(values.join(','))
+        csvRows.push(values.filter(val => typeof val === "string" || typeof val === "number" || typeof val === "boolean").join(','))
     }
 
     const csvData = csvRows.join('\n')

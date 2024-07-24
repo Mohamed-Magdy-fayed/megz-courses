@@ -12,28 +12,19 @@ import Link from "next/link";
 import { AlertModal } from "@/components/modals/AlertModal";
 import { useState } from "react";
 import { api } from "@/lib/api";
-import { CourseLevels, GroupStatus } from "@prisma/client";
+import { GroupStatus } from "@prisma/client";
 import Modal from "@/components/ui/modal";
 import ZoomGroupForm from "@/components/zoomGroupsComponents/Form";
 import SelectField from "@/components/salesOperation/SelectField";
 import { upperFirst } from "lodash";
+import { CourseRow } from "@/components/contentComponents/courseGroups/CourseGroupsColumn";
 
-interface CellActionProps {
-    id: string;
-    courseId: string;
-    courseLevel: CourseLevels;
-    trainerId: string;
-    studentIds: string[];
-    startDate: Date;
-    status: GroupStatus;
-}
-
-const CourseGroupsActionCell: React.FC<CellActionProps> = ({ id, courseId, courseLevel, startDate, status, studentIds, trainerId }) => {
+const CourseGroupsActionCell: React.FC<CourseRow> = ({ id, courseId, courseLevel, startDate, groupStatus, studentIds, trainerId }) => {
     const { toastError, toastSuccess } = useToast();
 
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
-    const [newStatus, setNewStatus] = useState<GroupStatus[]>([status]);
+    const [newStatus, setNewStatus] = useState<GroupStatus[]>([groupStatus]);
     const [changeStatusOpen, setChangeStatusOpen] = useState(false);
     const [isEditFormOpen, setIsEditFormOpen] = useState(false);
 

@@ -30,6 +30,22 @@ export const salesOperationsRouter = createTRPCRouter({
             });
             return { salesOperations };
         }),
+    getByCode: protectedProcedure
+        .input(
+            z.object({
+                code: z.string(),
+            })
+        )
+        .query(async ({ ctx, input: { code } }) => {
+            const salesOperations = await ctx.prisma.salesOperation.findFirst({
+                where: { code },
+                include: {
+                    assignee: { include: { user: true } },
+                    orderDetails: { include: { user: true, courses: true } },
+                },
+            });
+            return { salesOperations };
+        }),
     createSalesOperation: protectedProcedure
         .input(
             z.object({
