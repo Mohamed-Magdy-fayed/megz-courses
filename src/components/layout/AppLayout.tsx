@@ -7,16 +7,13 @@ import { useSession } from "next-auth/react";
 import { ReactNode } from "react";
 import Spinner from "../Spinner";
 import UnauthorizedAccess from "./UnauthorizedAccess";
-import { api } from "@/lib/api";
 
 const AppLayout = ({ children }: { children: ReactNode }) => {
   const { opened, openNav, closeNav } = useNavStore();
 
   const { data: session, status } = useSession({ required: true })
 
-  const { data } = api.siteIdentity.getSiteIdentity.useQuery()
-
-  if (status === "loading" || !session.user || !data?.siteIdentity) return (
+  if (status === "loading" || !session.user) return (
     <div className="grid place-content-center w-screen h-screen">
       <Spinner />
     </div>
@@ -31,14 +28,14 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
         onOpenChange={() => opened ? closeNav() : openNav()}
       >
         <SheetContent side="left" className="p-0 w-min">
-          <MegzDrawer logo={data.siteIdentity.logo} />
+          <MegzDrawer />
         </SheetContent>
       </Sheet>
       <div className="hidden lg:block p-0 w-min">
-        <MegzDrawer logo={data.siteIdentity.logo} />
+        <MegzDrawer />
       </div>
       <div className="w-full">
-        <MegzTopBar siteIdentity={data.siteIdentity} />
+        <MegzTopBar />
         <ScrollArea className="h-[calc(100vh-4rem)] flex-grow">
           <ScrollBar className="bg-primary/20" />
           <div className="p-4">{children}</div>

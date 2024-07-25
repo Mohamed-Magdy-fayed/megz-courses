@@ -1,5 +1,4 @@
 import { signOut, useSession } from "next-auth/react";
-import { useRouter } from "next/router";
 import { useNavStore } from "@/zustand/store";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -15,12 +14,10 @@ import { Skeleton } from "../ui/skeleton";
 import Spinner from "../Spinner";
 import { DarkModeToggle } from "../dark-mode-toggle";
 import Link from "next/link";
-import { SiteIdentity } from "@prisma/client";
-import Image from "next/image";
+import { LogoForeground } from "./Logo";
 
-export default function MegzTopBar({ siteIdentity }: { siteIdentity: SiteIdentity }) {
+export default function MegzTopBar() {
   const session = useSession();
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isMounted, setisMounted] = useState(false);
@@ -74,12 +71,12 @@ export default function MegzTopBar({ siteIdentity }: { siteIdentity: SiteIdentit
           </Tooltip>
           <div className="col-span-6 flex items-center justify-center">
             <Link href={'/'} className="flex items-center gap-2 justify-center w-fit">
-              <Image width={2000} height={2000} src={siteIdentity.logo} alt="Logo" className="w-12 h-12" />
+              <LogoForeground className="w-12 h-12" />
               <Typography variant={"primary"} className="!text-lg !leading-none !font-extrabold text-primary">
-                {siteIdentity.name1}
+                Megz
               </Typography>
               <Typography variant={"primary"} className="!text-lg !leading-none !font-extrabold text-primary">
-                {siteIdentity.name2}
+                Learning
               </Typography>
             </Link>
           </div>

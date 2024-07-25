@@ -5,14 +5,11 @@ import CoursesSection from "@/components/landingPageComponents/CoursesSection";
 import LandingSectionSeparator from "@/components/landingPageComponents/LandingSectionSeparator";
 import OurTeamSection from "@/components/landingPageComponents/OurTeamSection";
 import { Star } from "lucide-react";
-import { api } from "@/lib/api";
 
 const Page = () => {
-  const { data } = api.siteIdentity.getSiteIdentity.useQuery()
-
   return (
     <LandingLayout>
-      {data?.siteIdentity && <HeroSection siteIdentity={data.siteIdentity} />}
+      <HeroSection />
       <LandingSectionSeparator
         images={`lg:bg-[url('../../public/courses_horiz.png')] bg-[url('../../public/courses_vert.png')]`}
         title="Latest Courses"
