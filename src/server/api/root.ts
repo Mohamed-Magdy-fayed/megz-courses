@@ -25,6 +25,7 @@ import { notesRouter } from "@/server/api/routers/notes";
 import { googleAccountsRouter } from "@/server/api/routers/googleAccounts";
 import { certificatesRouter } from "@/server/api/routers/certificates";
 import { levelsRouter } from "@/server/api/routers/levels";
+import { siteIdentityRouter } from "@/server/api/routers/siteIdentity";
 
 /**
  * This is the primary router for your server.
@@ -58,6 +59,7 @@ export const appRouter = createTRPCRouter({
   googleAccounts: googleAccountsRouter,
   notes: notesRouter,
   certificates: certificatesRouter,
+  siteIdentity: siteIdentityRouter,
 });
 
 // export type definition of API

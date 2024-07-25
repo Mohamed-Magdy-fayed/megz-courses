@@ -6,14 +6,13 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu"
-import { Course, Order } from "@prisma/client"
+import { Course, Order, SiteIdentity } from "@prisma/client"
 import Spinner from "@/components/Spinner"
 import { Button } from "@/components/ui/button"
 import { Typography } from "@/components/ui/Typoghraphy"
 import { BookOpen, LayoutDashboard, LogIn, Menu, UserCog, UserPlus } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useEffect, useState } from "react"
-import { LogoForeground } from "../layout/Logo"
 import { signOut, useSession } from "next-auth/react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
@@ -22,8 +21,9 @@ import { DarkModeToggle } from "../dark-mode-toggle"
 import { cn } from "@/lib/utils"
 import { api } from "@/lib/api"
 import { ScrollArea } from "../ui/scroll-area"
+import Image from "next/image"
 
-export const LandingNavigationMenu = () => {
+export const LandingNavigationMenu = ({ siteIdentity }: { siteIdentity: SiteIdentity }) => {
   const latestCoursesQuery = api.courses.getLatest.useQuery(undefined, {
     enabled: false,
   })
@@ -54,13 +54,13 @@ export const LandingNavigationMenu = () => {
         <DesktopNavMenu courses={latestCoursesQuery.data?.courses} />
         {/* Logo and home link */}
         <div className="col-span-6 flex items-center justify-center">
-          <Link href={'/'} className="flex items-center gap-1 justify-center w-fit">
+          <Link href={'/'} className="flex items-center gap-1 justify-center w-fit p-2">
             <Typography variant={"primary"} className="!text-lg !leading-none !font-extrabold text-primary">
-              Megz
+              {siteIdentity.name1}
             </Typography>
-            <LogoForeground className="w-12 h-12" />
+            <Image width={2000} height={2000} src={siteIdentity.logo} alt="Logo" className="w-12 h-12" />
             <Typography variant={"primary"} className="!text-lg !leading-none !font-extrabold text-primary">
-              Learning
+              {siteIdentity.name2}
             </Typography>
           </Link>
         </div>

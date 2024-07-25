@@ -6,42 +6,59 @@ import { ArrowRightFromLineIcon, PlusSquare } from "lucide-react";
 import type { NextPage } from "next";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
-import PlacementTestTimesClient from "@/components/placementTest/PlacementTestTimesClient";
 import Modal from "@/components/ui/modal";
-import { useState } from "react";
-import { TimePicker } from "@/components/ui/TimePicker";
+import { useEffect, useState } from "react";
+import ZoomAccountForm from "@/components/zoomAccount/ZoomAccountForm";
+import { PaperContainer } from "@/components/ui/PaperContainers";
+import ZoomAccountsClient from "@/components/zoomAccount/ZoomAccountsClient";
+import { useRouter } from "next/router";
+import { SiteIdentityForm } from "@/components/siteIdentity/SiteIdentityForm";
+import { api } from "@/lib/api";
+
+const tabs = [
+    { value: "site_identity", label: "Site Identity" },
+    { value: "zoom_accounts", label: "Zoom Accounts" },
+    { value: "facebook", label: "Facebook Configuration" },
+]
 
 const ConfigPage: NextPage = () => {
-    const [isOpen, setIsOpen] = useState(false)
+    const router = useRouter();
+    const tabName = router.query.tab as string;
+
+    const [isZoomOpen, setIsZoomOpen] = useState(false)
+    const [tab, setTab] = useState("site_identity");
+
+    const { data } = api.siteIdentity.getSiteIdentity.useQuery()
+
+    useEffect(() => {
+        if (!tabName) router.push(`config?tab=${tab}`)
+        if (tabName) setTab(tabName)
+    }, [tabName]);
 
     return (
         <AppLayout>
             <Modal
-                title="Create"
-                description="Create a test time"
-                isOpen={isOpen}
-                onClose={() => setIsOpen(false)}
-            >
-                <TestTimesForm />
-            </Modal>
-            <Tabs defaultValue="config">
-                <TabsList>
-                    <TabsTrigger value="config">
-                        Facebook Configuration
-                    </TabsTrigger>
-                    <TabsTrigger value="placement-test-times">
-                        Placement Test Times
-                    </TabsTrigger>
+                description=""
+                title="Add a zoom account"
+                isOpen={isZoomOpen}
+                onClose={() => setIsZoomOpen(false)}
+                children={(
+                    <ZoomAccountForm setIsOpen={setIsZoomOpen} />
+                )}
+            />
+            <Tabs className="w-full" value={tab}>
+                <TabsList className="w-full">
+                    {tabs.map(tab => (
+                        <TabsTrigger
+                            key={tab.value}
+                            value={tab.value}
+                            onClick={() => router.push(`config?tab=${tab.value}`)}
+                        >
+                            {tab.label}
+                        </TabsTrigger>
+                    ))}
                 </TabsList>
-                <div>
-                    <Link href={`/config/zoom`}>
-                        <Button>Zoom Accounts</Button>
-                    </Link>
-                    <Link href={`/config/levels`}>
-                        <Button>Course Levels</Button>
-                    </Link>
-                </div>
-                <TabsContent value="config">
+                <TabsContent value="facebook">
                     <ConceptTitle>Configure Facebook webhooks</ConceptTitle>
                     <ApiAlert title="webhook callback url" description="https://megz-courses.vercel.app/api/facebook" />
                     <div className="flex items-center justify-between p-4">
@@ -54,32 +71,34 @@ const ConfigPage: NextPage = () => {
                         </Link>
                     </div>
                 </TabsContent>
-                <TabsContent value="placement-test-times">
-                    <div className="flex items-center justify-between w-full">
-                        <ConceptTitle>Placement Test Times</ConceptTitle>
-                        <Button onClick={() => setIsOpen(true)} >
-                            <PlusSquare className="w-4 h-4 mr-2" />
-                            Create a Time
-                        </Button>
+                <TabsContent value="zoom_accounts">
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between w-full">
+                            <ConceptTitle>Zoom Accounts</ConceptTitle>
+                            <Button onClick={() => setIsZoomOpen(true)} >
+                                <PlusSquare className="w-4 h-4 mr-2" />
+                                Add an account
+                            </Button>
+                        </div>
+                        <PaperContainer>
+                            <ZoomAccountsClient />
+                        </PaperContainer>
                     </div>
-                    <PlacementTestTimesClient />
+                </TabsContent>
+                <TabsContent value="site_identity">
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between w-full">
+                            <ConceptTitle>Site Identity</ConceptTitle>
+                        </div>
+                        <PaperContainer>
+                            {
+                                data?.siteIdentity && <SiteIdentityForm initialData={data.siteIdentity} />
+                            }
+                        </PaperContainer>
+                    </div>
                 </TabsContent>
             </Tabs>
         </AppLayout>
-    )
-}
-
-const TestTimesForm = () => {
-    const [time, setTime] = useState<Date>()
-
-    return (
-        <div className="space-y-4">
-            <TimePicker
-                date={time}
-                setDate={setTime}
-            />
-            <Button onClick={() => { }}>Create</Button>
-        </div>
     )
 }
 

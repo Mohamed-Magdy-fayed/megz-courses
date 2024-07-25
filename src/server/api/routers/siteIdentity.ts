@@ -1,0 +1,27 @@
+import { SiteIdentityFormSchema } from "@/components/siteIdentity/SiteIdentityForm";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+} from "@/server/api/trpc";
+
+export const siteIdentityRouter = createTRPCRouter({
+  getSiteIdentity: protectedProcedure
+    .query(async ({ ctx }) => {
+      const siteIdentity = await ctx.prisma.siteIdentity.findFirst()
+
+      return {
+        siteIdentity,
+      };
+    }),
+  updateSiteIdentity: protectedProcedure
+    .input(SiteIdentityFormSchema)
+    .mutation(async ({ ctx, input }) => {
+      const siteIdentity = await ctx.prisma.siteIdentity.updateMany({
+        data: input,
+      })
+
+      return {
+        siteIdentity,
+      };
+    }),
+});

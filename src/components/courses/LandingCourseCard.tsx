@@ -57,14 +57,14 @@ const LandingCourseCard = ({ course }: { course: Course & { levels: CourseLevel[
                     </div>
                 </CardContent>
                 <CardFooter className="flex items-center justify-between">
-                    <Link href={`/courses/${course.id}`}>
+                    <Link href={`/courses/${course.slug}`}>
                         <Button className="gap-2" customeColor={"infoIcon"}>
                             View
                             <BookOpen />
                         </Button>
                     </Link>
                     {userQuery.data?.user?.courseStatus.some(status => status.courseId === course.id) ? (
-                        <Link href={`/my_courses/${userQuery.data.user.courseStatus.find(status => status.courseId === course.id)?.courseId}`}>
+                        <Link href={`/my_courses/${userQuery.data.user.courseStatus.find(status => status.courseId === course.id)?.course.slug}`}>
                             <Button>
                                 <Typography>
                                     Go to courses

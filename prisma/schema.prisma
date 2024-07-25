@@ -589,3 +589,17 @@ model Certificate {
     updatedAt      DateTime     @updatedAt
     createdAt      DateTime     @default(now())
 }
+
+model SiteIdentity {
+    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    name1     String
+    name2     String
+    heroText  String
+    logo      String
+    facebook  String
+    instagram String
+    youtube   String
+    linkedin  String
+    updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
+}

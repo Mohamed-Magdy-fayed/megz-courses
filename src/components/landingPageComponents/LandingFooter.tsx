@@ -1,25 +1,26 @@
 import { mainNavLinks } from '../layout/Drawer'
-import { LogoPrimary } from '../layout/Logo'
 import Link from 'next/link'
 import FooterCourseSearchBar from './CourseSearchBar'
 import { Linkedin, Instagram, Youtube, Facebook } from 'lucide-react'
 import Copyright from '@/components/Copyright'
+import { SiteIdentity } from '@prisma/client'
+import Image from 'next/image'
 
-const socialIcons = [
-    { id: "soic1", icon: <Linkedin className='text-[#0072b1]' />, url: "https://www.linkedin.com/in/mohamed-magdy-fayed/", hover: "hover:bg-[#0072b1]" },
-    { id: "soic2", icon: <Instagram className='text-[#9b6954]' />, url: "https://www.instagram.com/", hover: "hover:bg-[#9b6954]" },
-    { id: "soic3", icon: <Youtube className='text-[#c4302b]' />, url: "https://www.youtube.com/", hover: "hover:bg-[#c4302b]" },
-    { id: "soic4", icon: <Facebook className='text-[#4267B2]' />, url: "https://www.facebook.com/bm.mohamed.magdi", hover: "hover:bg-[#4267B2]" },
-]
+const LandingFooter = ({ siteIdentity }: { siteIdentity: SiteIdentity }) => {
+    const socialIcons = [
+        { id: "soic1", icon: <Linkedin className='text-[#0072b1]' />, url: siteIdentity.linkedin, hover: "hover:bg-[#0072b1]" },
+        { id: "soic2", icon: <Instagram className='text-[#9b6954]' />, url: siteIdentity.instagram, hover: "hover:bg-[#9b6954]" },
+        { id: "soic3", icon: <Youtube className='text-[#c4302b]' />, url: siteIdentity.youtube, hover: "hover:bg-[#c4302b]" },
+        { id: "soic4", icon: <Facebook className='text-[#4267B2]' />, url: siteIdentity.facebook, hover: "hover:bg-[#4267B2]" },
+    ]
 
-const LandingFooter = () => {
     return (
         <div className='w-full'>
             <div className='p-4 max-w-7xl lg:mx-auto'>
                 <div className='border-t border-primary grid grid-cols-12 space-y-12'>
                     <div className='pt-4 flex flex-col items-center justify-center gap-4 col-span-12 md:col-span-4 lg:col-span-3'>
                         <div>
-                            <LogoPrimary className='bg-primary-foreground' />
+                            <Image width={2000} height={2000} src={siteIdentity.logo} alt="Logo" className="w-12 h-12" />
                         </div>
                         <div className='flex items-center gap-4'>
                             {socialIcons.map(icon => (
