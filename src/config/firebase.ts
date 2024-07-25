@@ -17,7 +17,7 @@ const firebaseConfig = {
 // Initialize Firebase
 let app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-const STORAGE_FOLDER_PATH = "gs://megz-courses.appspot.com";
+const STORAGE_FOLDER_PATH = `gs://${process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}`;
 export const storage = getStorage(app, STORAGE_FOLDER_PATH);
 
 export default app;
