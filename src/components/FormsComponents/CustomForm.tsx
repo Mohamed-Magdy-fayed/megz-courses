@@ -86,7 +86,7 @@ const CustomForm: FC<{
     const createEvalFormMutation = api.evaluationForm.createEvalForm.useMutation({
         onMutate: () => setLoadingToast(toast({
             title: "Loading...",
-            duration: 3000,
+            duration: 30000,
             variant: "info",
         })),
         onSuccess: ({ evaluationForm }) => trpcUtils.courses.invalidate()
@@ -105,13 +105,16 @@ const CustomForm: FC<{
             description: message,
             variant: "destructive",
         }),
-        onSettled: () => setLoadingToast(undefined),
+        onSettled: () => {
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined)
+        },
     })
 
     const editEvalFormMutation = api.evaluationForm.editEvalForm.useMutation({
         onMutate: () => setLoadingToast(toast({
             title: "Loading...",
-            duration: 3000,
+            duration: 30000,
             variant: "info",
         })),
         onSuccess: ({ evaluationForm }) => trpcUtils.invalidate()
@@ -130,11 +133,19 @@ const CustomForm: FC<{
             description: message,
             variant: "destructive",
         }),
-        onSettled: () => setLoadingToast(undefined),
+        onSettled: () => {
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined)
+        },
     })
 
     const onSubmit: SubmitHandler<IFormInput> = (data) => {
-        if (!type || !materialId) return
+        if (!type || !materialId) return toast({
+            title: "Error",
+            description: "Missing form type or material item",
+            duration: 3000,
+            variant: "destructive"
+        })
         if (!initialData) return createEvalFormMutation.mutate({
             fields: data.fields.map(field => field.type === "trueFalse" ? ({
                 ...field,
@@ -234,36 +245,36 @@ const CustomForm: FC<{
                     const imageUrl = watch(`fields.${i}.image`);
                     return (
                         <div key={id} className="space-y-2">
-                            <FormField
-                                control={control}
-                                name={`fields.${i}.type`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Type</FormLabel>
-                                        <FormControl>
-                                            <Select
-                                                onValueChange={(value: IFormInput["fields"][number]["type"]) => field.onChange(value)}
-                                                value={field.value}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select type" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="multipleChoice">Multiple Choice</SelectItem>
-                                                    <SelectItem value="trueFalse">True/False</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </FormControl>
-                                        {errors.fields && errors.fields[i]?.type &&
-                                            <FormMessage>
-                                                This field is required
-                                            </FormMessage>
-                                        }
-                                    </FormItem>
-                                )}
-                            />
-                            <div className="flex items-center gap-2 justify-between w-full">
-                                <div className="w-auto m-auto flex items-center gap-2">
+                            <div className="flex gap-2 justify-between flex-col items-start">
+                                <FormField
+                                    control={control}
+                                    name={`fields.${i}.type`}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Type</FormLabel>
+                                            <FormControl>
+                                                <Select
+                                                    onValueChange={(value: IFormInput["fields"][number]["type"]) => field.onChange(value)}
+                                                    value={field.value}
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select type" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="multipleChoice">Multiple Choice</SelectItem>
+                                                        <SelectItem value="trueFalse">True/False</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </FormControl>
+                                            {errors.fields && errors.fields[i]?.type &&
+                                                <FormMessage>
+                                                    This field is required
+                                                </FormMessage>
+                                            }
+                                        </FormItem>
+                                    )}
+                                />
+                                <div className="flex items-center gap-2 w-full">
                                     {imageUrl
                                         ? <Image className="max-h-40 w-auto m-auto" src={imageUrl} alt={getInitials(fields[i]?.questionText)} height={100} width={100} />
                                         : null
@@ -293,13 +304,11 @@ const CustomForm: FC<{
                                             </FormItem>
                                         )}
                                     />
-                                </div>
-                                <div className="flex gap-2 items-center">
                                     <FormField
                                         control={control}
                                         name={`fields.${i}.points`}
                                         render={({ field }) => (
-                                            <FormItem>
+                                            <FormItem className="ml-auto">
                                                 <FormLabel>Points</FormLabel>
                                                 <FormControl>
                                                     <Select
@@ -327,7 +336,7 @@ const CustomForm: FC<{
                                         )}
                                     />
                                     <FormItem className="flex flex-col items-center">
-                                        <FormLabel>Remove</FormLabel>
+                                        <FormLabel className="p-1">Remove</FormLabel>
                                         <Button
                                             type="button"
                                             variant={"outline"}
@@ -338,7 +347,6 @@ const CustomForm: FC<{
                                     </FormItem>
                                 </div>
                             </div>
-
                             <FormField
                                 control={control}
                                 name={`fields.${i}.questionText`}

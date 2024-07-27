@@ -64,210 +64,58 @@ export const zoomGroupsRouter = createTRPCRouter({
                 },
                 include: {
                     materialItem: { include: { evaluationForms: true } },
-                    zoomGroup: { include: { students: true, course: true, courseLevel: true } },
-                }
-            })
-            return { updatedSession }
-        }),
-    zoomGroupsCronJob: protectedProcedure
-        .mutation(async ({ ctx }) => {
-            const currentDate = new Date()
-            const twoHoursAgo = subHours(currentDate, 2);
-
-            const ongoingGroups = await ctx.prisma.zoomGroup.updateMany({
-                where: {
-                    AND: {
-                        zoomSessions: {
-                            some: { sessionStatus: { in: ["ongoing", "completed"] } }
-                        },
-                        groupStatus: "waiting",
-                    }
-                },
-                data: {
-                    groupStatus: "active",
+                    zoomGroup: { include: { zoomSessions: true, students: true, course: true, courseLevel: true } },
                 }
             })
 
-            const completedGroups = await ctx.prisma.zoomGroup.updateMany({
-                where: {
-                    AND: {
-                        zoomSessions: {
-                            every: {
-                                sessionStatus: {
-                                    in: ["completed"]
-                                }
-                            },
-                        },
+            const zoomGroup = updatedSession.zoomGroup
+            if (!zoomGroup || !zoomGroup.courseId || !zoomGroup.courseLevelId) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "didn't find the zoom group" })
+
+            const isAllSessionsScheduled = !zoomGroup.zoomSessions.some(session => session.sessionStatus === "completed")
+            if (sessionStatus === "ongoing" && isAllSessionsScheduled) {
+                await ctx.prisma.zoomGroup.update({
+                    where: { id: zoomGroup.id },
+                    data: {
                         groupStatus: "active"
                     }
-                },
-                data: {
-                    groupStatus: "completed",
-                }
-            })
-
-            const updatedGroups = await ctx.prisma.zoomGroup.findMany({
-                where: {
-                    AND: {
-                        zoomSessions: {
-                            every: {
-                                sessionStatus: {
-                                    in: ["completed"]
-                                }
-                            },
-                        },
-                        groupStatus: "completed"
-                    }
-                },
-                include: { students: true }
-            })
-
-            for (let i = 0; i < updatedGroups.length; i++) {
-                const group = updatedGroups[i];
-
-                group?.students.forEach(async (student) => {
-                    if (!group?.courseId) return
-
-                    const updatedUser = await ctx.prisma.user.update({
-                        where: { id: student.id },
-                        data: {
-                            courseStatus: {
-                                updateMany: {
-                                    where: { courseId: group.courseId },
-                                    data: { status: "completed" }
-                                }
-                            }
+                })
+                await ctx.prisma.courseStatus.updateMany({
+                    where: {
+                        AND: {
+                            userId: { in: zoomGroup.studentIds },
+                            courseId: zoomGroup.courseId,
+                            courseLevelId: zoomGroup.courseLevelId,
                         }
-                    })
+                    },
+                    data: {
+                        status: "ongoing"
+                    }
                 })
             }
 
-            const thirtyMinutesFromNow = new Date(currentDate.getTime() + 30 * 60 * 1000);
-            const soonToStartSessionsData = await ctx.prisma.zoomSession.findMany({
-                where: {
-                    AND: [
-                        {
-                            sessionStatus: "scheduled",
-                        },
-                        {
-                            sessionDate: {
-                                gte: currentDate,
-                                lte: thirtyMinutesFromNow
-                            }
-                        }
-                    ]
-                },
-                include: {
-                    zoomGroup: { include: { students: true } },
-                    materialItem: { include: { evaluationForms: true } }
-                }
-            })
-
-            const soonToStartSessions = await ctx.prisma.zoomSession.updateMany({
-                where: {
-                    AND: [
-                        {
-                            sessionStatus: "scheduled",
-                        },
-                        {
-                            sessionDate: {
-                                gte: currentDate,
-                                lte: thirtyMinutesFromNow
-                            }
-                        }
-                    ]
-                },
-                data: {
-                    sessionStatus: "starting"
-                },
-            })
-
-            const ongoingSessionsData = await ctx.prisma.zoomSession.findMany({
-                where: {
-                    AND: [
-                        {
-                            sessionStatus: {
-                                in: ["scheduled", "starting"]
-                            }
-                        },
-                        {
-                            sessionDate: {
-                                lte: currentDate
-                            }
-                        }
-                    ]
-                },
-                include: {
-                    zoomGroup: {
-                        include: {
-                            students: true
+            const isAllSessionsCompleted = zoomGroup.zoomSessions.every(session => session.sessionStatus === "completed")
+            if (sessionStatus === "completed" && isAllSessionsCompleted) {
+                await ctx.prisma.zoomGroup.update({
+                    where: { id: zoomGroup.id },
+                    data: {
+                        groupStatus: "completed"
+                    }
+                })
+                await ctx.prisma.courseStatus.updateMany({
+                    where: {
+                        AND: {
+                            userId: { in: zoomGroup.studentIds },
+                            courseId: zoomGroup.courseId,
+                            courseLevelId: zoomGroup.courseLevelId,
                         }
                     },
-                }
-            })
-            const ongoingSessions = await ctx.prisma.zoomSession.updateMany({
-                where: {
-                    AND: {
-                        sessionStatus: {
-                            in: ["scheduled", "starting"]
-                        },
-                        sessionDate: {
-                            lte: currentDate
-                        }
+                    data: {
+                        status: "completed"
                     }
-                },
-                data: {
-                    sessionStatus: "ongoing"
-                },
-            })
+                })
+            }
 
-            const completedSessionsData = await ctx.prisma.zoomSession.findMany({
-                where: {
-                    AND: [
-                        {
-                            sessionStatus: {
-                                in: ["ongoing", "scheduled", "starting"]
-                            }
-                        },
-                        {
-                            sessionDate: {
-                                lte: twoHoursAgo
-                            }
-                        }
-                    ]
-                },
-                include: {
-                    materialItem: { include: { evaluationForms: true } },
-                    zoomGroup: { include: { students: true } },
-                }
-            })
-
-            const completedSessions = await ctx.prisma.zoomSession.updateMany({
-                where: {
-                    AND: {
-                        sessionStatus: {
-                            in: ["ongoing", "scheduled"]
-                        },
-                        sessionDate: {
-                            lte: twoHoursAgo
-                        }
-                    }
-                },
-                data: {
-                    sessionStatus: "completed"
-                },
-            })
-
-            return {
-                ongoingGroups,
-                completedGroups,
-                ongoingSessions,
-                ongoingSessionsData,
-                completedSessions,
-                completedSessionsData,
-                soonToStartSessions,
-                soonToStartSessionsData,
-            };
+            return { updatedSession }
         }),
     getStudentZoomGroups: protectedProcedure
         .input(z.object({
@@ -344,7 +192,7 @@ export const zoomGroupsRouter = createTRPCRouter({
                             sessionDate: "asc"
                         }
                     },
-                    students: { include: { courseStatus: true } },
+                    students: { include: { courseStatus: true, orders: true, } },
                     trainer: { include: { user: true } },
                     courseLevel: true,
                 },

@@ -38,11 +38,15 @@ export function LearningBreadcrumb({ level, course }: {
         if (index === 4 && pathSegments[4] === "quiz") return `Session ${level.materialItems.findIndex(({ evaluationForms }) => evaluationForms.find(({ id }) => id === pathSegments[pathSegments.length - 1])?.id) + 1} Quiz`
         if (index === 4 && pathSegments[4] === "assignment") return `Session ${level.materialItems.findIndex(({ evaluationForms }) => evaluationForms.find(({ id }) => id === pathSegments[pathSegments.length - 1])?.id) + 1} Assignment`
         if (index === 4 && pathSegments[4] === "session") return `Session: ${level.materialItems.find(({ slug }) => slug === pathSegments[pathSegments.length - 1])?.title || "no title"}`
+        if (index === 4 && pathSegments[4] === "final_test") return `Final Test`
+        if (index === 4 && pathSegments[4] === "certificate") return `Certificate`
         return ""
     }
 
     const processBreadcrumbData = () => {
-        const items = pathSegments.filter((_, i) => i !== 4)
+        const items = pathSegments.filter((_, i) => i !== 5)
+        console.log(pathSegments);
+        
         const data = items.map((segment, index) => {
             const href = index === 0 ? "/" : index === 4 ? undefined : (index === 3 && index === pathSegments.length - 1) ? undefined : pathSegments.slice(0, index + 1).join('/');
             const label = getBreadcrumbLabel(segment, index)

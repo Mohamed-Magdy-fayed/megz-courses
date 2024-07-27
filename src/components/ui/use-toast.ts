@@ -7,7 +7,7 @@ import type {
 } from "@/components/ui/toast"
 
 const TOAST_LIMIT = 4
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_REMOVE_DELAY = 3000
 
 export type ToasterToast = ToastProps & {
   id: string
@@ -149,6 +149,7 @@ function toast({ ...props }: Toast) {
       toast: { ...props, id },
     })
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
+  const dismissAfter = (time: number = 3000) => setTimeout(() => dispatch({ type: "DISMISS_TOAST", toastId: id }), time)
 
   dispatch({
     type: "ADD_TOAST",
@@ -167,6 +168,7 @@ function toast({ ...props }: Toast) {
     props,
     dismiss,
     update,
+    dismissAfter,
   }
 }
 

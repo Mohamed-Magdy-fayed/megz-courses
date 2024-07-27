@@ -1,41 +1,19 @@
-import Spinner from "@/components/Spinner";
-import { toastType, useToast } from "@/components/ui/use-toast";
 import { env } from "@/env.mjs";
 import { api } from "@/lib/api";
 import { sendWhatsAppMessage } from "@/lib/whatsApp";
-import { EmbeddedClient } from "@zoom/meetingsdk/embedded";
-import { useRouter } from "next/router";
 import { useState } from "react";
 
 const useZoomMeeting = () => {
     const [isJoining, setIsJoining] = useState(false)
     const [userId, setUserId] = useState(0)
-    const [zoomClient, setZoomClient] = useState<typeof EmbeddedClient>()
-
-    const router = useRouter()
-    const sessionId = router.query.session_id as string
-
-    const { toast } = useToast()
-    const [loadingToast, setLoadingToast] = useState<toastType>()
+    const [userName, setUserName] = useState("")
 
     const trpcUtils = api.useContext()
 
     const attendSessionMutation = api.zoomGroups.attendSession.useMutation()
     const editSessionStatusMutation = api.zoomGroups.editSessionStatus.useMutation({
-        onMutate: () => setLoadingToast(toast({
-            title: "Loading...",
-            duration: 3000,
-            description: <Spinner className="w-4 h-4" />,
-            variant: "info",
-        })),
         onSuccess: ({ updatedSession }) => trpcUtils.zoomGroups.invalidate()
             .then(() => {
-                loadingToast?.update({
-                    id: loadingToast.id,
-                    title: "Success",
-                    description: `Session ${updatedSession.materialItem?.title} status updated to ${updatedSession.sessionStatus}`,
-                    variant: "success",
-                })
                 updatedSession.zoomGroup?.students.forEach(student => {
                     if (updatedSession.sessionStatus === "ongoing") sendWhatsAppMessage({
                         toNumber: `2${student.phone}` || "201123862218",
@@ -48,13 +26,6 @@ const useZoomMeeting = () => {
                     })
                 })
             }),
-        onError: ({ message }) => loadingToast?.update({
-            id: loadingToast.id,
-            title: "Error",
-            description: message,
-            variant: "destructive",
-        }),
-        onSettled: () => setLoadingToast(undefined)
     })
 
     const createClient = (meetingConfig: {
@@ -66,56 +37,49 @@ const useZoomMeeting = () => {
         role: number;
         lang: string;
         china: number;
-    }, sdkKey: string) => {
-        import("@zoom/meetingsdk/embedded").then((ZoomMtgEmbedded) => {
+    },
+        sdkKey: string,
+        leaveUrl: string,
+        sessionId: string
+    ) => {
+        setIsJoining(true)
+        import('@zoomus/websdk').then(({ ZoomMtg }) => {
+            ZoomMtg.setZoomJSLib('https://source.zoom.us/2.18.2/lib', '/av');
+            ZoomMtg.preLoadWasm();
+            ZoomMtg.prepareWebSDK();
 
-            const client = ZoomMtgEmbedded.default.createClient();
-            const root = document.getElementById("root") as HTMLElement
-            const activeApps = document.getElementById("activeApps") as HTMLElement
+            ZoomMtg.init({
+                leaveUrl,
+                defaultView: "speaker",
+                success: () => {
+                    ZoomMtg.join({
+                        meetingNumber: meetingConfig.mn,
+                        userName: meetingConfig.name,
+                        signature: meetingConfig.signature,
+                        sdkKey,
+                        userEmail: meetingConfig.email,
+                        passWord: meetingConfig.pwd,
+                        success: () => {
+                            ZoomMtg.getCurrentUser({
+                                success: (data: any) => {
+                                    setUserId(data.result.currentUser.userId);
+                                    setUserName(data.result.currentUser.userName);
+                                    setIsJoining(false);
+                                }
+                            })
 
-            setIsJoining(true)
-
-            client.init({
-                zoomAppRoot: root,
-                customize: {
-                    activeApps: { popper: { anchorElement: activeApps, disableDraggable: true, placement: "bottom-end" } },
-                    chat: { popper: { anchorElement: activeApps, disableDraggable: true, placement: "bottom-end" } },
-                    meeting: { popper: { anchorElement: activeApps, disableDraggable: true, placement: "bottom-end" } },
-                    participants: { popper: { anchorElement: activeApps, disableDraggable: true, placement: "bottom-end" } },
-                    setting: { popper: { anchorElement: activeApps, disableDraggable: true, placement: "bottom-end" } },
-                    video: {
-                        isResizable: false, popper: { disableDraggable: true }, viewSizes: {
-                            default: { width: 800, height: 10 },
-                            ribbon: { width: 800, height: 10 }
-                        }
-                    }
+                            attendSessionMutation.mutate({ sessionId })
+                            editSessionStatusMutation.mutate({ id: sessionId, sessionStatus: "ongoing" })
+                        },
+                        error: (error: any) => {
+                            console.log('Error joining meeting', error);
+                        },
+                    });
                 },
-                leaveOnPageUnload: true,
-            }).then((res) => {
-                client.join({
-                    meetingNumber: meetingConfig.mn,
-                    userName: meetingConfig.name,
-                    signature: meetingConfig.signature,
-                    sdkKey: sdkKey,
-                    userEmail: meetingConfig.email,
-                    password: meetingConfig.pwd,
-                }).then(res => {
-                    const id = client.getCurrentUser()?.userId || 0
-                    setUserId(id);
-                    setIsJoining(false);
-                    attendSessionMutation.mutate({ sessionId })
-                    editSessionStatusMutation.mutate({ id: sessionId, sessionStatus: "ongoing" })
-                    client.mute(false, id)
-                    client.on("connection-change", (payload) => {
-                        if (payload.state === 'Closed') {
-                            setUserId(0)
-                            editSessionStatusMutation.mutate({ id: sessionId, sessionStatus: "completed" })
-                        }
-                    })
-                    setZoomClient(client)
-                })
-            })
-                .catch(() => setIsJoining(false))
+                error: (error: any) => {
+                    console.log('Error initializing Zoom SDK', error);
+                },
+            });
         })
     }
 
@@ -123,7 +87,7 @@ const useZoomMeeting = () => {
         createClient,
         isJoining,
         userId,
-        zoomClient,
+        userName,
     };
 };
 

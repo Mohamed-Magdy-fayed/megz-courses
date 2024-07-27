@@ -1,8 +1,6 @@
-import LandingLayout from "@/components/landingPageComponents/LandingLayout";
 import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import MeetingRoot from "@/components/ui/MeetingRoot";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { useToast } from "@/components/ui/use-toast";
 import useZoomMeeting from "@/hooks/useZoomMeeting";
@@ -22,12 +20,13 @@ export default function MeetingPage() {
     const pwd = router.query.pwd as string
     const sessionTitle = router.query.session_title as string
     const sessionId = router.query.session_id as string
-    const { createClient, userId, zoomClient, isJoining } = useZoomMeeting()
+    const leaveUrl = router.query.leave_url as string
+
+    const { createClient, isJoining, userId } = useZoomMeeting()
 
     const generateSDKSignatureQuery = api.zoomMeetings.generateSDKSignature.useMutation({
         onSuccess: ({ meetingConfig, sdkKey }) => {
-            console.log(meetingConfig.signature);
-            createClient(meetingConfig, sdkKey || "")
+            createClient(meetingConfig, sdkKey || "", leaveUrl, sessionId)
         },
     })
 
@@ -50,36 +49,21 @@ export default function MeetingPage() {
         })
     }
 
+    if (userId > 0) return <MeetingRoot />
+
     return (
-        <LandingLayout>
-            <Card className="relative w-full min-h-[90vh] flex flex-col">
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>{sessionTitle}</CardTitle>
-                    {userId > 0
-                        ? (
-                            <Button type="button" onClick={() => {
-                                zoomClient?.leaveMeeting()
-                            }} customeColor={"destructive"}>
-                                Leave
-                            </Button>
-                        )
-                        : (
-                            <Button disabled={isJoining} type="button" onClick={join}>
-                                <UserPlus className={cn("w-4 h-4", isJoining && "opacity-0")} />
-                                <Typography className={cn(isJoining && "opacity-0")}>Join</Typography>
-                                <Spinner className={cn("absolute w-4 h-4 opacity-0", isJoining && "opacity-100")} />
-                            </Button>
-                        )}
-                </CardHeader>
-                <Separator />
-                <CardContent className="flex-grow flex items-start justify-between">
-                    <div id="root"></div>
-                    <div id="activeApps" className="flex-grow"></div>
-                </CardContent>
-                <Separator />
-                <CardFooter>
-                </CardFooter>
-            </Card>
-        </LandingLayout >
+        <div className="grid place-content-center min-h-screen">
+            <div className="flex flex-col gap-12">
+                <Typography className="text-9xl">{sessionTitle} Session</Typography>
+                <Typography className="text-7xl">User Name: {name}</Typography>
+                <Typography className="text-7xl">User Email: {email}</Typography>
+                <Button className="text-5xl font-bold p-12" disabled={isJoining} type="button" onClick={join}>
+                    <UserPlus className={cn("w-12 h-12", isJoining && "opacity-0")} />
+                    <Typography className={cn(isJoining && "opacity-0")}>Join</Typography>
+                    <Spinner className={cn("absolute w-12 h-12 opacity-0", isJoining && "opacity-100")} />
+                </Button>
+            </div>
+            <Typography className={cn("absolute bottom-0 left-[40%] text-center right-[40%] whitespace-nowrap", isJoining && "opacity-0")}>Click the above button to join the meeting</Typography>
+        </div>
     )
 }

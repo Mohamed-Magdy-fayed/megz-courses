@@ -222,7 +222,13 @@ export const evaluationFormRouter = createTRPCRouter({
           materialItem: { connect: { id: materialId } },
           questions: {
             createMany: {
-              data: fields
+              data: fields.map(field => ({
+                points: field.points,
+                questionText: field.questionText,
+                type: field.type,
+                image: field.image,
+                options: field.options,
+              }))
             },
           },
           createdBy: ctx.session.user.email,

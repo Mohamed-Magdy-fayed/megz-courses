@@ -1,27 +1,27 @@
 import { api } from "@/lib/api";
 import { Dispatch, SetStateAction, useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { toastType, useToast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
-import { LoadingButton } from "@/components/ui/button";
+import { Button, LoadingButton } from "@/components/ui/button";
 import useFileUpload from "@/hooks/useFileUpload";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useRouter } from "next/router";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import SelectField from "@/components/salesOperation/SelectField";
 import { MaterialsRow } from "@/components/contentComponents/materials/MaterialsColumn";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const formSchema = z.object({
     title: z.string().min(1, "Title can't be empty"),
-    subTitle: z.string().min(1, "Please add a sub title"),
+    subTitle: z.string(),
+    levelSlug: z.string().min(1, "Please select a level!"),
     slug: z.string().min(1, "Please add a slug").regex(/^\S*$/, "No spaces allowed"),
     uploads: z.array(z.string()),
     files: z.array(z.custom<File>((file) => file instanceof File, { message: "please upload at least one file!" })),
 });
 
 export type UploadsFormValues = z.infer<typeof formSchema>;
-
-export type UploadStatus = { state: "Idle" | "Working", progress: number }
 
 const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: MaterialsRow, setIsOpen: Dispatch<SetStateAction<boolean>> }) => {
     const router = useRouter();
@@ -30,13 +30,15 @@ const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: Material
     const { data: courseLevelsData } = api.levels.getByCourseSlug.useQuery({ courseSlug }, { enabled: !!courseSlug })
 
     const [loading, setLoading] = useState(false);
-    const [levelSlug, setLevelSlug] = useState<string[]>(initialData ? [initialData.levelSlug] : []);
+    const [loadingToast, setLoadingToast] = useState<toastType>();
 
     const form = useForm<UploadsFormValues>({
+        resolver: zodResolver(formSchema),
         defaultValues: initialData
             ? {
                 title: initialData.title,
                 subTitle: initialData.subTitle || "",
+                levelSlug: initialData.levelSlug,
                 slug: initialData.slug || "",
                 files: [],
                 uploads: initialData.uploads || [],
@@ -44,6 +46,7 @@ const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: Material
             : {
                 title: "",
                 subTitle: "",
+                levelSlug: undefined,
                 slug: "",
                 files: [],
                 uploads: [],
@@ -51,61 +54,107 @@ const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: Material
     });
 
     const uploadMaterialMutation = api.materials.uploadMaterialItem.useMutation({
-        onMutate: () => setLoading(true),
-        onSuccess: ({ materialItem }) =>
-            trpcUtils.courses.invalidate().then(() => {
-                toastSuccess(`Your new material (${materialItem.title}) is ready!`)
-                setIsOpen(false)
-            }),
-        onError: ({ message }) => toastError(message),
-        onSettled: () => setLoading(false),
+        onSuccess: ({ materialItem }) => trpcUtils.courses.invalidate().then(() => {
+            loadingToast?.update({
+                id: loadingToast.id,
+                title: "Success",
+                description: `Your new material (${materialItem.title}) is ready!`,
+                variant: "success",
+            })
+            setIsOpen(false)
+            loadingToast?.dismissAfter()
+        }),
+        onError: ({ message }) => {
+            loadingToast?.update({
+                id: loadingToast.id,
+                title: "Error",
+                description: message,
+                variant: "destructive",
+            })
+            loadingToast?.dismissAfter()
+        },
+        onSettled: () => {
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined)
+        }
     });
 
     const editUploadMaterialMutation = api.materials.editUploadMaterialItem.useMutation({
-        onSuccess: ({ materialItem }) =>
-            trpcUtils.courses.invalidate().then(() => {
-                toastSuccess(`Your new material (${materialItem.title}) is updated!`)
-                setIsOpen(false)
-            }),
-        onError: ({ message }) => toastError(message),
-        onSettled: () => setLoading(false),
+        onMutate: () => setLoadingToast(toast({
+            duration: 30000,
+            title: "Loading...",
+        })),
+        onSuccess: ({ materialItem }) => trpcUtils.courses.invalidate().then(() => {
+            loadingToast?.update({
+                id: loadingToast.id,
+                title: "Success",
+                description: `Your new material (${materialItem.title}) is updated!`,
+                variant: "success",
+            })
+            setIsOpen(false)
+        }),
+        onError: ({ message }) => loadingToast?.update({
+            id: loadingToast.id,
+            title: "Error",
+            description: message,
+            variant: "destructive",
+        }),
+        onSettled: () => {
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined)
+        }
     });
-    const trpcUtils = api.useContext();
-    const { toastError, toastSuccess } = useToast();
-    const { progress, uploadFiles } = useFileUpload();
 
-    const handleSubmit = async ({ files, slug, subTitle, title }: UploadsFormValues) => {
+    const trpcUtils = api.useContext();
+    const { toast, toastError } = useToast();
+    const { uploadFiles } = useFileUpload();
+
+    const handleSubmit = async ({ files, slug, subTitle, title, levelSlug }: UploadsFormValues) => {
         if (!files) return toastError("no files selected")
         if (title === "") return toastError("please enter a title")
         if (!levelSlug[0]) return toastError("Please select a level")
-        if (initialData) return editUploadMaterialMutation.mutate({ id: initialData.id, title, subTitle, slug, levelSlug: levelSlug[0] })
 
-        setLoading(true)
+        setLoadingToast(toast({
+            duration: 30000,
+            title: "Loading...",
+            variant: "info"
+        }))
+
+        if (initialData) return editUploadMaterialMutation.mutate({ id: initialData.id, title, subTitle, slug, levelSlug })
+
         const uploads = await uploadFiles(files, `uploads/content/courses/${courseSlug}/${levelSlug}/${slug}`) || []
-        uploadMaterialMutation.mutateAsync({ title, subTitle, uploads, slug, levelSlug: levelSlug[0] });
+        uploadMaterialMutation.mutateAsync({ title, subTitle, uploads, slug, levelSlug });
     };
 
 
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="py-2">
-                <FormItem className="p-4">
-                    <FormLabel>Level</FormLabel>
-                    <FormControl>
-                        <SelectField
-                            values={levelSlug}
-                            setValues={setLevelSlug}
-                            listTitle="Level"
-                            placeholder="Select Level"
-                            data={courseLevelsData?.levels.map(lvl => ({
-                                active: true,
-                                label: lvl.name,
-                                value: lvl.slug,
-                            })) || []}
-                        />
-                    </FormControl>
-                    <FormMessage />
-                </FormItem>
+                <FormField
+                    control={form.control}
+                    name="levelSlug"
+                    render={({ field }) => (
+                        <FormItem className="p-4">
+                            <FormLabel>Level</FormLabel>
+                            <FormControl>
+                                <Select
+                                    value={field.value}
+                                    onValueChange={(value: string) => field.onChange(value)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select Level" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {courseLevelsData?.levels.map(lvl => (
+                                            <SelectItem key={lvl.id} value={lvl.slug}>{lvl.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
                 <FormField
                     control={form.control}
                     name="title"
@@ -113,7 +162,7 @@ const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: Material
                         <FormItem className="p-4">
                             <FormLabel>Material Title</FormLabel>
                             <FormControl>
-                                <Input disabled={loading} placeholder="Session 1" {...field} />
+                                <Input disabled={!!loadingToast} placeholder="Session 1" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -126,7 +175,7 @@ const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: Material
                         <FormItem className="p-4">
                             <FormLabel>Material Sub Title</FormLabel>
                             <FormControl>
-                                <Input disabled={loading} placeholder="Present Simple" {...field} />
+                                <Input disabled={!!loadingToast} placeholder="Present Simple" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -139,7 +188,7 @@ const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: Material
                         <FormItem className="p-4">
                             <FormLabel>URL Slug</FormLabel>
                             <FormControl>
-                                <Input disabled={loading} placeholder="session_1 (no spaces)" {...field} />
+                                <Input disabled={!!loadingToast} placeholder="session_1 (no spaces)" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -154,7 +203,7 @@ const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: Material
                                 <FormLabel>Select Files</FormLabel>
                                 <FormControl>
                                     <Input
-                                        disabled={loading}
+                                        disabled={!!loadingToast}
                                         type="file"
                                         multiple
                                         placeholder="Upload Material"
@@ -170,7 +219,9 @@ const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: Material
                         )}
                     />
                 )}
-                <LoadingButton progress={progress} disabled={loading} type="submit">Submit</LoadingButton>
+                <div className="p-4">
+                    <Button disabled={!!loadingToast || loading} type="submit">Submit</Button>
+                </div>
             </form>
         </Form>
     );

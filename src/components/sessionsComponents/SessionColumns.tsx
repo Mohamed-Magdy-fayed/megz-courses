@@ -12,6 +12,7 @@ import { toastType, useToast } from "@/components/ui/use-toast";
 import Spinner from "@/components/Spinner";
 import { sendWhatsAppMessage } from "@/lib/whatsApp";
 import { env } from "@/env.mjs";
+import { SeverityPill } from "@/components/overview/SeverityPill";
 
 export type SessionColumn = {
   id: string;
@@ -23,6 +24,7 @@ export type SessionColumn = {
   meetingNumber: string;
   meetingPassword: string;
   isSessionOngoing: boolean;
+  sessionDate: string;
   createdAt: string;
 };
 
@@ -68,13 +70,20 @@ export const columns: ColumnDef<SessionColumn>[] = [
         <div className="flex flex-col gap-2">
           <Typography>{session.title} Session</Typography>
           {session.isSessionOngoing && (
-            <Link href={`/meeting/?mn=${session.meetingNumber}&pwd=${session.meetingPassword}&session_title=${session.title}&session_id=${session.id}`}>
+            <Link target="_blank" href={`/meeting/?mn=${session.meetingNumber}&pwd=${session.meetingPassword}&session_title=${session.title}&session_id=${session.id}&leave_url=${env.NEXT_PUBLIC_NEXTAUTH_URL}staff/my_sessions`}>
               <Button type="button" customeColor={"info"}>Join Ongoing Session</Button>
             </Link>
           )}
         </div>
       )
     },
+  },
+  {
+    accessorKey: "sessionDate",
+    header: "Session Time",
+    cell: ({ row }) => (
+      <Typography>{row.original.sessionDate}</Typography>
+    ),
   },
   {
     accessorKey: "groupId",
@@ -112,7 +121,7 @@ export const columns: ColumnDef<SessionColumn>[] = [
           description: <Spinner className="w-4 h-4" />,
           variant: "info",
         })),
-        onSuccess: ({ updatedSession }) => trpcUtils.zoomGroups.invalidate()
+        onSuccess: ({ updatedSession }) => trpcUtils.trainers.invalidate()
           .then(() => {
             loadingToast?.update({
               id: loadingToast.id,
@@ -135,36 +144,61 @@ export const columns: ColumnDef<SessionColumn>[] = [
           description: message,
           variant: "destructive",
         }),
-        onSettled: () => setLoadingToast(undefined)
+        onSettled: () => {
+          loadingToast?.dismissAfter()
+          setLoadingToast(undefined)
+        }
       })
 
       if (status === "scheduled") return (
-        <Button
-          onClick={() => editSessionStatusMutation.mutate({ id: session.id, sessionStatus: "starting" })}
-          variant={"outline"}
-          customeColor={"infoOutlined"}
-        >
-          Starting Soon
-        </Button>
+        <div className="space-y-2 grid">
+          <SeverityPill color="primary">Scheduled</SeverityPill>
+          <Button
+            onClick={() => editSessionStatusMutation.mutate({ id: session.id, sessionStatus: "starting" })}
+            variant={"outline"}
+            customeColor={"infoOutlined"}
+          >
+            Starting Soon
+          </Button>
+        </div>
       )
 
       if (status === "ongoing") return (
-        <Button
-          onClick={() => editSessionStatusMutation.mutate({ id: session.id, sessionStatus: "completed" })}
-          variant={"outline"}
-          customeColor={"infoOutlined"}
-        >
-          Complete Session
-        </Button>
+        <div className="space-y-2 grid">
+          <SeverityPill color="info">Ongoing</SeverityPill>
+          <Button
+            onClick={() => editSessionStatusMutation.mutate({ id: session.id, sessionStatus: "completed" })}
+            variant={"outline"}
+            customeColor={"successOutlined"}
+          >
+            Complete Session
+          </Button>
+        </div>
       )
 
       if (status === "starting") return (
-        <div className="flex flex-col gap-2">
+        <div className="grid space-y-2">
           <Typography>{session.title} Session</Typography>
-          <Link href={`/meeting/?mn=${session.meetingNumber}&pwd=${session.meetingPassword}&session_title=${session.title}&session_id=${session.id}`}>
-            <Button type="button" customeColor={"info"}>Start Session</Button>
-          </Link>
+          <SeverityPill color="secondary">Starting soon</SeverityPill>
+          <div className="flex gap-2 items-center [&>*]:flex-grow">
+            <Link target="_blank" href={`/meeting/?mn=${session.meetingNumber}&pwd=${session.meetingPassword}&session_title=${session.title}&session_id=${session.id}&leave_url=${env.NEXT_PUBLIC_NEXTAUTH_URL}staff/my_sessions`}>
+              <Button className="w-full" type="button" customeColor={"info"}>Start Zoom Session</Button>
+            </Link>
+            <Button
+              onClick={() => editSessionStatusMutation.mutate({ id: session.id, sessionStatus: "ongoing" })}
+              variant={"outline"}
+              customeColor={"infoOutlined"}
+            >
+              Start Session
+            </Button>
+          </div>
         </div>
+      )
+      if (status === "completed") return (
+        <SeverityPill color="success">Completed</SeverityPill>
+      )
+      if (status === "cancelled") return (
+        <SeverityPill color="destructive">Cancelled</SeverityPill>
       )
     },
   },

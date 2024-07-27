@@ -113,6 +113,7 @@ export const coursesRouter = createTRPCRouter({
             }
           }
         },
+        evaluationForms: true,
         levels: true,
       },
       orderBy: { createdAt: "desc" }

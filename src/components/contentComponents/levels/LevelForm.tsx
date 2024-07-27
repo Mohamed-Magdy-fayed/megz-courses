@@ -19,7 +19,7 @@ import { Typography } from "@/components/ui/Typoghraphy";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name can't be empty"),
-  slug: z.string().min(1, "Slug can't be empty"),
+  slug: z.string().min(1, "Slug can't be empty").regex(/^\S*$/, "No spaces allowed"),
 });
 
 type LevelFormValues = z.infer<typeof formSchema>;
@@ -49,7 +49,7 @@ const LevelForm: React.FC<LevelFormProps> = ({ setIsOpen, initialData, courseSlu
   const addLevelMutation = api.levels.createLevel.useMutation({
     onMutate: () => setLoadingToast(toast({
       title: "Loading...",
-      duration: 30000,
+      duration: 3000,
       variant: "info",
     })),
     onSuccess: ({ level }) => trpcUtils.invalidate()
@@ -59,7 +59,6 @@ const LevelForm: React.FC<LevelFormProps> = ({ setIsOpen, initialData, courseSlu
           id: loadingToast.id,
           title: "Success",
           description: `Level created with name: ${level.name}`,
-          duration: 2000,
           variant: "success",
         })
       }),
@@ -67,10 +66,12 @@ const LevelForm: React.FC<LevelFormProps> = ({ setIsOpen, initialData, courseSlu
       id: loadingToast.id,
       title: "Error",
       description: message,
-      duration: 2000,
       variant: "destructive",
     }),
-    onSettled: () => setLoadingToast(undefined)
+    onSettled: () => {
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined)
+        }
   });
   const trpcUtils = api.useContext();
 

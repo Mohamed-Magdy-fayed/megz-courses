@@ -25,7 +25,11 @@
       "@/*": [
         "./src/*"
       ]
-    }
+    },
+    "types": [
+      "webpack",
+      "node"
+    ]
   },
   "include": [
     ".eslintrc.cjs",

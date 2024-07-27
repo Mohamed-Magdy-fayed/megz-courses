@@ -6,20 +6,6 @@ type Input = {
     textBody: string;
 }
 
-/**
- * user name and password
- * payment notification
- * payment confirmation
- * placement test time
- * placement test result (level)
- * added to group
- * session time updates ***************************NOT DONE
- * session times
- * quiz before session
- * material and assignment after session
- * final session / test time
- */
-
 export const sendWhatsAppMessage = async ({ toNumber, textBody }: Input) => {
     let data = JSON.stringify({
         "messaging_product": "whatsapp",
@@ -41,11 +27,18 @@ export const sendWhatsAppMessage = async ({ toNumber, textBody }: Input) => {
         data: data
     };
 
-    const response = await axios.request(config)
+    try {
+        const response = await axios.request(config)
 
-    if (response.status === 200) {
-        return { success: true, toNumber, textBody }
-    } else {
-        return { success: false, toNumber, textBody }
+        if (response.status === 200) {
+            return { success: true, toNumber, textBody }
+        } else {
+            return { success: false, toNumber, textBody }
+        }
+    } catch (error) {
+        console.log("WhatsApp API not active - ", {
+            toNumber,
+            textBody,
+        })
     }
 }

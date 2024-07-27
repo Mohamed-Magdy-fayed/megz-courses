@@ -24,6 +24,7 @@ const AuthenticationPage = () => {
   }, [session.status]);
 
   useEffect(() => {
+    if(!defaultVariant) router.push("authentication?variant=login")
     setVariant(defaultVariant)
   }, [defaultVariant]);
 

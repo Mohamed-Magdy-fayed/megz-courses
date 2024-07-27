@@ -131,7 +131,8 @@ export const authRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input: { code, email, newPassword } }) => {
       const user = await ctx.prisma.user.findUnique({ where: { email } })
-      if (!bcrypt.compare(code, user?.tempPassword!)) throw new TRPCError({ code: "UNAUTHORIZED", message: "incorrect code, please check your email!" })
+      if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "Email is not present!" })
+      if (!(await bcrypt.compare(code, user?.tempPassword!))) throw new TRPCError({ code: "UNAUTHORIZED", message: "incorrect code, please check your email!" })
 
       const hashedPassword = await bcrypt.hash(newPassword, 10);
 

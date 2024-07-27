@@ -19,13 +19,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import ImageUploader from "@/components/ui/ImageUploader";
 import { z } from "zod";
-import SelectField from "@/components/salesOperation/SelectField";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name can't be empty"),
   slug: z.string().min(1, "Please add a slug").regex(/^\S*$/, "No spaces allowed"),
   description: z.string().min(1, "description can't be empty"),
-  image: z.string().min(1, "image can't be empty"),
+  image: z.string(),
   groupPrice: z.number().min(1, "groupPrice can't be empty"),
   privatePrice: z.number().min(1, "privatePrice can't be empty"),
   instructorPrice: z.number().min(1, "instructorPrice can't be empty"),
@@ -45,6 +45,7 @@ const CourseForm = ({ initialData, setIsOpen }: {
   const { toast } = useToast()
 
   const form = useForm<CoursesFormValues>({
+    resolver: zodResolver(formSchema),
     defaultValues: initialData
       ? initialData
       : {
@@ -112,7 +113,7 @@ const CourseForm = ({ initialData, setIsOpen }: {
     }),
     onSettled: () => {
       setLoading(false)
-      setTimeout(() => loadingToast?.dismiss(), 1000)
+      setTimeout(() => loadingToast?.dismissAfter(), 1000)
     },
   });
   const trpcUtils = api.useContext();
@@ -215,7 +216,7 @@ const CourseForm = ({ initialData, setIsOpen }: {
               <FormItem className="p-4">
                 <FormLabel>Private Price</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="EX. 99.99" {...field} />
+                  <Input type="number" placeholder="EX. 99.99" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -228,7 +229,7 @@ const CourseForm = ({ initialData, setIsOpen }: {
               <FormItem className="p-4">
                 <FormLabel>Group Price</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="EX. 99.99" {...field} />
+                  <Input type="number" placeholder="EX. 99.99" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -241,7 +242,7 @@ const CourseForm = ({ initialData, setIsOpen }: {
               <FormItem className="p-4">
                 <FormLabel>Instructor Price</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="EX. 99.99" {...field} />
+                  <Input type="number" placeholder="EX. 99.99" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

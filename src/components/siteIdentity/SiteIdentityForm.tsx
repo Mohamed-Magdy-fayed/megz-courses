@@ -53,7 +53,10 @@ export const SiteIdentityForm = ({ initialData }: {
             description: message,
             variant: "destructive",
         }),
-        onSettled: () => setLoadingToast(undefined),
+        onSettled: () => {
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined)
+        },
     })
 
     const form = useForm<SiteIdentityFormValues>({

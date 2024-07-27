@@ -106,13 +106,16 @@ const CustomTestForm: FC<{
             description: message,
             variant: "destructive",
         }),
-        onSettled: () => setLoadingToast(undefined),
+        onSettled: () => {
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined)
+        },
     })
 
     const editTestEvalFormMutation = api.evaluationForm.editEvalForm.useMutation({
         onMutate: () => setLoadingToast(toast({
             title: "Loading...",
-            duration: 3000,
+            duration: 30000,
             variant: "info",
         })),
         onSuccess: ({ evaluationForm }) => trpcUtils.invalidate()
@@ -120,7 +123,7 @@ const CustomTestForm: FC<{
                 loadingToast?.update({
                     id: loadingToast.id,
                     title: "Success",
-                    description: `Test created with total points ${evaluationForm.totalPoints}`,
+                    description: `Test updated with total points ${evaluationForm.totalPoints}`,
                     variant: "success",
                 })
                 setIsOpen?.(false)
@@ -131,10 +134,19 @@ const CustomTestForm: FC<{
             description: message,
             variant: "destructive",
         }),
+        onSettled: () => {
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined)
+        },
     })
 
     const onSubmit: SubmitHandler<IFormInput> = (data) => {
-        if (!type) return
+        if (!type) return toast({
+            title: "Error",
+            description: "Missing form type",
+            duration: 30000,
+            variant: "destructive"
+        })
         if (!initialData) return createTestEvalFormMutation.mutate({
             fields: data.fields.map(field => field.type === "trueFalse" ? ({
                 ...field,
@@ -205,7 +217,7 @@ const CustomTestForm: FC<{
                     const imageUrl = watch(`fields.${i}.image`);
                     return (
                         <div key={id}>
-                            <div className={cn("flex items-center gap-2 justify-between", initialData && "flex-col items-start")}>
+                            <div className="flex gap-2 justify-between flex-col items-start">
                                 <FormField
                                     control={control}
                                     name={`fields.${i}.type`}
@@ -234,7 +246,7 @@ const CustomTestForm: FC<{
                                         </FormItem>
                                     )}
                                 />
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 w-full">
                                     {imageUrl
                                         ? <Image className="max-h-40 w-auto m-auto" src={imageUrl} alt={getInitials(fields[i]?.questionText)} height={100} width={100} />
                                         : null
@@ -268,7 +280,7 @@ const CustomTestForm: FC<{
                                         control={control}
                                         name={`fields.${i}.points`}
                                         render={({ field }) => (
-                                            <FormItem>
+                                            <FormItem className="ml-auto">
                                                 <FormLabel>Points</FormLabel>
                                                 <FormControl>
                                                     <Select
@@ -296,7 +308,7 @@ const CustomTestForm: FC<{
                                         )}
                                     />
                                     <FormItem className="flex flex-col items-center">
-                                        <FormLabel>Remove</FormLabel>
+                                        <FormLabel className="p-1">Remove</FormLabel>
                                         <Button
                                             type="button"
                                             variant={"outline"}
@@ -307,7 +319,6 @@ const CustomTestForm: FC<{
                                     </FormItem>
                                 </div>
                             </div>
-
                             <FormField
                                 control={control}
                                 name={`fields.${i}.questionText`}

@@ -67,7 +67,10 @@ const CoursesActionCell: React.FC<CellActionProps> = ({ id, slug, description, g
             description: message,
             title: "Error",
         }),
-        onSettled: () => setLoadingToast(undefined),
+        onSettled: () => {
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined)
+        },
     })
     const deleteMutation = api.courses.deleteCourses.useMutation({
         onMutate: () => {
@@ -95,7 +98,10 @@ const CoursesActionCell: React.FC<CellActionProps> = ({ id, slug, description, g
             description: message,
             title: "Error",
         }),
-        onSettled: () => setLoadingToast(undefined),
+        onSettled: () => {
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined)
+        },
     })
     const onDelete = () => {
         deleteMutation.mutate([id])

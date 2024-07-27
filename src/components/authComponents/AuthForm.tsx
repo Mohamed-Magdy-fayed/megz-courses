@@ -1,5 +1,4 @@
 import { api } from "@/lib/api";
-import { Smile } from "lucide-react";
 import { Typography } from "../ui/Typoghraphy";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -16,7 +15,7 @@ import { useRouter } from "next/router";
 
 export const authFormSchema = z.object({
     name: z.string().min(1, "Name can't be empty").optional(),
-    email: z.string().email(),
+    email: z.string().email().min(5, "Please add your email"),
     password: z.string().min(4),
 });
 

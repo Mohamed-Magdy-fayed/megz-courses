@@ -3,6 +3,7 @@ import {
   protectedProcedure,
 } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
+import id from "date-fns/locale/id";
 import { z } from "zod";
 
 export const certificatesRouter = createTRPCRouter({
@@ -40,6 +41,25 @@ export const certificatesRouter = createTRPCRouter({
             slug: courseSlug,
           },
           userId: ctx.session.user.id,
+        },
+        include: {
+          user: true,
+          course: true,
+        }
+      })
+
+      return {
+        certificate,
+      };
+    }),
+  getCertificateById: protectedProcedure
+    .input(z.object({
+      id: z.string()
+    }))
+    .query(async ({ ctx, input: { id } }) => {
+      const certificate = await ctx.prisma.certificate.findFirst({
+        where: {
+          certificateId: id,
         },
         include: {
           user: true,

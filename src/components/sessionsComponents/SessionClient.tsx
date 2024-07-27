@@ -2,6 +2,8 @@ import { api } from "@/lib/api";
 import { format } from "date-fns";
 import { DataTable } from "../ui/DataTable";
 import { SessionColumn, columns } from "./SessionColumns";
+import { validSessionStatuses } from "@/lib/enumsTypes";
+import { upperFirst } from "lodash";
 
 const SessionsClient = () => {
   const { data } = api.trainers.getCurrentTrainerSessions.useQuery()
@@ -16,6 +18,7 @@ const SessionsClient = () => {
     meetingNumber: session.zoomGroup?.meetingNumber || "",
     meetingPassword: session.zoomGroup?.meetingPassword || "",
     isSessionOngoing: session.sessionStatus === "ongoing",
+    sessionDate: format(session.sessionDate, "PPPp"),
     createdAt: format(session.createdAt, "PPP"),
   })) || [];
 
@@ -25,9 +28,12 @@ const SessionsClient = () => {
       data={formattedData}
       setData={() => { }}
       searches={[{
-        key: "id",
-        label: "Id"
+        key: "sessionDate",
+        label: "Time"
       }]}
+      filters={[
+        { key: "status", filterName: "Status", values: validSessionStatuses.map(s => ({ label: upperFirst(s), value: s })) }
+      ]}
     />
   );
 };

@@ -24,7 +24,7 @@ const useFileUpload = () => {
         })
 
         const uploadTask = new Promise<StorageReference>((resolve, reject) => {
-            setProgress(0);
+            setProgress(1);
             const task = uploadBytesResumable(storageRef, file);
             task.pause()
 
@@ -35,7 +35,6 @@ const useFileUpload = () => {
                         title: "Dublicate file name",
                         description: `file with same name ${file.name} already exists, do you want to overwrite it?`,
                         variant: "default",
-                        duration: 2000,
                         action: (
                             <div className='flex flex-col items-center gap-2'>
                                 <Button
@@ -58,9 +57,9 @@ const useFileUpload = () => {
                                             title: "Cancelled",
                                             description: "Upload has been cancelled!",
                                             variant: "destructive",
-                                            duration: 2000,
                                             action: undefined,
                                         });
+                                        uploadToast.dismiss()
                                     }}
                                 >
                                     <XSquareIcon />
@@ -78,7 +77,7 @@ const useFileUpload = () => {
                 (snapshot) => {
                     const uploadProgress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
                     uploadToast.update({
-                        id: uploadToast.id, description: formatPercentage(uploadProgress), variant: "info",
+                        id: uploadToast.id, description: formatPercentage(isNaN(uploadProgress) ? 0 : uploadProgress), variant: "info",
                         action: <Button
                             variant={"icon"}
                             customeColor={"destructiveIcon"}
@@ -93,9 +92,9 @@ const useFileUpload = () => {
                                     title: "Cancelled",
                                     description: "Upload has been cancelled!",
                                     variant: "destructive",
-                                    duration: 2000,
                                     action: undefined,
                                 });
+                                uploadToast.dismiss()
                             }}
                         >
                             <XSquareIcon />
@@ -124,9 +123,9 @@ const useFileUpload = () => {
                 title: "Success",
                 description: "Upload completed!",
                 variant: "success",
-                duration: 2000,
                 action: undefined,
             })
+            uploadToast.dismiss()
         } catch (error) {
             toastError(`${error}`);
         } finally {

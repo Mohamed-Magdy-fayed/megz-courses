@@ -74,7 +74,10 @@ const CustomTestGoogleForm: FC<{
             description: message,
             variant: "destructive",
         }),
-        onSettled: () => setLoadingToast(undefined),
+        onSettled: () => {
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined)
+        },
     })
 
     const editTestEvalFormMutation = api.evaluationForm.editGoogleEvalForm.useMutation({
@@ -99,7 +102,10 @@ const CustomTestGoogleForm: FC<{
             description: message,
             variant: "destructive",
         }),
-        onSettled: () => setLoadingToast(undefined),
+        onSettled: () => {
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined)
+        },
     })
 
     const onSubmit: SubmitHandler<TestGoogleFormValues> = ({ url }) => {

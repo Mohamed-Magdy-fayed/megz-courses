@@ -8,11 +8,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Trash, SearchSlash, MoreVertical } from "lucide-react";
 import { useState } from "react";
-import { AlertModal } from "../modals/AlertModal";
 import { api } from "@/lib/api";
 import { useToast } from "../ui/use-toast";
 import Link from "next/link";
-import ModalInDropdownMenu from "../ui/modal-in-dropdown-menu";
+import Modal from "@/components/ui/modal";
 
 interface AgentCellActionProps {
     id: string;
@@ -22,7 +21,8 @@ const AgentCellAction: React.FC<AgentCellActionProps> = ({ id }) => {
     const { toastError, toastSuccess } = useToast();
 
     const [loading, setLoading] = useState(false);
-    const [open, setOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
     const deleteMutation = api.chatAgents.deleteChatAgent.useMutation()
     const trpcUtils = api.useContext()
@@ -36,7 +36,7 @@ const AgentCellAction: React.FC<AgentCellActionProps> = ({ id }) => {
                     trpcUtils.chatAgents.invalidate().then(() => {
                         toastSuccess("Agent(s) deleted")
                         setLoading(false);
-                        setOpen(false);
+                        setIsDeleteOpen(false);
                     });
                 },
                 onError: (error) => {
@@ -48,8 +48,23 @@ const AgentCellAction: React.FC<AgentCellActionProps> = ({ id }) => {
 
     return (
         <>
-
-            <DropdownMenu>
+            <Modal
+                title="Are you sure?"
+                description="This action can't be undone!"
+                isOpen={isDeleteOpen}
+                onClose={() => setIsDeleteOpen(false)}
+                children={
+                    <div className="flex w-full items-center justify-end space-x-2 pt-6">
+                        <Button disabled={loading} variant={"outline"} customeColor={"mutedOutlined"} onClick={() => setIsDeleteOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button disabled={loading} customeColor="destructive" onClick={() => onDelete()}>
+                            Continue
+                        </Button>
+                    </div>
+                }
+            />
+            <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
                 <DropdownMenuTrigger asChild>
                     <Button customeColor="mutedIcon" variant={"icon"} >
                         <MoreVertical className="w-4 h-4" />
@@ -63,29 +78,13 @@ const AgentCellAction: React.FC<AgentCellActionProps> = ({ id }) => {
                             View
                         </Link>
                     </DropdownMenuItem>
-                    <ModalInDropdownMenu
-                        title="Are you sure?"
-                        description="This action can't be undone!"
-                        isOpen={open}
-                        onOpen={() => setOpen(true)}
-                        onClose={() => setOpen(false)}
-                        children={
-                            <div className="flex w-full items-center justify-end space-x-2 pt-6">
-                                <Button disabled={loading} variant={"outline"} customeColor={"mutedOutlined"} onClick={() => setOpen(false)}>
-                                    Cancel
-                                </Button>
-                                <Button disabled={loading} customeColor="destructive" onClick={() => onDelete()}>
-                                    Continue
-                                </Button>
-                            </div>
-                        }
-                        itemChildren={
-                            <>
-                                <Trash className="w-4 h-4 mr-2" />
-                                Delete
-                            </>
-                        }
-                    />
+                    <DropdownMenuItem onClick={() => {
+                        setIsOpen(false)
+                        setIsDeleteOpen(true)
+                    }}>
+                        <Trash className="w-4 h-4 mr-2" />
+                        Delete
+                    </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
         </>

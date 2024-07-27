@@ -29,7 +29,10 @@ const PlacmentTestClient = ({ formattedData }: { formattedData: PlacmentTestRow[
             description: message,
             title: "Error",
         }),
-        onSettled: () => setLoadingToast(undefined),
+        onSettled: () => {
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined)
+        },
     })
 
     const onDelete = (callback?: () => void) => {

@@ -18,10 +18,12 @@ import Link from "next/link";
 const FinalTestPage: NextPage = () => {
     const router = useRouter()
     const courseSlug = router.query.courseSlug as string
+    const levelSlug = router.query.levelSlug as string
     const { toastError, toastSuccess } = useToast()
     const trpcUtils = api.useContext()
-    const courseQuery = api.courses.getBySlug.useQuery({ slug: courseSlug })
-    const finalTestQuery = api.evaluationForm.getFinalTest.useQuery({ courseSlug })
+    const courseQuery = api.courses.getBySlug.useQuery({ slug: courseSlug }, { enabled: !!courseSlug })
+    const levelQuery = api.levels.getBySlug.useQuery({ slug: levelSlug }, { enabled: !!levelSlug })
+    const finalTestQuery = api.evaluationForm.getFinalTest.useQuery({ courseSlug }, { enabled: !!courseSlug })
     const userQuery = api.users.getCurrentUser.useQuery()
     const submitMutation = api.evaluationFormSubmissions.createEvalFormSubmission.useMutation({
         onMutate: () => setLoading(true),
@@ -49,12 +51,14 @@ const FinalTestPage: NextPage = () => {
         if (!answers) return toastError("no answers!")
         if (!finalTestQuery.data?.finalTest?.type) return toastError("no form type!")
         if (!courseQuery?.data?.course?.id) return toastError("no course!")
+        if (!levelQuery?.data?.level?.id) return toastError("no level!")
 
         submitMutation.mutate({
             answers,
             evaluationFormId: finalTestQuery.data.finalTest.id,
             type: finalTestQuery.data.finalTest.type,
             courseId: courseQuery.data.course.id,
+            levelId: levelQuery.data.level.id,
         })
     }
 

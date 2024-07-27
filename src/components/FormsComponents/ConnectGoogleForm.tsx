@@ -83,7 +83,10 @@ const ConnectGoogleForm: FC<{
             duration: 2000,
             variant: "destructive",
         }),
-        onSettled: () => setLoadingToast(undefined),
+        onSettled: () => {
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined)
+        },
     })
     const editGoogleEvalFormMutation = api.evaluationForm.editGoogleEvalForm.useMutation({
         onMutate: () => setLoadingToast(toast({
@@ -107,7 +110,10 @@ const ConnectGoogleForm: FC<{
             description: message,
             variant: "destructive",
         }),
-        onSettled: () => setLoadingToast(undefined),
+        onSettled: () => {
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined)
+        },
     })
 
     const onSubmit = ({ url }: GoogleFormValues) => {

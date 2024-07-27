@@ -109,6 +109,7 @@ export const usersRouter = createTRPCRouter({
           },
           studentNotes: { include: { createdByUser: true, mentions: true } },
           courseStatus: true,
+          certificates: { include: { course: true, courseLevel: true, user: true } }
         },
       });
 
@@ -136,7 +137,7 @@ export const usersRouter = createTRPCRouter({
           },
           studentNotes: { include: { createdByUser: true, mentions: true } },
           courseStatus: { include: { level: true, course: true } },
-          certificates: { include: { course: true, courseLevel: true } },
+          certificates: { include: { course: true, courseLevel: true, user: true } },
         },
       });
       return { user };

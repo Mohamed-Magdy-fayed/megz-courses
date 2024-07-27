@@ -16,7 +16,6 @@ import Email from "../emails/Email";
 import { format } from "date-fns";
 import { formatPrice } from "@/lib/utils";
 import SelectField from "./SelectField";
-import ModalInDropdownMenu from "../ui/modal-in-dropdown-menu";
 import Modal from "@/components/ui/modal";
 
 interface CellActionProps {

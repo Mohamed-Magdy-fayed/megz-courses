@@ -5,7 +5,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dispatch, FC, SetStateAction, useState } from "react";
-import { useToast } from "../ui/use-toast";
+import { toastType, useToast } from "../ui/use-toast";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
 import { Button } from "../ui/button";
 import Spinner from "../Spinner";
@@ -16,7 +16,7 @@ import { render } from "@react-email/render";
 import ResetPasswordEmail from "../emails/ResetPasswordEmail";
 
 export const resetPasswordFormSchema = z.object({
-    email: z.string().email().optional(),
+    email: z.string().email().min(5, "please enter a valid email").optional(),
     code: z.string().optional(),
     password: z.string().optional(),
     passwordConfirmation: z.string().optional(),
@@ -30,9 +30,8 @@ type ResetPasswordFormProps = {
 
 const ResetPasswordForm: FC<ResetPasswordFormProps> = ({ setOpen }) => {
     const [passwordForm, setPasswordForm] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const { toastError, toastSuccess } = useToast()
-    const router = useRouter()
+    const [loadingToast, setLoadingToast] = useState<toastType>();
+    const { toastError, toastSuccess, toast } = useToast()
 
     const defaultValues: ResetPasswordFormValues = {
         email: "",
@@ -46,9 +45,70 @@ const ResetPasswordForm: FC<ResetPasswordFormProps> = ({ setOpen }) => {
         defaultValues,
     });
 
-    const resetPasswordRequestMutation = api.auth.resetPasswordRequest.useMutation();
-    const resetPasswordEmailMutation = api.auth.resetPasswordEmail.useMutation();
-    const resetPasswordWithCodeMutation = api.auth.resetPasswordWithCode.useMutation();
+    const resetPasswordRequestMutation = api.auth.resetPasswordRequest.useMutation({
+        onMutate: () => {
+            setLoadingToast(toast({
+                title: "Loading...",
+                variant: "info",
+                description: (
+                    <Spinner className="h-4 w-4" />
+                ),
+                duration: 3000,
+            }))
+        },
+        onSuccess: ({ tempPassword, user }) => {
+            const message = render(<ResetPasswordEmail securityCode={tempPassword} username={user.name} />)
+            resetPasswordEmailMutation.mutate({ email: user.email, message })
+            loadingToast?.update({
+                id: loadingToast.id,
+                variant: "success",
+                description: `please check your email ${user.email} for the security code!`,
+                title: "Success",
+            })
+            setPasswordForm(true)
+        },
+        onError: ({ message }) => loadingToast?.update({
+            id: loadingToast.id,
+            variant: "destructive",
+            description: message,
+            title: "Error",
+        }),
+    });
+    const resetPasswordEmailMutation = api.auth.resetPasswordEmail.useMutation({ onSettled: () => {
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined)
+        } });
+    const resetPasswordWithCodeMutation = api.auth.resetPasswordWithCode.useMutation({
+        onMutate: () => {
+            setLoadingToast(toast({
+                title: "Loading...",
+                variant: "info",
+                description: (
+                    <Spinner className="h-4 w-4" />
+                ),
+                duration: 3000,
+            }))
+        },
+        onSuccess: ({ updated }) => {
+            loadingToast?.update({
+                id: loadingToast.id,
+                variant: "success",
+                title: "Success",
+                description: `Password for ${updated.email} has been updated successfully!`,
+            })
+            setOpen(false)
+        },
+        onError: ({ message }) => loadingToast?.update({
+            id: loadingToast.id,
+            variant: "destructive",
+            description: message,
+            title: "Error",
+        }),
+        onSettled: () => {
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined)
+        },
+    });
 
     const handleResetPassword = async ({ email, code, password, passwordConfirmation }: ResetPasswordFormValues) => {
         if (!email) {
@@ -59,41 +119,10 @@ const ResetPasswordForm: FC<ResetPasswordFormProps> = ({ setOpen }) => {
             if (!code) return toastError("Please provide security code from your email!")
             if (!password) return toastError("Please add a new password!")
             if (password !== passwordConfirmation) return toastError("Passwords don't match")
-            setLoading(true);
-            return resetPasswordWithCodeMutation.mutate({ email, newPassword: password, code }, {
-                onSuccess: (data) => {
-                    toastSuccess(`Password for ${data.updated.email} has been updated successfully!`)
-                },
-                onError: (error) => {
-                    toastError(error.message)
-                },
-                onSettled: () => {
-                    setLoading(false);
-                    setOpen(false)
-                },
-            })
+            return resetPasswordWithCodeMutation.mutate({ email, newPassword: password, code })
         }
 
-        setLoading(true);
-        resetPasswordRequestMutation.mutate(
-            { email },
-            {
-                onSuccess({ user, tempPassword }) {
-                    const message = render(<ResetPasswordEmail securityCode={tempPassword} username={user.name} />)
-                    resetPasswordEmailMutation.mutate({ email, message })
-                    toastSuccess(`please check your email ${user.email} for the security code!`);
-                    setPasswordForm(true)
-                    setLoading(false);
-                },
-                onError(error) {
-                    toastError(error.message)
-                    setLoading(false);
-                },
-                onSettled() {
-                    setLoading(false);
-                },
-            }
-        );
+        resetPasswordRequestMutation.mutate({ email });
     };
 
     return (
@@ -110,7 +139,7 @@ const ResetPasswordForm: FC<ResetPasswordFormProps> = ({ setOpen }) => {
                         e.preventDefault()
                         handleResetPassword(form.getValues())
                     }}
-                    aria-disabled={loading}
+                    aria-disabled={!!loadingToast}
                     className="flex w-full flex-col justify-between p-4 space-y-4"
                 >
                     <div className="flex-col flex gap-2">
@@ -123,7 +152,7 @@ const ResetPasswordForm: FC<ResetPasswordFormProps> = ({ setOpen }) => {
                                     <FormControl>
                                         <Input
                                             type="text"
-                                            disabled={loading}
+                                            disabled={!!loadingToast}
                                             placeholder="Example@mail.com"
                                             {...field}
                                             className="pl-8"
@@ -144,7 +173,7 @@ const ResetPasswordForm: FC<ResetPasswordFormProps> = ({ setOpen }) => {
                                                 <FormControl>
                                                     <Input
                                                         type="text"
-                                                        disabled={loading}
+                                                        disabled={!!loadingToast}
                                                         placeholder="1234"
                                                         {...field}
                                                         className="pl-8"
@@ -163,7 +192,7 @@ const ResetPasswordForm: FC<ResetPasswordFormProps> = ({ setOpen }) => {
                                                 <FormControl>
                                                     <Input
                                                         type="password"
-                                                        disabled={loading}
+                                                        disabled={!!loadingToast}
                                                         placeholder="new password"
                                                         {...field}
                                                         className="pl-8"
@@ -182,7 +211,7 @@ const ResetPasswordForm: FC<ResetPasswordFormProps> = ({ setOpen }) => {
                                                 <FormControl>
                                                     <Input
                                                         type="password"
-                                                        disabled={loading}
+                                                        disabled={!!loadingToast}
                                                         placeholder="confrim new password"
                                                         {...field}
                                                         className="pl-8"
@@ -196,14 +225,14 @@ const ResetPasswordForm: FC<ResetPasswordFormProps> = ({ setOpen }) => {
                             )}
                     </div>
                     <Button
-                        disabled={loading}
+                        disabled={!!loadingToast}
                         type="submit"
                         className="relative"
                     >
-                        {loading && (
+                        {!!loadingToast && (
                             <Spinner className="w-6 h-6 absolute" />
                         )}
-                        <Typography className={loading ? "opacity-0" : ""}>
+                        <Typography className={!!loadingToast ? "opacity-0" : ""}>
                             {passwordForm ? "Reset" : "Get code"}
                         </Typography>
                     </Button>

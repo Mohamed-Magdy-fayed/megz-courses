@@ -145,8 +145,9 @@ const OperationPage = () => {
     const refreshTokenMutation = api.zoomMeetings.refreshToken.useMutation();
 
     const handleSchedulePlacementTest = () => {
-        setLoading(true)
+        if (!coursesData?.courses.some(course => salesOperationData?.salesOperations?.orderDetails?.courseIds.includes(course.id) && course.evaluationForms.some(form => form.type === "placementTest"))) return toastError("no placement test created for this course yet!")
         if (!salesOperationData?.salesOperations?.orderDetails || !trainerId[0] || !testTime) return toastError("Missing some information here!")
+        setLoading(true)
         availableZoomClientMutation.mutate({ startDate: testTime })
     }
 

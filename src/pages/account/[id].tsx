@@ -26,6 +26,7 @@ export type UserGetPayload = Prisma.UserGetPayload<{
     },
     studentNotes: { include: { createdByUser: true, mentions: true } },
     courseStatus: true,
+    certificates: { include: { course: true, courseLevel: true, user: true } }
   },
 }>
 

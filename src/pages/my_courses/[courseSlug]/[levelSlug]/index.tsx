@@ -46,149 +46,156 @@ const LevelPage = () => {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <Accordion type="single" collapsible>
-                                        {level.materialItems.map((item, i) => {
-                                            const zoomSessionDate = user.zoomGroups.map(group =>
-                                                group.zoomSessions.find(session => session.materialItemId === item.id)?.materialItemId === item.id
-                                                    ? group.zoomSessions.find(session => session.materialItemId === item.id)
-                                                    : null).filter(s => s)[0]?.sessionDate
+                                    {user.courseStatus.some(s => s.course.slug === course.slug && s.status === "waiting") ? (
+                                        <>
+                                            Group not started yet
+                                        </>
+                                    ) : (
+                                        <Accordion type="single" collapsible>
+                                            {level.materialItems.map((item, i) => {
+                                                const zoomSessionDate = user.zoomGroups.map(group =>
+                                                    group.zoomSessions.find(session => session.materialItemId === item.id)?.materialItemId === item.id
+                                                        ? group.zoomSessions.find(session => session.materialItemId === item.id)
+                                                        : null).filter(s => s)[0]?.sessionDate
 
-                                            return (
-                                                <AccordionItem key={item.id} value={item.id}>
-                                                    <AccordionTrigger>
-                                                        <div className="flex items-center gap-8 justify-between w-full whitespace-nowrap">
-                                                            <Typography>Session {i + 1}: {item.title}</Typography>
-                                                            <Typography>
-                                                                Session Date: {
-                                                                    format(zoomSessionDate || new Date(), "PPPPp")
-                                                                }
-                                                            </Typography>
-                                                        </div>
-                                                    </AccordionTrigger>
-                                                    <AccordionContent>
-                                                        <div className="flex items-center w-full justify-around">
-                                                            <Link
-                                                                className={
-                                                                    cn(
-                                                                        !item.evaluationForms.find(form => form.type === "quiz")?.id && "pointer-events-none",
-                                                                        zoomSessionDate! > new Date() && "pointer-events-none",
-                                                                    )
-                                                                }
-                                                                href={`/my_courses/${course.slug}/${level.slug}/quiz/${item.slug}`}
-                                                            >
-                                                                <Button
-                                                                    disabled={
-                                                                        !item.evaluationForms.find(form => form.type === "quiz")?.id
-                                                                        || zoomSessionDate! > new Date()
+                                                return (
+                                                    <AccordionItem key={item.id} value={item.id}>
+                                                        <AccordionTrigger>
+                                                            <div className="flex items-center gap-8 justify-between w-full whitespace-nowrap">
+                                                                <Typography>Session {i + 1}: {item.title}</Typography>
+                                                                <Typography>
+                                                                    Session Date: {zoomSessionDate
+                                                                        ? format(zoomSessionDate, "PPPPp")
+                                                                        : "Not started yet!"
                                                                     }
-                                                                    variant={"outline"}
-                                                                    customeColor={"infoOutlined"}
-                                                                >
-                                                                    <Typography>
-                                                                        Quiz
-                                                                    </Typography>
-                                                                    <BookMinus className="w-4 h-4" />
-                                                                </Button>
-                                                            </Link>
-                                                            <Link
-                                                                className={
-                                                                    cn(
-                                                                        zoomSessionDate! > new Date() && "pointer-events-none",
-                                                                    )
-                                                                }
-                                                                href={`/my_courses/${course.slug}/${level.slug}/session/${item.slug}`}
-                                                            >
-                                                                <Button disabled={zoomSessionDate! > new Date()} variant={"outline"} customeColor={"primaryOutlined"}>
-                                                                    <Typography>
-                                                                        Session content
-                                                                    </Typography>
-                                                                    <BookOpen className="w-4 h-4" />
-                                                                </Button>
-                                                            </Link>
-                                                            <Link
-                                                                className={
-                                                                    cn(
-                                                                        !item.evaluationForms.find(form => form.type === "quiz")?.id && "pointer-events-none",
-                                                                        zoomSessionDate! > new Date() && "pointer-events-none",
-                                                                    )
-                                                                }
-                                                                href={`/my_courses/${course.slug}/${level.slug}/assignment/${item.slug}`}
-                                                            >
-                                                                <Button
-                                                                    disabled={
-                                                                        !item.evaluationForms.find(form => form.type === "assignment")?.id
-                                                                        || zoomSessionDate! > new Date()
+                                                                </Typography>
+                                                            </div>
+                                                        </AccordionTrigger>
+                                                        <AccordionContent>
+                                                            <div className="flex items-center w-full justify-around">
+                                                                <Link
+                                                                    className={
+                                                                        cn(
+                                                                            !item.evaluationForms.find(form => form.type === "quiz")?.id && "pointer-events-none",
+                                                                            zoomSessionDate! > new Date() && "pointer-events-none",
+                                                                        )
                                                                     }
-                                                                    variant={"outline"}
-                                                                    customeColor={"successOutlined"}
+                                                                    href={`/my_courses/${course.slug}/${level.slug}/quiz/${item.slug}`}
                                                                 >
-                                                                    <Typography>
-                                                                        Assignment
-                                                                    </Typography>
-                                                                    <BookOpenCheck className="w-4 h-4" />
-                                                                </Button>
-                                                            </Link>
-                                                        </div>
-                                                    </AccordionContent>
-                                                </AccordionItem>
-                                            )
-                                        })}
-                                        <AccordionItem value="course-completion">
-                                            <AccordionTrigger>
-                                                Course Completion
-                                            </AccordionTrigger>
-                                            <AccordionContent>
-                                                <div className="flex items-center w-full justify-around">
-                                                    <Link
-                                                        className={
-                                                            cn(
-                                                                !course.evaluationForms.find(form => form.type === "finalTest")?.id && "pointer-events-none",
-                                                                !user.zoomGroups.some(group => group.zoomSessions[group.zoomSessions.length - 1]?.sessionDate! < new Date()) && "pointer-events-none"
-                                                            )
-                                                        }
-                                                        href={`/my_courses/${course.slug}/${level.slug}/final_test`}
-                                                    >
-                                                        <Button
-                                                            disabled={
-                                                                !course.evaluationForms.find(form => form.type === "finalTest")?.id
-                                                                || !user.zoomGroups.some(group => group.zoomSessions[group.zoomSessions.length - 1]?.sessionDate! < new Date())
+                                                                    <Button
+                                                                        disabled={
+                                                                            !item.evaluationForms.find(form => form.type === "quiz")?.id
+                                                                            || zoomSessionDate! > new Date()
+                                                                        }
+                                                                        variant={"outline"}
+                                                                        customeColor={"infoOutlined"}
+                                                                    >
+                                                                        <Typography>
+                                                                            Quiz
+                                                                        </Typography>
+                                                                        <BookMinus className="w-4 h-4" />
+                                                                    </Button>
+                                                                </Link>
+                                                                <Link
+                                                                    className={
+                                                                        cn(
+                                                                            zoomSessionDate! > new Date() && "pointer-events-none",
+                                                                        )
+                                                                    }
+                                                                    href={`/my_courses/${course.slug}/${level.slug}/session/${item.slug}`}
+                                                                >
+                                                                    <Button disabled={zoomSessionDate! > new Date()} variant={"outline"} customeColor={"primaryOutlined"}>
+                                                                        <Typography>
+                                                                            Session content
+                                                                        </Typography>
+                                                                        <BookOpen className="w-4 h-4" />
+                                                                    </Button>
+                                                                </Link>
+                                                                <Link
+                                                                    className={
+                                                                        cn(
+                                                                            !item.evaluationForms.find(form => form.type === "quiz")?.id && "pointer-events-none",
+                                                                            zoomSessionDate! > new Date() && "pointer-events-none",
+                                                                        )
+                                                                    }
+                                                                    href={`/my_courses/${course.slug}/${level.slug}/assignment/${item.slug}`}
+                                                                >
+                                                                    <Button
+                                                                        disabled={
+                                                                            !item.evaluationForms.find(form => form.type === "assignment")?.id
+                                                                            || zoomSessionDate! > new Date()
+                                                                        }
+                                                                        variant={"outline"}
+                                                                        customeColor={"successOutlined"}
+                                                                    >
+                                                                        <Typography>
+                                                                            Assignment
+                                                                        </Typography>
+                                                                        <BookOpenCheck className="w-4 h-4" />
+                                                                    </Button>
+                                                                </Link>
+                                                            </div>
+                                                        </AccordionContent>
+                                                    </AccordionItem>
+                                                )
+                                            })}
+                                            <AccordionItem value="course-completion">
+                                                <AccordionTrigger>
+                                                    Course Completion
+                                                </AccordionTrigger>
+                                                <AccordionContent>
+                                                    <div className="flex items-center w-full justify-around">
+                                                        <Link
+                                                            className={
+                                                                cn(
+                                                                    !course.evaluationForms.find(form => form.type === "finalTest")?.id && "pointer-events-none",
+                                                                    user.zoomGroups.some(group => group.courseId === course.id && group.zoomSessions.every(session => session.sessionDate.getTime() > new Date().getTime())) && "pointer-events-none"
+                                                                )
                                                             }
-                                                            variant={"outline"}
-                                                            customeColor={"destructiveOutlined"}
+                                                            href={`/my_courses/${course.slug}/${level.slug}/final_test`}
                                                         >
-                                                            <Typography>
-                                                                Final Test
-                                                            </Typography>
-                                                            <BookOpenCheck className="w-4 h-4" />
-                                                        </Button>
-                                                    </Link>
-                                                    <Link
-                                                        className={
-                                                            cn(
-                                                                !course.evaluationForms.find(form => form.type === "finalTest")?.id && "pointer-events-none",
-                                                                !user.zoomGroups.some(group => group.zoomSessions[group.zoomSessions.length - 1]?.sessionDate! < new Date()) && "pointer-events-none"
-                                                            )
-                                                        }
-                                                        href={`/my_courses/${course.slug}/${level.slug}/certificate`}
-                                                    >
-                                                        <Button
-                                                            disabled={
-                                                                !course.evaluationForms.find(form => form.type === "finalTest")?.id
-                                                                || !user.zoomGroups.some(group => group.zoomSessions[group.zoomSessions.length - 1]?.sessionDate! < new Date())
+                                                            <Button
+                                                                disabled={
+                                                                    !course.evaluationForms.find(form => form.type === "finalTest")?.id
+                                                                    || user.zoomGroups.some(group => group.courseId === course.id && group.zoomSessions.every(session => session.sessionDate.getTime() > new Date().getTime()))
+                                                                }
+                                                                variant={"outline"}
+                                                                customeColor={"destructiveOutlined"}
+                                                            >
+                                                                <Typography>
+                                                                    Final Test
+                                                                </Typography>
+                                                                <BookOpenCheck className="w-4 h-4" />
+                                                            </Button>
+                                                        </Link>
+                                                        <Link
+                                                            className={
+                                                                cn(
+                                                                    !course.evaluationForms.find(form => form.type === "finalTest")?.id && "pointer-events-none",
+                                                                    !user.certificates.find(cert => cert.courseLevel?.slug === level?.slug)?.id && "pointer-events-none"
+                                                                )
                                                             }
-                                                            variant={"outline"}
-                                                            customeColor={"successOutlined"}
+                                                            href={`/my_courses/${course.slug}/${level.slug}/certificate`}
                                                         >
-                                                            <Typography>
-                                                                Certificate
-                                                            </Typography>
-                                                            <FileBadge className="w-4 h-4" />
-                                                        </Button>
-                                                    </Link>
-                                                </div>
-                                            </AccordionContent>
-                                        </AccordionItem>
-                                    </Accordion>
+                                                            <Button
+                                                                disabled={
+                                                                    !course.evaluationForms.find(form => form.type === "finalTest")?.id
+                                                                    || !user.certificates.find(cert => cert.courseLevel?.slug === level?.slug)?.id
+                                                                }
+                                                                variant={"outline"}
+                                                                customeColor={"successOutlined"}
+                                                            >
+                                                                <Typography>
+                                                                    Certificate
+                                                                </Typography>
+                                                                <FileBadge className="w-4 h-4" />
+                                                            </Button>
+                                                        </Link>
+                                                    </div>
+                                                </AccordionContent>
+                                            </AccordionItem>
+                                        </Accordion>
+                                    )}
                                 </CardContent>
                             </Card>
                         </div>

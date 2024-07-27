@@ -4,7 +4,7 @@ import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import Modal from "@/components/ui/modal";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { ArrowLeftToLineIcon, BookMarked, CalendarDays, ExternalLink, MessageSquare, Users, VoteIcon } from "lucide-react";
+import { ArrowLeftToLineIcon, BookMarked, CalendarDays, ExternalLink, LinkIcon, MessageSquare, Users, VoteIcon } from "lucide-react";
 import type { NextPage } from "next";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/router";
@@ -25,6 +25,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/ui/DataTable";
+import { env } from "@/env.mjs";
 
 const statusMap: {
     scheduled: "primary";
@@ -51,7 +52,7 @@ const GroupPage: NextPage = () => {
     const id = router.query.id as string
 
     const { toastSuccess, toastError } = useToast()
-    const { data } = api.zoomGroups.getZoomGroupById.useQuery({ id })
+    const { data } = api.zoomGroups.getZoomGroupById.useQuery({ id }, { enabled: !!id })
     const trpcUtils = api.useContext()
     const setSessionAttendanceMutation = api.zoomGroups.setSessionAttendance.useMutation()
 
@@ -59,7 +60,16 @@ const GroupPage: NextPage = () => {
         return data?.zoomGroup?.course?.groupPrice
     }, [data?.zoomGroup])
 
+    const privatePrice = useMemo(() => {
+        return data?.zoomGroup?.course?.privatePrice
+    }, [data?.zoomGroup])
+
     const groupIncome = useMemo(() => {
+        if (data?.zoomGroup?.students
+            .some(s => s.orders
+                .some(order => order.courseTypes
+                    .some(type => type.id === data.zoomGroup?.courseId && type.isPrivate)))) return (privatePrice! * data?.zoomGroup?.studentIds.length!)
+
         return (groupPrice! * data?.zoomGroup?.studentIds.length!)
     }, [data?.zoomGroup, groupPrice])
 
@@ -172,7 +182,7 @@ const GroupPage: NextPage = () => {
                                     <Typography variant={"primary"}>Dates</Typography>
                                     <Separator className="mb-4" />
                                     <div className="flex items-center justify-between">
-                                        <Typography className="text-sm text-success">{format(data.zoomGroup.startDate, "PPPPp")}</Typography>
+                                        <Typography className="text-sm text-success">{format(data.zoomGroup.zoomSessions[0]?.sessionDate || new Date(), "PPPPp")}</Typography>
                                         <CalendarDays />
                                         <Typography className="text-sm text-destructive">{format(data.zoomGroup.zoomSessions[data.zoomGroup.zoomSessions.length - 1]?.sessionDate || new Date(), "PPPPp")}</Typography>
                                     </div>
@@ -311,7 +321,7 @@ const GroupPage: NextPage = () => {
                                                             </Button>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
-                                                            set quizzes
+                                                            View quizzes
                                                         </TooltipContent>
                                                     </Tooltip>
                                                     <Tooltip>
@@ -332,7 +342,7 @@ const GroupPage: NextPage = () => {
                                                             </Button>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
-                                                            set assignment
+                                                            View assignment
                                                         </TooltipContent>
                                                     </Tooltip>
                                                     <Tooltip>
@@ -364,7 +374,17 @@ const GroupPage: NextPage = () => {
                                                             </Link>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
-                                                            session link
+                                                            Session external link
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Link href={`/meeting/?mn=${data.zoomGroup?.meetingNumber}&pwd=${data.zoomGroup?.meetingPassword}&session_title=${session.materialItem?.title}&session_id=${session.id}&leave_url=${env.NEXT_PUBLIC_NEXTAUTH_URL}groups/${data.zoomGroup?.id}`} target={"_blank"}>
+                                                                <LinkIcon className="w4 h-4" />
+                                                            </Link>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            Session internal link
                                                         </TooltipContent>
                                                     </Tooltip>
                                                 </div>
@@ -378,13 +398,15 @@ const GroupPage: NextPage = () => {
                                     <Separator className="mb-4" />
                                     <div className="flex items-center gap-4">
                                         <Image className="h-24" alt={data.zoomGroup.course?.name || ""} src={data.zoomGroup.course?.image || ""} width={100} height={100} />
-                                        <div className="grid grid-cols-2">
+                                        <div className="grid grid-cols-2 w-full">
                                             <div>
                                                 <Typography variant={"secondary"}>Name</Typography>
+                                                <Separator />
                                                 <Typography variant={"bodyText"}>{data.zoomGroup.course?.name}</Typography>
                                             </div>
                                             <div>
                                                 <Typography variant={"secondary"}>Level</Typography>
+                                                <Separator />
                                                 <Typography variant={"bodyText"}>{data.zoomGroup.courseLevel?.name}</Typography>
                                             </div>
                                         </div>

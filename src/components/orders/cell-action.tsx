@@ -12,7 +12,6 @@ import { api } from "@/lib/api";
 import { OrderRow } from "./OrdersColumn";
 import { useToast } from "@/components/ui/use-toast";
 import SelectField from "../salesOperation/SelectField";
-import ModalInDropdownMenu from "../ui/modal-in-dropdown-menu";
 import Modal from "@/components/ui/modal";
 
 interface CellActionProps {

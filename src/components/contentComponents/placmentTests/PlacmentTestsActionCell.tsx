@@ -70,7 +70,10 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, evalForm, externalLink }) =
             description: message,
             title: "Error",
         }),
-        onSettled: () => setLoadingToast(undefined),
+        onSettled: () => {
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined)
+        },
     })
     const onDelete = () => {
         deleteMutation.mutate({ ids: [id] })

@@ -86,7 +86,10 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen, initialData }) => 
       duration: 2000,
       variant: "destructive",
     }),
-    onSettled: () => setLoadingToast(undefined)
+    onSettled: () => {
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined)
+        }
   });
   const trpcUtils = api.useContext();
 

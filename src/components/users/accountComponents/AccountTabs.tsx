@@ -11,6 +11,7 @@ import PlacmentTestScheduleClient from "@/components/contentComponents/placmentT
 import { format } from "date-fns";
 import { formatPercentage } from "@/lib/utils";
 import { UserGetPayload } from "@/pages/account/[id]";
+import CertificatesClient from "@/components/users/accountComponents/certificates/CertificateClient";
 
 const tabs = [
     { value: "groups", label: "Groups" },
@@ -146,8 +147,16 @@ export const UserAccountTabs = ({ user }: { user: UserGetPayload }) => {
                         <CardHeader>
                             <CardTitle>Cetificates</CardTitle>
                         </CardHeader>
-                        <CardContent className="flex flex-col items-center p-4">
-                            <>Client</>
+                        <CardContent className="flex flex-col items-center p-4 [&>*]:w-full">
+                            <CertificatesClient formattedData={user.certificates.map(cert => ({
+                                certificateId: cert.certificateId,
+                                completionDate: cert.completionDate,
+                                courseName: cert.course.name,
+                                levelName: cert.courseLevel?.name || "",
+                                id: cert.id,
+                                createdAt: cert.createdAt,
+                                updatedAt: cert.updatedAt,
+                            }))} />
                         </CardContent>
                         <CardFooter className="flex items-center justify-end">
                             <Button type="button">Add to group</Button>

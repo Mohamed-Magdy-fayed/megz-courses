@@ -6,6 +6,7 @@ import Link from "next/link";
 import { SeverityPill, SeverityPillProps } from "../overview/SeverityPill";
 import useZoomMeeting from "@/hooks/useZoomMeeting";
 import { api } from "@/lib/api";
+import { env } from "@/env.mjs";
 
 export type CourseRow = {
   id: string;
@@ -73,21 +74,12 @@ export const columns: ColumnDef<CourseRow>[] = [
     cell: ({ row }) => {
       const group = row.original.group
 
-      const { createClient, userId, zoomClient } = useZoomMeeting()
-
-      const generateSDKSignatureQuery = api.zoomMeetings.generateSDKSignature.useMutation({
-        onSuccess: ({ meetingConfig, sdkKey }) => {
-          console.log(meetingConfig.signature);
-          createClient(meetingConfig, sdkKey || "")
-        },
-      })
-
       if (group) {
         return (
           <div className="flex flex-col gap-2">
             <Typography>{group.groupNumber}</Typography>
             {group.isSessionOngoing && (
-              <Link href={`/meeting/?mn=${group.meetingNumber}&pwd=${group.meetingPassword}&session_title=${group.ongoingSession?.materialItemTitle}&session_id=${group.ongoingSession?.id}`}>
+              <Link href={`/meeting/?mn=${group.meetingNumber}&pwd=${group.meetingPassword}&session_title=${group.ongoingSession?.materialItemTitle}&session_id=${group.ongoingSession?.id}&leave_url=${env.NEXT_PUBLIC_NEXTAUTH_URL}my_courses`}>
                 <Button type="button" customeColor={"info"}>Join Ongoing Session</Button>
               </Link>
             )}
