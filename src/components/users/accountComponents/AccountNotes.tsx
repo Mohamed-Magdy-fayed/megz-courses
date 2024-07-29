@@ -16,6 +16,17 @@ const AccountNotes = () => {
 
     return (
         <Card>
+            <Modal
+                title="Add"
+                description="Add a note to the user account"
+                isOpen={isAddNoteopen}
+                onClose={() => setIsAddNoteOpen(false)}
+                children={(
+                    <div>
+                        <NotesForm setIsOpen={setIsAddNoteOpen} />
+                    </div>
+                )}
+            />
             <CardHeader>
                 <div className="space-y-2 flex-row flex items-center justify-between">
                     <Typography className="text-left text-xl font-medium">
@@ -25,17 +36,6 @@ const AccountNotes = () => {
                         <BookmarkPlus className="w-4 h-4" />
                         <Typography>Add</Typography>
                     </Button>
-                    <Modal
-                        title="Add"
-                        description="Add a note to the user account"
-                        isOpen={isAddNoteopen}
-                        onClose={() => setIsAddNoteOpen(false)}
-                        children={(
-                            <div>
-                                <NotesForm setIsOpen={setIsAddNoteOpen} />
-                            </div>
-                        )}
-                    />
                 </div>
             </CardHeader>
             <Separator></Separator>

@@ -94,7 +94,19 @@ export const columns: ColumnDef<SalesAgentsColumn>[] = [
   },
   {
     accessorKey: "tasks",
-    header: "Tasks",
+    header: ({ column }) => {
+      return (
+        <div className="flex items-center justify-between">
+          Tasks
+          <Button
+            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            <ArrowUpDown className="h-4 w-4 text-primary" />
+          </Button>
+        </div>
+      );
+    },
     cell: ({ row }) => (
       <div>
         {row.original.tasks} Tasks
@@ -122,7 +134,7 @@ export const columns: ColumnDef<SalesAgentsColumn>[] = [
     header: "Actions",
     cell: ({ row }) => {
       return (
-        <AgentCellAction id={row.original.id} agent={row.original.agent} />
+        <AgentCellAction id={row.original.id} agent={row.original} />
       )
     }
   }

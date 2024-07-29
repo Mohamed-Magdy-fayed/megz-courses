@@ -79,7 +79,7 @@ export const columns: ColumnDef<CourseRow>[] = [
           <div className="flex flex-col gap-2">
             <Typography>{group.groupNumber}</Typography>
             {group.isSessionOngoing && (
-              <Link href={`/meeting/?mn=${group.meetingNumber}&pwd=${group.meetingPassword}&session_title=${group.ongoingSession?.materialItemTitle}&session_id=${group.ongoingSession?.id}&leave_url=${env.NEXT_PUBLIC_NEXTAUTH_URL}my_courses`}>
+              <Link target="_blank" href={`/meeting/?mn=${group.meetingNumber}&pwd=${group.meetingPassword}&session_title=${group.ongoingSession?.materialItemTitle}&session_id=${group.ongoingSession?.id}&leave_url=${env.NEXT_PUBLIC_NEXTAUTH_URL}my_courses`}>
                 <Button type="button" customeColor={"info"}>Join Ongoing Session</Button>
               </Link>
             )}

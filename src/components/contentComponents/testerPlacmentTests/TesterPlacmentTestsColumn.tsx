@@ -20,6 +20,7 @@ import { api } from "@/lib/api";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import Spinner from "@/components/Spinner";
 import { sendWhatsAppMessage } from "@/lib/whatsApp";
+import { env } from "@/env.mjs";
 
 export type Column = {
     id: string,
@@ -272,7 +273,7 @@ export const columns: ColumnDef<Column>[] = [
                     {isOralTestTimePassed ? (
                         <Button onClick={() => setIsOpen(true)}>Reschedule</Button>
                     ) : (
-                        <Link className="w-fit" href={`/meeting/?mn=${row.original.oralTestMeeting.meetingNumber}&pwd=${row.original.oralTestMeeting.meetingPassword}&session_title=Placement_Test`}>
+                        <Link target="_blank" className="w-fit" href={`/meeting/?mn=${row.original.oralTestMeeting.meetingNumber}&pwd=${row.original.oralTestMeeting.meetingPassword}&session_title=Placement_Test&leave_url=${env.NEXT_PUBLIC_NEXTAUTH_URL}staff/my_tasks`}>
                             <Button disabled={isOralTestTimePassed}>Join Meeting</Button>
                         </Link>
                     )}

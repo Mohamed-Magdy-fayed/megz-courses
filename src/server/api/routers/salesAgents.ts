@@ -92,7 +92,9 @@ export const salesAgentsRouter = createTRPCRouter({
     editSalesAgent: protectedProcedure
         .input(
             z.object({
+                id: z.string(),
                 name: z.string(),
+                image: z.string().optional(),
                 email: z.string().email(),
                 phone: z.string().optional(),
                 salary: z.string()
@@ -101,15 +103,16 @@ export const salesAgentsRouter = createTRPCRouter({
         .mutation(
             async ({
                 ctx,
-                input: { name, email, phone, salary },
+                input: { id, name, image, email, phone, salary },
             }) => {
                 const updatedUser = await ctx.prisma.user.update({
                     where: {
-                        email: email,
+                        id: id,
                     },
                     data: {
                         name,
                         email,
+                        image,
                         phone,
                         salesAgent: { update: { salary } }
                     },

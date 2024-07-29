@@ -1,4 +1,4 @@
-import { validNoteTypes, validUserTypes } from "@/lib/enumsTypes";
+import { validNoteStatus, validNoteTypes, validUserTypes } from "@/lib/enumsTypes";
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -12,7 +12,7 @@ export const notesRouter = createTRPCRouter({
       text: z.string(),
       studentId: z.string(),
       noteType: z.enum(validNoteTypes),
-      createdFor: z.enum(validUserTypes),
+      createdFor: z.array(z.enum(validUserTypes)),
       mentions: z.array(z.string()),
       sla: z.string()
     }))
@@ -23,6 +23,7 @@ export const notesRouter = createTRPCRouter({
           text,
           sla: Number(sla),
           type: noteType,
+          status: "Created",
           createdByUser: {
             connect: { id: createdByUserId }
           },
@@ -40,28 +41,77 @@ export const notesRouter = createTRPCRouter({
     }),
   editNote: protectedProcedure
     .input(z.object({
+      id: z.string(),
       text: z.string(),
-      studentId: z.string(),
       noteType: z.enum(validNoteTypes),
-      createdFor: z.enum(validUserTypes),
+      status: z.enum(validNoteStatus),
+      createdFor: z.array(z.enum(validUserTypes)),
       mentions: z.array(z.string()),
       sla: z.string()
     }))
-    .mutation(async ({ ctx, input: { createdFor, mentions, sla, text, studentId, noteType } }) => {
-      const createdByUserId = ctx.session.user.id
-      const note = await ctx.prisma.userNote.create({
+    .mutation(async ({ ctx, input: { id, createdFor, mentions, status, sla, text, noteType } }) => {
+      const userEmail = ctx.session.user.email
+      if (!userEmail) throw new TRPCError({ code: "BAD_REQUEST", message: "User not logged in!" })
+      const oldNote = await ctx.prisma.userNote.findUnique({ where: { id } })
+      if (!oldNote) throw new TRPCError({ code: "BAD_REQUEST", message: "Note doesn't exist" })
+
+      await ctx.prisma.userNote.update({
+        where: { id }, data: {
+          mentions: { disconnect: oldNote.mentionsUserIds.map(id => ({ id })) }
+        }
+      })
+
+      const note = await ctx.prisma.userNote.update({
+        where: { id },
         data: {
           text,
           sla: Number(sla),
           type: noteType,
-          createdByUser: {
-            connect: { id: createdByUserId }
+          status,
+          updateHistory: {
+            push: {
+              sla: oldNote.sla,
+              text: oldNote.text,
+              updatedAt: new Date(),
+              updatedBy: userEmail,
+              updatedFor: oldNote.createdFor
+            }
           },
           createdFor,
           mentions: {
             connect: mentions.map(id => ({ id }))
           },
-          createdForStudent: { connect: { id: studentId } }
+        }
+      })
+
+      return {
+        note,
+      };
+    }),
+  editNoteStatus: protectedProcedure
+    .input(z.object({
+      id: z.string(),
+      status: z.enum(validNoteStatus),
+    }))
+    .mutation(async ({ ctx, input: { id, status } }) => {
+      const userEmail = ctx.session.user.email
+      if (!userEmail) throw new TRPCError({ code: "BAD_REQUEST", message: "User not logged in!" })
+      const oldNote = await ctx.prisma.userNote.findUnique({ where: { id } })
+      if (!oldNote) throw new TRPCError({ code: "BAD_REQUEST", message: "Note doesn't exist" })
+
+      const note = await ctx.prisma.userNote.update({
+        where: { id },
+        data: {
+          status,
+          updateHistory: {
+            push: {
+              sla: oldNote.sla,
+              text: oldNote.text,
+              updatedAt: new Date(),
+              updatedBy: userEmail,
+              updatedFor: oldNote.createdFor
+            }
+          },
         }
       })
 
@@ -119,5 +169,23 @@ export const notesRouter = createTRPCRouter({
       return {
         notes,
       };
+    }),
+  getById: protectedProcedure
+    .input(z.object({
+      id: z.string(),
+    }))
+    .query(async ({ ctx, input: { id } }) => {
+      const note = await ctx.prisma.userNote.findUnique({
+        where: { id },
+        include: {
+          createdByUser: true,
+          createdForStudent: true,
+          mentions: true,
+        }
+      })
+
+      return {
+        note,
+      }
     }),
 });

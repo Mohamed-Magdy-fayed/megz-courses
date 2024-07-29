@@ -13,17 +13,18 @@ import { useToast } from "../ui/use-toast";
 import Link from "next/link";
 import Modal from "@/components/ui/modal";
 import SalesAgentForm from "@/components/salesAgentComponents/SalesAgentForm";
-import { SalesAgents } from "@/components/salesAgentComponents/SalesAgentsClient";
+import { SalesAgentsColumn } from "@/components/salesAgentComponents/SalesAgentColumn";
 
 interface AgentCellActionProps {
     id: string;
-    agent: SalesAgents
+    agent: SalesAgentsColumn
 }
 
 const AgentCellAction: React.FC<AgentCellActionProps> = ({ id, agent }) => {
     const { toastError, toastSuccess } = useToast();
 
     const [loading, setLoading] = useState(false);
+    const [open, setOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
@@ -55,13 +56,13 @@ const AgentCellAction: React.FC<AgentCellActionProps> = ({ id, agent }) => {
     return (
         <>
             <Modal
-                isOpen={isEditOpen}
-                onClose={() => setIsEditOpen(false)}
                 title="Edit"
                 description="Edit the sales agent account!"
-                children={
-                    <SalesAgentForm initialData={agent} setIsOpen={setIsEditOpen} />
-                }
+                isOpen={open}
+                onClose={() => setOpen(false)}
+                children={(
+                    <SalesAgentForm setIsOpen={setOpen} initialData={{ ...agent, id }}></SalesAgentForm>
+                )}
             />
             <Modal
                 isOpen={isDeleteOpen}
@@ -94,7 +95,7 @@ const AgentCellAction: React.FC<AgentCellActionProps> = ({ id, agent }) => {
                         </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => {
-                        setIsEditOpen(true)
+                        setOpen(true)
                         setIsOpen(false)
                     }}>
                         <Edit className="w-4 h-4 mr-2" />

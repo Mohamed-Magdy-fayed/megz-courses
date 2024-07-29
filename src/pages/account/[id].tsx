@@ -34,7 +34,7 @@ export default function Page() {
   const router = useRouter();
   const id = router.query.id as string;
 
-  const { data, isLoading } = api.users.getUserById.useQuery({ id });
+  const { data, isLoading } = api.users.getUserById.useQuery({ id }, { enabled: !!id });
 
   return (
     <AppLayout>

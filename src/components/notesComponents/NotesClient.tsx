@@ -1,13 +1,14 @@
 import { columns, NotesColumn } from '@/components/notesComponents/NotesColumn';
 import { DataTable } from '@/components/ui/DataTable';
 import { api } from '@/lib/api';
-import { validNoteTypes } from '@/lib/enumsTypes';
+import { validNoteStatus, validNoteTypes, validUserTypes } from '@/lib/enumsTypes';
 import { format } from 'date-fns';
 import { upperFirst } from 'lodash';
 import React, { useState } from 'react'
 
 const NotesClient = ({ userId }: { userId?: string }) => {
-    const { data: notesData } = api.notes.getUserNotes.useQuery({ userId })
+    const { data: userNotesData } = api.notes.getUserNotes.useQuery({ userId }, { enabled: !!userId })
+    const { data: notesData } = api.notes.getAllNotes.useQuery(undefined, { enabled: !userId })
 
     const [notes, setNotes] = useState<NotesColumn[]>([])
 
@@ -15,9 +16,23 @@ const NotesClient = ({ userId }: { userId?: string }) => {
         id: note.id,
         text: note.text,
         noteType: note.type,
+        status: note.status,
         createdByUserName: note.createdByUser.name,
         createdForStudent: note.createdForStudent,
-        createdForTypes: note.createdFor,
+        createdForTypes: note.createdFor.join(", "),
+        createdForMentions: note.mentions,
+        sla: note.sla.toString(),
+        updateHistory: note.updateHistory,
+        createdAt: format(note.createdAt, "PPPp"),
+        updatedAt: format(note.updatedAt, "PPPp"),
+    })) : userNotesData?.notes ? userNotesData.notes.map(note => ({
+        id: note.id,
+        text: note.text,
+        noteType: note.type,
+        status: note.status,
+        createdByUserName: note.createdByUser.name,
+        createdForStudent: note.createdForStudent,
+        createdForTypes: note.createdFor.join(", "),
         createdForMentions: note.mentions,
         sla: note.sla.toString(),
         updateHistory: note.updateHistory,
@@ -25,19 +40,37 @@ const NotesClient = ({ userId }: { userId?: string }) => {
         updatedAt: format(note.updatedAt, "PPPp"),
     })) : []
 
-    if (!notesData?.notes) return <></>
+    if (!notesData?.notes && !userNotesData?.notes) return <></>
 
     return (
         <DataTable
             columns={columns}
             data={formattedData || []}
             setData={setNotes}
-            filters={[{
-                key: "noteType", filterName: "Note Type", values: [...validNoteTypes.map(type => ({
-                    label: upperFirst(type),
-                    value: type,
-                }))]
-            }]}
+            filters={[
+                {
+                    key: "noteType",
+                    filterName: "Note Type",
+                    values: [...validNoteTypes.map(type => ({
+                        label: upperFirst(type),
+                        value: type,
+                    }))]
+                }, {
+                    key: "status",
+                    filterName: "Note Status",
+                    values: [...validNoteStatus.map(type => ({
+                        label: type,
+                        value: type,
+                    }))]
+                }, {
+                    key: "createdForTypes",
+                    filterName: "User Type",
+                    values: [...validUserTypes.map(type => ({
+                        label: upperFirst(type),
+                        value: type,
+                    }))]
+                }
+            ]}
         />
     );
 }

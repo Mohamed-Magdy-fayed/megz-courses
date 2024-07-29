@@ -1,10 +1,11 @@
+import NotesActions from "@/components/notesComponents/NotesActions";
 import { SeverityPillProps, SeverityPill } from "@/components/overview/SeverityPill";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { getInitials } from "@/lib/getInitials";
-import { NoteUpdate, User, UserNoteTypes, UserType } from "@prisma/client";
+import { NoteUpdate, User, UserNoteStatus, UserNoteTypes, UserType } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 import Link from "next/link";
@@ -14,8 +15,9 @@ export type NotesColumn = {
     text: string,
     createdByUserName: string,
     noteType: UserNoteTypes,
+    status: UserNoteStatus,
     createdForStudent?: User,
-    createdForTypes: UserType[],
+    createdForTypes: string,
     createdForMentions: User[],
     sla: string,
     updateHistory: NoteUpdate[],
@@ -47,7 +49,9 @@ export const columns: ColumnDef<NotesColumn>[] = [
         accessorKey: "text",
         header: "Note Text",
         cell: ({ row }) => (
-            <Typography className="whitespace-pre-wrap">{row.original.text}</Typography>
+            <Link href={`/notes/${row.original.id}`}>
+                <Typography className="whitespace-pre-wrap hover:underline hover:text-primary">{row.original.text}</Typography>
+            </Link>
         )
     },
     {
@@ -96,6 +100,22 @@ export const columns: ColumnDef<NotesColumn>[] = [
         }
     },
     {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => {
+            const type = row.original.status
+            const color: SeverityPillProps["color"] = type === "Created" ? "primary"
+                : type === "Opened" ? "success"
+                    : type === "Closed" ? "destructive" : "muted"
+
+            return (
+                <SeverityPill color={color}>
+                    {type}
+                </SeverityPill>
+            )
+        }
+    },
+    {
         accessorKey: "sla",
         header: "SLA",
         cell: ({ row }) => {
@@ -109,20 +129,20 @@ export const columns: ColumnDef<NotesColumn>[] = [
         header: "For Types",
         cell: ({ row }) => {
             return (
-                <div className="flex flex-col gap-2">
-                    {row.original.createdForTypes.map(type => (
-                        <Typography key={type}>{type}</Typography>
-                    ))}
-                </div>
+                <Typography>{row.original.createdForTypes}</Typography>
             )
         }
     },
     {
         accessorKey: "createdForMentions",
         header: "Mentiond Users",
-        cell: ({ row }) => row.original.createdForMentions.map(user => (
-            <Typography key={user.id}>{user.name}</Typography>
-        ))
+        cell: ({ row }) => (
+            <div className="flex flex-col gap-2">
+                {row.original.createdForMentions.map(user => (
+                    <Typography key={user.id}>{user.name}</Typography>
+                ))}
+            </div>
+        )
     },
     {
         accessorKey: "createdAt",
@@ -140,4 +160,11 @@ export const columns: ColumnDef<NotesColumn>[] = [
             );
         },
     },
+    {
+        id: "action",
+        header: "Actions",
+        cell: ({ row }) => (
+            <NotesActions data={row.original} />
+        )
+    }
 ];

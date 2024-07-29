@@ -161,11 +161,11 @@ export function DataTable<TData, TValue>({
                       </div>
                     ))}
                   </div>
+                  <Separator />
                 </div>
               ))}
             </div>
           </div>
-          <Separator />
         </>
       )}
       <div className="whitespace-nowrap grid">

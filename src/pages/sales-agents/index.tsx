@@ -9,6 +9,7 @@ import AppLayout from "@/components/layout/AppLayout";
 import SalesAgentsClient from "@/components/salesAgentComponents/SalesAgentsClient";
 import SalesAgentForm from "@/components/salesAgentComponents/SalesAgentForm";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import Modal from "@/components/ui/modal";
 
 const SalesAgentsPage = () => {
   const salesAgents = api.salesAgents.getSalesAgents.useQuery();
@@ -21,38 +22,21 @@ const SalesAgentsPage = () => {
           <div className="flex justify-between">
             <div className="flex flex-col gap-2">
               <ConceptTitle>Sales Agents</ConceptTitle>
-              <div className="flex items-center gap-2">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant={"icon"} customeColor={"infoIcon"}>
-                      <FileDown />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <Typography>Import</Typography>
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant={"icon"} customeColor={"infoIcon"}>
-                      <FileUp />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <Typography>Export</Typography>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
             </div>
             <Button onClick={() => setIsOpen(true)} customeColor={"primary"}>
               <PlusIcon className="mr-2"></PlusIcon>
               <Typography variant={"buttonText"}>Add</Typography>
             </Button>
           </div>
-          {isOpen && (
-            <SalesAgentForm setIsOpen={setIsOpen}></SalesAgentForm>
-          )}
-
+          <Modal
+            title="Operatoins Team"
+            description="Create a new user for operations team"
+            isOpen={isOpen}
+            onClose={() => setIsOpen(false)}
+            children={(
+              <SalesAgentForm setIsOpen={setIsOpen}></SalesAgentForm>
+            )}
+          />
           <PaperContainer>
             {salesAgents.isLoading ? (
               <Spinner></Spinner>

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { toastType, useToast } from "@/components/ui/use-toast"
+import { env } from "@/env.mjs"
 import { api } from "@/lib/api"
 import { getInitials } from "@/lib/getInitials"
 import { cn, formatPercentage } from "@/lib/utils"
@@ -181,7 +182,7 @@ const CoursePlacementTestPage = () => {
                                 Oral Test Result: {scheduleData?.placementTest?.student.courseStatus.find(({ course }) => course.slug === slug)?.level?.name}
                             </Typography>
                         ) : (
-                            <Link href={`/meeting/?mn=${scheduleData?.placementTest?.oralTestMeeting.meetingNumber}&pwd=${scheduleData?.placementTest?.oralTestMeeting.meetingPassword}&session_title=Placement_Test`}>
+                            <Link target="_blank" href={`/meeting/?mn=${scheduleData?.placementTest?.oralTestMeeting.meetingNumber}&pwd=${scheduleData?.placementTest?.oralTestMeeting.meetingPassword}&session_title=Placement_Test&leave_url=${env.NEXT_PUBLIC_NEXTAUTH_URL}placement_test/${scheduleData?.placementTest?.course.slug}`}>
                                 <Button disabled={isOralTestTimePassed}>Join Meeting</Button>
                             </Link>
                         )}

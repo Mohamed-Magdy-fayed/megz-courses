@@ -74,6 +74,7 @@ const SelectField: FC<SelectFieldProps<any>> = ({ placeholder, listTitle, data, 
                             }}
                             className='isolate rounded-full focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary'
                             size={10}
+                            name="select_search"
                         />
                     </div>
                 )}

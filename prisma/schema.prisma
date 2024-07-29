@@ -559,21 +559,28 @@ enum UserNoteTypes {
     Feedback
 }
 
+enum UserNoteStatus {
+    Created
+    Opened
+    Closed
+}
+
 model UserNote {
-    id                  String        @id @default(auto()) @map("_id") @db.ObjectId
+    id                  String         @id @default(auto()) @map("_id") @db.ObjectId
     text                String
     sla                 Int
     type                UserNoteTypes
-    mentions            User[]        @relation("MentionedUser", references: [id], fields: [mentionsUserIds])
-    mentionsUserIds     String[]      @db.ObjectId
+    status              UserNoteStatus
+    mentions            User[]         @relation("MentionedUser", references: [id], fields: [mentionsUserIds])
+    mentionsUserIds     String[]       @db.ObjectId
     updateHistory       NoteUpdate[]
     createdFor          UserType[]
-    createdByUser       User          @relation("CreatedByUser", fields: [createdByUserId], references: [id])
-    createdByUserId     String        @db.ObjectId
-    createdForStudent   User          @relation("CreatedForStudent", fields: [createdForStudentId], references: [id])
-    createdForStudentId String        @db.ObjectId
-    updatedAt           DateTime      @updatedAt
-    createdAt           DateTime      @default(now())
+    createdByUser       User           @relation("CreatedByUser", fields: [createdByUserId], references: [id])
+    createdByUserId     String         @db.ObjectId
+    createdForStudent   User           @relation("CreatedForStudent", fields: [createdForStudentId], references: [id])
+    createdForStudentId String         @db.ObjectId
+    updatedAt           DateTime       @updatedAt
+    createdAt           DateTime       @default(now())
 }
 
 model Certificate {
