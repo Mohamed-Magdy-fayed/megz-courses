@@ -14,28 +14,26 @@ const NotesClient = ({ userId }: { userId?: string }) => {
 
     const formattedData: NotesColumn[] = notesData?.notes ? notesData.notes.map(note => ({
         id: note.id,
-        text: note.text,
+        title: note.title,
+        messages: note.messages,
         noteType: note.type,
         status: note.status,
         createdByUserName: note.createdByUser.name,
         createdForStudent: note.createdForStudent,
-        createdForTypes: note.createdFor.join(", "),
         createdForMentions: note.mentions,
         sla: note.sla.toString(),
-        updateHistory: note.updateHistory,
         createdAt: format(note.createdAt, "PPPp"),
         updatedAt: format(note.updatedAt, "PPPp"),
     })) : userNotesData?.notes ? userNotesData.notes.map(note => ({
         id: note.id,
-        text: note.text,
+        title: note.title,
+        messages: note.messages,
         noteType: note.type,
         status: note.status,
         createdByUserName: note.createdByUser.name,
         createdForStudent: note.createdForStudent,
-        createdForTypes: note.createdFor.join(", "),
         createdForMentions: note.mentions,
         sla: note.sla.toString(),
-        updateHistory: note.updateHistory,
         createdAt: format(note.createdAt, "PPPp"),
         updatedAt: format(note.updatedAt, "PPPp"),
     })) : []
@@ -60,13 +58,6 @@ const NotesClient = ({ userId }: { userId?: string }) => {
                     filterName: "Note Status",
                     values: [...validNoteStatus.map(type => ({
                         label: type,
-                        value: type,
-                    }))]
-                }, {
-                    key: "createdForTypes",
-                    filterName: "User Type",
-                    values: [...validUserTypes.map(type => ({
-                        label: upperFirst(type),
                         value: type,
                     }))]
                 }

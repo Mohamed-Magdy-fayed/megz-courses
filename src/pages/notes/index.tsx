@@ -4,7 +4,6 @@ import { PaperContainer } from "@/components/ui/PaperContainers";
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 
 export default function NotesPage() {
-
     return (
         <AppLayout>
             <div className="space-y-2 flex-row flex items-center justify-between">

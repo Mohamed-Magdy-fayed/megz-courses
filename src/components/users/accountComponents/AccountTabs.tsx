@@ -92,7 +92,7 @@ export const UserAccountTabs = ({ user }: { user: UserGetPayload }) => {
                         <CardHeader>
                             <CardTitle>Placement test</CardTitle>
                         </CardHeader>
-                        <CardContent className="flex flex-col items-center p-4">
+                        <CardContent className="flex flex-col items-center">
                             <PlacmentTestScheduleClient
                                 formattedData={user.placementTests.map(({
                                     id,

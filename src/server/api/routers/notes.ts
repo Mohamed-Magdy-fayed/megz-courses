@@ -9,25 +9,28 @@ import { z } from "zod";
 export const notesRouter = createTRPCRouter({
   createNote: protectedProcedure
     .input(z.object({
-      text: z.string(),
+      title: z.string(),
+      message: z.string(),
       studentId: z.string(),
       noteType: z.enum(validNoteTypes),
-      createdFor: z.array(z.enum(validUserTypes)),
       mentions: z.array(z.string()),
       sla: z.string()
     }))
-    .mutation(async ({ ctx, input: { createdFor, mentions, sla, text, studentId, noteType } }) => {
+    .mutation(async ({ ctx, input: { title, mentions, sla, message, studentId, noteType } }) => {
       const createdByUserId = ctx.session.user.id
+      const createdByUserEmail = ctx.session.user.email
+      if (!createdByUserEmail) throw new TRPCError({ code: "UNAUTHORIZED", message: "Not authorized" })
+
       const note = await ctx.prisma.userNote.create({
         data: {
-          text,
+          title,
+          messages: { message, updatedAt: new Date(), updatedBy: createdByUserEmail },
           sla: Number(sla),
           type: noteType,
           status: "Created",
           createdByUser: {
             connect: { id: createdByUserId }
           },
-          createdFor,
           mentions: {
             connect: mentions.map(id => ({ id }))
           },
@@ -42,14 +45,12 @@ export const notesRouter = createTRPCRouter({
   editNote: protectedProcedure
     .input(z.object({
       id: z.string(),
-      text: z.string(),
       noteType: z.enum(validNoteTypes),
       status: z.enum(validNoteStatus),
-      createdFor: z.array(z.enum(validUserTypes)),
       mentions: z.array(z.string()),
       sla: z.string()
     }))
-    .mutation(async ({ ctx, input: { id, createdFor, mentions, status, sla, text, noteType } }) => {
+    .mutation(async ({ ctx, input: { id, mentions, status, sla, noteType } }) => {
       const userEmail = ctx.session.user.email
       if (!userEmail) throw new TRPCError({ code: "BAD_REQUEST", message: "User not logged in!" })
       const oldNote = await ctx.prisma.userNote.findUnique({ where: { id } })
@@ -64,22 +65,44 @@ export const notesRouter = createTRPCRouter({
       const note = await ctx.prisma.userNote.update({
         where: { id },
         data: {
-          text,
           sla: Number(sla),
           type: noteType,
           status,
-          updateHistory: {
-            push: {
-              sla: oldNote.sla,
-              text: oldNote.text,
-              updatedAt: new Date(),
-              updatedBy: userEmail,
-              updatedFor: oldNote.createdFor
-            }
-          },
-          createdFor,
           mentions: {
             connect: mentions.map(id => ({ id }))
+          },
+        }
+      })
+
+      return {
+        note,
+      };
+    }),
+  addMessage: protectedProcedure
+    .input(z.object({
+      id: z.string(),
+      message: z.string(),
+      mentions: z.array(z.string()),
+    }))
+    .mutation(async ({ ctx, input: { id, message, mentions } }) => {
+      const userEmail = ctx.session.user.email
+      if (!userEmail) throw new TRPCError({ code: "BAD_REQUEST", message: "User not logged in!" })
+
+      const oldNote = await ctx.prisma.userNote.findUnique({ where: { id } })
+      if (!oldNote) throw new TRPCError({ code: "BAD_REQUEST", message: "Note doesn't exist" })
+
+      const note = await ctx.prisma.userNote.update({
+        where: { id },
+        data: {
+          messages: {
+            push: {
+              message,
+              updatedAt: new Date(),
+              updatedBy: userEmail,
+            }
+          },
+          mentions: {
+            connect: mentions.filter(id => oldNote.mentionsUserIds.includes(id) ? false : true).map(id => ({ id }))
           },
         }
       })
@@ -103,15 +126,13 @@ export const notesRouter = createTRPCRouter({
         where: { id },
         data: {
           status,
-          updateHistory: {
+          messages: {
             push: {
-              sla: oldNote.sla,
-              text: oldNote.text,
+              message: `Status updated by ${userEmail} to ${status}`,
               updatedAt: new Date(),
-              updatedBy: userEmail,
-              updatedFor: oldNote.createdFor
+              updatedBy: userEmail
             }
-          },
+          }
         }
       })
 
@@ -158,7 +179,10 @@ export const notesRouter = createTRPCRouter({
     }),
   getAllNotes: protectedProcedure
     .query(async ({ ctx }) => {
+      const id = ctx.session.user.id
+      const isAdmin = ctx.session.user.userType === "admin"
       const notes = await ctx.prisma.userNote.findMany({
+        where: isAdmin ? undefined : { mentionsUserIds: { has: id } },
         include: {
           createdByUser: true,
           createdForStudent: true,

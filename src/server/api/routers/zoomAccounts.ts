@@ -19,6 +19,10 @@ export const zoomAccountsRouter = createTRPCRouter({
             startDate: z.date()
         }))
         .mutation(async ({ ctx, input: { startDate } }) => {
+
+
+
+
             const zoomClients = await ctx.prisma.zoomClient.findMany({ include: { zoomSessions: true }, orderBy: { id: "desc" } })
 
             const availableClient = zoomClients.find(client => {
@@ -34,6 +38,31 @@ export const zoomAccountsRouter = createTRPCRouter({
             if (!availableClient) return { zoomClient: null, zoomClients }
 
             return { zoomClient: availableClient, zoomClients }
+        }),
+    checkMeetings: protectedProcedure
+        .input(z.object({}))
+        .mutation(async ({ ctx, input }) => {
+            const zoomClients = await ctx.prisma.zoomClient.findMany()
+
+            const data = await Promise.all(zoomClients.map(async client => {
+                const config = {
+                    method: 'get',
+                    maxBodyLength: Infinity,
+                    url: 'https://api.zoom.us/v2/users/me/meetings?type=scheduled&page_size=30',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${client.accessToken}`,
+                    },
+                };
+
+                try {
+                    const response = await axios.request(config);
+                    return response
+                } catch (error) {
+                    return error
+                }
+            }))
+            return { data }
         }),
     deleteZoomAccounts: protectedProcedure
         .input(z.object({

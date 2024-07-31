@@ -6,15 +6,14 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Coins, Copy, FileStack, MoreVertical, Trash } from "lucide-react";
+import { Copy, MoreVertical, Trash } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
 import Modal from "@/components/ui/modal";
 import { NotesColumn } from "@/components/notesComponents/NotesColumn";
-import SelectField from "@/components/salesOperation/SelectField";
-import { validNoteStatus } from "@/lib/enumsTypes";
 import { NotesForm } from "@/components/notesComponents/NotesForm";
+import { Edit } from "lucide-react";
 
 interface NotesActionsProps {
     data: NotesColumn;
@@ -24,12 +23,11 @@ const NotesActions: React.FC<NotesActionsProps> = ({ data }) => {
     const [loading, setLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [open, setOpen] = useState(false);
-    const [status, setStatus] = useState<typeof validNoteStatus[]>([])
     const [isStatusModalOpen, setIsStatusModalOpen] = useState(false)
 
     const trpcUtils = api.useContext()
     const deleteMutation = api.notes.deleteNotes.useMutation()
-    const { toastInfo, toastSuccess, toastError, toast } = useToast();
+    const { toastSuccess, toastError } = useToast();
 
     const onCopy = () => {
         navigator.clipboard.writeText(data.id);
@@ -103,8 +101,8 @@ const NotesActions: React.FC<NotesActionsProps> = ({ data }) => {
                         setIsStatusModalOpen(true)
                         setIsOpen(false)
                     }}>
-                        <FileStack className="w-4 h-4 mr-2" />
-                        Update Status
+                        <Edit className="w-4 h-4 mr-2" />
+                        Update
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => {
                         setOpen(true)

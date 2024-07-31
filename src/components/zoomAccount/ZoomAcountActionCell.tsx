@@ -6,7 +6,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Copy, MoreVertical, RefreshCcw, Trash } from "lucide-react";
+import { CheckSquare, Copy, MoreVertical, RefreshCcw, Trash } from "lucide-react";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import { api } from "@/lib/api";
@@ -86,6 +86,33 @@ const CellAction: React.FC<CellActionProps> = ({ id }) => {
         },
     });
 
+    const checkMeetingsMutation = api.zoomAccounts.checkMeetings.useMutation({
+        onMutate: () => setLoadingToast(toast({
+            title: "Loading...",
+            variant: "info",
+            description: (
+                <Spinner className="h-4 w-4" />
+            ),
+            duration: 30000,
+        })),
+        onSuccess: () => trpcUtils.invalidate().then(() => loadingToast?.update({
+            id: loadingToast.id,
+            variant: "success",
+            description: `Account deleted successfully`,
+            title: "Success"
+        })),
+        onError: ({ message }) => loadingToast?.update({
+            id: loadingToast.id,
+            variant: "destructive",
+            description: message,
+            title: "Error",
+        }),
+        onSettled: () => {
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined)
+        },
+    })
+
     const onDelete = () => {
         deleteMutation.mutate({ ids: [id] });
     };
@@ -113,6 +140,10 @@ const CellAction: React.FC<CellActionProps> = ({ id }) => {
                     <DropdownMenuItem onClick={onCopy}>
                         <Copy className="w-4 h-4 mr-2" />
                         Copy ID
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => checkMeetingsMutation.mutate({})}>
+                        <CheckSquare className="w-4 h-4 mr-2" />
+                        Check Meetings
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={onRefreshAceessToken}>
                         <RefreshCcw className="w-4 h-4 mr-2" />

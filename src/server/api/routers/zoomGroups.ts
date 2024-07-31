@@ -7,7 +7,6 @@ import { TRPCError } from "@trpc/server";
 import { CourseLevel, MaterialItem, SessionStatus } from "@prisma/client";
 import { validGroupStatuses, validSessionStatuses } from "@/lib/enumsTypes";
 import { generateGroupNumnber, getGroupSessionDays } from "@/lib/utils";
-import { subHours } from "date-fns";
 
 export const zoomGroupsRouter = createTRPCRouter({
     attendSession: protectedProcedure

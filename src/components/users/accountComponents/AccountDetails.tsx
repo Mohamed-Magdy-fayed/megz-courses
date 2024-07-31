@@ -1,8 +1,6 @@
 import { Order, User } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import UserDataForm, { UserDataFormValues } from "../UserDataForm/UserDataForm";
-import AccountHistory from "@/components/users/accountComponents/AccountHistory";
-import AccountNotes from "@/components/users/accountComponents/AccountNotes";
 
 export const AccountDetails = ({ user }: {
   user: (User & {

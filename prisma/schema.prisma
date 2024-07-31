@@ -542,9 +542,7 @@ model GoogleClient {
 }
 
 type NoteUpdate {
-    text       String
-    sla        Int
-    updatedFor UserType[]
+    message    String
     updatedBy  String
     updatedAt  DateTime
 }
@@ -567,14 +565,13 @@ enum UserNoteStatus {
 
 model UserNote {
     id                  String         @id @default(auto()) @map("_id") @db.ObjectId
-    text                String
+    title               String
+    messages            NoteUpdate[]
     sla                 Int
     type                UserNoteTypes
     status              UserNoteStatus
     mentions            User[]         @relation("MentionedUser", references: [id], fields: [mentionsUserIds])
     mentionsUserIds     String[]       @db.ObjectId
-    updateHistory       NoteUpdate[]
-    createdFor          UserType[]
     createdByUser       User           @relation("CreatedByUser", fields: [createdByUserId], references: [id])
     createdByUserId     String         @db.ObjectId
     createdForStudent   User           @relation("CreatedForStudent", fields: [createdForStudentId], references: [id])

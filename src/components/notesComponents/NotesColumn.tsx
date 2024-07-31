@@ -3,24 +3,26 @@ import { SeverityPillProps, SeverityPill } from "@/components/overview/SeverityP
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { getInitials } from "@/lib/getInitials";
-import { NoteUpdate, User, UserNoteStatus, UserNoteTypes, UserType } from "@prisma/client";
+import { NoteUpdate, User, UserNoteStatus, UserNoteTypes } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
+import { format } from "date-fns";
 import { ArrowUpDown } from "lucide-react";
 import Link from "next/link";
 
 export type NotesColumn = {
     id: string,
-    text: string,
+    title: string,
+    messages: NoteUpdate[],
     createdByUserName: string,
     noteType: UserNoteTypes,
     status: UserNoteStatus,
     createdForStudent?: User,
-    createdForTypes: string,
     createdForMentions: User[],
     sla: string,
-    updateHistory: NoteUpdate[],
     createdAt: string,
     updatedAt: string,
 };
@@ -46,12 +48,39 @@ export const columns: ColumnDef<NotesColumn>[] = [
         enableHiding: false,
     },
     {
-        accessorKey: "text",
-        header: "Note Text",
+        accessorKey: "title",
+        header: "Note Title",
         cell: ({ row }) => (
             <Link href={`/notes/${row.original.id}`}>
-                <Typography className="whitespace-pre-wrap hover:underline hover:text-primary">{row.original.text}</Typography>
+                <Typography className="whitespace-pre-wrap hover:underline hover:text-primary">{row.original.title}</Typography>
             </Link>
+        )
+    },
+    {
+        accessorKey: "messages",
+        header: "Messages",
+        cell: ({ row }) => (
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button variant={"icon"} customeColor={"infoIcon"}>{row.original.messages.length}</Button>
+                </TooltipTrigger>
+                <TooltipContent className="flex flex-col gap-2">
+                    {row.original.messages.map((msg, i) => (
+                        <div key={msg.updatedAt.getTime() + i} className="flex flex-col">
+                            <div className="flex items-center justify-between text-primary">
+                                <Typography>
+                                    By {msg.updatedBy}
+                                </Typography>
+                                <Typography>
+                                    At {format(msg.updatedAt, "PPPp")}
+                                </Typography>
+                            </div>
+                            <Typography>{msg.message}</Typography>
+                            <Separator />
+                        </div>
+                    ))}
+                </TooltipContent>
+            </Tooltip>
         )
     },
     {
@@ -121,15 +150,6 @@ export const columns: ColumnDef<NotesColumn>[] = [
         cell: ({ row }) => {
             return (
                 <Typography>{row.original.sla} Hours</Typography>
-            )
-        }
-    },
-    {
-        accessorKey: "createdForTypes",
-        header: "For Types",
-        cell: ({ row }) => {
-            return (
-                <Typography>{row.original.createdForTypes}</Typography>
             )
         }
     },
