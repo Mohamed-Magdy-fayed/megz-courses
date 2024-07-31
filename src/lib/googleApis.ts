@@ -8,7 +8,7 @@ const list = `GET /v1/forms/{formId}/responses`
 const getOAuth2Client = (): OAuth2Client => {
     const clientId = process.env.GOOGLE_CLIENT_ID || '';
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET || '';
-    const redirectUri = "http://localhost:3000/api/auth/callback/google";
+    const redirectUri = `${process.env.NEXTAUTH_URL}api/auth/callback/google`;
 
     const oAuth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
     console.log(oAuth2Client)

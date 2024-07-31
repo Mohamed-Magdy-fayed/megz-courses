@@ -75,7 +75,7 @@ export const PaymentConfEmail = ({
                             Hello {customerName},
                         </Text>
                         <Text className="text-black text-[14px] leading-[24px]">
-                            Your can now access the content through our <Link href={`http://localhost:3000/`}>website</Link>{' '}
+                            Your can now access the content through our <Link href={process.env.NEXTAUTH_URL}>website</Link>{' '}
                         </Text>
                         <Section style={informationTable}>
                             <Row style={informationTableRow}>

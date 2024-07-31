@@ -63,7 +63,7 @@ export const googleAccountsRouter = createTRPCRouter({
     //         }
 
     //         const forms: forms_v1.Forms = google.forms({ version: 'v1', auth: oauth2Client });
-            
+
     //         const data = await forms.forms.get({ formId: getFormIdFromUrl(url) })
     //         return { data };
     //     }),
@@ -86,7 +86,7 @@ export const googleAccountsRouter = createTRPCRouter({
         .mutation(async ({ input: { name } }) => {
             const clientId = process.env.GOOGLE_CLIENT_ID;
             const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-            const redirectUri = "http://localhost:3000/google";
+            const redirectUri = `${process.env.NEXTAUTH_URL}google`;
 
             const oAuth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
 
@@ -104,7 +104,7 @@ export const googleAccountsRouter = createTRPCRouter({
         .mutation(async ({ ctx, input: { code } }) => {
             const clientId = process.env.GOOGLE_CLIENT_ID;
             const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-            const redirectUri = "http://localhost:3000/google";
+            const redirectUri = `${process.env.NEXTAUTH_URL}google`;
 
             const oAuth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
 
