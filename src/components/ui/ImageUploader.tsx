@@ -79,7 +79,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                     {customeImage ? customeImage : (
                         <div className="relative grid justify-items-center items-center">
                             <Avatar className="w-20 h-20">
-                                <AvatarImage alt="user image" src={value} />
+                                <AvatarImage alt="image" src={value} />
                                 <AvatarFallback>
                                     <Skeleton className="w-full h-full rounded-full" />
                                 </AvatarFallback>

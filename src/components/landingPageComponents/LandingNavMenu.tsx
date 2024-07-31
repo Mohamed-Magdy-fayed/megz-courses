@@ -22,8 +22,10 @@ import { DarkModeToggle } from "../dark-mode-toggle"
 import { cn } from "@/lib/utils"
 import { api } from "@/lib/api"
 import { ScrollArea } from "../ui/scroll-area"
+import Image from "next/image"
 
 export const LandingNavigationMenu = () => {
+  const { data } = api.siteIdentity.getSiteIdentity.useQuery()
   const latestCoursesQuery = api.courses.getLatest.useQuery(undefined, {
     enabled: false,
   })
@@ -56,11 +58,11 @@ export const LandingNavigationMenu = () => {
         <div className="col-span-6 flex items-center justify-center">
           <Link href={'/'} className="flex items-center gap-1 justify-center w-fit">
             <Typography variant={"primary"} className="!text-lg !leading-none !font-extrabold text-primary">
-              Megz
+              {data?.siteIdentity.name1}
             </Typography>
-            <LogoForeground className="w-12 h-12" />
+            <Image src={data?.siteIdentity.logoForeground || ""} height={1000} width={1000} alt="Logo" className='w-12 rounded-full' />
             <Typography variant={"primary"} className="!text-lg !leading-none !font-extrabold text-primary">
-              Learning
+              {data?.siteIdentity.name2}
             </Typography>
           </Link>
         </div>

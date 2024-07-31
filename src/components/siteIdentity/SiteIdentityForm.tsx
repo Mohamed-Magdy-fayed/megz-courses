@@ -13,12 +13,16 @@ import { Button } from "@/components/ui/button";
 import { SaveAll } from "lucide-react";
 import { api } from "@/lib/api";
 import { Textarea } from "@/components/ui/textarea";
+import { LogoAccent, LogoForeground, LogoPrimary } from "@/components/layout/Logo";
+import Image from "next/image";
 
 export const SiteIdentityFormSchema = z.object({
     name1: z.string(),
     name2: z.string(),
     heroText: z.string(),
-    logo: z.string(),
+    logoPrimary: z.string(),
+    logoAccent: z.string(),
+    logoForeground: z.string(),
     linkedin: z.string(),
     instagram: z.string(),
     youtube: z.string(),
@@ -37,7 +41,7 @@ export const SiteIdentityForm = ({ initialData }: {
     const updateSiteIdentityMutation = api.siteIdentity.updateSiteIdentity.useMutation({
         onMutate: () => setLoadingToast(toast({
             title: "Loading...",
-            duration: 3000,
+            duration: 30000,
             variant: "info",
         })),
         onSuccess: () => trpcUtils.siteIdentity.invalidate()
@@ -65,7 +69,9 @@ export const SiteIdentityForm = ({ initialData }: {
             facebook: initialData ? initialData.facebook : "",
             instagram: initialData ? initialData.instagram : "",
             linkedin: initialData ? initialData.linkedin : "",
-            logo: initialData ? initialData.logo : "",
+            logoPrimary: initialData ? initialData.logoPrimary : "",
+            logoAccent: initialData ? initialData.logoAccent : "",
+            logoForeground: initialData ? initialData.logoForeground : "",
             name1: initialData ? initialData.name1 : "",
             name2: initialData ? initialData.name2 : "",
             heroText: initialData ? initialData.heroText : "",
@@ -103,10 +109,54 @@ export const SiteIdentityForm = ({ initialData }: {
                         />
                         <FormField
                             control={form.control}
-                            name="logo"
+                            name="logoPrimary"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Logo</FormLabel>
+                                    <FormLabel>Logo Primary</FormLabel>
+                                    <FormControl>
+                                        <ImageUploader
+                                            value={field.value}
+                                            disabled={!!loadingToast}
+                                            onChange={(url) => field.onChange(url)}
+                                            onRemove={() => field.onChange("")}
+                                            noPadding
+                                            customeButton={(
+                                                <Upload className="w-4 h-4" />
+                                            )}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="logoForeground"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Logo Foreground</FormLabel>
+                                    <FormControl>
+                                        <ImageUploader
+                                            value={field.value}
+                                            disabled={!!loadingToast}
+                                            onChange={(url) => field.onChange(url)}
+                                            onRemove={() => field.onChange("")}
+                                            noPadding
+                                            customeButton={(
+                                                <Upload className="w-4 h-4" />
+                                            )}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="logoAccent"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Logo Accent</FormLabel>
                                     <FormControl>
                                         <ImageUploader
                                             value={field.value}

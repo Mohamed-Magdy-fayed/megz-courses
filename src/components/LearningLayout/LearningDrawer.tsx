@@ -5,10 +5,11 @@ import { useEffect, useState } from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
 import { Typography } from "../ui/Typoghraphy";
-import { LogoPrimary } from "../layout/Logo";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import { BookMinus, BookOpen, BookOpenCheck, FileBadge } from "lucide-react";
 import { LearningLayoutCourseType, LearningLayoutLevelType, LearningLayoutUserType } from "@/components/LearningLayout/LearningLayout";
+import { api } from "@/lib/api";
+import Image from "next/image";
 
 export default function LearningDrawer({ level, course, user }: {
   level?: LearningLayoutLevelType;
@@ -16,6 +17,7 @@ export default function LearningDrawer({ level, course, user }: {
   user: LearningLayoutUserType;
 }) {
   const navStore = useNavStore();
+  const { data } = api.siteIdentity.getSiteIdentity.useQuery()
 
   const [isMounted, setIsMounted] = useState(false);
 
@@ -28,9 +30,7 @@ export default function LearningDrawer({ level, course, user }: {
 
   return (
     <div className="sticky left-0 top-0 flex items-center h-screen flex-col gap-4 overflow-auto bg-primary-foreground text-foreground p-4">
-      <div>
-        <LogoPrimary className="bg-primary-foreground" />
-      </div>
+      <Image src={data?.siteIdentity.logoPrimary || ""} height={1000} width={1000} alt="Logo" className='w-24 rounded-full' />
       <div className="rounded-lg bg-primary p-4 w-full text-primary-foreground">
         <Typography variant={"secondary"} className="whitespace-nowrap">Start learning</Typography>
       </div>

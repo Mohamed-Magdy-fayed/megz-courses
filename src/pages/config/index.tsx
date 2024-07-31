@@ -14,6 +14,7 @@ import ZoomAccountsClient from "@/components/zoomAccount/ZoomAccountsClient";
 import { useRouter } from "next/router";
 import { SiteIdentityForm } from "@/components/siteIdentity/SiteIdentityForm";
 import { api } from "@/lib/api";
+import { LogoAccent } from "@/components/layout/Logo";
 
 const tabs = [
     { value: "site_identity", label: "Site Identity" },

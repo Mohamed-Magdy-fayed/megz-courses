@@ -1,31 +1,31 @@
 import { mainNavLinks } from '../layout/Drawer'
-import { LogoPrimary } from '../layout/Logo'
 import Link from 'next/link'
 import FooterCourseSearchBar from './CourseSearchBar'
 import { Linkedin, Instagram, Youtube, Facebook } from 'lucide-react'
 import Copyright from '@/components/Copyright'
-
-const socialIcons = [
-    { id: "soic1", icon: <Linkedin className='text-[#0072b1]' />, url: "https://www.linkedin.com/in/mohamed-magdy-fayed/", hover: "hover:bg-[#0072b1]" },
-    { id: "soic2", icon: <Instagram className='text-[#9b6954]' />, url: "https://www.instagram.com/", hover: "hover:bg-[#9b6954]" },
-    { id: "soic3", icon: <Youtube className='text-[#c4302b]' />, url: "https://www.youtube.com/", hover: "hover:bg-[#c4302b]" },
-    { id: "soic4", icon: <Facebook className='text-[#4267B2]' />, url: "https://www.facebook.com/bm.mohamed.magdi", hover: "hover:bg-[#4267B2]" },
-]
+import Image from 'next/image'
+import { api } from '@/lib/api'
 
 const LandingFooter = () => {
+    const { data } = api.siteIdentity.getSiteIdentity.useQuery()
+
+    const socialIcons = [
+        { id: "soic1", icon: <Linkedin className='text-[#0072b1]' />, url: data?.siteIdentity.linkedin, hover: "hover:bg-[#0072b1]" },
+        { id: "soic2", icon: <Instagram className='text-[#9b6954]' />, url: data?.siteIdentity.instagram, hover: "hover:bg-[#9b6954]" },
+        { id: "soic3", icon: <Youtube className='text-[#c4302b]' />, url: data?.siteIdentity.youtube, hover: "hover:bg-[#c4302b]" },
+        { id: "soic4", icon: <Facebook className='text-[#4267B2]' />, url: data?.siteIdentity.facebook, hover: "hover:bg-[#4267B2]" },
+    ]
     return (
         <div className='w-full'>
             <div className='p-4 max-w-7xl lg:mx-auto'>
                 <div className='border-t border-primary grid grid-cols-12 space-y-12'>
                     <div className='pt-4 flex flex-col items-center justify-center gap-4 col-span-12 md:col-span-4 lg:col-span-3'>
-                        <div>
-                            <LogoPrimary className='bg-primary-foreground' />
-                        </div>
+                        <Image src={data?.siteIdentity.logoPrimary || ""} height={1000} width={1000} alt="Logo" className='w-24 rounded-full bg-accent' />
                         <div className='flex items-center gap-4'>
                             {socialIcons.map(icon => (
                                 <Link
                                     key={icon.id}
-                                    href={icon.url}
+                                    href={icon.url || "#"}
                                     className={`hover:scale-110 transition-all duration-200 hover:[&>*]:text-background rounded-full p-1 ${icon.hover}`}
                                 >
                                     {icon.icon}

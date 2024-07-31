@@ -1,14 +1,17 @@
-import { LogoPrimary } from '../layout/Logo'
 import Copyright from '@/components/Copyright'
 import { Progress } from '../ui/progress'
 import { Typography } from '../ui/Typoghraphy'
-import { LearningLayoutCourseType, LearningLayoutLevelType, LearningLayoutUserType } from '@/components/LearningLayout/LearningLayout'
+import { LearningLayoutCourseType, LearningLayoutLevelType } from '@/components/LearningLayout/LearningLayout'
 import { LearningBreadcrumb } from '@/components/LearningLayout/LearningBreadcrumb'
+import Image from 'next/image'
+import { api } from '@/lib/api'
 
 const LandingFooter = ({ course, level }: {
     level?: LearningLayoutLevelType;
     course: LearningLayoutCourseType;
 }) => {
+    const { data } = api.siteIdentity.getSiteIdentity.useQuery()
+
     if (!course) return <Typography>No Course Found!</Typography>;
 
     return (
@@ -16,9 +19,7 @@ const LandingFooter = ({ course, level }: {
             <div className='p-4 max-w-7xl lg:mx-auto'>
                 <div className='border-t border-primary grid grid-cols-12 space-y-12'>
                     <div className='pt-4 flex flex-col items-center justify-center gap-4 col-span-12 md:col-span-6'>
-                        <div>
-                            <LogoPrimary className='bg-primary-foreground' />
-                        </div>
+                        <Image src={data?.siteIdentity.logoPrimary || ""} height={1000} width={1000} alt="Logo" className='w-24 rounded-full' />
                         <Typography variant={'primary'} className='whitespace-nowrap'>{course.name}</Typography>
                     </div>
                     <div className='col-span-12 md:col-span-6 flex flex-col gap-4 p-4'>

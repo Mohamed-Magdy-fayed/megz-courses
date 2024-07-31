@@ -7,7 +7,9 @@ import {
 export const siteIdentityRouter = createTRPCRouter({
   getSiteIdentity: protectedProcedure
     .query(async ({ ctx }) => {
-      const siteIdentity = await ctx.prisma.siteIdentity.findFirst()
+      let siteIdentity = await ctx.prisma.siteIdentity.findFirst()
+
+      if (!siteIdentity) siteIdentity = await ctx.prisma.siteIdentity.create({ data: {} })
 
       return {
         siteIdentity,

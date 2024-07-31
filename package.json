@@ -7,7 +7,7 @@
     "dev": "next dev",
     "postinstall": "prisma generate",
     "lint": "next lint",
-    "start": "next start",
+    "start": "next start -p 3500",
     "ngrok": "ngrok http 3000",
     "db": "cd ./mongodb-cluster && docker compose up --wait",
     "dbprod": "cd ./mongodb-cluster-prod && docker compose up --wait",

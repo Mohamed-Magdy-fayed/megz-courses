@@ -1,3 +1,4 @@
+import { api } from '@/lib/api';
 import {
     Body,
     Button,
@@ -39,6 +40,7 @@ export const Email = ({
     courses,
 }: EmailProps) => {
     const previewText = `Thanks for your order ${orderNumber}`;
+    const siteIdentity = api.siteIdentity.getSiteIdentity.useQuery()
 
     return (
         <Html>
@@ -49,10 +51,10 @@ export const Email = ({
                     <Container className="border border-solid border-[#eaeaea] rounded my-[40px] mx-auto p-[20px] w-[465px]">
                         <Section className="mt-[32px]">
                             <Img
-                                src={"https://megz-courses.vercel.app/favicon.png"}
+                                src={siteIdentity.data?.siteIdentity.logoForeground}
                                 width="40"
                                 height="37"
-                                alt="Vercel"
+                                alt={siteIdentity.data?.siteIdentity.name1}
                                 className="my-0 mx-auto"
                             />
                         </Section>

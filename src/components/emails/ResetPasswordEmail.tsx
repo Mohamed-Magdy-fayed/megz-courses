@@ -1,3 +1,4 @@
+import { api } from "@/lib/api";
 import {
     Body,
     Container,
@@ -18,38 +19,41 @@ interface ResetPasswordEmailProps {
 export const ResetPasswordEmail = ({
     securityCode,
     username,
-}: ResetPasswordEmailProps) => (
-    <Html>
-        <Head />
-        <Body style={main}>
-            <Container style={container}>
-                <Img
-                    src={`https://megz-courses.vercel.app/favicon.png`}
-                    width="100"
-                    height="100"
-                    alt="Megz"
-                    style={logo}
-                />
-                <Text style={tertiary}>Verify Your Identity</Text>
-                <Heading style={secondary}>
-                    Hi {username}, Enter the following code to finish resetting your password.
-                </Heading>
-                <Section style={codeContainer}>
-                    <Text style={code}>{securityCode}</Text>
-                </Section>
-                <Text style={paragraph}>Not expecting this email?</Text>
-                <Text style={paragraph}>
-                    Contact{" "}
-                    <Link href="mailto:email@megz.com" style={link}>
-                        email@megz.com
-                    </Link>{" "}
-                    if you did not request this code.
-                </Text>
-            </Container>
-            <Text style={footer}>Securely powered by Megz.</Text>
-        </Body>
-    </Html>
-);
+}: ResetPasswordEmailProps) => {
+    const siteIdentity = api.siteIdentity.getSiteIdentity.useQuery()
+    return (
+        <Html>
+            <Head />
+            <Body style={main}>
+                <Container style={container}>
+                    <Img
+                        src={siteIdentity.data?.siteIdentity.logoForeground}
+                        width="100"
+                        height="100"
+                        alt={siteIdentity.data?.siteIdentity.name1}
+                        style={logo}
+                    />
+                    <Text style={tertiary}>Verify Your Identity</Text>
+                    <Heading style={secondary}>
+                        Hi {username}, Enter the following code to finish resetting your password.
+                    </Heading>
+                    <Section style={codeContainer}>
+                        <Text style={code}>{securityCode}</Text>
+                    </Section>
+                    <Text style={paragraph}>Not expecting this email?</Text>
+                    <Text style={paragraph}>
+                        Contact{" "}
+                        <Link href="mailto:email@megz.com" style={link}>
+                            email@megz.com
+                        </Link>{" "}
+                        if you did not request this code.
+                    </Text>
+                </Container>
+                <Text style={footer}>Securely powered by Megz.</Text>
+            </Body>
+        </Html>
+    )
+};
 
 ResetPasswordEmail.PreviewProps = {
     validationCode: "144833",

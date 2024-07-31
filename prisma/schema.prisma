@@ -542,9 +542,9 @@ model GoogleClient {
 }
 
 type NoteUpdate {
-    message    String
-    updatedBy  String
-    updatedAt  DateTime
+    message   String
+    updatedBy String
+    updatedAt DateTime
 }
 
 enum UserNoteTypes {
@@ -595,15 +595,17 @@ model Certificate {
 }
 
 model SiteIdentity {
-    id        String   @id @default(auto()) @map("_id") @db.ObjectId
-    name1     String
-    name2     String
-    heroText  String
-    logo      String
-    facebook  String
-    instagram String
-    youtube   String
-    linkedin  String
-    updatedAt DateTime @updatedAt
-    createdAt DateTime @default(now())
+    id             String   @id @default(auto()) @map("_id") @db.ObjectId
+    name1          String   @default("Megz")
+    name2          String   @default("Learning")
+    heroText       String   @default("Dive into a world of English language excellence with Megz Courses. Elevate your\nlanguage skills and unlock new opportunities. Join us in the journey of learning \nwhere every lesson takes you a step closer to linguistic mastery.")
+    logoPrimary    String   @default("/logos/logoPrimary.png")
+    logoAccent     String   @default("/logos/logoAccent.png")
+    logoForeground String   @default("/logos/logoForeground.png")
+    facebook       String   @default("https://www.facebook.com/bm.mohamed.magdi")
+    instagram      String   @default("https://www.instagram.com/")
+    youtube        String   @default("https://www.youtube.com/")
+    linkedin       String   @default("https://www.linkedin.com/in/mohamed-magdy-fayed/")
+    updatedAt      DateTime @updatedAt
+    createdAt      DateTime @default(now())
 }

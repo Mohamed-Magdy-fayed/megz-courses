@@ -14,7 +14,8 @@ import { Skeleton } from "../ui/skeleton";
 import Spinner from "../Spinner";
 import { DarkModeToggle } from "../dark-mode-toggle";
 import Link from "next/link";
-import { LogoForeground } from "./Logo";
+import { api } from "@/lib/api";
+import Image from "next/image";
 
 export default function MegzTopBar() {
   const session = useSession();
@@ -23,6 +24,7 @@ export default function MegzTopBar() {
   const [isMounted, setisMounted] = useState(false);
   const navStore = useNavStore((state) => state);
   const pathname = usePathname();
+  const { data } = api.siteIdentity.getSiteIdentity.useQuery()
 
   const handlePathnameChange = useCallback(() => {
     if (navStore.opened) {
@@ -71,12 +73,12 @@ export default function MegzTopBar() {
           </Tooltip>
           <div className="col-span-6 flex items-center justify-center">
             <Link href={'/'} className="flex items-center gap-2 justify-center w-fit">
-              <LogoForeground className="w-12 h-12" />
+              <Image src={data?.siteIdentity.logoForeground || ""} height={1000} width={1000} alt="Logo" className='w-12 rounded-full' />
               <Typography variant={"primary"} className="!text-lg !leading-none !font-extrabold text-primary">
-                Megz
+                {data?.siteIdentity.name1}
               </Typography>
               <Typography variant={"primary"} className="!text-lg !leading-none !font-extrabold text-primary">
-                Learning
+                {data?.siteIdentity.name2}
               </Typography>
             </Link>
           </div>

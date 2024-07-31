@@ -7,6 +7,8 @@ import { Separator } from "../ui/separator";
 import { Typography } from "../ui/Typoghraphy";
 import { usePathname } from "next/navigation";
 import { LogoForeground } from "./Logo";
+import Image from "next/image";
+import { api } from "@/lib/api";
 
 export const mainNavLinks = [
   {
@@ -74,6 +76,7 @@ export const mainNavLinks = [
 export default function MegzDrawer() {
   const pathname = usePathname();
   const navStore = useNavStore();
+  const { data } = api.siteIdentity.getSiteIdentity.useQuery()
 
   const [isMounted, setIsMounted] = useState(false);
   const activeLinkRef = useRef<HTMLAnchorElement>(null);
@@ -92,9 +95,7 @@ export default function MegzDrawer() {
 
   return (
     <div className="sticky left-0 top-0 flex items-center h-screen flex-col gap-4 overflow-auto bg-muted text-muted-foreground p-4">
-      <div>
-        <LogoForeground className='bg-muted-foreground' />
-      </div>
+      <Image src={data?.siteIdentity.logoForeground || ""} height={1000} width={1000} alt="Logo" className='w-24 rounded-full bg-accent' />
       <div className="rounded-lg bg-muted-foreground/50 p-4 w-full text-foreground">
         <Typography variant={"secondary"} >Megz</Typography>
         <Typography>Development</Typography>

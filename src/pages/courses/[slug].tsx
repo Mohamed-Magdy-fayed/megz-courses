@@ -1,4 +1,5 @@
 import Spinner from "@/components/Spinner"
+import CourseShowcase from "@/components/contentComponents/materials/CourseShowcase"
 import MaterialShowcase from "@/components/contentComponents/materials/MaterialShowcase"
 import EnrollmentModal from "@/components/courses/EnrollmentModal"
 import LandingLayout from "@/components/landingPageComponents/LandingLayout"
@@ -23,14 +24,15 @@ const exampleVideo = {
 
 const CoursePage = () => {
     const router = useRouter()
-    const id = router.query.courseId as string
+    const slug = router.query.slug as string
 
-    const courseQuery = api.courses.getById.useQuery({ id }, {
+    const courseQuery = api.courses.getBySlug.useQuery({ slug }, {
         enabled: false,
     })
     const userQuery = api.users.getCurrentUser.useQuery(undefined, {
         enabled: false,
     })
+
     const course = courseQuery.data?.course
     const level = courseQuery.data?.course?.levels[0]
 
@@ -38,10 +40,10 @@ const CoursePage = () => {
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
-        if (!id) return
+        if (!slug) return
         courseQuery.refetch()
         userQuery.refetch()
-    }, [id])
+    }, [slug])
 
     if (!course) return (
         <div className="w-screen h-screen grid place-content-center">
@@ -113,7 +115,7 @@ const CoursePage = () => {
                 </div>
                 <div className="col-span-12 md:col-span-8 flex flex-col items-start lg:col-span-8 md:p-4">
                     <div className="p-4 w-full flex items-center justify-between">
-                        <Typography variant={"secondary"}>{course.name}</Typography>
+                        <Typography variant={"primary"}>{course.name}</Typography>
                         <Typography>Added on {format(course.createdAt, "do MMM yyyy")}</Typography>
                     </div>
                     {!level?.materialItems[0] ? (
@@ -124,9 +126,8 @@ const CoursePage = () => {
                                 {level?.materialItems[0]!?.title || "No Material"}
                             </Typography>
                         </div>
-                    ) : courseQuery.isLoading ? <Spinner /> : (
-                        // <MaterialShowcase materialItem={level.materialItems[0]} />
-                        "Comming Soon"
+                    ) : !courseQuery.data?.course ? <Spinner /> : (
+                        <CourseShowcase course={courseQuery.data.course} />
                     )}
                 </div>
             </div>
