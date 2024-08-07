@@ -20,13 +20,14 @@ interface CellActionProps {
 const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const assignMutation = api.salesOperations.createSalesOperation.useMutation()
   const { toastError, toastSuccess } = useToast()
 
   const onCopy = (id: string) => {
     navigator.clipboard.writeText(id);
-    toastSuccess("Category ID copied to the clipboard")
+    toastSuccess("User ID copied to the clipboard")
   };
 
   const onAssign = (assigneeId: string) => {
@@ -55,7 +56,7 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
         onClose={() => setOpen(false)}
         onConfirm={onAssign}
       />
-      <DropdownMenu>
+      <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" customeColor={"mutedOutlined"} className="h-8 w-8 p-0">
             <MoreVertical className="w-4 h-4" />
@@ -63,11 +64,11 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => onCopy(data.id)}>
+          <DropdownMenuItem onClick={() => onCopy(data.userId)}>
             <Copy className="w-4 h-4 mr-2" />
             Copy Id
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setOpen(true)}>
+          <DropdownMenuItem onClick={() => (setOpen(true), setIsOpen(false))}>
             <CheckCircle className="w-4 h-4 mr-2" />
             Assign
           </DropdownMenuItem>

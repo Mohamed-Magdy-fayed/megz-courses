@@ -26,6 +26,7 @@ import { googleAccountsRouter } from "@/server/api/routers/googleAccounts";
 import { certificatesRouter } from "@/server/api/routers/certificates";
 import { levelsRouter } from "@/server/api/routers/levels";
 import { siteIdentityRouter } from "@/server/api/routers/siteIdentity";
+import { metaAccountRouter } from "@/server/api/routers/metaAccount";
 
 /**
  * This is the primary router for your server.
@@ -57,6 +58,7 @@ export const appRouter = createTRPCRouter({
   zoomMeetings: zoomMeetingsRouter,
   zoomAccounts: zoomAccountsRouter,
   googleAccounts: googleAccountsRouter,
+  metaAccount: metaAccountRouter,
   notes: notesRouter,
   certificates: certificatesRouter,
   siteIdentity: siteIdentityRouter,

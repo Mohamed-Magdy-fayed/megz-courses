@@ -31,6 +31,7 @@ export const env = createEnv({
     NEXT_PUBLIC_WHATSAPP_ACCESS_TOKEN: z.string(),
     NEXT_PUBLIC_ZOOM_CLIENT_ID: z.string(),
     NEXT_PUBLIC_ZOOM_CLIENT_SECRET: z.string(),
+    NEXT_PUBLIC_GMAIL_EMAIL: z.string(),
     NEXT_PUBLIC_ZOOM_REDIRECT_URI: z.string(),
   },
 
@@ -51,6 +52,7 @@ export const env = createEnv({
     NEXT_PUBLIC_WHATSAPP_ACCESS_TOKEN: z.string(),
     NEXT_PUBLIC_ZOOM_REDIRECT_URI: z.string(),
     NEXT_PUBLIC_NEXTAUTH_URL: z.string().url(),
+    NEXT_PUBLIC_GMAIL_EMAIL: z.string(),
     // NEXT_PUBLIC_CLIENTVAR: z.string().min(1),
   },
 
@@ -65,6 +67,7 @@ export const env = createEnv({
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    NEXT_PUBLIC_GMAIL_EMAIL: process.env.NEXT_PUBLIC_GMAIL_EMAIL,
     GMAIL_EMAIL: process.env.GMAIL_EMAIL,
     GMAIL_PASS: process.env.GMAIL_PASS,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,

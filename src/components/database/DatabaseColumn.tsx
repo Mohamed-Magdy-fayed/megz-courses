@@ -9,11 +9,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Typography } from "../ui/Typoghraphy";
 
 export type Customer = {
+  userId: string;
+  name: string;
   id: string;
-  firstName: string;
-  lastName: string;
-  picture: string;
-  facebookUserId: string;
+  email?: string;
+  formId?: string;
+  message?: string;
+  phone?: string;
+  platform: string;
+  picture?: string;
 }
 
 export const columns: ColumnDef<Customer>[] = [
@@ -36,7 +40,7 @@ export const columns: ColumnDef<Customer>[] = [
         <Avatar className={cn("", row.getIsSelected() && `relative after:content-[""] after:inset-0 after:absolute after:bg-primary/40`)}>
           <AvatarImage src={`${row.original.picture}`} />
           <AvatarFallback>
-            {getInitials(`${row.original.firstName} ${row.original.lastName}` || "")}
+            {getInitials(`${row.original.name}` || "")}
           </AvatarFallback>
         </Avatar>
         {row.getIsSelected() && (<Check className="absolute inset-1/4 text-white" />)}
@@ -46,11 +50,11 @@ export const columns: ColumnDef<Customer>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "firstName",
+    accessorKey: "name",
     header: ({ column }) => {
       return (
         <div className="flex items-center justify-between">
-          First Name
+          Name
           <Button
             className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
@@ -62,16 +66,16 @@ export const columns: ColumnDef<Customer>[] = [
     },
     cell: ({ row }) => (
       <Typography>
-        {row.original.firstName}
+        {row.original.name}
       </Typography>
     ),
   },
   {
-    accessorKey: "lastName",
+    accessorKey: "email",
     header: ({ column }) => {
       return (
         <div className="flex items-center justify-between">
-          Last Name
+          Email
           <Button
             className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
@@ -83,16 +87,16 @@ export const columns: ColumnDef<Customer>[] = [
     },
     cell: ({ row }) => (
       <Typography>
-        {row.original.lastName}
+        {row.original.email}
       </Typography>
     ),
   },
   {
-    accessorKey: "facebookUserId",
+    accessorKey: "userId",
     header: ({ column }) => {
       return (
         <div className="flex items-center justify-between">
-          E-mail
+          ID
           <Button
             className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
@@ -104,16 +108,16 @@ export const columns: ColumnDef<Customer>[] = [
     },
     cell: ({ row }) => (
       <Typography>
-        example@mail.com
+        {row.original.userId}
       </Typography>
     ),
   },
   {
-    accessorKey: "id",
+    accessorKey: "formId",
     header: ({ column }) => {
       return (
         <div className="flex items-center justify-between">
-          Phone number
+          Form ID
           <Button
             className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
@@ -125,7 +129,70 @@ export const columns: ColumnDef<Customer>[] = [
     },
     cell: ({ row }) => (
       <Typography>
-        01234567890
+        {row.original.formId}
+      </Typography>
+    ),
+  },
+  {
+    accessorKey: "platform",
+    header: ({ column }) => {
+      return (
+        <div className="flex items-center justify-between">
+          Platform
+          <Button
+            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            <ArrowUpDown className="h-4 w-4 text-primary" />
+          </Button>
+        </div>
+      );
+    },
+    cell: ({ row }) => (
+      <Typography>
+        {row.original.platform}
+      </Typography>
+    ),
+  },
+  {
+    accessorKey: "phone",
+    header: ({ column }) => {
+      return (
+        <div className="flex items-center justify-between">
+          Phone
+          <Button
+            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            <ArrowUpDown className="h-4 w-4 text-primary" />
+          </Button>
+        </div>
+      );
+    },
+    cell: ({ row }) => (
+      <Typography>
+        {row.original.phone}
+      </Typography>
+    ),
+  },
+  {
+    accessorKey: "message",
+    header: ({ column }) => {
+      return (
+        <div className="flex items-center justify-between">
+          Message
+          <Button
+            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            <ArrowUpDown className="h-4 w-4 text-primary" />
+          </Button>
+        </div>
+      );
+    },
+    cell: ({ row }) => (
+      <Typography>
+        {row.original.message}
       </Typography>
     ),
   },

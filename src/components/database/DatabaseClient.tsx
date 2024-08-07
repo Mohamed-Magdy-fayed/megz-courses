@@ -5,17 +5,25 @@ import { DataTable } from "../ui/DataTable";
 const DatabaseClient = ({ data }: { data: PotintialCustomer[] }) => {
 
   const formattedData = data.map(({
-    facebookUserId,
-    firstName,
+    userId,
+    name,
     id,
-    lastName,
+    email,
+    formId,
+    message,
+    phone,
+    platform,
     picture,
   }) => ({
     id,
-    firstName,
-    lastName,
+    name,
+    email: email || "",
+    formId: formId || "",
+    message: message || "",
+    phone: phone || "",
+    platform,
     picture: picture || "",
-    facebookUserId,
+    userId,
   }))
 
   return (
@@ -24,7 +32,7 @@ const DatabaseClient = ({ data }: { data: PotintialCustomer[] }) => {
       data={formattedData}
       setData={() => { }}
       onDelete={() => { }}
-      searches={[{ key: "firstName", label: "Name" }]}
+      searches={[{ key: "name", label: "Name" }]}
     />
   );
 };

@@ -2,10 +2,11 @@ import { SiteIdentityFormSchema } from "@/components/siteIdentity/SiteIdentityFo
 import {
   createTRPCRouter,
   protectedProcedure,
+  publicProcedure,
 } from "@/server/api/trpc";
 
 export const siteIdentityRouter = createTRPCRouter({
-  getSiteIdentity: protectedProcedure
+  getSiteIdentity: publicProcedure
     .query(async ({ ctx }) => {
       let siteIdentity = await ctx.prisma.siteIdentity.findFirst()
 

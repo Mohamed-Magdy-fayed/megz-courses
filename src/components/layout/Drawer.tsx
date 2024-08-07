@@ -6,7 +6,6 @@ import { ScrollArea } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
 import { Typography } from "../ui/Typoghraphy";
 import { usePathname } from "next/navigation";
-import { LogoForeground } from "./Logo";
 import Image from "next/image";
 import { api } from "@/lib/api";
 
@@ -66,6 +65,10 @@ export const mainNavLinks = [
   {
     label: "Account",
     url: "account",
+  },
+  {
+    label: "Privacy Policy",
+    url: "privacy",
   },
   {
     label: "Error",
