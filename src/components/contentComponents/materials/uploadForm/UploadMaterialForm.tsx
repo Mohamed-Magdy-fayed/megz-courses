@@ -53,6 +53,7 @@ const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: Material
             }
     });
 
+    const checkMaterialMutation = api.materials.checkMaterialItem.useMutation({})
     const uploadMaterialMutation = api.materials.uploadMaterialItem.useMutation({
         onSuccess: ({ materialItem }) => trpcUtils.courses.invalidate().then(() => {
             loadingToast?.update({
@@ -122,8 +123,26 @@ const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: Material
 
         if (initialData) return editUploadMaterialMutation.mutate({ id: initialData.id, title, subTitle, slug, levelSlug })
 
-        const uploads = await uploadFiles(files, `uploads/content/courses/${courseSlug}/${levelSlug}/${slug}`) || []
-        uploadMaterialMutation.mutateAsync({ title, subTitle, uploads, slug, levelSlug });
+        checkMaterialMutation.mutate({ slug }, {
+            onSuccess: async ({ exists }) => {
+                if (exists) {
+                    loadingToast?.dismissAfter()
+                    setLoadingToast(undefined)
+
+                    loadingToast?.update({
+                        id: loadingToast.id,
+                        title: "Error",
+                        description: `material item with same slug already exists!`,
+                        variant: "destructive",
+                    })
+
+                    return
+                }
+
+                const uploads = await uploadFiles(files, `uploads/content/courses/${courseSlug}/${levelSlug}/${slug}`) || []
+                uploadMaterialMutation.mutateAsync({ title, subTitle, uploads, slug, levelSlug });
+            }
+        })
     };
 
 

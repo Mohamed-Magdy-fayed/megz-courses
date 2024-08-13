@@ -123,7 +123,7 @@ export const usersRouter = createTRPCRouter({
         where: { id },
 
         include: {
-          orders: { include: { courses: { include: { levels: true, orders: { include: { user: true } } } } } },
+          orders: { include: { courses: { include: { levels: true, orders: { include: { user: true } } } }, salesOperation: { include: { assignee: true } }, user: true } },
           evaluationFormSubmissions: true,
           zoomGroups: { include: { zoomSessions: true, trainer: { include: { user: true } }, course: true, students: true, courseLevel: true }, },
           placementTests: {

@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import { useState } from "react";
 import { validOrderStatuses } from "@/lib/enumsTypes";
 import { upperFirst } from "lodash";
+import { useSession } from "next-auth/react";
 
 const OrdersClient = ({ data }: {
   data: (Order & {
@@ -18,6 +19,7 @@ const OrdersClient = ({ data }: {
 }) => {
   const [orders, setOrders] = useState<OrderRow[]>([])
 
+  const { data: sessionData } = useSession()
   const formattedData = data.map(({
     amount,
     courses,
@@ -30,6 +32,7 @@ const OrdersClient = ({ data }: {
     refundRequester,
     updatedAt,
   }) => ({
+    isStudentView: sessionData?.user.userType === "student",
     id,
     amount,
     orderNumber,

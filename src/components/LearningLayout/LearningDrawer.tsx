@@ -8,18 +8,17 @@ import { Typography } from "../ui/Typoghraphy";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import { BookMinus, BookOpen, BookOpenCheck, FileBadge } from "lucide-react";
 import { LearningLayoutCourseType, LearningLayoutLevelType, LearningLayoutUserType } from "@/components/LearningLayout/LearningLayout";
-import { api } from "@/lib/api";
 import Image from "next/image";
 import { LogoPrimary } from "@/components/layout/Logo";
+import { SiteIdentity } from "@prisma/client";
 
-export default function LearningDrawer({ level, course, user }: {
+export default function LearningDrawer({ level, course, user, siteIdentity }: {
   level?: LearningLayoutLevelType;
   course: LearningLayoutCourseType;
   user: LearningLayoutUserType;
+  siteIdentity?: SiteIdentity;
 }) {
   const navStore = useNavStore();
-  const { data } = api.siteIdentity.getSiteIdentity.useQuery()
-
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -31,13 +30,13 @@ export default function LearningDrawer({ level, course, user }: {
 
   return (
     <div className="sticky left-0 top-0 flex items-center h-screen flex-col gap-4 overflow-auto bg-primary-foreground text-foreground p-4">
-      {data?.siteIdentity.logoPrimary ? (
-        <Image src={data.siteIdentity.logoPrimary} height={1000} width={1000} alt="Logo" className='w-24 rounded-full' />
+      {siteIdentity?.logoPrimary ? (
+        <Image src={siteIdentity.logoPrimary} height={1000} width={1000} alt="Logo" className='w-24 rounded-full' />
       ) : (
         <LogoPrimary className="w-24 h-24" />
       )}
       <div className="rounded-lg bg-primary p-4 w-full text-primary-foreground">
-        <Typography variant={"secondary"} className="whitespace-nowrap">Start learning</Typography>
+        <Typography variant={"secondary"} className="whitespace-nowrap text-center">Start learning</Typography>
       </div>
       <Separator className="bg-primary" />
       {!level ? course.levels
@@ -66,17 +65,17 @@ export default function LearningDrawer({ level, course, user }: {
               ) : (
                 <Accordion type="multiple">
                   {level.materialItems.map((item, i) => {
-                    const zoomSessionDate = user.zoomGroups.map(group =>
+                    const zoomSession = user.zoomGroups.map(group =>
                       group.zoomSessions.find(session => session.materialItemId === item.id)?.materialItemId === item.id
                         ? group.zoomSessions.find(session => session.materialItemId === item.id)
-                        : null).filter(s => s)[0]?.sessionDate
+                        : null).filter(s => s !== null)[0]
 
                     return (
                       <AccordionItem key={item.id} value={item.id} className="border-0">
                         <AccordionTrigger
                           className="hover:no-underline whitespace-nowrap w-full rounded-lg bg-transparent p-2 my-2 font-bold hover:bg-primary hover:text-primary-foreground"
                         >
-                          <Typography>
+                          <Typography className="mr-2">
                             {`Session ${i + 1}: ${item.title}`}
                           </Typography>
                         </AccordionTrigger>
@@ -85,9 +84,7 @@ export default function LearningDrawer({ level, course, user }: {
                             <Link
                               className={cn(
                                 "flex items-center justify-between gap-2 whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-primary hover:text-primary-foreground",
-                                (!item.evaluationForms.find(form => form.type === "quiz")?.id
-                                  || zoomSessionDate! > new Date()
-                                ) && "pointer-events-none text-primary/30",
+                                zoomSession?.sessionStatus === "scheduled" && "pointer-events-none text-primary/30",
                               )}
                               href={`/my_courses/${course.slug}/${level.slug}/quiz/${item.slug}`}
                               onClick={() => {
@@ -102,7 +99,7 @@ export default function LearningDrawer({ level, course, user }: {
                             <Link
                               className={cn(
                                 "flex items-center justify-between gap-2 whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-primary hover:text-primary-foreground",
-                                zoomSessionDate! > new Date() && "pointer-events-none text-primary/30",
+                                (zoomSession?.sessionStatus && ["starting", "scheduled"].includes(zoomSession.sessionStatus)) && "pointer-events-none text-primary/30",
                               )}
                               href={`/my_courses/${course.slug}/${level.slug}/session/${item.slug}`}
                               onClick={() => {
@@ -117,9 +114,7 @@ export default function LearningDrawer({ level, course, user }: {
                             <Link
                               className={cn(
                                 "flex items-center justify-between gap-2 whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-primary hover:text-primary-foreground",
-                                (!item.evaluationForms.find(form => form.type === "assignment")?.id
-                                  || zoomSessionDate! > new Date()
-                                ) && "pointer-events-none text-primary/30",
+                                zoomSession?.sessionStatus !== "completed" && "pointer-events-none text-primary/30",
                               )}
                               href={`/my_courses/${course.slug}/${level.slug}/assignment/${item.slug}`}
                               onClick={() => {
@@ -147,8 +142,7 @@ export default function LearningDrawer({ level, course, user }: {
                         <Link
                           className={cn(
                             "flex items-center justify-between gap-2 whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-primary hover:text-primary-foreground",
-                            !level.evaluationForms.find(form => form.type === "finalTest")?.id && "pointer-events-none text-primary/30",
-                            !user.zoomGroups.some(group => group.courseId === course.id && group.zoomSessions.every(session => session.sessionDate.getTime() < new Date().getTime())) && "pointer-events-none text-primary/30"
+                            !user.zoomGroups.some(group => group.courseId === course.id && group.zoomSessions.every(session => session.sessionStatus === "completed")) && "pointer-events-none text-primary/30"
                           )}
                           onClick={() => {
                             navStore.closeNav();
@@ -164,7 +158,6 @@ export default function LearningDrawer({ level, course, user }: {
                           className={
                             cn(
                               "flex items-center justify-between gap-2 whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-primary hover:text-primary-foreground",
-                              !level.evaluationForms.find(form => form.type === "finalTest")?.id && "pointer-events-none text-primary/30",
                               !user.certificates.find(cert => cert.courseLevel?.slug === level?.slug)?.id && "pointer-events-none text-primary/30",
                             )
                           }

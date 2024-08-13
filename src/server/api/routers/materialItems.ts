@@ -144,6 +144,19 @@ export const materialItemsRouter = createTRPCRouter({
         materialItem,
       };
     }),
+  checkMaterialItem: protectedProcedure
+    .input(z.object({
+      slug: z.string(),
+    }))
+    .mutation(async ({ ctx, input: { slug } }) => {
+      const materialItem = await ctx.prisma.materialItem.findUnique({
+        where: { slug }
+      });
+
+      return {
+        exists: materialItem ? true : false,
+      };
+    }),
   editUploadMaterialItem: protectedProcedure
     .input(z.object({
       id: z.string(),

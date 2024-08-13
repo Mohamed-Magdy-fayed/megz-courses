@@ -1,12 +1,14 @@
 import { api } from "@/lib/api";
 import { Account } from "@/components/users/accountComponents/Account";
 import { AccountDetails } from "@/components/users/accountComponents/AccountDetails";
-import { ConceptTitle } from "@/components/ui/Typoghraphy";
+import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import { ArrowLeftFromLine } from "lucide-react";
 import { useRouter } from "next/router";
 import Spinner from "@/components/Spinner";
 import LandingLayout from "@/components/landingPageComponents/LandingLayout";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import OrdersClient from "@/components/orders/OrdersClient";
 
 const Page = () => {
   const router = useRouter();
@@ -32,6 +34,14 @@ const Page = () => {
               <div className="col-span-12 md:col-span-8">
                 <ConceptTitle className="whitespace-nowrap mb-8">Account Details</ConceptTitle>
                 <AccountDetails user={userLoader.data.user} />
+              </div>
+              <div className="col-span-full">
+                <ConceptTitle className="whitespace-nowrap mb-8">My Orders History</ConceptTitle>
+                <Card>
+                  <CardContent>
+                    <OrdersClient data={userLoader.data.user.orders} />
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </main>

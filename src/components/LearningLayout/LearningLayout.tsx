@@ -1,15 +1,13 @@
-import { ReactNode, useEffect } from 'react'
+import { ReactNode } from 'react'
 import { Sheet, SheetContent } from '../ui/sheet'
 import { useNavStore } from '@/zustand/store'
 import { LearningNavigationMenu } from './LearningNavigationMenu'
 import LearningDrawer from './LearningDrawer'
 import ChatWithUs from '../landingPageComponents/ChatWithUs'
 import LearningFooter from './LearningFooter'
-import { useRouter } from 'next/router'
-import { api } from '@/lib/api'
 import { Prisma } from '@prisma/client'
-import Spinner from '@/components/Spinner'
 import useLoadLearningData from '@/hooks/useLoadLearningData'
+import { api } from '@/lib/api'
 
 export type LearningLayoutProps = {
     children: ReactNode;
@@ -92,6 +90,7 @@ const LearningLayout = ({ children }: LearningLayoutProps) => {
     const { opened, openNav, closeNav } = useNavStore();
 
     const { course, level, user } = useLoadLearningData()
+    const { data } = api.siteIdentity.getSiteIdentity.useQuery()
 
     if (!course || !user) return null
 
@@ -113,7 +112,7 @@ const LearningLayout = ({ children }: LearningLayoutProps) => {
                 <div className="flex flex-col justify-between flex-grow overflow-auto transition-all scrollbar-thin scrollbar-track-accent scrollbar-thumb-secondary">
                     <main className="p-4">{children}</main>
                     <ChatWithUs />
-                    <LearningFooter course={course} level={!level ? undefined : level} />
+                    <LearningFooter siteIdentity={data?.siteIdentity} course={course} level={!level ? undefined : level} />
                 </div>
             </div>
         </div>

@@ -6,7 +6,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu"
-import { Course, Order } from "@prisma/client"
+import { Course, Order, SiteIdentity } from "@prisma/client"
 import Spinner from "@/components/Spinner"
 import { Button } from "@/components/ui/button"
 import { Typography } from "@/components/ui/Typoghraphy"
@@ -24,8 +24,7 @@ import { api } from "@/lib/api"
 import { ScrollArea } from "../ui/scroll-area"
 import Image from "next/image"
 
-export const LandingNavigationMenu = () => {
-  const { data } = api.siteIdentity.getSiteIdentity.useQuery()
+export const LandingNavigationMenu = ({ siteIdentity }: { siteIdentity?: SiteIdentity }) => {
   const latestCoursesQuery = api.courses.getLatest.useQuery(undefined, {
     enabled: false,
   })
@@ -58,15 +57,15 @@ export const LandingNavigationMenu = () => {
         <div className="col-span-6 flex items-center justify-center">
           <Link href={'/'} className="flex items-center gap-1 justify-center w-fit">
             <Typography variant={"primary"} className="!text-lg !leading-none !font-extrabold text-primary">
-              {data?.siteIdentity.name1 || "Megz"}
+              {siteIdentity?.name1 || "Megz"}
             </Typography>
-            {data?.siteIdentity ? (
-              <Image src={data.siteIdentity.logoForeground} height={1000} width={1000} alt="Logo" className='w-12 rounded-full' />
+            {siteIdentity ? (
+              <Image src={siteIdentity.logoForeground} height={1000} width={1000} alt="Logo" className='w-12 rounded-full' />
             ) : (
-              <LogoForeground className="w-12 h-12"/>
+              <LogoForeground className="w-12 h-12" />
             )}
             <Typography variant={"primary"} className="!text-lg !leading-none !font-extrabold text-primary">
-              {data?.siteIdentity.name2 || "Learning"}
+              {siteIdentity?.name2 || "Learning"}
             </Typography>
           </Link>
         </div>
@@ -375,7 +374,7 @@ const MobileNavMenu = () => {
           {["Join as a teacher", "Join as a sales agent", "Join as a project manager"].map((item) => (
             <Link
               key={item}
-              href={`/careers/${item}`}
+              href={`/comming_soon`}
               className="hover:bg-primary/20 whitespace-nowrap w-full transition-colors p-4"
             >
               <Typography variant={"secondary"}>{item}</Typography>

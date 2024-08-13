@@ -16,7 +16,17 @@ export default function Copyright(props: any) {
         <Button variant={"link"}>Megz</Button>
       </Link>{" "}
       {new Date().getFullYear()}
-      {"."}
+      {"."}{" "}
+      <Link
+        href="/privacy"
+      >
+        <Button variant={"link"}>Privacy Policy</Button>
+      </Link>{" | "}
+      <Link
+        href="/terms"
+      >
+        <Button variant={"link"}>Terms of Use</Button>
+      </Link>{" "}
     </Typography>
   );
 }

@@ -6,7 +6,7 @@ import {
     NavigationMenuList,
     NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu"
-import { Course, Order } from "@prisma/client"
+import { Course, Order, SiteIdentity } from "@prisma/client"
 import Spinner from "@/components/Spinner"
 import { Button } from "@/components/ui/button"
 import { Typography } from "@/components/ui/Typoghraphy"
@@ -25,8 +25,7 @@ import { ScrollArea } from "../ui/scroll-area"
 import { useNavStore } from "@/zustand/store"
 import Image from "next/image"
 
-export const LearningNavigationMenu = () => {
-    const { data } = api.siteIdentity.getSiteIdentity.useQuery()
+export const LearningNavigationMenu = ({ siteIdentity }: { siteIdentity?: SiteIdentity }) => {
     const latestCoursesQuery = api.courses.getLatest.useQuery(undefined, {
         enabled: false,
     })
@@ -59,15 +58,15 @@ export const LearningNavigationMenu = () => {
                 <div className="col-span-6 flex items-center justify-center">
                     <Link href={'/'} className="flex items-center gap-1 justify-center w-fit">
                         <Typography variant={"primary"} className="!text-lg !leading-none !font-extrabold text-primary">
-                            {data?.siteIdentity.name1 || "Megz"}
+                            {siteIdentity?.name1 || "Megz"}
                         </Typography>
-                        {data?.siteIdentity.logoForeground ? (
-                            <Image src={data.siteIdentity.logoForeground} height={1000} width={1000} alt="Logo" className='w-12 rounded-full' />
+                        {siteIdentity?.logoForeground ? (
+                            <Image src={siteIdentity.logoForeground} height={1000} width={1000} alt="Logo" className='w-12 rounded-full' />
                         ) : (
                             <LogoForeground className="w-12 h-12" />
                         )}
                         <Typography variant={"primary"} className="!text-lg !leading-none !font-extrabold text-primary">
-                            {data?.siteIdentity.name2 || "Learning"}
+                            {siteIdentity?.name2 || "Learning"}
                         </Typography>
                     </Link>
                 </div>

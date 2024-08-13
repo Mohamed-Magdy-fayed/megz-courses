@@ -11,7 +11,7 @@ export type UploadStatus = { state: 'Idle' | 'Working', progress: number };
 const useFileUpload = () => {
     const [progress, setProgress] = useState(0);
     const [uploadTracker, setUploadTracker] = useState<NodeJS.Timer | null>(null);
-    const { toastError, toast } = useToast();
+    const { toastError, toast, toasts, dismiss } = useToast();
 
     const uploadFile = async (file: File, path: string, index: number, length: number) => {
         let storageRef = ref(storage, path);
@@ -20,7 +20,7 @@ const useFileUpload = () => {
             title: `Uploading... ${length > 1 ? `${index + 1} of ${length} files` : `1 file`}`,
             description: "Starting...",
             variant: "info",
-            duration: 100000,
+            duration: 1000000,
         })
 
         const uploadTask = new Promise<StorageReference>((resolve, reject) => {
@@ -60,6 +60,7 @@ const useFileUpload = () => {
                                             action: undefined,
                                         });
                                         uploadToast.dismiss()
+                                        toasts.forEach(t => dismiss(t.id))
                                     }}
                                 >
                                     <XSquareIcon />

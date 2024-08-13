@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { api } from "@/lib/api";
 import { LogoForeground } from "@/components/layout/Logo";
+import { SiteIdentity } from "@prisma/client";
 
 export const mainNavLinks = [
   {
@@ -81,10 +82,9 @@ export const mainNavLinks = [
   },
 ];
 
-export default function MegzDrawer() {
+export default function MegzDrawer({ siteIdentity }: { siteIdentity?: SiteIdentity }) {
   const pathname = usePathname();
   const navStore = useNavStore();
-  const { data } = api.siteIdentity.getSiteIdentity.useQuery()
 
   const [isMounted, setIsMounted] = useState(false);
   const activeLinkRef = useRef<HTMLAnchorElement>(null);
@@ -103,16 +103,16 @@ export default function MegzDrawer() {
 
   return (
     <div className="sticky left-0 top-0 flex items-center h-screen flex-col gap-4 overflow-auto bg-muted text-muted-foreground p-4">
-      {data?.siteIdentity.logoForeground ? (
+      {siteIdentity?.logoForeground ? (
         <Image
-          src={data.siteIdentity.logoForeground}
+          src={siteIdentity.logoForeground}
           height={1000}
           width={1000}
           alt="Logo"
           className='w-24 rounded-full bg-accent'
         />
       ) : (
-        <LogoForeground className="w-24 h-24"/>
+        <LogoForeground className="w-24 h-48 bg-accent" />
       )}
       <div className="rounded-lg bg-muted-foreground/50 p-4 w-full text-foreground">
         <Typography variant={"secondary"} >Megz</Typography>
@@ -154,7 +154,7 @@ export default function MegzDrawer() {
         <Typography className="whitespace-nowrap !text-xs">
           <Link
             className="text-dark underline decoration-slate-700 hover:decoration-dark"
-            href="https://portfolio-2-iota-brown.vercel.app/"
+            href="https://megz-portfolio-dev.vercel.app/"
             target="_blank"
           >
             Contact

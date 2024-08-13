@@ -4,14 +4,14 @@ import { Typography } from '../ui/Typoghraphy'
 import { LearningLayoutCourseType, LearningLayoutLevelType } from '@/components/LearningLayout/LearningLayout'
 import { LearningBreadcrumb } from '@/components/LearningLayout/LearningBreadcrumb'
 import Image from 'next/image'
-import { api } from '@/lib/api'
+import { SiteIdentity } from '@prisma/client'
+import { LogoPrimary } from '@/components/layout/Logo'
 
-const LandingFooter = ({ course, level }: {
+const LandingFooter = ({ course, level, siteIdentity }: {
     level?: LearningLayoutLevelType;
     course: LearningLayoutCourseType;
+    siteIdentity?: SiteIdentity;
 }) => {
-    const { data } = api.siteIdentity.getSiteIdentity.useQuery()
-
     if (!course) return <Typography>No Course Found!</Typography>;
 
     return (
@@ -19,7 +19,11 @@ const LandingFooter = ({ course, level }: {
             <div className='p-4 max-w-7xl lg:mx-auto'>
                 <div className='border-t border-primary grid grid-cols-12 space-y-12'>
                     <div className='pt-4 flex flex-col items-center justify-center gap-4 col-span-12 md:col-span-6'>
-                        <Image src={data?.siteIdentity.logoPrimary || ""} height={1000} width={1000} alt="Logo" className='w-24 rounded-full' />
+                        {siteIdentity?.logoPrimary ? (
+                            <Image src={siteIdentity.logoPrimary} height={1000} width={1000} alt="Logo" className='w-24 rounded-full' />
+                        ) : (
+                            <LogoPrimary className='w-24 h-24' />
+                        )}
                         <Typography variant={'primary'} className='whitespace-nowrap'>{course.name}</Typography>
                     </div>
                     <div className='col-span-12 md:col-span-6 flex flex-col gap-4 p-4'>

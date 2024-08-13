@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 import { getInitials } from "@/lib/getInitials";
-import { cn, formatPrice } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 import CellAction from "./cell-action";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Typography } from "../ui/Typoghraphy";
@@ -16,6 +16,7 @@ import { useEffect } from "react";
 import { api } from "@/lib/api";
 
 export type OrderRow = {
+  isStudentView: boolean;
   id: string;
   amount: number;
   orderNumber: string;
@@ -78,6 +79,8 @@ export const columns: ColumnDef<OrderRow>[] = [
   {
     accessorKey: "userName",
     header: ({ column }) => {
+      if (column.getFacetedRowModel().rows.some(r => r.original.isStudentView)) return null
+
       return (
         <div className="flex items-center justify-between">
           User Info
@@ -90,28 +93,32 @@ export const columns: ColumnDef<OrderRow>[] = [
         </div>
       );
     },
-    cell: ({ row }) => (
-      <Link className="block w-fit" href={`/account/${row.original.userId}`}>
-        <div className="flex items-center gap-2" >
-          <Avatar>
-            <AvatarImage src={`${row.original.userImage}`} />
-            <AvatarFallback>
-              {getInitials(`${row.original.userName}`)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col gap-2">
-            <Typography
-              className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
-            >
-              {row.original.userName}
-            </Typography>
-            <Typography variant={"secondary"} className="text-sm font-normal text-slate-500">
-              {row.original.userEmail}
-            </Typography>
+    cell: ({ row }) => {
+      if (row.original.isStudentView) return null
+
+      return (
+        <Link className="block w-fit" href={`/account/${row.original.userId}`}>
+          <div className="flex items-center gap-2" >
+            <Avatar>
+              <AvatarImage src={`${row.original.userImage}`} />
+              <AvatarFallback>
+                {getInitials(`${row.original.userName}`)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col gap-2">
+              <Typography
+                className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
+              >
+                {row.original.userName}
+              </Typography>
+              <Typography variant={"secondary"} className="text-sm font-normal text-slate-500">
+                {row.original.userEmail}
+              </Typography>
+            </div>
           </div>
-        </div>
-      </Link>
-    ),
+        </Link>
+      )
+    },
   },
   {
     accessorKey: "amount",
@@ -136,24 +143,34 @@ export const columns: ColumnDef<OrderRow>[] = [
   },
   {
     accessorKey: "courses",
-    header: "Courses Count",
+    header: "Courses",
     cell: ({ row }) => (
-      <Typography>
-        {row.original.courses.length} Course(s)
-      </Typography>
+      <div className="flex flex-col gap-2">
+        {row.original.courses.map(course => (
+          <Typography key={course.id}>
+            {course.name}
+          </Typography>
+        ))}
+      </div>
     ),
   },
   {
     accessorKey: "salesOperationCode",
-    header: "Sales Operation",
-    cell: ({ row }) => (
+    header: ({ column }) => {
+      if (column.getFacetedRowModel().rows.some(r => r.original.isStudentView)) return null
+      return "Sales Operation"
+    },
+    cell: ({ row }) => {
+      if (row.original.isStudentView) return null
 
-      <Link href={`/operation/${row.original.salesOperationId}`}>
-        <Typography>
-          {row.original.salesOperationCode}
-        </Typography>
-      </Link>
-    ),
+      return (
+        <Link href={`/operation/${row.original.salesOperationId}`}>
+          <Typography>
+            {row.original.salesOperationCode}
+          </Typography>
+        </Link>
+      )
+    },
   },
   {
     accessorKey: "status",
@@ -186,7 +203,7 @@ export const columns: ColumnDef<OrderRow>[] = [
 
       return (
         <Tooltip>
-          <TooltipTrigger>
+          <TooltipTrigger className="w-full">
             <SeverityPill color={color}>
               {status}
             </SeverityPill>
@@ -209,9 +226,15 @@ export const columns: ColumnDef<OrderRow>[] = [
   },
   {
     id: "action",
-    header: "Actions",
-    cell: ({ row }) => (
-      <CellAction data={row.original} />
-    ),
+    header: ({ column }) => {
+      if (column.getFacetedRowModel().rows.some(r => r.original.isStudentView)) return null
+      return "Actions"
+    },
+    cell: ({ row }) => {
+      if (row.original.isStudentView) return null
+      return (
+        <CellAction data={row.original} />
+      )
+    },
   },
 ];

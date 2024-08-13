@@ -53,10 +53,10 @@ const LevelPage = () => {
                                     ) : (
                                         <Accordion type="single" collapsible>
                                             {level.materialItems.map((item, i) => {
-                                                const zoomSessionDate = user.zoomGroups.map(group =>
+                                                const zoomSession = user.zoomGroups.map(group =>
                                                     group.zoomSessions.find(session => session.materialItemId === item.id)?.materialItemId === item.id
                                                         ? group.zoomSessions.find(session => session.materialItemId === item.id)
-                                                        : null).filter(s => s)[0]?.sessionDate
+                                                        : null).filter(s => s !== null)[0]
 
                                                 return (
                                                     <AccordionItem key={item.id} value={item.id}>
@@ -64,8 +64,8 @@ const LevelPage = () => {
                                                             <div className="flex items-center gap-8 justify-between w-full whitespace-nowrap">
                                                                 <Typography>Session {i + 1}: {item.title}</Typography>
                                                                 <Typography>
-                                                                    Session Date: {zoomSessionDate
-                                                                        ? format(zoomSessionDate, "PPPPp")
+                                                                    Session Date: {zoomSession?.sessionDate
+                                                                        ? format(zoomSession.sessionDate, "PPPPp")
                                                                         : "Not started yet!"
                                                                     }
                                                                 </Typography>
@@ -75,18 +75,12 @@ const LevelPage = () => {
                                                             <div className="flex items-center w-full justify-around">
                                                                 <Link
                                                                     className={
-                                                                        cn(
-                                                                            !item.evaluationForms.find(form => form.type === "quiz")?.id && "pointer-events-none",
-                                                                            zoomSessionDate! > new Date() && "pointer-events-none",
-                                                                        )
+                                                                        cn(zoomSession?.sessionStatus === "scheduled" && "pointer-events-none")
                                                                     }
                                                                     href={`/my_courses/${course.slug}/${level.slug}/quiz/${item.slug}`}
                                                                 >
                                                                     <Button
-                                                                        disabled={
-                                                                            !item.evaluationForms.find(form => form.type === "quiz")?.id
-                                                                            || zoomSessionDate! > new Date()
-                                                                        }
+                                                                        disabled={zoomSession?.sessionStatus === "scheduled"}
                                                                         variant={"outline"}
                                                                         customeColor={"infoOutlined"}
                                                                     >
@@ -98,13 +92,15 @@ const LevelPage = () => {
                                                                 </Link>
                                                                 <Link
                                                                     className={
-                                                                        cn(
-                                                                            zoomSessionDate! > new Date() && "pointer-events-none",
-                                                                        )
+                                                                        cn((zoomSession?.sessionStatus && ["starting", "scheduled"].includes(zoomSession.sessionStatus)) && "pointer-events-none",)
                                                                     }
                                                                     href={`/my_courses/${course.slug}/${level.slug}/session/${item.slug}`}
                                                                 >
-                                                                    <Button disabled={zoomSessionDate! > new Date()} variant={"outline"} customeColor={"primaryOutlined"}>
+                                                                    <Button
+                                                                        disabled={(zoomSession?.sessionStatus && ["starting", "scheduled"].includes(zoomSession.sessionStatus))}
+                                                                        variant={"outline"}
+                                                                        customeColor={"primaryOutlined"}
+                                                                    >
                                                                         <Typography>
                                                                             Session content
                                                                         </Typography>
@@ -113,18 +109,12 @@ const LevelPage = () => {
                                                                 </Link>
                                                                 <Link
                                                                     className={
-                                                                        cn(
-                                                                            !item.evaluationForms.find(form => form.type === "quiz")?.id && "pointer-events-none",
-                                                                            zoomSessionDate! > new Date() && "pointer-events-none",
-                                                                        )
+                                                                        cn(zoomSession?.sessionStatus !== "completed" && "pointer-events-none",)
                                                                     }
                                                                     href={`/my_courses/${course.slug}/${level.slug}/assignment/${item.slug}`}
                                                                 >
                                                                     <Button
-                                                                        disabled={
-                                                                            !item.evaluationForms.find(form => form.type === "assignment")?.id
-                                                                            || zoomSessionDate! > new Date()
-                                                                        }
+                                                                        disabled={zoomSession?.sessionStatus !== "completed"}
                                                                         variant={"outline"}
                                                                         customeColor={"successOutlined"}
                                                                     >
@@ -147,18 +137,12 @@ const LevelPage = () => {
                                                     <div className="flex items-center w-full justify-around">
                                                         <Link
                                                             className={
-                                                                cn(
-                                                                    !course.evaluationForms.find(form => form.type === "finalTest")?.id && "pointer-events-none",
-                                                                    user.zoomGroups.some(group => group.courseId === course.id && group.zoomSessions.every(session => session.sessionDate.getTime() > new Date().getTime())) && "pointer-events-none"
-                                                                )
+                                                                cn(!user.zoomGroups.some(group => group.courseId === course.id && group.zoomSessions.every(session => session.sessionStatus === "completed")) && "pointer-events-none")
                                                             }
                                                             href={`/my_courses/${course.slug}/${level.slug}/final_test`}
                                                         >
                                                             <Button
-                                                                disabled={
-                                                                    !course.evaluationForms.find(form => form.type === "finalTest")?.id
-                                                                    || user.zoomGroups.some(group => group.courseId === course.id && group.zoomSessions.every(session => session.sessionDate.getTime() > new Date().getTime()))
-                                                                }
+                                                                disabled={!user.zoomGroups.some(group => group.courseId === course.id && group.zoomSessions.every(session => session.sessionStatus === "completed"))}
                                                                 variant={"outline"}
                                                                 customeColor={"destructiveOutlined"}
                                                             >
@@ -171,7 +155,6 @@ const LevelPage = () => {
                                                         <Link
                                                             className={
                                                                 cn(
-                                                                    !course.evaluationForms.find(form => form.type === "finalTest")?.id && "pointer-events-none",
                                                                     !user.certificates.find(cert => cert.courseLevel?.slug === level?.slug)?.id && "pointer-events-none"
                                                                 )
                                                             }
@@ -179,8 +162,7 @@ const LevelPage = () => {
                                                         >
                                                             <Button
                                                                 disabled={
-                                                                    !course.evaluationForms.find(form => form.type === "finalTest")?.id
-                                                                    || !user.certificates.find(cert => cert.courseLevel?.slug === level?.slug)?.id
+                                                                    !user.certificates.find(cert => cert.courseLevel?.slug === level?.slug)?.id
                                                                 }
                                                                 variant={"outline"}
                                                                 customeColor={"successOutlined"}
