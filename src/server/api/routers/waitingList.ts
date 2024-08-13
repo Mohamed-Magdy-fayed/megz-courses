@@ -10,6 +10,23 @@ export const waitingListRouter = createTRPCRouter({
             levelId: z.string(),
         }))
         .mutation(async ({ input: { userId, levelId, courseId }, ctx }) => {
+            const currentUser = await ctx.prisma.user.findUnique({
+                where: { id: ctx.session.user.id },
+                include: { trainer: true }
+            })
+            const isAssignedTester = (await ctx.prisma.placementTest.findFirst({
+                where: { courseId, studentUserId: userId },
+                include: { trainer: true }
+            }))?.trainer.userId === ctx.session.user.id
+            if (!!currentUser
+                && !(currentUser.userType === "admin"
+                    || (currentUser.userType === "teacher"
+                        && currentUser.trainer?.role === "tester"
+                        && isAssignedTester))) throw new TRPCError({
+                            code: "UNAUTHORIZED",
+                            message: "You are not allowed to take that action!"
+                        })
+
             const user = await ctx.prisma.user.findUnique({ where: { id: userId }, include: { courseStatus: true } })
             if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "user not found!" })
 

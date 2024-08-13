@@ -10,6 +10,7 @@ import { BookMinus, BookOpen, BookOpenCheck, FileBadge } from "lucide-react";
 import { LearningLayoutCourseType, LearningLayoutLevelType, LearningLayoutUserType } from "@/components/LearningLayout/LearningLayout";
 import { api } from "@/lib/api";
 import Image from "next/image";
+import { LogoPrimary } from "@/components/layout/Logo";
 
 export default function LearningDrawer({ level, course, user }: {
   level?: LearningLayoutLevelType;
@@ -30,7 +31,11 @@ export default function LearningDrawer({ level, course, user }: {
 
   return (
     <div className="sticky left-0 top-0 flex items-center h-screen flex-col gap-4 overflow-auto bg-primary-foreground text-foreground p-4">
-      <Image src={data?.siteIdentity.logoPrimary || ""} height={1000} width={1000} alt="Logo" className='w-24 rounded-full' />
+      {data?.siteIdentity.logoPrimary ? (
+        <Image src={data.siteIdentity.logoPrimary} height={1000} width={1000} alt="Logo" className='w-24 rounded-full' />
+      ) : (
+        <LogoPrimary className="w-24 h-24" />
+      )}
       <div className="rounded-lg bg-primary p-4 w-full text-primary-foreground">
         <Typography variant={"secondary"} className="whitespace-nowrap">Start learning</Typography>
       </div>

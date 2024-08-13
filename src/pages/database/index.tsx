@@ -5,9 +5,6 @@ import type { NextPage } from "next";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import Spinner from "@/components/Spinner";
 import DatabaseClient from "@/components/database/DatabaseClient";
-import { Button } from "@/components/ui/button";
-import { FileDown } from "lucide-react";
-import { csvMaker } from "@/lib/csvMaker";
 
 const DatabasePage: NextPage = () => {
     const { data, isLoading, isError } = api.potintialCustomers.getCustomers.useQuery();
@@ -20,15 +17,6 @@ const DatabasePage: NextPage = () => {
                         <div className="flex flex-col gap-2">
                             <ConceptTitle>Database</ConceptTitle>
                             <Typography>Explore the potintial customers from Facebook</Typography>
-                            <div className="flex items-center gap-2">
-                                <Button
-                                    variant={"icon"}
-                                    customeColor={"infoIcon"}
-                                    onClick={() => data?.potintialCustomers && csvMaker(data?.potintialCustomers)}
-                                >
-                                    <FileDown />
-                                </Button>
-                            </div>
                         </div>
                     </div>
                     <PaperContainer>

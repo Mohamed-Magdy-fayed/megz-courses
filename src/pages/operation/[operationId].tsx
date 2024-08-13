@@ -18,6 +18,9 @@ import SelectField from "@/components/salesOperation/SelectField";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { sendWhatsAppMessage } from "@/lib/whatsApp";
 import { format } from "date-fns";
+import { PaperContainer } from "@/components/ui/PaperContainers";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import StudentForm from "@/components/studentComponents/StudentForm";
 
 const OperationPage = () => {
     const router = useRouter()
@@ -34,6 +37,7 @@ const OperationPage = () => {
     const [loading, setLoading] = useState(false)
     const [loadingToast, setLoadingToast] = useState<toastType>()
     const { toastSuccess, toastError, toast } = useToast()
+    const [isOpen, setIsOpen] = useState(false);
 
     const session = useSession()
     const trpcUtils = api.useContext()
@@ -198,9 +202,32 @@ const OperationPage = () => {
             ) : (
                 <>
                     <OperationStatus data={salesOperationData.salesOperations} />
-                    <div className="py-4">
+                    <div className="py-4 space-y-4">
                         <ConceptTitle>User Details</ConceptTitle>
-                        <UserInfoPanel data={salesOperationData.salesOperations} />
+                        <div className="flex gap-4">
+                            <UserInfoPanel data={salesOperationData.salesOperations} />
+                            {!!salesOperationData.salesOperations.potintialCustomer && (
+                                <PaperContainer className=" flex-grow">
+                                    <Typography variant={"secondary"}>Potintial Customer</Typography>
+                                    <div className="flex gap-2 p-4 justify-between">
+                                        {salesOperationData.salesOperations.potintialCustomer.picture && (
+                                            <Avatar>
+                                                <AvatarImage src={salesOperationData.salesOperations.potintialCustomer.picture} />
+                                            </Avatar>
+                                        )}
+                                        <div className="flex flex-col">
+                                            {salesOperationData.salesOperations.potintialCustomer.name && <Typography onDoubleClick={(e) => window.getSelection()?.selectAllChildren(e.target as Node)}>{salesOperationData.salesOperations.potintialCustomer.name}</Typography>}
+                                            {salesOperationData.salesOperations.potintialCustomer.email && <Typography onDoubleClick={(e) => window.getSelection()?.selectAllChildren(e.target as Node)}>{salesOperationData.salesOperations.potintialCustomer.email}</Typography>}
+                                            {salesOperationData.salesOperations.potintialCustomer.phone && <Typography onDoubleClick={(e) => window.getSelection()?.selectAllChildren(e.target as Node)}>{salesOperationData.salesOperations.potintialCustomer.phone}</Typography>}
+                                            {salesOperationData.salesOperations.potintialCustomer.message && <Typography onDoubleClick={(e) => window.getSelection()?.selectAllChildren(e.target as Node)}>{salesOperationData.salesOperations.potintialCustomer.message}</Typography>}
+                                            <Typography>platform: {salesOperationData.salesOperations.potintialCustomer.platform}</Typography>
+                                        </div>
+                                        <Button onClick={() => setIsOpen(!isOpen)}>Create an account</Button>
+                                    </div>
+                                    {isOpen && <StudentForm setIsOpen={setIsOpen}></StudentForm>}
+                                </PaperContainer>
+                            )}
+                        </div>
                     </div>
                     <div className="py-4">
                         <ConceptTitle>Order Details</ConceptTitle>

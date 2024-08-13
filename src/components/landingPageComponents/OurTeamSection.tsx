@@ -21,7 +21,7 @@ const OurTeamSection = () => {
                     key={trainer.id}
                     className="col-span-12 p-4 md:col-span-6 lg:col-span-4"
                 >
-                    <Card>
+                    <Card className='h-full flex flex-col'>
                         <CardHeader className="p-0">
                             {trainer.user.image ? (
                                 <div className='w-full h-24 rounded-b-none object-cover bg-center' style={{ backgroundImage: `url(${trainer.user.image})` }}>
@@ -35,10 +35,10 @@ const OurTeamSection = () => {
                                 </Skeleton>
                             )}
                         </CardHeader>
-                        <CardContent className="p-4 space-y-4">
-                            <div>
+                        <CardContent className="p-4 space-y-4 flex-grow flex flex-col">
+                            <div className='flex-grow'>
                                 <Typography>
-                                    Lorem ipsum dolor sit, amet consectetur adipisicing elit. Tempora laudantium dolor aperiam?
+                                    {trainer.role === "teacher" ? "One of the best teachers in the field you will enjoy your online sessions with'em." : "One of our best testers with the ability to gauge your skills and level in English from the normal conversation you'll have."}
                                 </Typography>
                             </div>
                             <div className="flex items-center justify-between px-4 py-2 bg-muted/10 whitespace-nowrap">

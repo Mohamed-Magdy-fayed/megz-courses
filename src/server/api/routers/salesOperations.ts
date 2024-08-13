@@ -42,6 +42,7 @@ export const salesOperationsRouter = createTRPCRouter({
                 include: {
                     assignee: { include: { user: true } },
                     orderDetails: { include: { user: true, courses: true } },
+                    potintialCustomer: true,
                 },
             });
             return { salesOperations };
@@ -59,6 +60,32 @@ export const salesOperationsRouter = createTRPCRouter({
                     assignee: { connect: { userId: assigneeId } },
                     code: salesOperationCodeGenerator(),
                     status,
+                },
+                include: {
+                    assignee: true,
+                    orderDetails: true,
+                },
+            });
+
+            return {
+                salesOperations,
+            };
+        }),
+    createSalesOperationForPotintialCustomer: protectedProcedure
+        .input(
+            z.object({
+                assigneeId: z.string().optional(),
+                status: z.enum(validOperationStatus),
+                customerId: z.string(),
+            })
+        )
+        .mutation(async ({ input: { assigneeId, status, customerId }, ctx }) => {
+            const salesOperations = await ctx.prisma.salesOperation.create({
+                data: {
+                    assignee: { connect: { userId: assigneeId } },
+                    code: salesOperationCodeGenerator(),
+                    status,
+                    potintialCustomer: { connect: { id: customerId } }
                 },
                 include: {
                     assignee: true,

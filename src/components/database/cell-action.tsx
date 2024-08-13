@@ -22,7 +22,7 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const [open, setOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  const assignMutation = api.salesOperations.createSalesOperation.useMutation()
+  const assignMutation = api.salesOperations.createSalesOperationForPotintialCustomer.useMutation()
   const { toastError, toastSuccess } = useToast()
 
   const onCopy = (id: string) => {
@@ -34,7 +34,7 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
     setLoading(true)
     setOpen(false)
     assignMutation.mutate(
-      { assigneeId, status: "assigned" },
+      { assigneeId, status: "assigned", customerId: data.id },
       {
         onSuccess: (data) => {
           toastSuccess(`Operation ID: ${data.salesOperations.code}`)

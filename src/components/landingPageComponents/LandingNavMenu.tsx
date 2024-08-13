@@ -58,11 +58,15 @@ export const LandingNavigationMenu = () => {
         <div className="col-span-6 flex items-center justify-center">
           <Link href={'/'} className="flex items-center gap-1 justify-center w-fit">
             <Typography variant={"primary"} className="!text-lg !leading-none !font-extrabold text-primary">
-              {data?.siteIdentity.name1}
+              {data?.siteIdentity.name1 || "Megz"}
             </Typography>
-            <Image src={data?.siteIdentity.logoForeground || ""} height={1000} width={1000} alt="Logo" className='w-12 rounded-full' />
+            {data?.siteIdentity ? (
+              <Image src={data.siteIdentity.logoForeground} height={1000} width={1000} alt="Logo" className='w-12 rounded-full' />
+            ) : (
+              <LogoForeground className="w-12 h-12"/>
+            )}
             <Typography variant={"primary"} className="!text-lg !leading-none !font-extrabold text-primary">
-              {data?.siteIdentity.name2}
+              {data?.siteIdentity.name2 || "Learning"}
             </Typography>
           </Link>
         </div>
@@ -99,7 +103,7 @@ const DesktopNavMenu = ({ courses }: {
               {!courses ? <Spinner /> : courses.map((course) => (
                 <Link
                   key={course.id}
-                  href={`/courses/${course.id}`}
+                  href={`/courses/${course.slug}`}
                   className=" whitespace-nowrap border-b border-muted"
                 >
                   <div className="py-2 px-4 hover:bg-primary/20">

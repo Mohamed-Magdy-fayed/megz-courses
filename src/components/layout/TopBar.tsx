@@ -16,6 +16,7 @@ import { DarkModeToggle } from "../dark-mode-toggle";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import Image from "next/image";
+import { LogoForeground } from "@/components/layout/Logo";
 
 export default function MegzTopBar() {
   const session = useSession();
@@ -73,7 +74,11 @@ export default function MegzTopBar() {
           </Tooltip>
           <div className="col-span-6 flex items-center justify-center">
             <Link href={'/'} className="flex items-center gap-2 justify-center w-fit">
-              <Image src={data?.siteIdentity.logoForeground || ""} height={1000} width={1000} alt="Logo" className='w-12 rounded-full' />
+              {data?.siteIdentity.logoForeground ? (
+                <Image src={data.siteIdentity.logoForeground} height={1000} width={1000} alt="Logo" className='w-12 rounded-full' />
+              ) : (
+                <LogoForeground className="w-12 h-12" />
+              )}
               <Typography variant={"primary"} className="!text-lg !leading-none !font-extrabold text-primary">
                 {data?.siteIdentity.name1}
               </Typography>

@@ -445,7 +445,7 @@ const GroupPage: NextPage = () => {
                                 </ScrollArea>
                                 <div>
                                     <Typography variant={"secondary"}>Attendance</Typography>
-                                    {formatPercentage(calculateAttendancePercentages(data.zoomGroup).overallAttendancePercentage)}
+                                    {formatPercentage(calculateAttendancePercentages(data.zoomGroup).overallAttendancePercentage || 0)}
                                 </div>
                             </PaperContainer>
                         </div>

@@ -1,10 +1,25 @@
-import { mainNavLinks } from '../layout/Drawer'
 import Link from 'next/link'
 import FooterCourseSearchBar from './CourseSearchBar'
 import { Linkedin, Instagram, Youtube, Facebook } from 'lucide-react'
 import Copyright from '@/components/Copyright'
 import Image from 'next/image'
 import { api } from '@/lib/api'
+import { LogoPrimary } from '@/components/layout/Logo'
+
+const landingNavLinks = [
+    {
+        label: "Home",
+        url: "",
+    },
+    {
+        label: "My Account",
+        url: "my_account",
+    },
+    {
+        label: "My Courses",
+        url: "my_courses",
+    },
+]
 
 const LandingFooter = () => {
     const { data } = api.siteIdentity.getSiteIdentity.useQuery()
@@ -20,7 +35,11 @@ const LandingFooter = () => {
             <div className='p-4 max-w-7xl lg:mx-auto'>
                 <div className='border-t border-primary grid grid-cols-12 space-y-12'>
                     <div className='pt-4 flex flex-col items-center justify-center gap-4 col-span-12 md:col-span-4 lg:col-span-3'>
-                        <Image src={data?.siteIdentity.logoPrimary || ""} height={1000} width={1000} alt="Logo" className='w-24 rounded-full bg-accent' />
+                        {data?.siteIdentity.logoPrimary ? (
+                            <Image src={data.siteIdentity.logoPrimary} height={1000} width={1000} alt="Logo" className='w-24 rounded-full bg-accent' />
+                        ) : (
+                            <LogoPrimary className="w-24 h-24" />
+                        )}
                         <div className='flex items-center gap-4'>
                             {socialIcons.map(icon => (
                                 <Link
@@ -34,7 +53,7 @@ const LandingFooter = () => {
                         </div>
                     </div>
                     <div className='grid grid-cols-2 col-span-12 md:col-span-8 lg:col-span-6 gap-4 justify-items-start w-full px-8'>
-                        {mainNavLinks.map(link => {
+                        {landingNavLinks.map(link => {
                             return (
                                 <Link
                                     key={link.url}

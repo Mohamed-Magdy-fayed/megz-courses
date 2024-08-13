@@ -376,14 +376,16 @@ enum SalesOperationStatus {
 }
 
 model SalesOperation {
-    id           String               @id @default(auto()) @map("_id") @db.ObjectId
-    code         String
-    status       SalesOperationStatus @default(created)
-    assignee     SalesAgent?          @relation(fields: [salesAgentId], references: [id])
-    salesAgentId String?              @db.ObjectId
-    orderDetails Order?               @relation("OrderToSalesOperation")
-    updatedAt    DateTime             @updatedAt
-    createdAt    DateTime             @default(now())
+    id                  String               @id @default(auto()) @map("_id") @db.ObjectId
+    code                String
+    status              SalesOperationStatus @default(created)
+    assignee            SalesAgent?          @relation(fields: [salesAgentId], references: [id])
+    salesAgentId        String?              @db.ObjectId
+    potintialCustomer   PotintialCustomer?   @relation(fields: [potintialCustomerId], references: [id])
+    potintialCustomerId String?              @db.ObjectId
+    orderDetails        Order?               @relation("OrderToSalesOperation")
+    updatedAt           DateTime             @updatedAt
+    createdAt           DateTime             @default(now())
 }
 
 model SalesAgent {
@@ -397,17 +399,18 @@ model SalesAgent {
 }
 
 model PotintialCustomer {
-    id        String   @id @default(auto()) @map("_id") @db.ObjectId
-    userId    String
-    name      String
-    email     String?
-    phone     String?
-    message   String?
-    picture   String?
-    platform  String
-    formId    String?
-    updatedAt DateTime @updatedAt
-    createdAt DateTime @default(now())
+    id             String           @id @default(auto()) @map("_id") @db.ObjectId
+    userId         String
+    name           String
+    email          String?
+    phone          String?
+    message        String?
+    picture        String?
+    platform       String
+    formId         String?
+    SalesOperation SalesOperation[]
+    updatedAt      DateTime         @updatedAt
+    createdAt      DateTime         @default(now())
 }
 
 model Message {
