@@ -7,7 +7,6 @@ import { Separator } from "../ui/separator";
 import { Typography } from "../ui/Typoghraphy";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { api } from "@/lib/api";
 import { LogoForeground } from "@/components/layout/Logo";
 import { SiteIdentity } from "@prisma/client";
 
@@ -75,6 +74,14 @@ export const mainNavLinks = [
   {
     label: "Terms of Use",
     url: "terms",
+  },
+  {
+    label: "Documentation",
+    url: "documentation",
+  },
+  {
+    label: "Support",
+    url: "support",
   },
   {
     label: "Error",

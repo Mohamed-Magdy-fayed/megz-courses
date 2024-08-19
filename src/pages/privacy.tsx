@@ -1,5 +1,4 @@
 import LandingLayout from '@/components/landingPageComponents/LandingLayout';
-import { PaperContainer } from '@/components/ui/PaperContainers';
 import { ConceptTitle, Typography } from '@/components/ui/Typoghraphy';
 import { env } from '@/env.mjs';
 import { format } from 'date-fns';
