@@ -20,6 +20,7 @@ export type SessionColumn = {
   userName: string;
   userEmail: string;
   groupId: string;
+  groupName: string;
   status: SessionStatus;
   meetingNumber: string;
   meetingPassword: string;
@@ -86,12 +87,12 @@ export const columns: ColumnDef<SessionColumn>[] = [
     ),
   },
   {
-    accessorKey: "groupId",
+    accessorKey: "groupName",
     header: "Zoom Group",
     cell: ({ row }) => (
       <Tooltip>
         <TooltipTrigger>
-          <Link href={row.original.groupId}>
+          <Link href={`/groups/${row.original.groupId}`}>
             <Button variant={"outline"} customeColor={"infoIcon"}>
               <Link2 className="w-4 h-4" />
             </Button>

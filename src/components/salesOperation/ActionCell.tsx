@@ -15,41 +15,27 @@ import { render } from "@react-email/render";
 import Email from "../emails/Email";
 import { format } from "date-fns";
 import { formatPrice } from "@/lib/utils";
-import SelectField from "./SelectField";
-import Modal from "@/components/ui/modal";
 
 interface CellActionProps {
     status: OrderStatus;
     id: string | null;
+    paymentLink: string | null;
     orderId: string;
     setOpen: Dispatch<SetStateAction<boolean>>;
+    setIsRefundModalOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId }) => {
-    const { toastInfo, toastSuccess, toastError, toast } = useToast();
-    const [refundReason, setRefundReason] = useState<("requested_by_customer" | "duplicate" | "fraudulent")[]>([])
+const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId, paymentLink, setIsRefundModalOpen }) => {
+    const { toastInfo, toastSuccess, toastError } = useToast();
     const [isOpen, setIsOpen] = useState(false)
-    const [isRefundModalOpen, setIsRefundModalOpen] = useState(false)
-    const [loading, setLoading] = useState(false)
-
-    const origin =
-        typeof window !== 'undefined' && window.location.origin
-            ? window.location.origin
-            : '';
-
-    const URL = `${origin}`;
 
     const onCopy = () => {
-        navigator.clipboard.writeText(`${URL}/payments?sessionId=${id}`);
+        if (!paymentLink) return toastError("No payment link")
+        navigator.clipboard.writeText(paymentLink);
         toastInfo("Payment link copied to the clipboard");
     };
 
-    const refundOrderMutation = api.orders.refundOrder.useMutation({
-        onMutate: () => setLoading(true),
-        onSuccess: ({ success }) => toast({ variant: "info", description: success ? "refunded successfully" : "Unable to refund" }),
-        onError: ({ message }) => toastError(message.startsWith("No such payment_intent") ? "Please refund the order manually!" : message),
-        onSettled: () => setLoading(false),
-    })
+    const { data: siteData } = api.siteIdentity.getSiteIdentity.useQuery()
     const resendPaymentLinkMutation = api.orders.resendPaymentLink.useMutation()
     const sendEmailMutation = api.emails.sendEmail.useMutation()
     const trpcUtils = api.useContext()
@@ -89,6 +75,7 @@ const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId })
             onSuccess: ({ updatedOrder: { id, amount, orderNumber, user, courses, createdAt, salesOperationId, courseTypes }, paymentLink }) => {
                 const message = render(
                     <Email
+                        logoUrl={siteData?.siteIdentity.logoPrimary || ""}
                         orderCreatedAt={format(createdAt, "dd MMM yyyy")}
                         userEmail={user.email}
                         orderAmount={formatPrice(amount)}
@@ -114,56 +101,8 @@ const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId })
         })
     }
 
-    const handleRefund = () => {
-        if (!refundReason[0]) return toastError("please select a reason")
-        refundOrderMutation.mutate({
-            orderId,
-            reason: refundReason[0],
-        })
-    }
-
     return (
         <>
-            <Modal
-                title="Refund"
-                description="Select refund reason"
-                isOpen={isRefundModalOpen}
-                onClose={() => setIsRefundModalOpen(false)}
-                children={(
-                    <div className="flex gap-4 items-center justify-between">
-                        <SelectField
-                            disabled={loading}
-                            data={[
-                                { active: true, label: "Customer request", value: "requested_by_customer" },
-                                { active: true, label: "Dublicate", value: "duplicate" },
-                                { active: true, label: "Fraud", value: "fraudulent" },
-                            ]}
-                            listTitle="Reasons"
-                            placeholder="Select Refund Reason"
-                            values={refundReason}
-                            setValues={setRefundReason}
-                            disableSearch
-                        />
-                        <div className="flex items-center gap-4">
-                            <Button
-                                disabled={loading}
-                                onClick={() => setIsRefundModalOpen(false)}
-                                variant={"outline"}
-                                customeColor={"destructiveOutlined"}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                disabled={loading}
-                                onClick={handleRefund}
-                                customeColor={"success"}
-                            >
-                                Confirm
-                            </Button>
-                        </div>
-                    </div>
-                )}
-            />
             <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
                 <DropdownMenuTrigger asChild>
                     <Button customeColor="mutedIcon" variant={"icon"} >
@@ -176,7 +115,10 @@ const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId })
                         <Copy className="w-4 h-4 mr-2" />
                         Copy payment link
                     </DropdownMenuItem>
-                    <DropdownMenuItem disabled={status !== "pending"} onClick={() => setOpen(true)}>
+                    <DropdownMenuItem disabled={status !== "pending"} onClick={() => {
+                        setOpen(true)
+                        setIsOpen(false)
+                    }}>
                         <LucideDollarSign className="w-4 h-4 mr-2" />
                         Manual payment
                     </DropdownMenuItem>
@@ -184,7 +126,7 @@ const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId })
                         <Send className="w-4 h-4 mr-2" />
                         Resend payment link
                     </DropdownMenuItem>
-                    <DropdownMenuItem disabled={status === "refunded"} onClick={() => {
+                    <DropdownMenuItem disabled={status === "refunded" || status !== "paid"} onClick={() => {
                         setIsRefundModalOpen(true)
                         setIsOpen(false)
                     }}>

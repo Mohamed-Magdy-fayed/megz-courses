@@ -33,6 +33,10 @@ export const env = createEnv({
     NEXT_PUBLIC_ZOOM_CLIENT_SECRET: z.string(),
     NEXT_PUBLIC_GMAIL_EMAIL: z.string(),
     NEXT_PUBLIC_ZOOM_REDIRECT_URI: z.string(),
+    PAYMOB_BASE_URL: z.string(),
+    PAYMOB_API_KEY: z.string(),
+    PAYMOB_API_SECRET: z.string(),
+    PAYMOB_PUBLIC_KEY: z.string(),
   },
 
   /**
@@ -87,6 +91,10 @@ export const env = createEnv({
     NEXT_PUBLIC_ZOOM_CLIENT_SECRET: process.env.NEXT_PUBLIC_ZOOM_CLIENT_SECRET,
     NEXT_PUBLIC_ZOOM_REDIRECT_URI: process.env.NEXT_PUBLIC_ZOOM_REDIRECT_URI,
     NEXT_PUBLIC_NEXTAUTH_URL: process.env.NEXT_PUBLIC_NEXTAUTH_URL,
+    PAYMOB_BASE_URL: process.env.PAYMOB_BASE_URL,
+    PAYMOB_API_KEY: process.env.PAYMOB_API_KEY,
+    PAYMOB_API_SECRET: process.env.PAYMOB_API_SECRET,
+    PAYMOB_PUBLIC_KEY: process.env.PAYMOB_PUBLIC_KEY,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.

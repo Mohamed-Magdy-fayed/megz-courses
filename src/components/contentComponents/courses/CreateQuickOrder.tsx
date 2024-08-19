@@ -16,6 +16,7 @@ import { PaperContainer } from "@/components/ui/PaperContainers"
 import { Typography } from "@/components/ui/Typoghraphy"
 import { useRouter } from "next/router"
 import { sendWhatsAppMessage } from "@/lib/whatsApp"
+import { env } from "@/env.mjs"
 
 const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
     const [loading, setLoading] = useState(false)
@@ -26,6 +27,7 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
 
     const router = useRouter()
     const { toastError, toastSuccess } = useToast()
+    const { data: siteData } = api.siteIdentity.getSiteIdentity.useQuery()
     const { data: usersData } = api.users.getUsers.useQuery({ userType: "student" })
     const quickOrderMutation = api.orders.quickOrder.useMutation()
     const sendEmailMutation = api.emails.sendEmail.useMutation()
@@ -41,6 +43,7 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
             onSuccess: ({ order: { id, amount, orderNumber, user, courses, createdAt, courseTypes, salesOperationId, salesOperation }, paymentLink }) => {
                 const message = render(
                     <Email
+                        logoUrl={siteData?.siteIdentity.logoPrimary || ""}
                         orderCreatedAt={format(createdAt, "dd MMM yyyy")}
                         userEmail={user.email}
                         orderAmount={formatPrice(amount)}
@@ -81,6 +84,7 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
             onSuccess: ({ password, order: { id, amount, orderNumber, user, courses, createdAt, courseTypes, salesOperationId, salesOperation }, paymentLink }) => {
                 const message = render(
                     <Email
+                        logoUrl={siteData?.siteIdentity.logoPrimary || ""}
                         orderCreatedAt={format(createdAt, "dd MMM yyyy")}
                         userEmail={user.email}
                         orderAmount={formatPrice(amount)}
@@ -166,7 +170,7 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
                 trpcUtils.invalidate()
                     .then(() => {
                         setLoading(false)
-                        router.push(`/operation/${salesOperation.code}`)
+                        window.open(`${env.NEXT_PUBLIC_NEXTAUTH_URL}/operation/${salesOperation.code}`, "_blank")
                     })
             }
         })

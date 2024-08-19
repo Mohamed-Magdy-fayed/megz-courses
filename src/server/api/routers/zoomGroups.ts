@@ -311,6 +311,26 @@ export const zoomGroupsRouter = createTRPCRouter({
                 },
             });
 
+            await Promise.all(zoomGroup.students.map(async (student) => {
+
+                await ctx.prisma.userNote.create({
+                    data: {
+                        sla: 0,
+                        status: "Closed",
+                        title: `Zoom Group Created for the student`,
+                        type: "Info",
+                        createdForStudent: { connect: { id: student.id } },
+                        messages: [{
+                            message: `The student was added to a zoom group ${zoomGroup.groupNumber}`,
+                            updatedAt: new Date(),
+                            updatedBy: "System"
+                        }],
+                        createdByUser: { connect: { id: ctx.session.user.id } },
+                    }
+                })
+            }))
+
+
             return {
                 zoomGroup,
             };

@@ -11,8 +11,8 @@ import { useState } from "react";
 import { api } from "@/lib/api";
 import { OrderRow } from "./OrdersColumn";
 import { useToast } from "@/components/ui/use-toast";
-import SelectField from "../salesOperation/SelectField";
 import Modal from "@/components/ui/modal";
+import { RefundModal } from "@/components/modals/RefundModal";
 
 interface CellActionProps {
   data: OrderRow;
@@ -22,21 +22,11 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [open, setOpen] = useState(false);
-  const [refundReason, setRefundReason] = useState<("requested_by_customer" | "duplicate" | "fraudulent")[]>([])
   const [isRefundModalOpen, setIsRefundModalOpen] = useState(false)
 
   const trpcUtils = api.useContext()
-  const refundOrderMutation = api.orders.refundOrder.useMutation({
-    onMutate: () => setLoading(true),
-    onSuccess: ({ success }) => {
-      toast({ variant: "info", description: success ? "refunded successfully" : "Unable to refund" })
-      setIsRefundModalOpen(false)
-    },
-    onError: ({ message }) => toastError(message.startsWith("No such payment_intent") ? "Please refund the order manually!" : message),
-    onSettled: () => setLoading(false),
-  })
   const deleteMutation = api.orders.deleteOrders.useMutation()
-  const { toastInfo, toastSuccess, toastError, toast } = useToast();
+  const { toastSuccess, toastError } = useToast();
 
   const onCopy = (orderNumber: string) => {
     navigator.clipboard.writeText(orderNumber);
@@ -65,14 +55,6 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
     )
   };
 
-  const handleRefund = () => {
-    if (!refundReason[0]) return toastError("please select a reason")
-    refundOrderMutation.mutate({
-      orderId: data.id,
-      reason: refundReason[0],
-    })
-  }
-
   return (
     <>
       <Modal
@@ -91,45 +73,10 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
           </div>
         }
       />
-      <Modal
-        title="Refund"
-        description="Select refund reason"
+      <RefundModal
         isOpen={isRefundModalOpen}
         onClose={() => setIsRefundModalOpen(false)}
-        children={(
-          <div className="flex gap-4 items-center justify-between">
-            <SelectField
-              disabled={loading}
-              data={[
-                { active: true, label: "Customer request", value: "requested_by_customer" },
-                { active: true, label: "Dublicate", value: "duplicate" },
-                { active: true, label: "Fraud", value: "fraudulent" },
-              ]}
-              listTitle="Reasons"
-              placeholder="Select Refund Reason"
-              values={refundReason}
-              setValues={setRefundReason}
-              disableSearch
-            />
-            <div className="flex items-center gap-4">
-              <Button
-                disabled={loading}
-                onClick={() => setIsRefundModalOpen(false)}
-                variant={"outline"}
-                customeColor={"destructiveOutlined"}
-              >
-                Cancel
-              </Button>
-              <Button
-                disabled={loading}
-                onClick={handleRefund}
-                customeColor={"success"}
-              >
-                Confirm
-              </Button>
-            </div>
-          </div>
-        )}
+        orderId={data.id}
       />
       <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
         <DropdownMenuTrigger asChild>
@@ -141,9 +88,9 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuItem onClick={() => onCopy(data.orderNumber)}>
             <Copy className="w-4 h-4 mr-2" />
-            Copy Id
+            Copy Order Number
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => {
+          <DropdownMenuItem disabled={data.status === "refunded"} onClick={() => {
             setIsRefundModalOpen(true)
             setIsOpen(false)
           }}>

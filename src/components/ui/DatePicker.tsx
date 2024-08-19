@@ -35,6 +35,7 @@ export const DatePicker: FC<DatePickerProps> = ({ date, setDate, className, ...p
             </PopoverTrigger>
             <PopoverContent
                 align="start"
+                collisionPadding={{ bottom: 30 }}
                 className="flex w-auto flex-col space-y-2 p-2 bg-background translate-y-20"
             >
                 <div className="rounded-md border">

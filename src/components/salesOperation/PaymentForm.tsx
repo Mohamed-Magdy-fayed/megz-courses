@@ -10,25 +10,25 @@ import { api } from "@/lib/api";
 import { useToast } from "../ui/use-toast";
 import { sendWhatsAppMessage } from "@/lib/whatsApp";
 import { formatPrice } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import ImageUploader from "@/components/ui/ImageUploader";
 
 interface PaymentFormProps {
     id?: string;
-    isOpen: boolean;
-    onClose: () => void;
     loading: boolean;
     setLoading: Dispatch<SetStateAction<boolean>>;
+    onClose: () => void;
 }
 
 const formSchema = z.object({
-    paymentAmount: z.string(),
-    paymentConfirmation: z.string(),
+    paymentAmount: z.string().min(1, "Payment Amount is required"),
+    paymentConfirmation: z.string().min(1, "Payment Proof is required"),
 });
 
 type PaymentFormValues = z.infer<typeof formSchema>;
 
 export const PaymentForm = ({
     id,
-    isOpen,
     loading,
     setLoading,
     onClose,
@@ -61,9 +61,9 @@ export const PaymentForm = ({
                     \nYour can now access the content through this link: ${courseLink}`,
                     toNumber: "201123862218"
                 })
+                onClose()
                 trpcUtils.salesOperations.invalidate().then(() => {
                     setLoading(false)
-                    onClose()
                 })
             },
             onError: (error) => {
@@ -78,7 +78,6 @@ export const PaymentForm = ({
     }, []);
 
     if (!isMounted) return null;
-    if (!isOpen) return null
 
     return (
         <Form {...form}>
@@ -93,7 +92,7 @@ export const PaymentForm = ({
                         <FormItem className="p-4">
                             <FormLabel>Payment Amount</FormLabel>
                             <FormControl>
-                                <Input type="number" placeholder="99.99" {...field} />
+                                <Input type="number" autoFocus placeholder="99.99" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -105,11 +104,15 @@ export const PaymentForm = ({
                     render={({ field }) => (
                         <FormItem className="md:col-span-2">
                             <FormControl>
-                                <MaterialImageUpload
-                                    value={field.value}
+                                <ImageUploader
                                     disabled={loading}
-                                    onChange={(url) => field.onChange(url)}
                                     onRemove={() => field.onChange("")}
+                                    onChange={(url) => field.onChange(url)}
+                                    customeImage={field.value && field.value.length > 0 ? (
+                                        <img alt="user image" src={field.value} className="max-h-[72px]" />
+                                    ) : (
+                                        <Skeleton className="h-[72px] w-[128px] rounded-md" />
+                                    )}
                                 />
                             </FormControl>
                             <FormMessage />
@@ -117,9 +120,6 @@ export const PaymentForm = ({
                     )}
                 />
                 <div className="flex w-full items-center justify-end space-x-2 pt-6">
-                    <Button disabled={loading} variant="outline" customeColor={"mutedOutlined"} onClick={onClose}>
-                        Cancel
-                    </Button>
                     <Button disabled={loading} variant="default" type="submit">
                         Confirm payment
                     </Button>

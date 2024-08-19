@@ -121,8 +121,9 @@ body {
   .printable * {
     visibility: visible;
   }
-
+  
   .printable {
+    visibility: visible;
     position: absolute;
     left: 0;
     top: 0;

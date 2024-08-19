@@ -89,7 +89,7 @@ const CustomForm: FC<{
             duration: 30000,
             variant: "info",
         })),
-        onSuccess: ({ evaluationForm }) => trpcUtils.courses.invalidate()
+        onSuccess: ({ evaluationForm }) => trpcUtils.invalidate()
             .then(() => {
                 loadingToast?.update({
                     id: loadingToast.id,
@@ -97,7 +97,6 @@ const CustomForm: FC<{
                     description: `Evaluation form total points ${evaluationForm.totalPoints}`,
                     variant: "success",
                 })
-                setIsOpen?.(false)
             }),
         onError: ({ message }) => loadingToast?.update({
             id: loadingToast.id,

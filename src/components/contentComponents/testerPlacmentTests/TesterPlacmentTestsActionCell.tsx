@@ -6,7 +6,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { CheckSquare, Copy, MoreVertical, Trash } from "lucide-react";
+import { CheckSquare, Copy, MoreVertical } from "lucide-react";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import SelectField from "@/components/salesOperation/SelectField";
@@ -132,10 +132,6 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, testLink, courseId, userId,
                     <DropdownMenuItem onClick={onCopy}>
                         <Copy className="w-4 h-4 mr-2" />
                         Copy
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setIsOpen(true)}>
-                        <Trash className="w-4 h-4 mr-2" />
-                        Delete
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>

@@ -1,69 +1,84 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Modal from "../ui/modal";
 import { Button } from "../ui/button";
 import { api } from "@/lib/api";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { toastType, useToast } from "@/components/ui/use-toast";
+import Spinner from "@/components/Spinner";
 
 interface RefundModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onConfirm: (data: string) => void;
-    loading: boolean;
+    orderId: string;
 }
 
 export const RefundModal = ({
     isOpen,
-    loading,
+    orderId,
     onClose,
-    onConfirm,
 }: RefundModalProps) => {
-    const [isMounted, setIsMounted] = useState(false);
-    const [reason, setReason] = useState("");
+    const [loadingToast, setLoadingToast] = useState<toastType>()
+    const { toast } = useToast();
 
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
+    const trpcUtils = api.useContext()
+    const refundOrderMutation = api.orders.refundOrder.useMutation({
+        onMutate: () => setLoadingToast(toast({
+            title: "Loading...",
+            description: <Spinner className="w-4 h-4" />,
+            variant: "info",
+            duration: 60000,
+        })),
+        onSuccess: ({ success }) => trpcUtils.invalidate().then(() => {
+            loadingToast?.update({
+                id: loadingToast.id,
+                title: "Success",
+                variant: "success",
+                description: success ? "refunded successfully" : "Unable to refund"
+            })
+            onClose()
+        }),
+        onError: ({ message }) => loadingToast?.update({
+            id: loadingToast.id,
+            title: "Error",
+            description: message,
+            variant: "destructive"
+        }),
+        onSettled: () => {
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined)
+        },
+    })
 
-    if (!isMounted) return null;
+    const handleRefund = () => {
+        refundOrderMutation.mutate({
+            orderId,
+        })
+    }
 
     return (
         <Modal
-            title="Refund"
-            description="select refund reason"
+            title="Are you sure you want to refund this order?"
+            description="This action can't be undone!"
             isOpen={isOpen}
-            onClose={onClose}
-        >
-            <Select
-                disabled={loading}
-                // @ts-ignore
-                onValueChange={(e) => setReason(e)}
-            >
-                <SelectTrigger className="pl-8">
-                    <SelectValue
-                        placeholder="Select reason"
-                    />
-                </SelectTrigger>
-                <SelectContent>
-                    {[
-                        { id: "1", value: "reason1", label: "Reason 1" },
-                        { id: "2", value: "reason2", label: "Reason 2" },
-                        { id: "3", value: "reason3", label: "Reason 3" },
-                        { id: "4", value: "reason4", label: "Reason 4" },
-                        { id: "5", value: "reason5", label: "Reason 5" },
-
-                    ].map(reasonData => (
-                        <SelectItem key={reasonData.id} value={reasonData.value}>{reasonData.label}</SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-            <div className="flex w-full items-center justify-end space-x-2 pt-6">
-                <Button disabled={loading} variant="outline" customeColor={"mutedOutlined"} onClick={onClose}>
-                    Cancel
-                </Button>
-                <Button disabled={loading} variant="default" onClick={() => onConfirm(reason)}>
-                    Continue
-                </Button>
-            </div>
-        </Modal>
+            onClose={() => onClose()}
+            children={(
+                <div className="flex items-center gap-4">
+                    <Button
+                        disabled={!!loadingToast}
+                        onClick={() => onClose()}
+                        variant={"outline"}
+                        customeColor={"destructiveOutlined"}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        disabled={!!loadingToast}
+                        onClick={handleRefund}
+                        customeColor={"success"}
+                    >
+                        Confirm
+                    </Button>
+                </div>
+            )}
+        />
     );
 };

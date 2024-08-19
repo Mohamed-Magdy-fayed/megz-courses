@@ -43,7 +43,7 @@ export const certificatesRouter = createTRPCRouter({
           userId: ctx.session.user.id,
         },
         include: {
-          user: true,
+          user: { include: { zoomGroups: { include: { trainer: { include: { user: true } } } } } },
           course: true,
         }
       })
@@ -62,7 +62,7 @@ export const certificatesRouter = createTRPCRouter({
           certificateId: id,
         },
         include: {
-          user: true,
+          user: { include: { zoomGroups: { include: { trainer: { include: { user: true } } } } } },
           course: true,
         }
       })

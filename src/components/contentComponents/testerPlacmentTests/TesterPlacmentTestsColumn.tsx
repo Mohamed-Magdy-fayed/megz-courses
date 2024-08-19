@@ -28,6 +28,7 @@ export type Column = {
     isLevelSubmittedString: "Completed" | "Waiting",
     level: string | undefined,
     courseId: string,
+    courseName: string,
     courseLevels: CourseLevel[],
     testLink: string,
     trainersData: {
@@ -99,6 +100,13 @@ export const columns: ColumnDef<Column>[] = [
         )
     },
     {
+        accessorKey: "courseName",
+        header: "Course",
+        cell: ({ row }) => (
+            <Typography>{row.original.courseName}</Typography>
+        )
+    },
+    {
         accessorKey: "isWrittenTestDone",
         header: "Written Test Status",
         cell: ({ row }) => {
@@ -142,22 +150,30 @@ export const columns: ColumnDef<Column>[] = [
                     }))
                 },
                 onSuccess: ({ zoomClient }) => {
-                    if (!zoomClient?.id) return loadingToast?.update({
-                        id: loadingToast.id,
-                        title: "Error",
-                        description: "No available Zoom Accounts at the selected time!",
-                        duration: 2000,
-                        variant: "destructive",
-                    })
+                    if (!zoomClient?.id) {
+                        loadingToast?.dismissAfter()
+                        loadingToast?.update({
+                            id: loadingToast.id,
+                            title: "Error",
+                            description: "No available Zoom Accounts at the selected time!",
+                            variant: "destructive",
+                        })
+                        setLoadingToast(undefined)
+                        return
+                    }
                     refreshTokenMutation.mutate({ zoomClientId: zoomClient.id }, {
                         onSuccess: ({ updatedZoomClient }) => {
-                            if (!trainerId[0] || !testTime) return loadingToast?.update({
-                                id: loadingToast.id,
-                                title: "Error",
-                                description: "Missing some information here!",
-                                duration: 2000,
-                                variant: "destructive",
-                            })
+                            if (!trainerId[0] || !testTime) {
+                                loadingToast?.update({
+                                    id: loadingToast.id,
+                                    title: "Error",
+                                    description: "Missing some information here!",
+                                    variant: "destructive",
+                                })
+                                loadingToast?.dismissAfter()
+                                setLoadingToast(undefined)
+                                return
+                            }
                             createPlacementTestMeetingMutation.mutate({
                                 zoomClientId: updatedZoomClient.id,
                                 courseId: row.original.courseId,
@@ -186,7 +202,6 @@ export const columns: ColumnDef<Column>[] = [
                                                         id: loadingToast.id,
                                                         title: "Success",
                                                         description: "New time scheduled successfully",
-                                                        duration: 2000,
                                                         variant: "success",
                                                     })
                                                 })
@@ -196,7 +211,6 @@ export const columns: ColumnDef<Column>[] = [
                                                 id: loadingToast.id,
                                                 title: "Error",
                                                 description: message,
-                                                duration: 2000,
                                                 variant: "destructive",
                                             })
                                         },
@@ -207,7 +221,6 @@ export const columns: ColumnDef<Column>[] = [
                                         id: loadingToast.id,
                                         title: "Error",
                                         description: message,
-                                        duration: 2000,
                                         variant: "destructive",
                                     })
                                 },
@@ -261,7 +274,7 @@ export const columns: ColumnDef<Column>[] = [
                                     setDate={setTestTime}
                                 />
                                 <div>
-                                    <Button onClick={() => handleSchedulePlacementTest()}>
+                                    <Button disabled={!!loadingToast} onClick={() => handleSchedulePlacementTest()}>
                                         <Calendar className="w-4 h-4 mr-2" />
                                         Schedule
                                     </Button>

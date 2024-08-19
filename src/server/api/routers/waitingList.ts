@@ -48,6 +48,22 @@ export const waitingListRouter = createTRPCRouter({
                 include: { courseStatus: { include: { level: true } } }
             });
 
+            const note = await ctx.prisma.userNote.create({
+                data: {
+                    sla: 0,
+                    status: "Closed",
+                    title: `Student added to waiting list by ${ctx.session.user.name}`,
+                    type: "Info",
+                    createdForStudent: { connect: { id: updatedUser.name } },
+                    messages: [{
+                        message: `User was added to waiting list of course ${course.name} at level ${updatedUser.courseStatus.find((s) => courseId === s.courseId)?.level.name}`,
+                        updatedAt: new Date(),
+                        updatedBy: "System"
+                    }],
+                    createdByUser: { connect: { id: ctx.session.user.id } },
+                }
+            })
+
             return { updatedUser, course };
         }),
 });

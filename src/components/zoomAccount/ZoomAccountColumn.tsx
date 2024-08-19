@@ -9,6 +9,14 @@ import SelectField from "@/components/salesOperation/SelectField";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { SeverityPill } from "@/components/overview/SeverityPill";
+import { toastType, useToast } from "@/components/ui/use-toast";
+import { api } from "@/lib/api";
+import Modal from "@/components/ui/modal";
+import { DatePicker } from "@/components/ui/DatePicker";
+import Spinner from "@/components/Spinner";
+import { Meeting } from "@/server/api/routers/zoomAccounts";
+import { format } from "date-fns";
+import Calendar from "@/components/ui/calendar";
 
 export type AccountColumn = {
     id: string;
@@ -63,32 +71,89 @@ export const columns: ColumnDef<AccountColumn>[] = [
         accessorKey: "zoomSessions",
         header: "Account Sessions",
         cell: ({ row }) => {
-            const [day, setDay] = useState<string[]>([])
+            const { toast } = useToast();
 
+            const [loadingToast, setLoadingToast] = useState<toastType>()
+            const [startDate, setStartDate] = useState<Date | undefined>()
+            const [endDate, setEndDate] = useState<Date | undefined>()
+            const [isCheckMeetingsOpen, setIsCheckMeetingsOpen] = useState(false)
+            const [meetings, setMeetings] = useState<Meeting[]>([])
+
+            const trpcUtils = api.useContext();
+            const checkMeetingsMutation = api.zoomAccounts.checkMeetings.useMutation({
+                onMutate: () => setLoadingToast(toast({
+                    title: "Loading...",
+                    variant: "info",
+                    description: (
+                        <Spinner className="h-4 w-4" />
+                    ),
+                    duration: 30000,
+                })),
+                onSuccess: ({ meetings }) => trpcUtils.invalidate().then(() => {
+                    loadingToast?.update({
+                        id: loadingToast.id,
+                        variant: "success",
+                        description: `${meetings.length} Meetings found`,
+                        title: "Success"
+                    })
+                    setMeetings(meetings)
+                    setIsCheckMeetingsOpen(false)
+                }),
+                onError: ({ message }) => loadingToast?.update({
+                    id: loadingToast.id,
+                    variant: "destructive",
+                    description: message,
+                    title: "Error",
+                }),
+                onSettled: () => {
+                    loadingToast?.dismissAfter()
+                    setLoadingToast(undefined)
+                },
+            })
+
+            const checkMeetings = (startDate?: Date, endDate?: Date) => {
+                checkMeetingsMutation.mutate({ id: row.original.id, endDate, startDate })
+            }
 
             return (
                 <div className="flex flex-col gap-4 items-start">
-                    <SelectField
-                        data={row.original.zoomSessions.map(session => ({
-                            active: true,
-                            label: session.date,
-                            value: session.date,
-                        }))}
-                        listTitle="Day"
-                        placeholder="Select Day"
-                        setValues={setDay}
-                        values={day}
+                    <Modal
+                        title="Check Meetings"
+                        description="get all meetings on the account on in selected time"
+                        isOpen={isCheckMeetingsOpen}
+                        onClose={() => setIsCheckMeetingsOpen(false)}
+                        children={(
+                            <div className="flex flex-col p-2">
+                                <div className="flex gap-2 py-2 justify-between">
+                                    <div className="flex flex-col">
+                                        <Typography>From Date</Typography>
+                                        <Calendar mode="single" selected={startDate} onSelect={setStartDate} initialFocus />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <Typography>To Date</Typography>
+                                        <Calendar mode="single" selected={endDate} onSelect={setEndDate} initialFocus />
+                                    </div>
+                                </div>
+                                <Button disabled={!!loadingToast} onClick={() => checkMeetings(startDate, endDate)}>Confirm</Button>
+                            </div>
+                        )}
                     />
-                    {row.original.zoomSessions.filter(s => s.date === day[0]).map(session => (
-                        <Card key={session.date} className="flex flex-col items-start gap-2 p-4">
+                    <Button
+                        disabled={!!loadingToast}
+                        onClick={() => {
+                            setIsCheckMeetingsOpen(true)
+                        }}
+                    >
+                        Check Meetings
+                    </Button>
+                    {meetings.length > 0 && (<Button customeColor={"destructive"} onClick={() => setMeetings([])}>Clear</Button>)}
+                    {meetings.map(session => (
+                        <Card key={session.id} className="flex flex-col items-start gap-2 p-4">
                             <Typography>
-                                Session Date: {session.date}
+                                Session Date: {format(new Date(session.start_time), "PPPpp")}
                             </Typography>
                             <Typography>
-                                Students attended: {session.attenders.length}
-                            </Typography>
-                            <Typography className="flex items-center gap-2">
-                                Status: <SeverityPill color={statusMap[session.status]}>{session.status}</SeverityPill>
+                                Topic: {session.topic}
                             </Typography>
                         </Card>
                     ))}

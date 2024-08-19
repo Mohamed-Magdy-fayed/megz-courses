@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { DataTable } from "../ui/DataTable";
 import { SessionColumn, columns } from "./SessionColumns";
 import { validSessionStatuses } from "@/lib/enumsTypes";
-import { upperFirst } from "lodash";
+import { uniqBy, upperFirst } from "lodash";
 
 const SessionsClient = () => {
   const { data } = api.trainers.getCurrentTrainerSessions.useQuery()
@@ -14,6 +14,7 @@ const SessionsClient = () => {
     userName: session.zoomGroup?.trainer?.user.name || "",
     userEmail: session.zoomGroup?.trainer?.user.email || "",
     groupId: session.zoomGroup?.id || "",
+    groupName: session.zoomGroup?.groupNumber || "",
     status: session.sessionStatus || "",
     meetingNumber: session.zoomGroup?.meetingNumber || "",
     meetingPassword: session.zoomGroup?.meetingPassword || "",
@@ -32,7 +33,8 @@ const SessionsClient = () => {
         label: "Time"
       }]}
       filters={[
-        { key: "status", filterName: "Status", values: validSessionStatuses.map(s => ({ label: upperFirst(s), value: s })) }
+        { key: "status", filterName: "Status", values: validSessionStatuses.map(s => ({ label: upperFirst(s), value: s })) },
+        { key: "groupName", filterName: "Group", values: uniqBy(formattedData.map(d => ({ value: d.groupName, label: d.groupName })), "value") },
       ]}
     />
   );

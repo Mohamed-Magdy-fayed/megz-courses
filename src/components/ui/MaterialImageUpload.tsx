@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Trash } from "lucide-react";
 import { Skeleton } from "./skeleton";
 import ImageUploader from "./ImageUploader";
 

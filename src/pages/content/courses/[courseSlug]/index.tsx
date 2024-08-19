@@ -7,14 +7,10 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Spinner from "@/components/Spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
-import WaitingListClient from "@/components/contentComponents/waitingList/WaitingListClient";
-import CourseGroupsClient from "@/components/contentComponents/courseGroups/CourseGroupsClient";
 import Link from "next/link";
 import Modal from "@/components/ui/modal";
 import UploadMaterialForm from "@/components/contentComponents/materials/uploadForm/UploadMaterialForm";
 import CreateQuickOrder from "@/components/contentComponents/courses/CreateQuickOrder";
-import FinalTestClient from "@/components/contentComponents/finalTests/FinalTestsClient";
-import FinalTestSubmissionsClient from "@/components/contentComponents/finalTestSubmissions/FinalTestSubmissionsClient";
 import CustomTestGoogleForm from "@/components/FormsComponents/CustomTestGoogleForm";
 import { format } from "date-fns";
 import { formatPercentage } from "@/lib/utils";
@@ -380,7 +376,7 @@ const CoursePage = () => {
                                             answers,
                                             student,
                                             levelSlugs: data.course?.levels.map(lvl => ({ label: lvl.name, value: lvl.slug })) || [],
-                                            levelSlug: evaluationForm.materialItem?.courseLevel?.slug || "",
+                                            levelSlug: evaluationForm.courseLevel?.slug || "",
                                             certificate: student.certificates.find(cert => cert.courseLevelId === evaluationForm.courseLevelId),
                                             email: student.email,
                                             rating,

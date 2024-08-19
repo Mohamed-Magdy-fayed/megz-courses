@@ -204,10 +204,11 @@ export const coursesRouter = createTRPCRouter({
               submissions: {
                 include: {
                   student: { include: { certificates: true } },
-                  evaluationForm: { include: { materialItem: { include: { courseLevel: true } } } }
+                  evaluationForm: { include: { materialItem: { include: { courseLevel: true } }, courseLevel: true } }
                 }
               },
-              materialItem: true
+              materialItem: true,
+              courseLevel: true,
             }
           },
           zoomGroups: { include: { zoomSessions: true, courseLevel: true } },

@@ -13,6 +13,8 @@ import { api } from "@/lib/api";
 import { Typography } from "@/components/ui/Typoghraphy";
 import Spinner from "@/components/Spinner";
 import { AlertModal } from "@/components/modals/AlertModal";
+import Modal from "@/components/ui/modal";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 interface CellActionProps {
     id: string;
@@ -86,33 +88,6 @@ const CellAction: React.FC<CellActionProps> = ({ id }) => {
         },
     });
 
-    const checkMeetingsMutation = api.zoomAccounts.checkMeetings.useMutation({
-        onMutate: () => setLoadingToast(toast({
-            title: "Loading...",
-            variant: "info",
-            description: (
-                <Spinner className="h-4 w-4" />
-            ),
-            duration: 30000,
-        })),
-        onSuccess: () => trpcUtils.invalidate().then(() => loadingToast?.update({
-            id: loadingToast.id,
-            variant: "success",
-            description: `Account deleted successfully`,
-            title: "Success"
-        })),
-        onError: ({ message }) => loadingToast?.update({
-            id: loadingToast.id,
-            variant: "destructive",
-            description: message,
-            title: "Error",
-        }),
-        onSettled: () => {
-            loadingToast?.dismissAfter()
-            setLoadingToast(undefined)
-        },
-    })
-
     const onDelete = () => {
         deleteMutation.mutate({ ids: [id] });
     };
@@ -140,10 +115,6 @@ const CellAction: React.FC<CellActionProps> = ({ id }) => {
                     <DropdownMenuItem onClick={onCopy}>
                         <Copy className="w-4 h-4 mr-2" />
                         Copy ID
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => checkMeetingsMutation.mutate({})}>
-                        <CheckSquare className="w-4 h-4 mr-2" />
-                        Check Meetings
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={onRefreshAceessToken}>
                         <RefreshCcw className="w-4 h-4 mr-2" />

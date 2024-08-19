@@ -1,12 +1,27 @@
-import { z } from "zod";
+import { unknown, z } from "zod";
 import {
     createTRPCRouter,
     protectedProcedure,
 } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { env } from "@/env.mjs";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import QueryString from "qs";
+import { format } from "date-fns";
+
+export type Meeting = {
+    uuid: string;
+    id: number;
+    host_id: string;
+    topic: string;
+    type: number;
+    start_time: string;
+    duration: number;
+    timezone: string;
+    agenda: string;
+    created_at: string;
+    join_url: string;
+}
 
 export const zoomAccountsRouter = createTRPCRouter({
     getZoomAccounts: protectedProcedure
@@ -19,50 +34,107 @@ export const zoomAccountsRouter = createTRPCRouter({
             startDate: z.date()
         }))
         .mutation(async ({ ctx, input: { startDate } }) => {
-
-
-
-
             const zoomClients = await ctx.prisma.zoomClient.findMany({ include: { zoomSessions: true }, orderBy: { id: "desc" } })
+            const endDate = new Date(startDate)
+            endDate.setHours(startDate.getHours() + 2)
 
-            const availableClient = zoomClients.find(client => {
-                return !client.zoomSessions.some(session => {
-                    const sessionTime = session.sessionDate.getTime();
-                    const startTime = startDate.getTime();
-                    const twoHoursInMillis = 2 * 60 * 60 * 1000;
+            const availableClients = await Promise.all(zoomClients.map(async (client) => {
+                try {
+                    let data = QueryString.stringify({
+                        'grant_type': 'refresh_token',
+                        'refresh_token': client.refreshToken
+                    });
+                    let refreshConfig = {
+                        method: 'post',
+                        maxBodyLength: Infinity,
+                        url: 'https://zoom.us/oauth/token',
+                        headers: {
+                            'Authorization': `Basic ${client.encodedIdSecret}`,
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        data: data
+                    };
+                    const refreshResponse = await axios.request(refreshConfig);
 
-                    return sessionTime >= (startTime - twoHoursInMillis) && sessionTime <= (startTime + twoHoursInMillis);
-                });
-            });
+                    await ctx.prisma.zoomClient.update({
+                        where: {
+                            id: client.id,
+                        },
+                        data: {
+                            accessToken: refreshResponse.data.access_token,
+                            refreshToken: refreshResponse.data.refresh_token,
+                        }
+                    })
 
-            if (!availableClient) return { zoomClient: null, zoomClients }
+                    const config = {
+                        method: 'get',
+                        maxBodyLength: Infinity,
+                        url: `https://api.zoom.us/v2/users/me/meetings?type=scheduled${!startDate ? "" : `&from=${format(startDate, "yyyy-MM-dd")}`}${!endDate ? "" : `&to=${format(endDate, "yyyy-MM-dd")}`}&timezone=Africa%2FCairo`,
+                        headers: {
+                            'Accept': 'application/json',
+                            'Authorization': `Bearer ${refreshResponse.data.access_token}`,
+                        },
+                    };
 
-            return { zoomClient: availableClient, zoomClients }
+                    const response = (await axios.request(config)).data;
+                    const mtngs = response.meetings as Meeting[]
+
+                    const isOverlapping = mtngs.some(m => {
+                        const existingStart = new Date(m.start_time);
+                        const existingEnd = new Date(existingStart);
+                        existingEnd.setMinutes(existingEnd.getMinutes() + m.duration); // Assuming `m.duration` is in minutes
+
+                        // Check if the new meeting overlaps with the existing meeting
+                        const newMeetingEnd = new Date(startDate);
+                        newMeetingEnd.setHours(newMeetingEnd.getHours() + 2);
+
+                        return (startDate >= existingStart && startDate < existingEnd) || // New start time overlaps with an existing meeting
+                            (newMeetingEnd > existingStart && newMeetingEnd <= existingEnd); // New end time overlaps with an existing meeting
+                    });
+
+                    return isOverlapping ? null : client;
+                } catch (error: any) {
+                    return null
+                }
+            }));
+
+            const filteredClients = availableClients.filter(client => client !== null);
+            if (filteredClients.length === 0) return { zoomClient: null, zoomClients }
+
+            return { zoomClient: filteredClients[0], zoomClients }
         }),
     checkMeetings: protectedProcedure
-        .input(z.object({}))
-        .mutation(async ({ ctx, input }) => {
-            const zoomClients = await ctx.prisma.zoomClient.findMany()
+        .input(z.object({
+            id: z.string(),
+            startDate: z.date().optional(),
+            endDate: z.date().optional(),
+        }))
+        .mutation(async ({ ctx, input: { id, startDate, endDate } }) => {
+            const zoomClient = await ctx.prisma.zoomClient.findUnique({ where: { id } })
+            if (!zoomClient) throw new TRPCError({ code: "BAD_REQUEST", message: "No Zoom Account with this ID" })
 
-            const data = await Promise.all(zoomClients.map(async client => {
-                const config = {
-                    method: 'get',
-                    maxBodyLength: Infinity,
-                    url: 'https://api.zoom.us/v2/users/me/meetings?type=scheduled&page_size=30',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Authorization': `Bearer ${client.accessToken}`,
-                    },
+            const config = {
+                method: 'get',
+                maxBodyLength: Infinity,
+                url: `https://api.zoom.us/v2/users/me/meetings?type=scheduled${!startDate ? "" : `&from=${format(startDate, "yyyy-MM-dd")}`}${!endDate ? "" : `&to=${format(endDate, "yyyy-MM-dd")}`}&timezone=Africa%2FCairo`,
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${zoomClient.accessToken}`,
+                },
+            };
+
+            try {
+                const response = (await axios.request(config)).data;
+                const mtngs = response.meetings as Meeting[]
+
+                return {
+                    meetings: mtngs.sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime() < 0 ? 1 : -1) as Meeting[],
                 };
-
-                try {
-                    const response = await axios.request(config);
-                    return response
-                } catch (error) {
-                    return error
-                }
-            }))
-            return { data }
+            } catch (error: any) {
+                if (error.message.endsWith(401)) throw new TRPCError({ code: "UNAUTHORIZED", message: "account access was revoked please authorize again!" })
+                if (error.message.endsWith(400)) throw new TRPCError({ code: "UNAUTHORIZED", message: "please refresh access token first!" })
+                throw new TRPCError({ code: "BAD_REQUEST", message: error.message })
+            }
         }),
     deleteZoomAccounts: protectedProcedure
         .input(z.object({

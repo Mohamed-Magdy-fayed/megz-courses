@@ -93,15 +93,6 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, evalForm, externalLink }) =
                     </div>
                 )}
             />
-            <RefundModal
-                isOpen={isRefundOpen}
-                loading={false}
-                onClose={() => setIsRefundOpen(false)}
-                onConfirm={(data) => {
-                    console.log(data)
-                    setIsRefundOpen(false)
-                }}
-            />
             <DropdownMenu open={isOpen} onOpenChange={(val) => { setIsOpen(val) }}>
                 <DropdownMenuTrigger asChild>
                     <Button customeColor="mutedIcon" variant={"icon"} >

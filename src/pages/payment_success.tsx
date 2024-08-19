@@ -15,7 +15,9 @@ import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 
 const SuccessfullPaymentPage = () => {
-    const sessionId = useRouter().query.session_id
+    const router = useRouter()
+    const transactionId = router.query.id as string
+    const orderNumber = router.query.merchant_order_id as string
     const { toast, toastError } = useToast()
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState("")
@@ -25,6 +27,7 @@ const SuccessfullPaymentPage = () => {
         courses: Course[];
     }>()
 
+    const { data: siteData, refetch: refetchSiteData } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: !false })
     const payOrderMutation = api.orders.payOrder.useMutation()
     const sendEmailMutation = api.emails.sendEmail.useMutation()
     const trpcUtils = api.useContext()
@@ -78,12 +81,17 @@ const SuccessfullPaymentPage = () => {
     }
 
     useEffect(() => {
+        if (!siteData?.siteIdentity.logoPrimary) {
+            refetchSiteData()
+            return
+        }
         setLoading(true)
-        if (typeof sessionId === "string") payOrderMutation.mutate({ sessionId }, {
+        if (!!transactionId && !!orderNumber) payOrderMutation.mutate({ orderNumber, transactionId }, {
             onSuccess: (data) => {
                 setOrderData(data.updatedOrder)
                 const message = render(
                     <PaymentConfEmail
+                        logoUrl={siteData.siteIdentity.logoPrimary}
                         orderCreatedAt={format(data.updatedOrder.createdAt, "dd MMM yyyy")}
                         orderUpdatedAt={format(data.updatedOrder.updatedAt, "dd MMM yyyy")}
                         userEmail={data.updatedOrder.user.email}
@@ -121,7 +129,7 @@ const SuccessfullPaymentPage = () => {
                 setLoading(false)
             }
         })
-    }, [sessionId])
+    }, [orderNumber, transactionId, siteData?.siteIdentity.logoPrimary])
 
     return (
         <LandingLayout>

@@ -7,10 +7,10 @@ const useLoadLearningData = () => {
     const levelSlug = router.query.levelSlug as string
 
     const userQuery = api.users.getCurrentUser.useQuery(undefined, {
-        enabled: courseSlug && levelSlug ? true : false,
+        enabled: !!courseSlug ? true : false,
     })
     const courseQuery = api.courses.getBySlug.useQuery({ slug: courseSlug }, {
-        enabled: courseSlug && levelSlug ? true : false,
+        enabled: !!courseSlug ? true : false,
     })
     const levelQuery = api.levels.getBySlug.useQuery({ slug: levelSlug }, {
         enabled: courseSlug && levelSlug ? true : false,

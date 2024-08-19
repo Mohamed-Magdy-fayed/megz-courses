@@ -351,6 +351,7 @@ model Order {
     refundRequester          String?        @db.ObjectId
     refundId                 String?
     paymentId                String?
+    paymentLink              String?
     paymentConfirmationImage String?
     salesOperation           SalesOperation @relation("OrderToSalesOperation", fields: [salesOperationId], references: [id], onDelete: Cascade)
     salesOperationId         String         @unique @db.ObjectId
@@ -623,4 +624,11 @@ model SiteIdentity {
     linkedin       String   @default("https://www.linkedin.com/in/mohamed-magdy-fayed/")
     updatedAt      DateTime @updatedAt
     createdAt      DateTime @default(now())
+}
+
+model RefundReasons {
+    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    reason    String   @default("Customer request")
+    updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
 }

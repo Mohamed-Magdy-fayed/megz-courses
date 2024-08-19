@@ -43,9 +43,7 @@ export const zoomMeetingsRouter = createTRPCRouter({
             const iat = Math.round(new Date().getTime() / 1000) - 30;
             const exp = iat + 60 * 60 * 2;
 
-            // Header
             const oHeader = { alg: 'HS256', typ: 'JWT' };
-            // Payload
             const oPayload = {
                 sdkKey,
                 iat,
@@ -53,7 +51,7 @@ export const zoomMeetingsRouter = createTRPCRouter({
                 mn: meetingConfig.mn,
                 role,
             };
-            // Sign JWT
+
             const sHeader = JSON.stringify(oHeader);
             const sPayload = JSON.stringify(oPayload);
             signature = KJUR.jws.JWS.sign('HS256', sHeader, sPayload, sdkSecret);

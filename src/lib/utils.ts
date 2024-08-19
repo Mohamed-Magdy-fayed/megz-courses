@@ -118,7 +118,7 @@ export const generateGroupNumnber = (startDate: Date, trainerUserName: string, c
 export const calculateAttendancePercentages = (group: ZoomGroup & { zoomSessions: ZoomSession[] }) => {
   const totalStudents = group.studentIds.length;
 
-  const sessionAttendance = group.zoomSessions.filter(session => session.sessionDate < new Date()).map(session => {
+  const sessionAttendance = group.zoomSessions.filter(session => session.sessionStatus === "completed").map(session => {
     const attendedStudents = session.attenders.length;
     const attendancePercentage = (attendedStudents / totalStudents) * 100;
     return {

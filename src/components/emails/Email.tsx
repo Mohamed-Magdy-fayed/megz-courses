@@ -1,4 +1,4 @@
-import { api } from '@/lib/api';
+import { env } from '@/env.mjs';
 import {
     Body,
     Button,
@@ -24,6 +24,7 @@ interface EmailProps {
     paymentLink: string;
     orderAmount: string;
     orderCreatedAt: string;
+    logoUrl: string;
     courses: {
         courseName: string;
         coursePrice: string;
@@ -38,9 +39,9 @@ export const Email = ({
     orderAmount,
     orderCreatedAt,
     courses,
+    logoUrl,
 }: EmailProps) => {
     const previewText = `Thanks for your order ${orderNumber}`;
-    const siteIdentity = api.siteIdentity.getSiteIdentity.useQuery()
 
     return (
         <Html>
@@ -51,14 +52,14 @@ export const Email = ({
                     <Container className="border border-solid border-[#eaeaea] rounded my-[40px] mx-auto p-[20px] w-[465px]">
                         <Section className="mt-[32px]">
                             <Img
-                                src={siteIdentity.data?.siteIdentity.logoForeground}
-                                width="40"
-                                height="37"
-                                alt={siteIdentity.data?.siteIdentity.name1}
+                                src={logoUrl}
+                                width="60"
+                                height="60"
+                                alt="Logo"
                                 className="my-0 mx-auto"
                             />
                         </Section>
-                        <Heading className="text-black text-[24px] font-normal text-center p-0 my-[30px] mx-0 bg-primary">
+                        <Heading className="text-white text-[24px] font-normal text-center p-0 my-[30px] mx-0 bg-orange-500">
                             <Row>
                                 <strong>Thanks</strong> for your order{" "}
                             </Row>
@@ -66,10 +67,10 @@ export const Email = ({
                                 <strong>{orderNumber}</strong>
                             </Row>
                         </Heading>
-                        <Text className="text-black text-[14px] leading-[24px]">
+                        <Text className="text-black text-[14px] leading-[24px] px-[16px]">
                             Hello {customerName},
                         </Text>
-                        <Text className="text-black text-[14px] leading-[24px]">
+                        <Text className="text-black text-[14px] leading-[24px] px-[16px]">
                             Your order <strong>{orderNumber}</strong> is pending payment now{' '}
                             <strong>{orderAmount}</strong>
                         </Text>
@@ -119,7 +120,7 @@ export const Email = ({
                                 </Column>
                                 <Column style={{ ...informationTableColumn, paddingRight: "22px" }} colSpan={2}>
                                     <Img
-                                        src={`https://megz-courses.vercel.app/favicon.png`}
+                                        src={logoUrl}
                                         width="64"
                                         height="64"
                                         alt="logo"
@@ -136,17 +137,17 @@ export const Email = ({
                                 <Column style={{ paddingLeft: '22px', paddingBottom: "22px" }}>
                                     <Text style={productTitle}>{courseName}</Text>
                                     <Link
-                                        href="https://userpub.itunes.apple.com/WebObjects/MZUserPublishing.woa/wa/addUserReview?cc=us&amp;id=1497977514&amp;o=i&amp;type=Subscription%20Renewal"
+                                        href={`${env.NEXT_PUBLIC_NEXTAUTH_URL}help`}
                                         style={productLink}
-                                        data-saferedirecturl="https://www.google.com/url?q=https://userpub.itunes.apple.com/WebObjects/MZUserPublishing.woa/wa/addUserReview?cc%3Dus%26id%3D1497977514%26o%3Di%26type%3DSubscription%2520Renewal&amp;source=gmail&amp;ust=1673963081204000&amp;usg=AOvVaw2DFCLKMo1snS-Swk5H26Z1"
+                                        data-saferedirecturl={`https://www.google.com/url?q=${env.NEXT_PUBLIC_NEXTAUTH_URL}help&amp;source=gmail&amp;ust=1673963081204000&amp;usg=AOvVaw2DFCLKMo1snS-Swk5H26Z1`}
                                     >
                                         Write a Review
                                     </Link>
                                     <span style={divisor}>|</span>
                                     <Link
-                                        href="https://buy.itunes.apple.com/WebObjects/MZFinance.woa/wa/reportAProblem?a=1497977514&amp;cc=us&amp;d=683263808&amp;o=i&amp;p=29065684906671&amp;pli=29092219632071&amp;s=1"
+                                        href={`${env.NEXT_PUBLIC_NEXTAUTH_URL}help`}
                                         style={productLink}
-                                        data-saferedirecturl="https://www.google.com/url?q=https://buy.itunes.apple.com/WebObjects/MZFinance.woa/wa/reportAProblem?a%3D1497977514%26cc%3Dus%26d%3D683263808%26o%3Di%26p%3D29065684906671%26pli%3D29092219632071%26s%3D1&amp;source=gmail&amp;ust=1673963081204000&amp;usg=AOvVaw3y47L06B2LTrL6qsmaW2Hq"
+                                        data-saferedirecturl={`https://www.google.com/url?q=${env.NEXT_PUBLIC_NEXTAUTH_URL}help&amp;source=gmail&amp;ust=1673963081204000&amp;usg=AOvVaw2DFCLKMo1snS-Swk5H26Z1`}
                                     >
                                         Report a Problem
                                     </Link>
@@ -171,13 +172,13 @@ export const Email = ({
 
                         <Section className="text-center mt-[32px] mb-[32px]">
                             <Button
-                                className="bg-[#000000] rounded text-white text-[12px] p-[14px_20px_14px_20px] font-semibold no-underline text-center"
+                                className="bg-orange-500 rounded text-white text-[12px] p-[14px_20px_14px_20px] font-semibold no-underline text-center"
                                 href={paymentLink}
                             >
                                 Proceed to payment
                             </Button>
                         </Section>
-                        <Text className="text-black text-sm leading-6">
+                        <Text className="text-black text-sm leading-6 px-[16px]">
                             or copy and paste this URL into your browser:{' '}
                             <Link
                                 href={paymentLink}
@@ -187,7 +188,7 @@ export const Email = ({
                             </Link>
                         </Text>
                         <Hr className="border border-solid border-[#eaeaea] my-[26px] mx-0 w-full" />
-                        <Text className="text-[#666666] text-[12px] leading-[24px]">
+                        <Text className="text-[#666666] text-[12px] leading-[24px] p-[16px]">
                             This email was intended for{' '}
                             <span className="text-black">{customerName} </span>. If you were not
                             expecting this email, you can ignore this email. If you are

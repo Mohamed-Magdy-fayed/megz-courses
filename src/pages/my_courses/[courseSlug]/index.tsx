@@ -2,7 +2,6 @@ import LearningLayout from "@/components/LearningLayout/LearningLayout"
 import { Typography } from "@/components/ui/Typoghraphy"
 import { format } from "date-fns"
 import useLoadLearningData from "@/hooks/useLoadLearningData"
-import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ExternalLink } from "lucide-react"
 import Link from "next/link"
@@ -13,7 +12,7 @@ const CoursePage = () => {
     const { course, user } = useLoadLearningData()
     const router = useRouter()
 
-    if (!course || !user) return
+    if (!course || !user) return "NO data"
 
     return (
         <LearningLayout>

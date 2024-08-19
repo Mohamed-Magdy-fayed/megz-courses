@@ -26,15 +26,6 @@ const WaitingListActionCell: React.FC<CellActionProps> = ({ id }) => {
 
     return (
         <>
-            <RefundModal
-                isOpen={isOpen}
-                loading={false}
-                onClose={() => setIsOpen(false)}
-                onConfirm={(data) => {
-                    console.log(data)
-                    setIsOpen(false)
-                }}
-            />
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button customeColor="mutedIcon" variant={"icon"} >

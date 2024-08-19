@@ -10,6 +10,8 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Info } from "lucide-react";
+import Modal from "@/components/ui/modal";
+import { RefundModal } from "@/components/modals/RefundModal";
 
 const OrderInfoPanel = ({ data }: {
     data: SalesOperation & {
@@ -39,6 +41,7 @@ const OrderInfoPanel = ({ data }: {
 
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [isRefundModalOpen, setIsRefundModalOpen] = useState(false)
 
     const refundedByUser = api.users.getUserById.useQuery({ id: data.orderDetails?.refundRequester || "" }, { enabled: false });
 
@@ -48,6 +51,27 @@ const OrderInfoPanel = ({ data }: {
 
     return (
         <PaperContainer className="mt-4 p-4">
+            {!!data.orderDetails?.id && (
+                <RefundModal
+                    isOpen={isRefundModalOpen}
+                    onClose={() => setIsRefundModalOpen(false)}
+                    orderId={data.orderDetails?.id}
+                />
+            )}
+            <Modal
+                title="Manual Payment"
+                description="please upload the proof of the payment amount"
+                isOpen={open}
+                onClose={() => setOpen(false)}
+                children={
+                    <PaymentForm
+                        loading={loading}
+                        setLoading={setLoading}
+                        onClose={() => setOpen(false)}
+                        id={data.orderDetails?.id}
+                    />
+                }
+            />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                 <div className="flex flex-col">
                     <div className="flex items-center gap-4">
@@ -61,6 +85,7 @@ const OrderInfoPanel = ({ data }: {
                                 total: data.orderDetails?.amount!,
                                 id: data.orderDetails.paymentId,
                                 orderId: data.orderDetails.id,
+                                paymentLink: data.orderDetails.paymentLink,
                                 refundedBy: refundedByUser?.data?.user.email
                             }]}
                             onDelete={() => { }}
@@ -88,17 +113,10 @@ const OrderInfoPanel = ({ data }: {
                                     )
                                 },
                                 { accessorKey: "total", header: () => "Amount", cell: ({ row }) => <>{formatPrice(row.original.total)}</> },
-                                { id: "actions", header: () => "Actions", cell: ({ row }) => <CellAction id={row.original.id} status={row.original.status} orderId={row.original.orderId} setOpen={setOpen} />, },
+                                { id: "actions", header: () => "Actions", cell: ({ row }) => <CellAction setIsRefundModalOpen={setIsRefundModalOpen} id={row.original.id} paymentLink={row.original.paymentLink} status={row.original.status} orderId={row.original.orderId} setOpen={setOpen} />, },
                             ]}
                         />
                     )}
-                    <PaymentForm
-                        isOpen={open}
-                        loading={loading}
-                        setLoading={setLoading}
-                        onClose={() => setOpen(false)}
-                        id={data.orderDetails?.id}
-                    />
                 </div>
                 <div className="flex flex-col">
                     <div className="flex items-center gap-4">

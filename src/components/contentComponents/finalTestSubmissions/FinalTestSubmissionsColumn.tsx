@@ -7,6 +7,8 @@ import { format } from "date-fns";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { Certificate, EvaluationForm, SubmissionAnswer, User } from "@prisma/client";
 import { formatPercentage } from "@/lib/utils";
+import { getInitials } from "@/lib/getInitials";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export type FinalTestSubmissionRow = {
     id: string;
@@ -63,7 +65,12 @@ export const columns: ColumnDef<FinalTestSubmissionRow>[] = [
         cell: ({ row }) => (
             <Link className="block w-fit" href={`/account/${row.original.student.id}`}>
                 <div className="flex items-center gap-2" >
-                    <img alt={row.original.student.name} src={row.original.student.image!} className="max-h-12" />
+                    <Avatar>
+                        <AvatarImage src={`${row.original.student.image}`} />
+                        <AvatarFallback>
+                            {getInitials(`${row.original.student.name}`)}
+                        </AvatarFallback>
+                    </Avatar>
                     <div className="flex flex-col gap-2">
                         <Typography
                             className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
@@ -105,6 +112,15 @@ export const columns: ColumnDef<FinalTestSubmissionRow>[] = [
         cell: ({ row }) => {
             return (
                 <Typography>{row.original.courseName}</Typography>
+            )
+        }
+    },
+    {
+        accessorKey: "levelSlug",
+        header: "Level",
+        cell: ({ row }) => {
+            return (
+                <Typography>{row.original.levelSlugs.find(s => s.value === row.original.levelSlug)?.label}</Typography>
             )
         }
     },

@@ -14,7 +14,7 @@ const ZoomAccountsClient = () => {
         name,
         zoomSessions: zoomSessions.map(session => ({
             status: session.sessionStatus,
-            date: format(session.sessionDate, "PPP"),
+            date: format(session.sessionDate, "PPPp"),
             attenders: session.attenders,
         })),
         createdAt: format(createdAt, "PPp"),

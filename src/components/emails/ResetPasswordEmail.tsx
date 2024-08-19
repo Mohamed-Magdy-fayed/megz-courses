@@ -1,4 +1,4 @@
-import { api } from "@/lib/api";
+import { env } from "@/env.mjs";
 import {
     Body,
     Container,
@@ -14,23 +14,24 @@ import {
 interface ResetPasswordEmailProps {
     securityCode?: string;
     username?: string;
+    logoUrl: string;
 }
 
 export const ResetPasswordEmail = ({
     securityCode,
     username,
+    logoUrl,
 }: ResetPasswordEmailProps) => {
-    const siteIdentity = api.siteIdentity.getSiteIdentity.useQuery()
     return (
         <Html>
             <Head />
             <Body style={main}>
                 <Container style={container}>
                     <Img
-                        src={siteIdentity.data?.siteIdentity.logoForeground}
+                        src={logoUrl}
                         width="100"
                         height="100"
-                        alt={siteIdentity.data?.siteIdentity.name1}
+                        alt="Logo"
                         style={logo}
                     />
                     <Text style={tertiary}>Verify Your Identity</Text>
@@ -43,8 +44,8 @@ export const ResetPasswordEmail = ({
                     <Text style={paragraph}>Not expecting this email?</Text>
                     <Text style={paragraph}>
                         Contact{" "}
-                        <Link href="mailto:email@megz.com" style={link}>
-                            email@megz.com
+                        <Link href={`mailto:${env.NEXT_PUBLIC_GMAIL_EMAIL}`} style={link}>
+                            {env.NEXT_PUBLIC_GMAIL_EMAIL}
                         </Link>{" "}
                         if you did not request this code.
                     </Text>
@@ -57,6 +58,7 @@ export const ResetPasswordEmail = ({
 
 ResetPasswordEmail.PreviewProps = {
     validationCode: "144833",
+    logoUrl: ""
 } as ResetPasswordEmailProps;
 
 export default ResetPasswordEmail;

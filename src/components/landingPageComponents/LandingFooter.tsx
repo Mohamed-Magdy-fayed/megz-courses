@@ -56,7 +56,7 @@ const LandingFooter = ({ siteIdentity }: { siteIdentity?: SiteIdentity }) => {
                             {socialIcons.map(icon => (
                                 <Link
                                     key={icon.id}
-                                    href={icon.url || "#"}
+                                    href={icon.url || ""}
                                     className={`hover:scale-110 transition-all duration-200 hover:[&>*]:text-background rounded-full p-1 ${icon.hover}`}
                                 >
                                     {icon.icon}

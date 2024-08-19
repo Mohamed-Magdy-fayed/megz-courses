@@ -40,6 +40,7 @@ const CreateOrderForStudent: FC<CreateOrderForStudentProps> = ({
 
     const { toastError, toastSuccess } = useToast()
 
+    const { data: siteData } = api.siteIdentity.getSiteIdentity.useQuery()
     const { data: salesAgentsData } = api.users.getUsers.useQuery({ userType: "salesAgent" })
     const createSalesOperationMutation = api.salesOperations.createSalesOperation.useMutation({
         onMutate: () => setLoading(true),
@@ -57,6 +58,7 @@ const CreateOrderForStudent: FC<CreateOrderForStudentProps> = ({
         onSuccess: ({ order: { id, amount, orderNumber, user, courses, createdAt, courseTypes, salesOperationId }, paymentLink }) => {
             const message = render(
                 <Email
+                    logoUrl={siteData?.siteIdentity.logoPrimary || ""}
                     orderCreatedAt={format(createdAt, "dd MMM yyyy")}
                     userEmail={user.email}
                     orderAmount={formatPrice(amount)}

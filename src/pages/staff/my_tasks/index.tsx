@@ -28,6 +28,7 @@ const MyTasksPage: NextPage = () => {
                                 level: test.student.courseStatus.find(status => status.courseId === test.courseId)?.level?.name || "",
                                 courseLevels: test.course.levels,
                                 courseId: test.courseId,
+                                courseName: test.course.name,
                                 trainersData: trainersData?.trainers.map(trainer => ({
                                     id: trainer.id,
                                     name: trainer.user.name,

@@ -3,13 +3,14 @@ import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { formatPrice, orderCodeGenerator, salesOperationCodeGenerator } from "@/lib/utils";
 import Stripe from "stripe";
 import { CURRENCY } from "@/config";
-import { formatAmountForStripe } from "@/lib/stripeHelpers";
 import { TRPCError } from "@trpc/server";
 import { render } from "@react-email/render";
 import Email from "@/components/emails/Email";
 import { format } from "date-fns";
 import nodemailer from "nodemailer";
 import { env } from "@/env.mjs";
+import axios from "axios";
+import { formatAmountForPaymob } from "@/lib/paymobHelpers";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2023-08-16',
@@ -30,6 +31,7 @@ export const selfServeRouter = createTRPCRouter({
                 },
                 include: { courseStatus: true }
             })
+            if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to get user" })
 
             const foundMatchingCourse = user?.courseStatus.some((status) => status.courseId === courseId)
 
@@ -57,36 +59,52 @@ export const selfServeRouter = createTRPCRouter({
 
             const price = isPrivate ? course.privatePrice : course.groupPrice
 
-            // Create Checkout Sessions from body params.
-            const params: Stripe.Checkout.SessionCreateParams = {
-                submit_type: 'pay',
-                payment_method_types: ['card'],
-                line_items: [{
-                    price_data: {
-                        currency: CURRENCY,
-                        unit_amount: formatAmountForStripe(price, CURRENCY),
-                        product_data: {
-                            name: course.name,
-                            description: course.description || `No description`,
-                            images: !course.image ? undefined : [course.image],
-                        },
-                    },
-                    quantity: 1
-                }],
-                mode: 'payment',
-                success_url: `${process.env.NEXTAUTH_URL}/payment_success?session_id={CHECKOUT_SESSION_ID}`,
-                cancel_url: `${process.env.NEXTAUTH_URL}/payment_fail`,
-            }
-            const checkoutSession: Stripe.Checkout.Session =
-                await stripe.checkout.sessions.create(params)
+            const intentData = {
+                amount: formatAmountForPaymob(price),
+                currency: "EGP",
+                payment_methods: [4618117, 4617984],
+                items: [
+                    {
+                        name: course.name,
+                        amount: formatAmountForPaymob(price),
+                        description: course.description,
+                        quantity: 1,
+                    }
+                ],
+                billing_data: {
+                    first_name: user.name.split(" ")[0],
+                    last_name: user.name.split(" ")[-1],
+                    phone_number: user.phone,
+                    email: user.email,
+                },
+                customer: {
+                    first_name: user.name.split(" ")[0],
+                    last_name: user.name.split(" ")[-1],
+                    email: user.email,
+                },
+            };
 
-            if (!checkoutSession) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "checkoutSession failed" })
+            const intentConfig = {
+                method: 'post',
+                maxBodyLength: Infinity,
+                url: `${env.PAYMOB_BASE_URL}/v1/intention/`,
+                headers: {
+                    'Authorization': `Token ${env.PAYMOB_API_SECRET}`,
+                    'Content-Type': 'application/json'
+                },
+                data: intentData
+            };
+
+            const intentResponse = (await axios.request(intentConfig)).data
+            if (!intentResponse.client_secret) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "intent failed" })
+
+            const paymentLink = `${env.PAYMOB_BASE_URL}/unifiedcheckout/?publicKey=${env.PAYMOB_PUBLIC_KEY}&clientSecret=${intentResponse.client_secret}`
 
             const order = await ctx.prisma.order.create({
                 data: {
                     amount: price,
                     orderNumber: orderCodeGenerator(),
-                    paymentId: checkoutSession.id,
+                    paymentId: intentResponse.id,
                     courses: { connect: { id: course.id } },
                     salesOperation: { connect: { id: salesOperation.id } },
                     user: { connect: { email } },
@@ -102,10 +120,11 @@ export const selfServeRouter = createTRPCRouter({
                 },
             });
 
-            const paymentLink = `${process.env.NEXTAUTH_URL}payments?sessionId=${checkoutSession.id}`
+            const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
 
             const message = render(
                 <Email
+                    logoUrl={logoUrl || ""}
                     orderCreatedAt={format(order.createdAt, "dd MMM yyyy")}
                     userEmail={email}
                     orderAmount={formatPrice(order.amount)}

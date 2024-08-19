@@ -45,6 +45,7 @@ const ResetPasswordForm: FC<ResetPasswordFormProps> = ({ setOpen }) => {
         defaultValues,
     });
 
+    const { data: siteData } = api.siteIdentity.getSiteIdentity.useQuery()
     const resetPasswordRequestMutation = api.auth.resetPasswordRequest.useMutation({
         onMutate: () => {
             setLoadingToast(toast({
@@ -57,7 +58,7 @@ const ResetPasswordForm: FC<ResetPasswordFormProps> = ({ setOpen }) => {
             }))
         },
         onSuccess: ({ tempPassword, user }) => {
-            const message = render(<ResetPasswordEmail securityCode={tempPassword} username={user.name} />)
+            const message = render(<ResetPasswordEmail logoUrl={siteData?.siteIdentity.logoPrimary || ""} securityCode={tempPassword} username={user.name} />)
             resetPasswordEmailMutation.mutate({ email: user.email, message })
             loadingToast?.update({
                 id: loadingToast.id,
@@ -74,10 +75,12 @@ const ResetPasswordForm: FC<ResetPasswordFormProps> = ({ setOpen }) => {
             title: "Error",
         }),
     });
-    const resetPasswordEmailMutation = api.auth.resetPasswordEmail.useMutation({ onSettled: () => {
+    const resetPasswordEmailMutation = api.auth.resetPasswordEmail.useMutation({
+        onSettled: () => {
             loadingToast?.dismissAfter()
             setLoadingToast(undefined)
-        } });
+        }
+    });
     const resetPasswordWithCodeMutation = api.auth.resetPasswordWithCode.useMutation({
         onMutate: () => {
             setLoadingToast(toast({

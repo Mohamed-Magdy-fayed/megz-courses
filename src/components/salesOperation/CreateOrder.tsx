@@ -43,6 +43,7 @@ const CreateOrder: FC<CreateOrderProps> = ({
     const [coursesGroupType, setCoursesGroupType] = useState<{ courseId: string, isPrivate: boolean }[]>([])
 
     const { toastError, toastSuccess } = useToast()
+    const { data: siteData } = api.siteIdentity.getSiteIdentity.useQuery()
     const createOrderMutation = api.orders.createOrder.useMutation()
     const sendEmailMutation = api.emails.sendEmail.useMutation()
     const trpcUtils = api.useContext()
@@ -59,6 +60,7 @@ const CreateOrder: FC<CreateOrderProps> = ({
             onSuccess: ({ order: { id, amount, orderNumber, user, courses, createdAt, courseTypes }, paymentLink }) => {
                 const message = render(
                     <Email
+                        logoUrl={siteData?.siteIdentity.logoPrimary || ""}
                         orderCreatedAt={format(createdAt, "dd MMM yyyy")}
                         userEmail={user.email}
                         orderAmount={formatPrice(amount)}

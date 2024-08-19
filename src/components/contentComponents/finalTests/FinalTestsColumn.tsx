@@ -4,7 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowUpDown } from "lucide-react";
 import { Typography } from "@/components/ui/Typoghraphy";
 import ActionCell from "./FinalTestsActionCell";
-import { EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, MaterialItem } from "@prisma/client";
+import { CourseLevel, EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, MaterialItem } from "@prisma/client";
 
 export type FinalTestRow = {
     id: string,
@@ -16,6 +16,7 @@ export type FinalTestRow = {
         materialItem: MaterialItem | null;
         submissions: EvaluationFormSubmission[];
         questions: EvaluationFormQuestion[];
+        courseLevel: CourseLevel | null;
     },
     createdBy: string,
     createdAt: string,
@@ -66,6 +67,13 @@ export const columns: ColumnDef<FinalTestRow>[] = [
     },
     {
         accessorKey: "totalPoints",
+    },
+    {
+        accessorKey: "evalForm",
+        header: "Level",
+        cell: ({ row }) => {
+            return (<Typography>{row.original.evalForm.courseLevel?.name}</Typography>)
+        }
     },
     {
         accessorKey: "createdAt",

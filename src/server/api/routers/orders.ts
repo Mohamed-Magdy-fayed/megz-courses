@@ -2,15 +2,12 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { orderCodeGenerator, salesOperationCodeGenerator } from "@/lib/utils";
 import bcrypt from "bcrypt";
-import { CURRENCY } from "@/config";
 import { TRPCError } from "@trpc/server";
-import Stripe from 'stripe'
-import { formatAmountForStripe } from "@/lib/stripeHelpers";
 import { User } from "@prisma/client";
-import { randomFillSync, randomUUID } from "crypto";
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2023-08-16',
-})
+import { randomUUID } from "crypto";
+import { env } from "@/env.mjs";
+import axios from "axios";
+import { formatAmountForPaymob } from "@/lib/paymobHelpers";
 
 export const ordersRouter = createTRPCRouter({
     getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -94,6 +91,7 @@ export const ordersRouter = createTRPCRouter({
                 },
                 include: { courseStatus: true }
             })
+            if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "No user with this Email" })
 
             const foundMatchingCourse = coursesDetails.some(({ courseId }) => {
                 return user?.courseStatus.some((status) => status.courseId === courseId)
@@ -118,38 +116,58 @@ export const ordersRouter = createTRPCRouter({
                     return accumulator + value;
                 }, 0);
 
-            // Create Checkout Sessions from body params.
-            const params: Stripe.Checkout.SessionCreateParams = {
-                submit_type: 'pay',
-                payment_method_types: ['card'],
-                line_items: courses.map(course => ({
-                    price_data: {
-                        currency: CURRENCY,
-                        unit_amount: formatAmountForStripe(coursesDetails.find(({
-                            courseId
-                        }) => course.id === courseId)?.isPrivate ? course.privatePrice : course.groupPrice, CURRENCY),
-                        product_data: {
-                            name: course.name,
-                            description: course.description || `No description`,
-                            images: course.image ? [course.image] : undefined,
-                        },
-                    },
-                    quantity: 1
-                })),
-                mode: 'payment',
-                success_url: `${process.env.NEXTAUTH_URL}/payment_success?session_id={CHECKOUT_SESSION_ID}`,
-                cancel_url: `${process.env.NEXTAUTH_URL}/payment_fail`,
-            }
-            const checkoutSession: Stripe.Checkout.Session =
-                await stripe.checkout.sessions.create(params)
+            const orderNumber = orderCodeGenerator()
 
-            if (!checkoutSession) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "checkoutSession failed" })
+            const intentData = {
+                special_reference: orderNumber,
+                amount: formatAmountForPaymob(totalPrice),
+                currency: "EGP",
+                payment_methods: [4618117, 4617984],
+                items: courses.map(course => ({
+                    name: course.name,
+                    amount: formatAmountForPaymob(coursesDetails.find(({
+                        courseId
+                    }) => course.id === courseId)?.isPrivate ? course.privatePrice : course.groupPrice),
+                    description: course.description,
+                    quantity: 1,
+                })),
+                billing_data: {
+                    first_name: user.name.split(" ")[0],
+                    last_name: user.name.split(" ")[-1] || "No last name",
+                    phone_number: user.phone,
+                    email: user.email,
+                },
+                customer: {
+                    first_name: user.name.split(" ")[0],
+                    last_name: user.name.split(" ")[-1] || "No last name",
+                    email: user.email,
+                },
+            };
+
+            const intentConfig = {
+                method: 'post',
+                maxBodyLength: Infinity,
+                url: `${env.PAYMOB_BASE_URL}/v1/intention/`,
+                headers: {
+                    'Authorization': `Token ${env.PAYMOB_API_SECRET}`,
+                    'Content-Type': 'application/json'
+                },
+                data: intentData
+            };
+
+            const intentResponse = (await axios.request(intentConfig).then(res => res.data).catch(e => {
+                throw new TRPCError({ code: "BAD_REQUEST", message: JSON.stringify(e.response.data) })
+            }))
+            if (!intentResponse.client_secret) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "intent failed" })
+
+            const paymentLink = `${env.PAYMOB_BASE_URL}/unifiedcheckout/?publicKey=${env.PAYMOB_PUBLIC_KEY}&clientSecret=${intentResponse.client_secret}`
 
             const order = await ctx.prisma.order.create({
                 data: {
                     amount: totalPrice,
-                    orderNumber: orderCodeGenerator(),
-                    paymentId: checkoutSession.id,
+                    orderNumber,
+                    paymentId: intentResponse.id,
+                    paymentLink,
                     courses: { connect: coursesDetails.map(({ courseId }) => ({ id: courseId })) },
                     salesOperation: { connect: { id: salesOperationId } },
                     user: { connect: { email } },
@@ -158,13 +176,29 @@ export const ordersRouter = createTRPCRouter({
                 include: {
                     courses: true,
                     user: true,
-                    salesOperation: { include: { assignee: true } }
+                    salesOperation: { include: { assignee: { include: { user: true } } } }
                 },
             });
 
+            const note = await ctx.prisma.userNote.create({
+                data: {
+                    sla: 0,
+                    status: "Closed",
+                    title: `An Order Placed by ${order.salesOperation.assignee?.user.name}`,
+                    type: "Info",
+                    createdForStudent: { connect: { id: user.id } },
+                    messages: [{
+                        message: `An order was placed by ${order.salesOperation.assignee?.user.name} for student ${user.name} regarding course ${courses[0]?.name} for a ${order.courseTypes[0]?.isPrivate ? "private" : "group"} purchase the order is now awaiting payment\nPayment Link: ${paymentLink}`,
+                        updatedAt: new Date(),
+                        updatedBy: "System"
+                    }],
+                    createdByUser: { connect: { id: order.salesOperation.assignee?.user.id } },
+                }
+            })
+
             return {
                 order,
-                paymentLink: `${process.env.NEXTAUTH_URL}payments?sessionId=${checkoutSession.id}`
+                paymentLink
             };
         }),
     quickOrder: protectedProcedure
@@ -208,13 +242,15 @@ export const ordersRouter = createTRPCRouter({
             }
             if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to get user" })
 
-            const salesAgent = await ctx.prisma.user.findUnique({
+            const salesAgentUser = await ctx.prisma.user.findFirst({
                 where: {
-                    id: ctx.session.user.id
+                    id: ctx.session.user.id,
+                    userType: "salesAgent",
                 },
+                include: { salesAgent: true }
             })
-            if (!salesAgent) throw new TRPCError({ code: "BAD_REQUEST", message: "Not a sales agent!" })
-            const salesAgentId = salesAgent.id
+            if (!salesAgentUser) throw new TRPCError({ code: "BAD_REQUEST", message: "Not a sales agent!" })
+            const salesAgentId = salesAgentUser.id
 
             const course = await ctx.prisma.course.findUnique({
                 where: {
@@ -224,31 +260,49 @@ export const ordersRouter = createTRPCRouter({
             if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "Course not found!" })
 
             const totalPrice = courseDetails.isPrivate ? course.privatePrice : course.groupPrice
+            const orderNumber = orderCodeGenerator()
 
-            // Create Checkout Sessions from body params.
-            const params: Stripe.Checkout.SessionCreateParams = {
-                submit_type: 'pay',
-                payment_method_types: ['card'],
-                line_items: [{
-                    price_data: {
-                        currency: CURRENCY,
-                        unit_amount: formatAmountForStripe(totalPrice, CURRENCY),
-                        product_data: {
-                            name: course.name,
-                            description: course.description || `No description`,
-                            images: course.image ? [course.image] : undefined,
-                        },
-                    },
-                    quantity: 1
-                }],
-                mode: 'payment',
-                success_url: `${process.env.NEXTAUTH_URL}/payment_success?session_id={CHECKOUT_SESSION_ID}`,
-                cancel_url: `${process.env.NEXTAUTH_URL}/payment_fail`,
-            }
-            const checkoutSession: Stripe.Checkout.Session =
-                await stripe.checkout.sessions.create(params)
+            const intentData = {
+                special_reference: orderNumber,
+                amount: formatAmountForPaymob(totalPrice),
+                currency: "EGP",
+                payment_methods: [4618117, 4617984],
+                items: [
+                    {
+                        name: course.name,
+                        amount: formatAmountForPaymob(totalPrice),
+                        description: course.description,
+                        quantity: 1,
+                    }
+                ],
+                billing_data: {
+                    first_name: user.name.split(" ")[0],
+                    last_name: user.name.split(" ")[-1] || "No last name",
+                    phone_number: user.phone,
+                    email: user.email,
+                },
+                customer: {
+                    first_name: user.name.split(" ")[0],
+                    last_name: user.name.split(" ")[-1] || "No last name",
+                    email: user.email,
+                },
+            };
 
-            if (!checkoutSession) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "checkoutSession failed" })
+            const intentConfig = {
+                method: 'post',
+                maxBodyLength: Infinity,
+                url: `${env.PAYMOB_BASE_URL}/v1/intention/`,
+                headers: {
+                    'Authorization': `Token ${env.PAYMOB_API_SECRET}`,
+                    'Content-Type': 'application/json'
+                },
+                data: intentData
+            };
+
+            const intentResponse = (await axios.request(intentConfig)).data
+            if (!intentResponse.client_secret) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "intent failed" })
+
+            const paymentLink = `${env.PAYMOB_BASE_URL}/unifiedcheckout/?publicKey=${env.PAYMOB_PUBLIC_KEY}&clientSecret=${intentResponse.client_secret}`
 
             const salesOperation = await ctx.prisma.salesOperation.create({
                 data: {
@@ -262,8 +316,9 @@ export const ordersRouter = createTRPCRouter({
             const order = await ctx.prisma.order.create({
                 data: {
                     amount: totalPrice,
-                    orderNumber: orderCodeGenerator(),
-                    paymentId: checkoutSession.id,
+                    orderNumber,
+                    paymentId: intentResponse.id,
+                    paymentLink,
                     courses: { connect: { id: courseDetails.courseId } },
                     salesOperation: { connect: { id: salesOperation.id } },
                     user: { connect: { id: user.id } },
@@ -276,10 +331,26 @@ export const ordersRouter = createTRPCRouter({
                 },
             });
 
+            const note = await ctx.prisma.userNote.create({
+                data: {
+                    sla: 0,
+                    status: "Closed",
+                    title: `Quick Order Placed by ${salesAgentUser.name}`,
+                    type: "Info",
+                    createdForStudent: { connect: { id: user.id } },
+                    messages: [{
+                        message: `An order was placed by ${salesAgentUser.name} for student ${user.name} regarding course ${course.name} for a ${order.courseTypes[0]?.isPrivate ? "private" : "group"} purchase the order is now awaiting payment\nPayment Link: ${paymentLink}`,
+                        updatedAt: new Date(),
+                        updatedBy: "System"
+                    }],
+                    createdByUser: { connect: { id: salesAgentUser.id } },
+                }
+            })
+
             return {
                 order,
                 password,
-                paymentLink: `${process.env.NEXTAUTH_URL}payments?sessionId=${checkoutSession.id}`
+                paymentLink,
             };
         }),
     resendPaymentLink: protectedProcedure
@@ -290,7 +361,6 @@ export const ordersRouter = createTRPCRouter({
             const order = await ctx.prisma.order.findUnique({ where: { id: orderId }, include: { courses: true, user: true } })
 
             if (!order || !order.paymentId) throw new TRPCError({ code: "BAD_REQUEST", message: "order not found" })
-            if ((await stripe.checkout.sessions.retrieve(order.paymentId)).status === "open") await stripe.checkout.sessions.expire(order.paymentId)
 
             const coursesPrice = await ctx.prisma.course.findMany({
                 where: {
@@ -298,37 +368,51 @@ export const ordersRouter = createTRPCRouter({
                 }
             })
 
-            // Create Checkout Sessions from body params.
-            const params: Stripe.Checkout.SessionCreateParams = {
-                submit_type: 'pay',
-                payment_method_types: ['card'],
-                line_items: coursesPrice.map(course => ({
-                    price_data: {
-                        currency: CURRENCY,
-                        unit_amount: formatAmountForStripe(order.courseTypes.find(({
-                            id,
-                        }) => course.id === id)?.isPrivate ? course.privatePrice : course.groupPrice, CURRENCY),
-                        product_data: {
-                            name: course.name,
-                            description: course.description || `No description`,
-                            images: [course.image || ""],
-                        },
-                    },
-                    quantity: 1
+            const intentData = {
+                amount: formatAmountForPaymob(order.amount),
+                currency: "EGP",
+                payment_methods: [4618117, 4617984],
+                items: coursesPrice.map(course => ({
+                    name: course.name,
+                    amount: formatAmountForPaymob(order.courseTypes.find(({
+                        id,
+                    }) => course.id === id)?.isPrivate ? course.privatePrice : course.groupPrice),
+                    description: course.description,
+                    quantity: 1,
                 })),
-                mode: 'payment',
-                success_url: `${process.env.NEXTAUTH_URL}/payment_success?session_id={CHECKOUT_SESSION_ID}&payment_intent={payment_intent}`,
-                cancel_url: `${process.env.NEXTAUTH_URL}/payment_fail`,
-            }
-            const checkoutSession: Stripe.Checkout.Session =
-                await stripe.checkout.sessions.create(params)
+                billing_data: {
+                    first_name: order.user.name.split(" ")[0],
+                    last_name: order.user.name.split(" ")[-1] || "No last name",
+                    phone_number: order.user.phone,
+                    email: order.user.email,
+                },
+                customer: {
+                    first_name: order.user.name.split(" ")[0],
+                    last_name: order.user.name.split(" ")[-1] || "No last name",
+                    email: order.user.email,
+                },
+            };
 
-            if (!checkoutSession) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "checkoutSession failed" })
+            const intentConfig = {
+                method: 'post',
+                maxBodyLength: Infinity,
+                url: `${env.PAYMOB_BASE_URL}/v1/intention/`,
+                headers: {
+                    'Authorization': `Token ${env.PAYMOB_API_SECRET}`,
+                    'Content-Type': 'application/json'
+                },
+                data: intentData
+            };
+
+            const intentResponse = (await axios.request(intentConfig)).data
+            if (!intentResponse.client_secret) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "intent failed" })
+
+            const paymentLink = `${env.PAYMOB_BASE_URL}/unifiedcheckout/?publicKey=${env.PAYMOB_PUBLIC_KEY}&clientSecret=${intentResponse.client_secret}`
 
             const updatedOrder = await ctx.prisma.order.update({
                 where: { id: orderId },
                 data: {
-                    paymentId: checkoutSession.id,
+                    paymentId: intentResponse.id,
                 },
                 include: {
                     courses: true,
@@ -337,9 +421,25 @@ export const ordersRouter = createTRPCRouter({
                 },
             });
 
+            const note = await ctx.prisma.userNote.create({
+                data: {
+                    sla: 0,
+                    status: "Closed",
+                    title: `Payment Link resent by ${ctx.session.user.name}`,
+                    type: "Info",
+                    createdForStudent: { connect: { id: order.user.id } },
+                    messages: [{
+                        message: `Payment Link: ${paymentLink} was resent to the user`,
+                        updatedAt: new Date(),
+                        updatedBy: "System"
+                    }],
+                    createdByUser: { connect: { id: ctx.session.user.id } },
+                }
+            })
+
             return {
                 updatedOrder,
-                paymentLink: `${process.env.NEXTAUTH_URL}payments?sessionId=${checkoutSession.id}`
+                paymentLink
             };
         }),
     payOrderManually: protectedProcedure
@@ -349,20 +449,18 @@ export const ordersRouter = createTRPCRouter({
             paymentConfirmationImage: z.string(),
         }))
         .mutation(async ({ input: { id, amount, paymentConfirmationImage }, ctx }) => {
-            const order = await ctx.prisma.order.findUnique({ where: { id }, include: { user: true } })
+            const order = await ctx.prisma.order.findUnique({ where: { id }, include: { user: true, courses: true } })
 
             if (!order?.id) throw new TRPCError({ code: "BAD_REQUEST", message: "incorrect information" })
             if (!order?.paymentId) throw new TRPCError({ code: "BAD_REQUEST", message: "incorrect information" })
 
-            const courseLink = `${process.env.NEXTAUTH_URL}my_courses/${order.user.id}`
+            const courseLink = `${process.env.NEXTAUTH_URL}my_courses`
 
             if (order.status === "paid" || order.status === "refunded")
                 return ({
                     updatedOrder: order,
                     courseLink: null
                 })
-
-            if ((await stripe.checkout.sessions.retrieve(order.paymentId)).status === "open") await stripe.checkout.sessions.expire(order.paymentId)
 
             const updatedOrder = await ctx.prisma.order.update({
                 where: {
@@ -380,23 +478,35 @@ export const ordersRouter = createTRPCRouter({
                 }
             })
 
+            const note = await ctx.prisma.userNote.create({
+                data: {
+                    sla: 0,
+                    status: "Closed",
+                    title: `Order was paid manually by ${ctx.session.user.name}`,
+                    type: "Info",
+                    createdForStudent: { connect: { id: order.user.id } },
+                    messages: [{
+                        message: `Payment Confirmation Link: ${paymentConfirmationImage}\nConfirmed by: ${ctx.session.user.name}`,
+                        updatedAt: new Date(),
+                        updatedBy: "System"
+                    }],
+                    createdByUser: { connect: { id: ctx.session.user.id } },
+                }
+            })
+
             return { courseLink, updatedOrder }
         }),
     payOrder: protectedProcedure
         .input(
             z.object({
-                sessionId: z.string(),
+                transactionId: z.string(),
+                orderNumber: z.string(),
             })
         )
-        .mutation(async ({ ctx, input: { sessionId } }) => {
-            const session = await stripe.checkout.sessions.retrieve(sessionId)
-            const paymentIntentId = `${session.payment_intent}`
-
+        .mutation(async ({ ctx, input: { orderNumber, transactionId } }) => {
             const order = await ctx.prisma.order.findFirst({
                 where: {
-                    paymentId: {
-                        in: [sessionId, paymentIntentId]
-                    }
+                    orderNumber,
                 },
                 include: {
                     courses: true,
@@ -420,7 +530,7 @@ export const ordersRouter = createTRPCRouter({
                 },
                 data: {
                     status: "paid",
-                    paymentId: paymentIntentId,
+                    paymentId: transactionId,
                 },
                 include: {
                     courses: true,
@@ -429,15 +539,29 @@ export const ordersRouter = createTRPCRouter({
                 }
             })
 
+            const note = await ctx.prisma.userNote.create({
+                data: {
+                    sla: 0,
+                    status: "Closed",
+                    title: `Order was paid by the customer`,
+                    type: "Info",
+                    createdForStudent: { connect: { id: order.user.id } },
+                    messages: [{
+                        message: `Payment Confirmation Number: ${transactionId}\nOrder Number: ${updatedOrder.orderNumber}\n`,
+                        updatedAt: new Date(),
+                        updatedBy: "System"
+                    }],
+                    createdByUser: { connect: { id: ctx.session.user.id } },
+                }
+            })
 
             return { courseLink, updatedOrder }
         }),
     refundOrder: protectedProcedure
         .input(z.object({
             orderId: z.string(),
-            reason: z.enum(["requested_by_customer", "duplicate", "fraudulent"]),
         }))
-        .mutation(async ({ input: { orderId, reason }, ctx }) => {
+        .mutation(async ({ input: { orderId }, ctx }) => {
             const userId = ctx.session.user.id
             const user = await ctx.prisma.user.findUnique({ where: { id: userId } })
             if (!user?.email) throw new TRPCError({ code: "BAD_REQUEST", message: "Requester user don't exist!" })
@@ -445,13 +569,75 @@ export const ordersRouter = createTRPCRouter({
             const order = await ctx.prisma.order.findUnique({ where: { id: orderId } })
             if (!order?.paymentId) throw new TRPCError({ code: "BAD_REQUEST", message: "order don't have a payment id, please refund manually" })
 
-            const refund = await stripe.refunds.create({
-                payment_intent: order.paymentId,
-                reason,
-                metadata: {
-                    refundedBy: user.email
-                }
-            });
+            if (!order.paymentConfirmationImage) {
+                const data = {
+                    transaction_id: order.paymentId,
+                    amount_cents: formatAmountForPaymob(order.amount)
+                };
+
+                const config = {
+                    method: 'post',
+                    maxBodyLength: Infinity,
+                    url: `${env.PAYMOB_BASE_URL}/api/acceptance/void_refund/refund`,
+                    headers: {
+                        'Authorization': `Token ${env.PAYMOB_API_SECRET}`,
+                        'Content-Type': 'application/json'
+                    },
+                    data: data
+                };
+
+                const refundData = (await axios.request(config)).data
+                if (refundData.data.klass === "WalletRefund") throw new TRPCError({ code: "BAD_REQUEST", message: "unable to refund wallet payments, please send the refund back manually!" })
+
+                const isRefunded = refundData.success === true;
+
+                if (!isRefunded) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "refund failed!" })
+
+                const updatedOrder = await ctx.prisma.order.update({
+                    where: {
+                        id: orderId,
+                    },
+                    data: {
+                        status: "refunded",
+                        refundId: `${refundData.id}`,
+                        refundRequester: user.id
+                    },
+                    include: { courses: true }
+                });
+
+                const updatedUser = await ctx.prisma.user.update({
+                    where: {
+                        id: userId,
+                    },
+                    data: {
+                        courseStatus: {
+                            deleteMany: {
+                                courseId: {
+                                    in: order.courseIds
+                                }
+                            }
+                        }
+                    },
+                });
+
+                const note = await ctx.prisma.userNote.create({
+                    data: {
+                        sla: 0,
+                        status: "Closed",
+                        title: `Order was refunded by ${ctx.session.user.name}`,
+                        type: "Info",
+                        createdForStudent: { connect: { id: updatedUser.id } },
+                        messages: [{
+                            message: `Order refunded and access revoked for course ${updatedOrder.courses[0]?.name}`,
+                            updatedAt: new Date(),
+                            updatedBy: "System"
+                        }],
+                        createdByUser: { connect: { id: ctx.session.user.id } },
+                    }
+                })
+
+                return { success: isRefunded, refundData, updatedOrder, requestedBy: user, updatedUser };
+            }
 
             const updatedOrder = await ctx.prisma.order.update({
                 where: {
@@ -459,7 +645,7 @@ export const ordersRouter = createTRPCRouter({
                 },
                 data: {
                     status: "refunded",
-                    refundId: refund.id,
+                    refundId: user.id,
                     refundRequester: user.id
                 },
             });
@@ -479,7 +665,7 @@ export const ordersRouter = createTRPCRouter({
                 },
             });
 
-            return { success: refund.status === "succeeded", refund, updatedOrder, requestedBy: user, updatedUser };
+            return { success: true, updatedOrder, requestedBy: user, updatedUser };
         }),
     editOrder: protectedProcedure
         .input(

@@ -63,10 +63,11 @@ const OperationPage = () => {
                     id: loadingToast.id,
                     title: "Error",
                     description: "No available Zoom Accounts at the selected time!",
-                    duration: 2000,
                     variant: "destructive",
                 })
                 setLoading(false)
+                loadingToast?.dismissAfter()
+                setLoadingToast(undefined)
                 return
             }
             refreshTokenMutation.mutate({ zoomClientId: zoomClient.id }, {
@@ -184,7 +185,7 @@ const OperationPage = () => {
                         setDate={setTestTime}
                     />
                     <div>
-                        <Button onClick={() => handleSchedulePlacementTest()}>
+                        <Button disabled={!!loadingToast} onClick={() => handleSchedulePlacementTest()}>
                             <Calendar className="w-4 h-4 mr-2" />
                             Schedule
                         </Button>
