@@ -109,7 +109,11 @@ const CustomTestGoogleForm: FC<{
     })
 
     const onSubmit: SubmitHandler<TestGoogleFormValues> = ({ url }) => {
-        if (!type || levelId[0]) return
+        if (!type) return toast({
+            title: "Error",
+            description: "Please select test type",
+            variant: "destructive",
+        })
         if (initialData) return editTestEvalFormMutation.mutate({ id: initialData.id, url })
         createTestEvalGoogleFormMutation.mutate({ type, slug: courseSlug, url, levelId: levelId[0] })
     };
