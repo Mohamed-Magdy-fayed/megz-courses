@@ -315,6 +315,7 @@ export const evaluationFormRouter = createTRPCRouter({
           course: { connect: { slug } },
           externalLink: url,
           createdBy: ctx.session.user.email,
+          courseLevel: levelId ? { connect: { id: levelId } } : undefined
         },
         include: { materialItem: true, questions: true, submissions: true }
       })
