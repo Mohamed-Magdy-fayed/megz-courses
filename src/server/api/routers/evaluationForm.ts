@@ -299,21 +299,14 @@ export const evaluationFormRouter = createTRPCRouter({
   createTestEvalGoogleForm: protectedProcedure
     .input(z.object({
       slug: z.string(),
+      levelId: z.string().optional(),
       type: z.enum(validEvalFormTypes),
       url: z.string(),
     }))
-    .mutation(async ({ ctx, input: { slug, url, type } }) => {
+    .mutation(async ({ ctx, input: { slug, url, levelId, type } }) => {
       if (!ctx.session.user.email) throw new TRPCError({ code: "UNAUTHORIZED", message: "UNAUTHORIZED" })
-      if (await ctx.prisma.evaluationForm.findFirst({
-        where: {
-          AND: {
-            course: {
-              slug,
-            },
-            type,
-          }
-        }
-      })) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to create multible forms on the same type!" })
+      const forms = await ctx.prisma.evaluationForm.findMany({ where: { course: { slug } }, include: { course: true, courseLevel: true } })
+      if (forms.some(form => (form.course?.slug === slug && type === "placementTest") || (form.courseLevel?.id === levelId && !!levelId))) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to create multible forms on the same type!" })
 
       const evaluationForm = await ctx.prisma.evaluationForm.create({
         data: {

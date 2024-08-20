@@ -109,9 +109,9 @@ const CustomTestGoogleForm: FC<{
     })
 
     const onSubmit: SubmitHandler<TestGoogleFormValues> = ({ url }) => {
-        if (!type) return
+        if (!type || levelId[0]) return
         if (initialData) return editTestEvalFormMutation.mutate({ id: initialData.id, url })
-        createTestEvalGoogleFormMutation.mutate({ type, slug: courseSlug, url })
+        createTestEvalGoogleFormMutation.mutate({ type, slug: courseSlug, url, levelId: levelId[0] })
     };
 
     return (
