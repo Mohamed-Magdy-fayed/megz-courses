@@ -41,25 +41,18 @@ const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId, p
     const trpcUtils = api.useContext()
 
     const handleSendEmail = ({
-        orderId,
         email,
         subject,
         message,
-        salesOperationId,
     }: {
-        orderId: string,
         email: string,
         subject: string,
         message: string,
-        salesOperationId: string,
     }) => {
         sendEmailMutation.mutate({
             email,
             subject,
             message,
-            orderId,
-            salesOperationId,
-            alreadyUpdated: false
         }, {
             onError: (e) => toastError(e.message),
             onSettled: () => {
@@ -72,7 +65,7 @@ const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId, p
 
     const handleResendPaymentLink = () => {
         resendPaymentLinkMutation.mutate({ orderId }, {
-            onSuccess: ({ updatedOrder: { id, amount, orderNumber, user, courses, createdAt, salesOperationId, courseTypes }, paymentLink }) => {
+            onSuccess: ({ updatedOrder: { amount, orderNumber, user, course, createdAt, courseType }, paymentLink }) => {
                 const message = render(
                     <Email
                         logoUrl={siteData?.siteIdentity.logoPrimary || ""}
@@ -82,19 +75,17 @@ const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId, p
                         orderNumber={orderNumber}
                         paymentLink={paymentLink}
                         customerName={user.name}
-                        courses={courses.map(course => ({
+                        course={{
                             courseName: course.name,
-                            coursePrice: courseTypes.find(type => type.id === course.id)?.isPrivate
+                            coursePrice: courseType.isPrivate
                                 ? formatPrice(course.privatePrice)
                                 : formatPrice(course.groupPrice)
-                        }))} />, { pretty: true }
+                        }} />, { pretty: true }
                 )
                 handleSendEmail({
-                    orderId: id,
                     email: user.email,
                     subject: `Thanks for your order ${orderNumber}`,
                     message,
-                    salesOperationId,
                 })
             },
             onError: (error) => toastError(error.message),

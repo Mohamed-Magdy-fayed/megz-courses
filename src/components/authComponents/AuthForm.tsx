@@ -17,6 +17,7 @@ export const authFormSchema = z.object({
     name: z.string().min(1, "Name can't be empty").optional(),
     email: z.string().email().min(5, "Please add your email"),
     password: z.string().min(4),
+    phone: z.string().min(1, "Phone can't be empty"),
 });
 
 export type AuthFormValues = z.infer<typeof authFormSchema>;
@@ -35,6 +36,7 @@ const AuthForm: FC<AuthFormProps> = ({ authType, setOpen }) => {
         name: "",
         email: "",
         password: "",
+        phone: "",
     }
 
     const form = useForm<AuthFormValues>({
@@ -44,19 +46,19 @@ const AuthForm: FC<AuthFormProps> = ({ authType, setOpen }) => {
 
     const registerMutation = api.auth.register.useMutation();
 
-    const handleResgiter = ({ email, password, name }: AuthFormValues) => {
-        if (!name || !email || !password) {
+    const handleResgiter = ({ email, password, name, phone }: AuthFormValues) => {
+        if (!name || !email || !password || !phone) {
             return toastError("please fill all the data");
         }
 
         setLoading(true);
         registerMutation.mutate(
-            { name: name, email: email, password: password },
+            { name, email, password, phone },
             {
                 onSuccess(data) {
                     if (setOpen) {
                         if (data.user)
-                            toastSuccess(`Welcome ${data.user.name.split(" ")[0]}, haapy to have you on board`);
+                            toastSuccess(`Welcome ${data.user.name.split(" ")[0]}, happy to have you on board`);
                         signIn("credentials", {
                             email,
                             password,
@@ -154,6 +156,28 @@ const AuthForm: FC<AuthFormProps> = ({ authType, setOpen }) => {
                                 </FormItem>
                             )}
                         />
+                        {authType === "register" && (
+                            <FormField
+                                control={form.control}
+                                name="phone"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Mobile</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="tel"
+                                                autoComplete="tel"
+                                                disabled={loading}
+                                                placeholder="01234567890"
+                                                {...field}
+                                                className="pl-8"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
                         <FormField
                             control={form.control}
                             name="password"

@@ -8,6 +8,7 @@ import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import { env } from "@/env.mjs";
 import { TRPCError } from "@trpc/server";
+import { sendEmail } from "@/lib/gmailHelpers";
 
 export const authRouter = createTRPCRouter({
   register: publicProcedure
@@ -16,6 +17,7 @@ export const authRouter = createTRPCRouter({
         name: z.string(),
         email: z.string().email(),
         password: z.string(),
+        phone: z.string(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -37,6 +39,7 @@ export const authRouter = createTRPCRouter({
           name: input.name,
           email: input.email,
           hashedPassword,
+          phone: input.phone,
         },
       });
 
@@ -72,27 +75,9 @@ export const authRouter = createTRPCRouter({
       message: z.string(),
     }))
     .mutation(async ({ input: { email, message } }) => {
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: env.GMAIL_EMAIL,
-          pass: env.GMAIL_PASS,
-        },
-      });
-
-      const mailOptions = {
-        from: env.GMAIL_EMAIL,
-        to: email,
-        subject: `Seems like you forgot your password!`,
-        html: message,
-      };
-
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "unable to send mail!" });
-        }
-        return info
-      });
+      sendEmail({
+        email, subject: `Seems like you forgot your password!`, html: message
+      })
 
       return { email }
     }),

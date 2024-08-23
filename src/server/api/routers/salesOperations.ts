@@ -25,7 +25,7 @@ export const salesOperationsRouter = createTRPCRouter({
                 where: { id },
                 include: {
                     assignee: { include: { user: true } },
-                    orderDetails: { include: { user: true, courses: true } },
+                    orderDetails: { include: { user: true, course: true } },
                 },
             });
             return { salesOperations };
@@ -41,7 +41,7 @@ export const salesOperationsRouter = createTRPCRouter({
                 where: { code },
                 include: {
                     assignee: { include: { user: true } },
-                    orderDetails: { include: { user: true, courses: true } },
+                    orderDetails: { include: { user: true, course: true } },
                     potintialCustomer: true,
                 },
             });
@@ -55,6 +55,7 @@ export const salesOperationsRouter = createTRPCRouter({
             })
         )
         .mutation(async ({ input: { assigneeId, status }, ctx }) => {
+            if (ctx.session.user.userType !== "admin" && ctx.session.user.userType !== "salesAgent") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
             const salesOperations = await ctx.prisma.salesOperation.create({
                 data: {
                     assignee: { connect: { userId: assigneeId } },
@@ -80,6 +81,7 @@ export const salesOperationsRouter = createTRPCRouter({
             })
         )
         .mutation(async ({ input: { assigneeId, status, customerId }, ctx }) => {
+            if (ctx.session.user.userType !== "admin" && ctx.session.user.userType !== "salesAgent") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
             const salesOperations = await ctx.prisma.salesOperation.create({
                 data: {
                     assignee: { connect: { userId: assigneeId } },
@@ -105,6 +107,7 @@ export const salesOperationsRouter = createTRPCRouter({
             })
         )
         .mutation(async ({ input: { id, assigneeId }, ctx }) => {
+            if (ctx.session.user.userType !== "admin" && assigneeId !== ctx.session.user.id) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
             const salesOperations = await ctx.prisma.salesOperation.update({
                 where: {
                     id
@@ -133,22 +136,13 @@ export const salesOperationsRouter = createTRPCRouter({
             })
         )
         .mutation(async ({ ctx, input: { id, status, amount, email } }) => {
+            if (ctx.session.user.userType !== "admin" && ctx.session.user.userType !== "salesAgent") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
             const updatedSalesOperations = await ctx.prisma.salesOperation.update({
                 where: {
                     id,
                 },
                 data: {
                     status,
-                    orderDetails: !email || !amount ? undefined : {
-                        connectOrCreate: {
-                            where: { salesOperationId: id },
-                            create: {
-                                orderNumber: orderCodeGenerator(),
-                                amount,
-                                user: { connect: { email } },
-                            }
-                        }
-                    }
                 },
                 include: {
                     assignee: { include: { user: true, tasks: true } },

@@ -4,7 +4,6 @@ import {
   protectedProcedure,
 } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import { google } from "googleapis";
 import { z } from "zod";
 
 export const evaluationFormRouter = createTRPCRouter({
@@ -80,7 +79,6 @@ export const evaluationFormRouter = createTRPCRouter({
         where: { trainer: { userId } },
         include: {
           course: { include: { levels: true } },
-          oralTestTime: true,
           student: { include: { courseStatus: { include: { course: true, level: true } } } },
           trainer: { include: { user: true } },
           writtenTest: { include: { submissions: true, questions: true } }
@@ -138,6 +136,8 @@ export const evaluationFormRouter = createTRPCRouter({
       type: z.enum(validEvalFormTypes),
     }))
     .mutation(async ({ ctx, input: { url, materialId, type } }) => {
+      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+
       if (!ctx.session.user.email) throw new TRPCError({ code: "UNAUTHORIZED", message: "UNAUTHORIZED" })
       if (await ctx.prisma.evaluationForm.findFirst({
         where: {
@@ -169,6 +169,7 @@ export const evaluationFormRouter = createTRPCRouter({
       url: z.string(),
     }))
     .mutation(async ({ ctx, input: { url, id } }) => {
+      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
       if (!ctx.session.user.email) throw new TRPCError({ code: "UNAUTHORIZED", message: "UNAUTHORIZED" })
 
       const evaluationForm = await ctx.prisma.evaluationForm.update({
@@ -205,6 +206,7 @@ export const evaluationFormRouter = createTRPCRouter({
       }))
     }))
     .mutation(async ({ ctx, input: { materialId, fields, type } }) => {
+      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
       if (!ctx.session.user.email) throw new TRPCError({ code: "UNAUTHORIZED", message: "UNAUTHORIZED" })
       if (await ctx.prisma.evaluationForm.findFirst({
         where: {
@@ -259,6 +261,7 @@ export const evaluationFormRouter = createTRPCRouter({
       }))
     }))
     .mutation(async ({ ctx, input: { slug, fields, type, courseLevel } }) => {
+      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
       if (!ctx.session.user.email) throw new TRPCError({ code: "UNAUTHORIZED", message: "UNAUTHORIZED" })
       if (await ctx.prisma.evaluationForm.findFirst({
         where: {
@@ -304,6 +307,7 @@ export const evaluationFormRouter = createTRPCRouter({
       url: z.string(),
     }))
     .mutation(async ({ ctx, input: { slug, url, levelId, type } }) => {
+      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
       if (!ctx.session.user.email) throw new TRPCError({ code: "UNAUTHORIZED", message: "UNAUTHORIZED" })
       const forms = await ctx.prisma.evaluationForm.findMany({ where: { course: { slug } }, include: { course: true, courseLevel: true } })
       if (forms.some(form => (form.course?.slug === slug && type === "placementTest") || (form.courseLevel?.id === levelId && !!levelId))) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to create multible forms on the same type!" })
@@ -341,6 +345,7 @@ export const evaluationFormRouter = createTRPCRouter({
       }))
     }))
     .mutation(async ({ ctx, input: { fields, id } }) => {
+      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
       const evaluationForm = await ctx.prisma.evaluationForm.update({
         where: { id },
         data: {
@@ -363,6 +368,7 @@ export const evaluationFormRouter = createTRPCRouter({
       ids: z.array(z.string())
     }))
     .mutation(async ({ ctx, input: { ids } }) => {
+      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
       const deletedEvalForms = await ctx.prisma.evaluationForm.deleteMany({
         where: { id: { in: ids } },
       })

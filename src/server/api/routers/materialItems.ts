@@ -75,6 +75,7 @@ export const materialItemsRouter = createTRPCRouter({
     )
     .mutation(
       async ({ input: { id }, ctx }) => {
+        if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
         const materialItem = await ctx.prisma.materialItem.findUnique({ where: { id } })
         if (!materialItem) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to dublicate this material!" })
         if (!materialItem.courseLevelId) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to dublicate this material!" })
@@ -127,6 +128,7 @@ export const materialItemsRouter = createTRPCRouter({
       uploads: z.array(z.string()),
     }))
     .mutation(async ({ ctx, input: { title, subTitle, slug, levelSlug, uploads } }) => {
+      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
       const materialItem = await ctx.prisma.materialItem.create({
         data: {
           title,
@@ -149,6 +151,7 @@ export const materialItemsRouter = createTRPCRouter({
       slug: z.string(),
     }))
     .mutation(async ({ ctx, input: { slug } }) => {
+      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
       const materialItem = await ctx.prisma.materialItem.findUnique({
         where: { slug }
       });
@@ -166,6 +169,7 @@ export const materialItemsRouter = createTRPCRouter({
       levelSlug: z.string(),
     }))
     .mutation(async ({ ctx, input: { id, title, subTitle, slug, levelSlug } }) => {
+      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
       await ctx.prisma.materialItem.update({ where: { id }, data: { courseLevel: { disconnect: true } } })
 
       const materialItem = await ctx.prisma.materialItem.update({
@@ -250,6 +254,7 @@ export const materialItemsRouter = createTRPCRouter({
         },
         ctx,
       }) => {
+        if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
         const materialItem = await ctx.prisma.materialItem.create({
           data: {
             title,
@@ -343,6 +348,7 @@ export const materialItemsRouter = createTRPCRouter({
           vocabularyCards,
         },
       }) => {
+        if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
         const updatedmaterialItem = await ctx.prisma.materialItem.update({
           where: {
             id,
@@ -374,10 +380,10 @@ export const materialItemsRouter = createTRPCRouter({
     .mutation(async ({ input, ctx }) => {
       if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
 
-      const toBeDeleted = await ctx.prisma.materialItem.findMany({ where: { id: { in: input } } })
+      const toBeDeleted = await ctx.prisma.materialItem.findMany({ where: { id: { in: input } }, include: { courseLevel: { include: { course: true } } } })
       if (toBeDeleted.some(item => item.type === "upload")) {
         toBeDeleted.filter(item => item.uploads.length > 0).map(item => {
-          deleteFiles(`uploads/content/courses/${item.courseLevelId}/${item.title}`)
+          deleteFiles(`uploads/content/courses/${item.courseLevel?.course.slug}/${item.courseLevel?.slug}/${item.slug}`)
         })
       }
 

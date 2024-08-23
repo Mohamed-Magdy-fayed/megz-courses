@@ -36,13 +36,13 @@ export const deleteFile = async (path: string) => {
     return await deleteObject(desertRef)
 }
 
-export const deleteFiles = (pathToFolder: string) => {
+export const deleteFiles = async (pathToFolder: string) => {
     const listRef = ref(storage, pathToFolder);
 
-    listAll(listRef)
-        .then((res) => {
-            res.items.forEach((itemRef) => {
+    await listAll(listRef)
+        .then(async (res) => {
+            await Promise.all(res.items.map((itemRef) => {
                 deleteObject(itemRef)
-            });
+            }))
         })
 } 

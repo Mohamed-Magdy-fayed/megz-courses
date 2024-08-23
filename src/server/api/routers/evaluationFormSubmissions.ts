@@ -1,3 +1,4 @@
+import { env } from "@/env.mjs";
 import { validEvalFormTypes } from "@/lib/enumsTypes";
 import { generateCertificateId } from "@/lib/utils";
 import {
@@ -78,16 +79,6 @@ export const evaluationFormSubmissionsRouter = createTRPCRouter({
         }
       })
 
-      if (type === "finalTest") await ctx.prisma.certificate.create({
-        data: {
-          certificateId: generateCertificateId(),
-          completionDate: new Date(),
-          user: { connect: { id: userId } },
-          course: { connect: { id: courseId } },
-          courseLevel: { connect: { id: levelId } },
-        }
-      })
-
       if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "no user found!" })
       if (evaluationForm?.questions.length !== answers.length) throw new TRPCError({ code: "BAD_REQUEST", message: "missing some answers!" })
 
@@ -105,6 +96,34 @@ export const evaluationFormSubmissionsRouter = createTRPCRouter({
           }
         }
         return points
+      }
+
+      if (type === "finalTest") {
+        const certificate = await ctx.prisma.certificate.create({
+          data: {
+            certificateId: generateCertificateId(),
+            completionDate: new Date(),
+            user: { connect: { id: userId } },
+            course: { connect: { id: courseId } },
+            courseLevel: { connect: { id: levelId } },
+          }
+        })
+
+        await ctx.prisma.userNote.create({
+          data: {
+            sla: 0,
+            status: "Closed",
+            title: `Student final test submitted with score ${getRating(evaluationForm.questions, answers)}`,
+            type: "Info",
+            messages: [{
+              message: `Final test submitted and user certificate was created ${certificate.certificateId}\nCertificate URL: ${env.NEXTAUTH_URL}certificates/${certificate.certificateId}`,
+              updatedAt: new Date(),
+              updatedBy: "System"
+            }],
+            createdByUser: { connect: { id: ctx.session.user.id } },
+            createdForStudent: { connect: { id: user.id } }
+          }
+        })
       }
 
       const zoomGroupId = user.zoomGroups.find(group => group.courseId === courseId)?.id

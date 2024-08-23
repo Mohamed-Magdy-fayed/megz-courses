@@ -97,7 +97,7 @@ export const columns: ColumnDef<WaitingListRow>[] = [
         },
         cell: ({ row }) => {
             return (
-                <>{format(row.original.orders?.find(order => order.courseIds.some(id => id === row.original.courseId))?.createdAt || new Date(), "dd MMM yyyy")}</>
+                <>{format(row.original.orders?.find(order => order.courseId === row.original.courseId)?.createdAt || new Date(), "dd MMM yyyy")}</>
             )
         }
     },

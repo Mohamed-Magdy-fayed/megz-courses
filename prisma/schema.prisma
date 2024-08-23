@@ -65,11 +65,11 @@ enum Devices {
 
 model CourseStatus {
     id            String         @id @default(auto()) @map("_id") @db.ObjectId
-    course        Course         @relation(fields: [courseId], references: [id])
+    course        Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
     courseId      String         @db.ObjectId
-    level         CourseLevel    @relation(fields: [courseLevelId], references: [id])
+    level         CourseLevel    @relation(fields: [courseLevelId], references: [id], onDelete: Cascade)
     courseLevelId String         @db.ObjectId
-    user          User           @relation(fields: [userId], references: [id])
+    user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId        String         @db.ObjectId
     status        CourseStatuses
     updatedAt     DateTime       @updatedAt
@@ -125,34 +125,25 @@ enum TrainerRole {
     tester
 }
 
-model PlacementTestTime {
-    id             String          @id @default(auto()) @map("_id") @db.ObjectId
-    testTime       DateTime
-    placementTests PlacementTest[]
-    updatedAt      DateTime        @updatedAt
-    createdAt      DateTime        @default(now())
-}
-
 type Meeting {
     meetingNumber   String
     meetingPassword String
 }
 
 model PlacementTest {
-    id                  String            @id @default(auto()) @map("_id") @db.ObjectId
-    student             User              @relation(fields: [studentUserId], references: [id])
-    studentUserId       String            @db.ObjectId
-    course              Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
-    courseId            String            @db.ObjectId
-    writtenTest         EvaluationForm    @relation(fields: [evaluationFormId], references: [id], onDelete: Cascade)
-    evaluationFormId    String            @db.ObjectId
-    oralTestMeeting     Meeting
-    oralTestTime        PlacementTestTime @relation(fields: [placementTestTimeId], references: [id])
-    placementTestTimeId String            @db.ObjectId
-    trainer             Trainer           @relation(fields: [trainerId], references: [id])
-    trainerId           String            @db.ObjectId
-    updatedAt           DateTime          @updatedAt
-    createdAt           DateTime          @default(now())
+    id               String         @id @default(auto()) @map("_id") @db.ObjectId
+    student          User           @relation(fields: [studentUserId], references: [id], onDelete: Cascade)
+    studentUserId    String         @db.ObjectId
+    course           Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+    courseId         String         @db.ObjectId
+    writtenTest      EvaluationForm @relation(fields: [evaluationFormId], references: [id], onDelete: Cascade)
+    evaluationFormId String         @db.ObjectId
+    oralTestMeeting  Meeting
+    oralTestTime     DateTime
+    trainer          Trainer        @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+    trainerId        String         @db.ObjectId
+    updatedAt        DateTime       @updatedAt
+    createdAt        DateTime       @default(now())
 }
 
 model Trainer {
@@ -171,7 +162,7 @@ model CourseLevel {
     id              String           @id @default(auto()) @map("_id") @db.ObjectId
     name            String
     slug            String           @unique
-    course          Course           @relation(fields: [courseId], references: [id])
+    course          Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
     courseId        String           @db.ObjectId
     evaluationForms EvaluationForm[]
     zoomGroups      ZoomGroup[]
@@ -197,8 +188,7 @@ model Course {
     evaluationForms EvaluationForm[]
     certificates    Certificate[]
     courseStatus    CourseStatus[]
-    orders          Order[]          @relation(fields: [orderIds], references: [id])
-    orderIds        String[]         @db.ObjectId
+    orders          Order[]
     updatedAt       DateTime         @updatedAt
     createdAt       DateTime         @default(now())
 }
@@ -221,7 +211,7 @@ model EvaluationFormQuestion {
     points           Int
     questionText     String
     type             EvaluationFormQuestionType
-    evaluationForm   EvaluationForm?            @relation(fields: [evaluationFormId], references: [id])
+    evaluationForm   EvaluationForm?            @relation(fields: [evaluationFormId], references: [id], onDelete: Cascade)
     evaluationFormId String?                    @db.ObjectId
     updatedAt        DateTime                   @updatedAt
     createdAt        DateTime                   @default(now())
@@ -244,15 +234,15 @@ model EvaluationForm {
     type           EvaluationFormTypes
     totalPoints    Int
     externalLink   String?
-    courseLevel    CourseLevel?               @relation(fields: [courseLevelId], references: [id])
+    courseLevel    CourseLevel?               @relation(fields: [courseLevelId], references: [id], onDelete: Cascade)
     courseLevelId  String?                    @db.ObjectId
     placementTests PlacementTest[]
     submissions    EvaluationFormSubmission[]
     questions      EvaluationFormQuestion[]
     updateHistory  EvaluationFormHistory[]
-    materialItem   MaterialItem?              @relation(fields: [materialItemId], references: [id])
+    materialItem   MaterialItem?              @relation(fields: [materialItemId], references: [id], onDelete: Cascade)
     materialItemId String?                    @db.ObjectId
-    course         Course?                    @relation(fields: [courseId], references: [id])
+    course         Course?                    @relation(fields: [courseId], references: [id], onDelete: Cascade)
     courseId       String?                    @db.ObjectId
     createdBy      String
     updatedAt      DateTime                   @updatedAt
@@ -284,7 +274,7 @@ model MaterialItem {
     manual          MaterialItemManual?
     evaluationForms EvaluationForm[]
     zoomSessions    ZoomSession[]
-    courseLevel     CourseLevel?        @relation(fields: [courseLevelId], references: [id])
+    courseLevel     CourseLevel?        @relation(fields: [courseLevelId], references: [id], onDelete: Cascade)
     courseLevelId   String?             @db.ObjectId
     updatedAt       DateTime            @updatedAt
     createdAt       DateTime            @default(now())
@@ -335,7 +325,7 @@ enum OrderStatus {
     refunded
 }
 
-type CourseTypes {
+type CourseType {
     id        String
     isPrivate Boolean
 }
@@ -344,9 +334,9 @@ model Order {
     id                       String         @id @default(auto()) @map("_id") @db.ObjectId
     orderNumber              String
     amount                   Float
-    courseTypes              CourseTypes[]
-    courses                  Course[]       @relation(fields: [courseIds], references: [id])
-    courseIds                String[]       @db.ObjectId
+    courseType               CourseType
+    course                   Course         @relation(fields: [courseId], references: [id])
+    courseId                 String         @db.ObjectId
     status                   OrderStatus    @default(pending)
     refundRequester          String?        @db.ObjectId
     refundId                 String?
@@ -380,9 +370,9 @@ model SalesOperation {
     id                  String               @id @default(auto()) @map("_id") @db.ObjectId
     code                String
     status              SalesOperationStatus @default(created)
-    assignee            SalesAgent?          @relation(fields: [salesAgentId], references: [id])
+    assignee            SalesAgent?          @relation(fields: [salesAgentId], references: [id], onDelete: SetNull)
     salesAgentId        String?              @db.ObjectId
-    potintialCustomer   PotintialCustomer?   @relation(fields: [potintialCustomerId], references: [id])
+    potintialCustomer   PotintialCustomer?   @relation(fields: [potintialCustomerId], references: [id], onDelete: SetNull)
     potintialCustomerId String?              @db.ObjectId
     orderDetails        Order?               @relation("OrderToSalesOperation")
     updatedAt           DateTime             @updatedAt
@@ -428,7 +418,7 @@ model SupportChat {
     id        String     @id @default(auto()) @map("_id") @db.ObjectId
     user      User?      @relation("UserToChat", fields: [userId], references: [id], onDelete: Cascade)
     userId    String?    @unique @db.ObjectId
-    agent     ChatAgent? @relation(fields: [agentId], references: [id], onDelete: Cascade)
+    agent     ChatAgent? @relation(fields: [agentId], references: [id], onDelete: SetNull)
     agentId   String?    @db.ObjectId
     messages  Message[]
     updatedAt DateTime   @updatedAt
@@ -462,7 +452,7 @@ model EvaluationFormSubmission {
     id                        String             @id @default(auto()) @map("_id") @db.ObjectId
     answers                   SubmissionAnswer[]
     rating                    Float
-    student                   User               @relation(fields: [userId], references: [id])
+    student                   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId                    String             @db.ObjectId
     evaluationForm            EvaluationForm     @relation(fields: [evaluationFormId], references: [id], onDelete: Cascade)
     evaluationFormId          String             @db.ObjectId
@@ -487,7 +477,7 @@ model ZoomSession {
     groupId        String?                    @db.ObjectId
     materialItem   MaterialItem?              @relation(fields: [materialItemId], references: [id])
     materialItemId String?                    @db.ObjectId
-    zoomClient     ZoomClient?                @relation(fields: [zoomClientId], references: [id], onDelete: Cascade)
+    zoomClient     ZoomClient?                @relation(fields: [zoomClientId], references: [id])
     zoomClientId   String?                    @db.ObjectId
     attenders      String[]
     assignments    EvaluationFormSubmission[] @relation("Assignments")
@@ -512,13 +502,13 @@ model ZoomGroup {
     meetingNumber   String
     meetingPassword String
     groupStatus     GroupStatus
-    trainer         Trainer?                   @relation(fields: [trainerId], references: [id])
+    trainer         Trainer?                   @relation(fields: [trainerId], references: [id], onDelete: SetNull)
     trainerId       String?                    @db.ObjectId
     students        User[]                     @relation("UserToGroup", fields: [studentIds], references: [id])
     studentIds      String[]                   @db.ObjectId
-    course          Course?                    @relation(fields: [courseId], references: [id])
+    course          Course?                    @relation(fields: [courseId], references: [id], onDelete: SetNull)
     courseId        String?                    @db.ObjectId
-    courseLevel     CourseLevel?               @relation(fields: [courseLevelId], references: [id])
+    courseLevel     CourseLevel?               @relation(fields: [courseLevelId], references: [id], onDelete: SetNull)
     courseLevelId   String?                    @db.ObjectId
     zoomSessions    ZoomSession[]
     finalTests      EvaluationFormSubmission[]
@@ -590,7 +580,7 @@ model UserNote {
     mentionsUserIds     String[]       @db.ObjectId
     createdByUser       User           @relation("CreatedByUser", fields: [createdByUserId], references: [id])
     createdByUserId     String         @db.ObjectId
-    createdForStudent   User           @relation("CreatedForStudent", fields: [createdForStudentId], references: [id])
+    createdForStudent   User           @relation("CreatedForStudent", fields: [createdForStudentId], references: [id], onDelete: Cascade)
     createdForStudentId String         @db.ObjectId
     updatedAt           DateTime       @updatedAt
     createdAt           DateTime       @default(now())
@@ -598,7 +588,7 @@ model UserNote {
 
 model Certificate {
     id             String       @id @default(auto()) @map("_id") @db.ObjectId
-    user           User         @relation(fields: [userId], references: [id])
+    user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId         String       @db.ObjectId
     course         Course       @relation(fields: [courseId], references: [id])
     courseId       String       @db.ObjectId
@@ -624,11 +614,4 @@ model SiteIdentity {
     linkedin       String   @default("https://www.linkedin.com/in/mohamed-magdy-fayed/")
     updatedAt      DateTime @updatedAt
     createdAt      DateTime @default(now())
-}
-
-model RefundReasons {
-    id        String   @id @default(auto()) @map("_id") @db.ObjectId
-    reason    String   @default("Customer request")
-    updatedAt DateTime @updatedAt
-    createdAt DateTime @default(now())
 }

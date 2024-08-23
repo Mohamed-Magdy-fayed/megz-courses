@@ -16,7 +16,8 @@ import { useRef } from "react";
 const CertificatePage: NextPage = () => {
     const router = useRouter()
     const courseSlug = router.query.courseSlug as string
-    const { data } = api.certificates.getCertificate.useQuery({ courseSlug })
+    const levelSlug = router.query.levelSlug as string
+    const { data } = api.certificates.getCertificate.useQuery({ courseSlug, levelSlug }, { enabled: !!courseSlug && !!levelSlug })
 
     const printRef = useRef<HTMLDivElement>(null);
 

@@ -49,8 +49,8 @@ const CoursesPage: NextPage = () => {
                                             const studentPoints = data?.user.evaluationFormSubmissions.find(sub => sub.evaluationFormId === filteredTest?.evaluationFormId)?.rating
                                             const totalPoints = filteredTest?.writtenTest.totalPoints
                                             const oralTestSubmission = data.user.courseStatus.find(status => status.courseId === id)
-                                            const isOralTestScheduled = !!filteredTest?.oralTestTime.testTime
-                                            const oralTestTime = filteredTest?.oralTestTime.testTime || new Date()
+                                            const isOralTestScheduled = data?.user.placementTests.length !== 0
+                                            const oralTestTime = filteredTest?.oralTestTime || new Date()
                                             const status = !filteredTest ? "Waiting Placement Test"
                                                 : !isSubmitted ? "Need Submission"
                                                     : !isOralTestScheduled ? "Oral Test Not Scheduled"

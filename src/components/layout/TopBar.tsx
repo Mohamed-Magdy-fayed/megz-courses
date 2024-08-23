@@ -17,6 +17,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { LogoForeground } from "@/components/layout/Logo";
 import { SiteIdentity } from "@prisma/client";
+import { getInitials } from "@/lib/getInitials";
 
 export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdentity }) {
   const session = useSession();
@@ -128,7 +129,7 @@ export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdenti
                       <AvatarImage
                         alt={session.data?.user.name || "NA"}
                         src={session.data?.user.image || ""} />
-                      <AvatarFallback>{session.data?.user.name || "NA"}</AvatarFallback>
+                      <AvatarFallback>{getInitials(session.data?.user.name|| "NA")}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>

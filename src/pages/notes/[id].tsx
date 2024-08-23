@@ -1,6 +1,5 @@
 import AppLayout from "@/components/layout/AppLayout";
 import UnauthorizedAccess from "@/components/layout/UnauthorizedAccess";
-import NotesClient from "@/components/notesComponents/NotesClient";
 import { NotesForm } from "@/components/notesComponents/NotesForm";
 import { SeverityPill, SeverityPillProps } from "@/components/overview/SeverityPill";
 import Spinner from "@/components/Spinner";
@@ -22,7 +21,7 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 
 export default function NotePage() {
-    const { data: sessionData, status: sessionStatus } = useSession();
+    const { data: sessionData } = useSession();
     const router = useRouter();
     const id = router.query.id as string
 
@@ -224,16 +223,16 @@ export default function NotePage() {
                 </div>
                 <div className="space-x-4 flex justify-end items-end">
                     <div className="space-x-4 border-t p-4">
-                        <Button onClick={() => setIsAddMessageOpen(true)} variant={"outline"} customeColor={"primaryOutlined"}>
+                        <Button disabled={data.note.messages.some(msg => msg.updatedBy === "System")} onClick={() => setIsAddMessageOpen(true)} variant={"outline"} customeColor={"primaryOutlined"}>
                             <PlusSquare className="w-4 h-4" />
                             <Typography>Add message</Typography>
                         </Button>
-                        <Button onClick={() => setIsOpen(true)} variant={"outline"} customeColor={"primaryOutlined"}>
+                        <Button disabled={data.note.messages.some(msg => msg.updatedBy === "System")} onClick={() => setIsOpen(true)} variant={"outline"} customeColor={"primaryOutlined"}>
                             <Edit className="w-4 h-4" />
                             <Typography>Edit</Typography>
                         </Button>
                         {status === "Created" ? (
-                            <Button onClick={() => {
+                            <Button disabled={data.note.messages.some(msg => msg.updatedBy === "System")} onClick={() => {
                                 editNoteMutation.mutate({
                                     id,
                                     status: "Opened"
@@ -243,7 +242,7 @@ export default function NotePage() {
                                 <Typography>Open</Typography>
                             </Button>
                         ) : status === "Opened" ? (
-                            <Button onClick={() => {
+                            <Button disabled={data.note.messages.some(msg => msg.updatedBy === "System")} onClick={() => {
                                 editNoteMutation.mutate({
                                     id,
                                     status: "Closed"
@@ -253,7 +252,7 @@ export default function NotePage() {
                                 <Typography>Close</Typography>
                             </Button>
                         ) : (
-                            <Button onClick={() => {
+                            <Button disabled={data.note.messages.some(msg => msg.updatedBy === "System")} onClick={() => {
                                 editNoteMutation.mutate({
                                     id,
                                     status: "Opened"

@@ -98,7 +98,7 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, testLink, courseId, userId,
                 isOpen={isOpen}
                 onClose={() => setIsOpen(false)}
             >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between p-2">
                     <SelectField
                         disabled={loading}
                         placeholder="Select Level"

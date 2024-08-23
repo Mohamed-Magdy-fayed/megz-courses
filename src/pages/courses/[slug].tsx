@@ -1,6 +1,5 @@
 import Spinner from "@/components/Spinner"
 import CourseShowcase from "@/components/contentComponents/materials/CourseShowcase"
-import MaterialShowcase from "@/components/contentComponents/materials/MaterialShowcase"
 import EnrollmentModal from "@/components/courses/EnrollmentModal"
 import LandingLayout from "@/components/landingPageComponents/LandingLayout"
 import { Typography } from "@/components/ui/Typoghraphy"
@@ -13,14 +12,6 @@ import { BookOpenCheck, BookPlus } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-
-const exampleVideo = {
-    "description": "Sintel is an independently produced short film, initiated by the Blender Foundation as a means to further improve and validate the free/open source 3D creation suite Blender. With initial funding provided by 1000s of donations via the internet community, it has again proven to be a viable development model for both open 3D technology as for independent animation film.\nThis 15 minute film has been realized in the studio of the Amsterdam Blender Institute, by an international team of artists and developers. In addition to that, several crucial technical and creative targets have been realized online, by developers and artists and teams all over the world.\nwww.sintel.org",
-    "sources": ["http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"],
-    "subtitle": "By Blender Foundation",
-    "thumb": "images/Sintel.jpg",
-    "title": "Sintel"
-}
 
 const CoursePage = () => {
     const router = useRouter()

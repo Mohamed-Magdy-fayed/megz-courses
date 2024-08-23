@@ -112,6 +112,24 @@ export const zoomGroupsRouter = createTRPCRouter({
                         status: "completed"
                     }
                 })
+
+                await Promise.all(zoomGroup.students.map(async st => {
+                    await ctx.prisma.userNote.create({
+                        data: {
+                            sla: 0,
+                            status: "Closed",
+                            title: `Student group completed and final test unlocked`,
+                            type: "Info",
+                            messages: [{
+                                message: `Group ${zoomGroup.groupNumber} completed and the student have been granted access to the final test.`,
+                                updatedAt: new Date(),
+                                updatedBy: "System"
+                            }],
+                            createdByUser: { connect: { id: ctx.session.user.id } },
+                            createdForStudent: { connect: { id: st.id } }
+                        }
+                    })
+                }))
             }
 
             return { updatedSession }
@@ -237,6 +255,7 @@ export const zoomGroupsRouter = createTRPCRouter({
             })
         )
         .mutation(async ({ input: { startDate, studentIds, groupNumber, meetingNumber, courseId, trainerId, zoomClientId, meetingPassword, meetingLink, courseLevelId }, ctx }) => {
+            if (ctx.session.user.userType !== "admin" && ctx.session.user.userType !== "salesAgent") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not allowed to take this action, Please contact your admin!" })
             type ZoomSession = {
                 sessionDate: Date,
                 sessionLink: string,
@@ -278,13 +297,7 @@ export const zoomGroupsRouter = createTRPCRouter({
 
             const level = course.levels.find(({ id }) => id === courseLevelId)
             if (!level) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No levels!" })
-
-            await ctx.prisma.courseStatus.updateMany({
-                where: { userId: { in: studentIds }, courseId },
-                data: {
-                    status: "ongoing",
-                }
-            })
+            if (level.materialItems.length === 0) throw new TRPCError({ code: "BAD_REQUEST", message: "No materials in this level!" })
 
             const zoomGroup = await ctx.prisma.zoomGroup.create({
                 data: {
@@ -311,8 +324,14 @@ export const zoomGroupsRouter = createTRPCRouter({
                 },
             });
 
-            await Promise.all(zoomGroup.students.map(async (student) => {
+            await ctx.prisma.courseStatus.updateMany({
+                where: { userId: { in: studentIds }, courseId },
+                data: {
+                    status: "ongoing",
+                }
+            })
 
+            await Promise.all(zoomGroup.students.map(async (student) => {
                 await ctx.prisma.userNote.create({
                     data: {
                         sla: 0,

@@ -74,7 +74,7 @@ const CoursePlacementTestPage = () => {
         },
     })
 
-    const isOralTestTimePassed = (scheduleData?.placementTest?.oralTestTime.testTime.getDay() || 32) < new Date().getDay()
+    const isOralTestTimePassed = (scheduleData?.placementTest?.oralTestTime.getDay() || 32) < new Date().getDay()
 
     const [open, setOpen] = useState<boolean>(false)
     const [submittedAlready, setSubmittedAlready] = useState<boolean>(false)
@@ -145,7 +145,7 @@ const CoursePlacementTestPage = () => {
                     {scheduleData?.placementTest ? (
                         <CardContent className="space-y-4">
                             <Typography variant={"secondary"}>Test Time: </Typography>
-                            <Typography>{format(scheduleData.placementTest.oralTestTime.testTime, "PPPPp")}</Typography>
+                            <Typography>{format(scheduleData.placementTest.oralTestTime, "PPPPp")}</Typography>
                             <Separator />
                             <div className="flex flex-col gap-4">
                                 <Typography variant={"secondary"}>Trainer Information</Typography>

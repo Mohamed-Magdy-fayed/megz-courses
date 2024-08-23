@@ -1,7 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import CellAction from "./ActionCell";
-import Link from "next/link";
 import { Typography } from "@/components/ui/Typoghraphy";
 
 export type LevelRow = {
@@ -36,9 +35,7 @@ export const columns: ColumnDef<LevelRow>[] = [
     accessorKey: "name",
     header: "Name",
     cell: ({ row }) => (
-      <Link href={`/content/courses/${row.original.courseSlug}/level/${row.original.slug}`}>
-        <Typography>{row.original.name}</Typography>
-      </Link>
+      <Typography>{row.original.name}</Typography>
     ),
   },
   {

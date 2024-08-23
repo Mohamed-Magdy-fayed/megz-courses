@@ -16,7 +16,7 @@ interface OrderReceiptProps {
     order: Order & {
         user: User;
         salesOperation: SalesOperation;
-        courses: Course[];
+        course: Course;
     }
     adminView: boolean
 }
@@ -109,31 +109,29 @@ const OrderReceipt: FC<OrderReceiptProps> = ({ order, adminView }) => {
                             </TableRow>
                         )}
                         <TableRow>
-                            <TableCell className="whitespace-nowrap">Courses:</TableCell>
+                            <TableCell className="whitespace-nowrap">Course:</TableCell>
                             <TableCell className="text-right">
-                                {order.courses.length}
+                                {order.course.name}
                             </TableCell>
                         </TableRow>
-                        {order.courses.map(course => (
-                            <TableRow key={course.id}>
-                                <TableCell className="whitespace-nowrap flex items-center gap-2">
-                                    {course.name}
-                                    <Tooltip>
-                                        <TooltipTrigger>
-                                            <Link href={`/my_courses/${course.slug}`} target='_blank'>
-                                                <ExternalLink className='w-4 h-4 text-info' />
-                                            </Link>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            View course
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    {order?.courseTypes.find(({ id }) => id === course.id)?.isPrivate ? formatPrice(course.privatePrice) : formatPrice(course.groupPrice)}
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                        <TableRow>
+                            <TableCell className="whitespace-nowrap flex items-center gap-2">
+                                {order.course.name}
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <Link href={`/my_courses/${order.course.slug}`} target='_blank'>
+                                            <ExternalLink className='w-4 h-4 text-info' />
+                                        </Link>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        View course
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TableCell>
+                            <TableCell className="text-right">
+                                {order?.courseType.isPrivate ? formatPrice(order.course.privatePrice) : formatPrice(order.course.groupPrice)}
+                            </TableCell>
+                        </TableRow>
                         <TableRow>
                             <TableCell className="whitespace-nowrap">Payment Amount:</TableCell>
                             <TableCell className="text-right">

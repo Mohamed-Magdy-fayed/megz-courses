@@ -95,7 +95,7 @@ export const usersRouter = createTRPCRouter({
       const user = await ctx.prisma.user.findUnique({
         where: { id },
         include: {
-          orders: { include: { courses: { include: { levels: true, orders: { include: { user: true } } } } } },
+          orders: { include: { course: { include: { levels: true, orders: { include: { user: true } } } } } },
           evaluationFormSubmissions: true,
           zoomGroups: { include: { zoomSessions: true, trainer: { include: { user: true } }, course: true, students: true, courseLevel: true }, },
           placementTests: {
@@ -103,7 +103,6 @@ export const usersRouter = createTRPCRouter({
               trainer: { include: { user: true } },
               course: { include: { levels: true } },
               student: { include: { courseStatus: { include: { level: true } } } },
-              oralTestTime: true,
               writtenTest: { include: { submissions: true } }
             }
           },
@@ -123,7 +122,7 @@ export const usersRouter = createTRPCRouter({
         where: { id },
 
         include: {
-          orders: { include: { courses: { include: { levels: true, orders: { include: { user: true } } } }, salesOperation: { include: { assignee: true } }, user: true } },
+          orders: { include: { course: { include: { levels: true, orders: { include: { user: true } } } }, salesOperation: { include: { assignee: true } }, user: true } },
           evaluationFormSubmissions: true,
           zoomGroups: { include: { zoomSessions: true, trainer: { include: { user: true } }, course: true, students: true, courseLevel: true }, },
           placementTests: {
@@ -131,7 +130,6 @@ export const usersRouter = createTRPCRouter({
               trainer: { include: { user: true } },
               course: { include: { levels: true } },
               student: { include: { courseStatus: { include: { level: true } } } },
-              oralTestTime: true,
               writtenTest: { include: { submissions: true } }
             }
           },
@@ -154,7 +152,7 @@ export const usersRouter = createTRPCRouter({
           email,
         },
         include: {
-          orders: { include: { courses: { include: { orders: { include: { user: true } } } } } },
+          orders: { include: { course: { include: { orders: { include: { user: true } } } } } },
           studentNotes: { include: { createdByUser: true, mentions: true } },
           placementTests: {
             include: {
@@ -162,7 +160,6 @@ export const usersRouter = createTRPCRouter({
               writtenTest: { include: { submissions: true } },
               course: true,
               student: true,
-              oralTestTime: true,
             }
           },
           evaluationFormSubmissions: true,

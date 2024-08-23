@@ -1,5 +1,5 @@
 import { Dispatch, FC, SetStateAction, useEffect, useState } from "react"
-import { Address, Course, Order, User } from "@prisma/client"
+import { Course } from "@prisma/client"
 import { Button } from "../ui/button"
 import { api } from "@/lib/api"
 import { render } from "@react-email/render"
@@ -46,7 +46,7 @@ const CreateOrderForStudent: FC<CreateOrderForStudentProps> = ({
         onMutate: () => setLoading(true),
         onSuccess: ({ salesOperations }) => {
             createOrderMutation.mutate({
-                coursesDetails: coursesGroupType,
+                courseDetails: coursesGroupType[0]!,
                 email: userData.email,
                 salesOperationId: salesOperations.id
             })
@@ -55,7 +55,7 @@ const CreateOrderForStudent: FC<CreateOrderForStudentProps> = ({
         onSettled: () => { },
     })
     const createOrderMutation = api.orders.createOrder.useMutation({
-        onSuccess: ({ order: { id, amount, orderNumber, user, courses, createdAt, courseTypes, salesOperationId }, paymentLink }) => {
+        onSuccess: ({ order: { id, amount, orderNumber, user, course, createdAt, courseType, salesOperationId }, paymentLink }) => {
             const message = render(
                 <Email
                     logoUrl={siteData?.siteIdentity.logoPrimary || ""}
@@ -65,20 +65,18 @@ const CreateOrderForStudent: FC<CreateOrderForStudentProps> = ({
                     orderNumber={orderNumber}
                     paymentLink={paymentLink}
                     customerName={user.name}
-                    courses={courses.map(course => ({
+                    course={{
                         courseName: course.name,
-                        coursePrice: courseTypes.find(type => type.id === course.id)?.isPrivate
+                        coursePrice: courseType.isPrivate
                             ? formatPrice(course.privatePrice)
                             : formatPrice(course.groupPrice)
-                    }))}
+                    }}
                 />, { pretty: true }
             )
             handleSendEmail({
-                orderId: id,
                 email: user.email,
                 subject: `Thanks for your order ${orderNumber}`,
                 message,
-                salesOperationId,
             })
             toastSuccess(`Order ${orderNumber} has been submitted successfully!`)
         },
@@ -90,31 +88,24 @@ const CreateOrderForStudent: FC<CreateOrderForStudentProps> = ({
     const trpcUtils = api.useContext()
 
     const handleAddCourses = () => {
-        if (coursesGroupType.length === 0) return toastError(`missing some info here!`)
+        if (!coursesGroupType[0]) return toastError(`missing some info here!`)
 
         createSalesOperationMutation.mutate({ status: "ongoing", assigneeId: assigneeId })
     }
 
     const handleSendEmail = ({
-        orderId,
         email,
         subject,
         message,
-        salesOperationId,
     }: {
-        orderId: string,
         email: string,
         subject: string,
         message: string,
-        salesOperationId: string,
     }) => {
         sendEmailMutation.mutate({
             email,
             subject,
             message,
-            orderId,
-            salesOperationId,
-            alreadyUpdated: false
         }, {
             onError: (e) => toastError(e.message),
             onSettled: () => {

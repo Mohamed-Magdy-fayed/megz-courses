@@ -53,7 +53,7 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                 description: (
                     <Spinner className="h-4 w-4" />
                 ),
-                duration: 3000,
+                duration: 30000,
             }))
         },
         onSuccess: ({ zoomClient }) => {
@@ -303,7 +303,7 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                                 })
                                 .map(order => {
                                     const courseStatus = order.user.courseStatus.find(status => status.courseId === courseId[0])
-                                    const isPrivate = order.courseTypes.find(type => type.id === courseId[0])?.isPrivate
+                                    const isPrivate = order.courseType.isPrivate
 
                                     return ({
                                         active: courseStatus?.status === "waiting",

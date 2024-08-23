@@ -67,19 +67,19 @@ export const UserAccountTabs = ({ user }: { user: UserGetPayload }) => {
                             <CardTitle>Waiting List</CardTitle>
                         </CardHeader>
                         <CardContent className="flex flex-col items-center p-4">
-                            <CoursesClient formattedData={user.orders.flatMap(order => order.courses.filter(course => user.courseStatus.some(status => status.courseId === course.id && status.status === "waiting"))).map(course => ({
-                                id: course.id,
-                                name: course.name,
-                                slug: course.slug,
-                                image: course.image,
-                                createdAt: course.createdAt,
-                                updatedAt: course.updatedAt,
-                                description: course.description,
-                                groupPrice: course.groupPrice,
-                                privatePrice: course.privatePrice,
-                                instructorPrice: course.instructorPrice,
-                                levels: course.levels,
-                                orders: course.orders,
+                            <CoursesClient formattedData={user.orders.filter(order => user.courseStatus.some(status => status.courseId === order.course.id && status.status === "waiting")).map(order => ({
+                                id: order.course.id,
+                                name: order.course.name,
+                                slug: order.course.slug,
+                                image: order.course.image,
+                                createdAt: order.course.createdAt,
+                                updatedAt: order.course.updatedAt,
+                                description: order.course.description,
+                                groupPrice: order.course.groupPrice,
+                                privatePrice: order.course.privatePrice,
+                                instructorPrice: order.course.instructorPrice,
+                                levels: order.course.levels,
+                                orders: order.course.orders,
                             }))} />
                         </CardContent>
                         <CardFooter className="flex items-center justify-end">
@@ -121,7 +121,7 @@ export const UserAccountTabs = ({ user }: { user: UserGetPayload }) => {
                                         studentName: student.name,
                                         studentEmail: student.email,
                                         studentImage: student.image,
-                                        oralTestTiem: format(oralTestTime.testTime, "PPPp"),
+                                        oralTestTiem: format(oralTestTime, "PPPp"),
                                         testLink: `/placement_test/${course.slug}`,
                                         trainerId: trainer.user.id,
                                         trainerName: trainer.user.name,

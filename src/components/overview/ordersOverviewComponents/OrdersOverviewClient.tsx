@@ -8,7 +8,7 @@ export interface Orders extends Order {
   salesOperation: SalesOperation & {
     assignee: SalesAgent | null;
   };
-  courses: Course[];
+  course: Course;
 }
 
 

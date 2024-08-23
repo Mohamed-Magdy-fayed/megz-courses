@@ -4,7 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { validCourseStatuses } from "@/lib/enumsTypes";
 
 export const coursesRouter = createTRPCRouter({
-  getUsersWithStatus: publicProcedure
+  getUsersWithStatus: protectedProcedure
     .input(z.object({ id: z.string(), status: z.enum(validCourseStatuses) }))
     .query(async ({ input: { id, status }, ctx }) => {
       const course = await ctx.prisma.course.findUnique({
@@ -28,7 +28,7 @@ export const coursesRouter = createTRPCRouter({
 
       return { usersWithStatus };
     }),
-  getWaitingList: publicProcedure
+  getWaitingList: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input: { id }, ctx }) => {
       const course = await ctx.prisma.course.findUnique({
@@ -52,7 +52,7 @@ export const coursesRouter = createTRPCRouter({
 
       return { watingUsers };
     }),
-  getWaitingLists: publicProcedure
+  getWaitingLists: protectedProcedure
     .query(async ({ ctx }) => {
       const courses = await ctx.prisma.course.findMany({
         include: { orders: true }
@@ -127,7 +127,7 @@ export const coursesRouter = createTRPCRouter({
         where: { id: ctx.session.user.id },
         include: {
           orders: true,
-          placementTests: { include: { oralTestTime: true, trainer: true, writtenTest: true } },
+          placementTests: { include: { trainer: true, writtenTest: true } },
           evaluationFormSubmissions: true,
           zoomGroups: { include: { zoomSessions: { include: { materialItem: true } } } },
           courseStatus: { include: { level: true } },
@@ -139,7 +139,7 @@ export const coursesRouter = createTRPCRouter({
       const courses = await ctx.prisma.course.findMany({
         where: {
           id: {
-            in: user.orders.flatMap(order => order.courseIds),
+            in: user.orders.map(order => order.courseId),
           }
         },
         include: { levels: true },
@@ -165,7 +165,6 @@ export const coursesRouter = createTRPCRouter({
             include: {
               student: true,
               trainer: { include: { user: true } },
-              oralTestTime: true,
               writtenTest: { include: { questions: true, submissions: true } },
               course: true,
             }
@@ -217,7 +216,6 @@ export const coursesRouter = createTRPCRouter({
             include: {
               student: { include: { courseStatus: { include: { level: true } } } },
               trainer: { include: { user: true } },
-              oralTestTime: true,
               writtenTest: { include: { questions: true, submissions: true } },
               course: { include: { levels: true } },
             }
@@ -278,6 +276,8 @@ export const coursesRouter = createTRPCRouter({
       privatePrice,
       instructorPrice,
     }, ctx }) => {
+      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+
       const course = await ctx.prisma.course.create({
         data: {
           name,
@@ -301,6 +301,8 @@ export const coursesRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input: { id }, ctx }) => {
+      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+
       const existingCourse = await ctx.prisma.course.findUnique({ where: { id }, include: { levels: true } })
       if (!existingCourse) throw new TRPCError({ code: "BAD_REQUEST", message: "can't find course" })
 
@@ -338,6 +340,8 @@ export const coursesRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input: { name, slug, id, description, groupPrice, image, instructorPrice, privatePrice } }) => {
+      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+
       const updatedCourse = await ctx.prisma.course.update({
         where: {
           id,

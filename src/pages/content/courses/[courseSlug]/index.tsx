@@ -313,7 +313,7 @@ const CoursePage = () => {
                                             studentName: student.name,
                                             studentEmail: student.email,
                                             studentImage: student.image,
-                                            oralTestTiem: format(oralTestTime.testTime, "PPPp"),
+                                            oralTestTiem: format(oralTestTime, "PPPp"),
                                             testLink: `/placement_test/${course.slug}`,
                                             trainerId: trainer.user.id,
                                             trainerName: trainer.user.name,

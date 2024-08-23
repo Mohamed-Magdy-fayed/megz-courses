@@ -25,10 +25,10 @@ interface EmailProps {
     orderAmount: string;
     orderCreatedAt: string;
     logoUrl: string;
-    courses: {
+    course: {
         courseName: string;
         coursePrice: string;
-    }[]
+    }
 }
 
 export const Email = ({
@@ -38,7 +38,7 @@ export const Email = ({
     paymentLink,
     orderAmount,
     orderCreatedAt,
-    courses,
+    course,
     logoUrl,
 }: EmailProps) => {
     const previewText = `Thanks for your order ${orderNumber}`;
@@ -132,32 +132,30 @@ export const Email = ({
                         <Section style={productTitleTable}>
                             <Text style={productsTitle}>Courses</Text>
                         </Section>
-                        {courses.map(({ courseName, coursePrice }, i) => (
-                            <Section key={`mailCourseId${i}`}>
-                                <Column style={{ paddingLeft: '22px', paddingBottom: "22px" }}>
-                                    <Text style={productTitle}>{courseName}</Text>
-                                    <Link
-                                        href={`${env.NEXT_PUBLIC_NEXTAUTH_URL}help`}
-                                        style={productLink}
-                                        data-saferedirecturl={`https://www.google.com/url?q=${env.NEXT_PUBLIC_NEXTAUTH_URL}help&amp;source=gmail&amp;ust=1673963081204000&amp;usg=AOvVaw2DFCLKMo1snS-Swk5H26Z1`}
-                                    >
-                                        Write a Review
-                                    </Link>
-                                    <span style={divisor}>|</span>
-                                    <Link
-                                        href={`${env.NEXT_PUBLIC_NEXTAUTH_URL}help`}
-                                        style={productLink}
-                                        data-saferedirecturl={`https://www.google.com/url?q=${env.NEXT_PUBLIC_NEXTAUTH_URL}help&amp;source=gmail&amp;ust=1673963081204000&amp;usg=AOvVaw2DFCLKMo1snS-Swk5H26Z1`}
-                                    >
-                                        Report a Problem
-                                    </Link>
-                                </Column>
+                        <Section>
+                            <Column style={{ paddingLeft: '22px', paddingBottom: "22px" }}>
+                                <Text style={productTitle}>{course.courseName}</Text>
+                                <Link
+                                    href={`${env.NEXT_PUBLIC_NEXTAUTH_URL}help`}
+                                    style={productLink}
+                                    data-saferedirecturl={`https://www.google.com/url?q=${env.NEXT_PUBLIC_NEXTAUTH_URL}help&amp;source=gmail&amp;ust=1673963081204000&amp;usg=AOvVaw2DFCLKMo1snS-Swk5H26Z1`}
+                                >
+                                    Write a Review
+                                </Link>
+                                <span style={divisor}>|</span>
+                                <Link
+                                    href={`${env.NEXT_PUBLIC_NEXTAUTH_URL}help`}
+                                    style={productLink}
+                                    data-saferedirecturl={`https://www.google.com/url?q=${env.NEXT_PUBLIC_NEXTAUTH_URL}help&amp;source=gmail&amp;ust=1673963081204000&amp;usg=AOvVaw2DFCLKMo1snS-Swk5H26Z1`}
+                                >
+                                    Report a Problem
+                                </Link>
+                            </Column>
 
-                                <Column style={productPriceWrapper} align="right">
-                                    <Text style={productPrice}>{coursePrice}</Text>
-                                </Column>
-                            </Section>
-                        ))}
+                            <Column style={productPriceWrapper} align="right">
+                                <Text style={productPrice}>{course.coursePrice}</Text>
+                            </Column>
+                        </Section>
 
                         <Hr style={productPriceLine} />
                         <Section align="right">

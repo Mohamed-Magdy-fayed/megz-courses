@@ -48,16 +48,16 @@ const CreateOrder: FC<CreateOrderProps> = ({
     const sendEmailMutation = api.emails.sendEmail.useMutation()
     const trpcUtils = api.useContext()
 
-    const handleAddCourses = () => {
-        if (!email[0] || coursesGroupType.length === 0) return toastError(`missing some info here!`)
+    const handleAddCourse = () => {
+        if (!email[0] || !coursesGroupType[0]) return toastError(`missing some info here!`)
 
         setLoading(true)
         createOrderMutation.mutate({
-            coursesDetails: coursesGroupType,
+            courseDetails: coursesGroupType[0],
             email: email[0],
             salesOperationId
         }, {
-            onSuccess: ({ order: { id, amount, orderNumber, user, courses, createdAt, courseTypes }, paymentLink }) => {
+            onSuccess: ({ order: { amount, orderNumber, user, course, createdAt, courseType }, paymentLink }) => {
                 const message = render(
                     <Email
                         logoUrl={siteData?.siteIdentity.logoPrimary || ""}
@@ -67,20 +67,20 @@ const CreateOrder: FC<CreateOrderProps> = ({
                         orderNumber={orderNumber}
                         paymentLink={paymentLink}
                         customerName={user.name}
-                        courses={courses.map(course => ({
+                        course={{
                             courseName: course.name,
-                            coursePrice: courseTypes.find(type => type.id === course.id)?.isPrivate
+                            coursePrice: courseType.isPrivate
                                 ? formatPrice(course.privatePrice)
                                 : formatPrice(course.groupPrice)
-                        }))}
+                        }}
                     />, { pretty: true }
                 )
                 handleSendEmail({
-                    orderId: id,
                     email: user.email,
                     subject: `Thanks for your order ${orderNumber}`,
-                    message
+                    message,
                 })
+
                 toastSuccess(`Order ${orderNumber} has been submitted successfully!`)
             },
             onError: (error) => {
@@ -90,12 +90,10 @@ const CreateOrder: FC<CreateOrderProps> = ({
     }
 
     const handleSendEmail = ({
-        orderId,
         email,
         subject,
         message,
     }: {
-        orderId: string,
         email: string,
         subject: string,
         message: string,
@@ -104,9 +102,6 @@ const CreateOrder: FC<CreateOrderProps> = ({
             email,
             subject,
             message,
-            orderId,
-            salesOperationId,
-            alreadyUpdated: false
         }, {
             onError: (e) => toastError(e.message),
             onSettled: () => {
@@ -132,8 +127,8 @@ const CreateOrder: FC<CreateOrderProps> = ({
 
     return (
         <Modal
-            title="Add courses"
-            description="select courses to be added to this order"
+            title="Add course"
+            description="select course to be added to this order"
             isOpen={open}
             onClose={() => setOpen(false)}
         >
@@ -149,7 +144,6 @@ const CreateOrder: FC<CreateOrderProps> = ({
                     )}
                     {!coursesData || !email[0] ? (<></>) : (
                         <CoursesSelectField
-                            multiSelect
                             values={coursesGroupType}
                             setValues={setCoursesGroupType}
                             placeholder="Select Course..."
@@ -164,7 +158,7 @@ const CreateOrder: FC<CreateOrderProps> = ({
                     }}>
                         Clear
                     </Button>
-                    <Button disabled={loading} onClick={handleAddCourses}>
+                    <Button disabled={loading} onClick={handleAddCourse}>
                         Confirm
                     </Button>
                 </div>

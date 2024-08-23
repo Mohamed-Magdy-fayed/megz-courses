@@ -60,6 +60,7 @@ export const salesAgentsRouter = createTRPCRouter({
             })
         )
         .mutation(async ({ input, ctx }) => {
+            if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
             const hashedPassword = await bcrypt.hash(input.password, 10);
 
             // check if email is taken
@@ -105,6 +106,7 @@ export const salesAgentsRouter = createTRPCRouter({
                 ctx,
                 input: { id, name, image, email, phone, salary },
             }) => {
+                if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
                 const updatedUser = await ctx.prisma.user.update({
                     where: {
                         id: id,

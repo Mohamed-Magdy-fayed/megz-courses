@@ -67,8 +67,7 @@ const GroupPage: NextPage = () => {
     const groupIncome = useMemo(() => {
         if (data?.zoomGroup?.students
             .some(s => s.orders
-                .some(order => order.courseTypes
-                    .some(type => type.id === data.zoomGroup?.courseId && type.isPrivate)))) return (privatePrice! * data?.zoomGroup?.studentIds.length!)
+                .some(order => order.courseType.id === data.zoomGroup?.courseId && order.courseType.isPrivate))) return (privatePrice! * data?.zoomGroup?.studentIds.length!)
 
         return (groupPrice! * data?.zoomGroup?.studentIds.length!)
     }, [data?.zoomGroup, groupPrice])

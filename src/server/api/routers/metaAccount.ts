@@ -18,6 +18,8 @@ export const metaAccountRouter = createTRPCRouter({
             id: z.string(),
         }))
         .mutation(async ({ ctx, input: { id } }) => {
+            if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+
             const deletedMetaClient = await ctx.prisma.metaClient.delete({
                 where: { id }
             })
@@ -30,6 +32,7 @@ export const metaAccountRouter = createTRPCRouter({
             fbExchangeToken: z.string(),
         }))
         .mutation(async ({ input: { name, fbExchangeToken }, ctx }) => {
+            if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
             const clientId = env.NEXT_PUBLIC_WHATSAPP_APP_ID
             const clientSecret = env.NEXT_PUBLIC_WHATSAPP_APP_SECRET
 
@@ -64,6 +67,7 @@ export const metaAccountRouter = createTRPCRouter({
             fbExchangeToken: z.string(),
         }))
         .mutation(async ({ input: { id, name, fbExchangeToken }, ctx }) => {
+            if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
             const clientId = env.NEXT_PUBLIC_WHATSAPP_APP_ID
             const clientSecret = env.NEXT_PUBLIC_WHATSAPP_APP_SECRET
 

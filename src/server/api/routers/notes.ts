@@ -1,4 +1,4 @@
-import { validNoteStatus, validNoteTypes, validUserTypes } from "@/lib/enumsTypes";
+import { validNoteStatus, validNoteTypes } from "@/lib/enumsTypes";
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -51,10 +51,13 @@ export const notesRouter = createTRPCRouter({
       sla: z.string()
     }))
     .mutation(async ({ ctx, input: { id, mentions, status, sla, noteType } }) => {
+      const userId = ctx.session.user.id
       const userEmail = ctx.session.user.email
       if (!userEmail) throw new TRPCError({ code: "BAD_REQUEST", message: "User not logged in!" })
       const oldNote = await ctx.prisma.userNote.findUnique({ where: { id } })
       if (!oldNote) throw new TRPCError({ code: "BAD_REQUEST", message: "Note doesn't exist" })
+      const isAllowedAccess = oldNote.createdByUserId === userId || oldNote.mentionsUserIds.some(id => id === userId) || ctx.session.user.userType === "admin"
+      if (!isAllowedAccess) throw new TRPCError({ code: "BAD_REQUEST", message: "You are not authorized to take that action, please contact your admin!" })
 
       await ctx.prisma.userNote.update({
         where: { id }, data: {
@@ -85,11 +88,15 @@ export const notesRouter = createTRPCRouter({
       mentions: z.array(z.string()),
     }))
     .mutation(async ({ ctx, input: { id, message, mentions } }) => {
+      const userId = ctx.session.user.id
       const userEmail = ctx.session.user.email
       if (!userEmail) throw new TRPCError({ code: "BAD_REQUEST", message: "User not logged in!" })
 
       const oldNote = await ctx.prisma.userNote.findUnique({ where: { id } })
       if (!oldNote) throw new TRPCError({ code: "BAD_REQUEST", message: "Note doesn't exist" })
+
+      const isAllowedAccess = oldNote.createdByUserId === userId || oldNote.mentionsUserIds.some(id => id === userId) || ctx.session.user.userType === "admin"
+      if (!isAllowedAccess) throw new TRPCError({ code: "BAD_REQUEST", message: "You are not authorized to take that action, please contact your admin!" })
 
       const note = await ctx.prisma.userNote.update({
         where: { id },
@@ -117,10 +124,13 @@ export const notesRouter = createTRPCRouter({
       status: z.enum(validNoteStatus),
     }))
     .mutation(async ({ ctx, input: { id, status } }) => {
+      const userId = ctx.session.user.id
       const userEmail = ctx.session.user.email
       if (!userEmail) throw new TRPCError({ code: "BAD_REQUEST", message: "User not logged in!" })
       const oldNote = await ctx.prisma.userNote.findUnique({ where: { id } })
       if (!oldNote) throw new TRPCError({ code: "BAD_REQUEST", message: "Note doesn't exist" })
+      const isAllowedAccess = oldNote.createdByUserId === userId || oldNote.mentionsUserIds.some(id => id === userId) || ctx.session.user.userType === "admin"
+      if (!isAllowedAccess) throw new TRPCError({ code: "BAD_REQUEST", message: "You are not authorized to take that action, please contact your admin!" })
 
       const note = await ctx.prisma.userNote.update({
         where: { id },

@@ -17,7 +17,6 @@ import { trainersRouter } from "./routers/trainers";
 import { zoomGroupsRouter } from "./routers/zoomGroups";
 import { evaluationFormRouter } from "./routers/evaluationForm";
 import { evaluationFormSubmissionsRouter } from "./routers/evaluationFormSubmissions";
-import { placementTestsTimesRouter } from "./routers/placementTestsTimes";
 import { waitingListRouter } from "./routers/waitingList";
 import { zoomMeetingsRouter } from "./routers/zoomMeetings";
 import { zoomAccountsRouter } from "@/server/api/routers/zoomAccounts";
@@ -27,7 +26,6 @@ import { certificatesRouter } from "@/server/api/routers/certificates";
 import { levelsRouter } from "@/server/api/routers/levels";
 import { siteIdentityRouter } from "@/server/api/routers/siteIdentity";
 import { metaAccountRouter } from "@/server/api/routers/metaAccount";
-import { refundReasonsRouter } from "@/server/api/routers/refundReasons";
 
 /**
  * This is the primary router for your server.
@@ -46,7 +44,6 @@ export const appRouter = createTRPCRouter({
   orders: ordersRouter,
   emails: emailsRouter,
   placementTests: placementTestsRouter,
-  placementTestsTimes: placementTestsTimesRouter,
   selfServe: selfServeRouter,
   analytics: analyticsRouter,
   chatAgents: chatAgentsRouter,
@@ -63,7 +60,6 @@ export const appRouter = createTRPCRouter({
   notes: notesRouter,
   certificates: certificatesRouter,
   siteIdentity: siteIdentityRouter,
-  refundReasons: refundReasonsRouter,
 });
 
 // export type definition of API

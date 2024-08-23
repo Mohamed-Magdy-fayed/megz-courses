@@ -11,6 +11,7 @@ import { sendWhatsAppMessage } from "@/lib/whatsApp"
 import { Course, Order, SalesOperation, User } from "@prisma/client"
 import { render } from "@react-email/render"
 import { format } from "date-fns"
+import Head from "next/head"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 
@@ -19,15 +20,15 @@ const SuccessfullPaymentPage = () => {
     const transactionId = router.query.id as string
     const orderNumber = router.query.merchant_order_id as string
     const { toast, toastError } = useToast()
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
     const [orderData, setOrderData] = useState<Order & {
         user: User;
         salesOperation: SalesOperation;
-        courses: Course[];
+        course: Course;
     }>()
 
-    const { data: siteData, refetch: refetchSiteData } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: !false })
+    const { data: siteData, refetch: refetchSiteData } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: (!!transactionId && !!orderNumber) })
     const payOrderMutation = api.orders.payOrder.useMutation()
     const sendEmailMutation = api.emails.sendEmail.useMutation()
     const trpcUtils = api.useContext()
@@ -61,19 +62,14 @@ const SuccessfullPaymentPage = () => {
             email,
             subject,
             message,
-            orderId,
-            salesOperationId: updatedOrder.salesOperationId,
-            alreadyUpdated,
         }, {
             onError: (e) => toastError(e.message),
             onSettled: (data) => {
-                if (!data?.alreadyUpdated) {
-                    toast({
-                        variant: "success",
-                        title: "Order payment successfull",
-                        description: `Thanks for completeing the payment for order: ${data?.order?.orderNumber}`
-                    })
-                }
+                toast({
+                    variant: "success",
+                    title: "Order payment successfull",
+                    description: `Thanks for completeing the payment for order: `
+                })
                 trpcUtils.salesOperations.invalidate()
                 setLoading(false)
             }
@@ -89,6 +85,7 @@ const SuccessfullPaymentPage = () => {
         if (!!transactionId && !!orderNumber) payOrderMutation.mutate({ orderNumber, transactionId }, {
             onSuccess: (data) => {
                 setOrderData(data.updatedOrder)
+                if (!data.courseLink) return
                 const message = render(
                     <PaymentConfEmail
                         logoUrl={siteData.siteIdentity.logoPrimary}
@@ -99,12 +96,12 @@ const SuccessfullPaymentPage = () => {
                         orderNumber={data.updatedOrder.orderNumber}
                         courseLink={data.courseLink ? data.courseLink : ""}
                         customerName={data.updatedOrder.user.name}
-                        courses={data.updatedOrder.courses.map(course => ({
-                            courseName: course.name,
-                            coursePrice: data.updatedOrder.courseTypes.find(type => type.id === course.id)?.isPrivate
-                                ? formatPrice(course.privatePrice)
-                                : formatPrice(course.groupPrice)
-                        }))}
+                        course={{
+                            courseName: data.updatedOrder.course.name,
+                            coursePrice: data.updatedOrder.courseType.isPrivate
+                                ? formatPrice(data.updatedOrder.course.privatePrice)
+                                : formatPrice(data.updatedOrder.course.groupPrice)
+                        }}
                     />, { pretty: true }
                 )
                 handleSendEmail({
@@ -133,6 +130,11 @@ const SuccessfullPaymentPage = () => {
 
     return (
         <LandingLayout>
+            <Head>
+                <title>{`Order | ${!!orderNumber ? orderNumber : "Loading..."}`}</title>
+                <meta name="description" content={`Order Details for order ${orderNumber}`} />
+                <meta name="robots" content="index, follow" />
+            </Head>
             <ConceptTitle className="mb-4">Payment Successfull</ConceptTitle>
             {loading
                 ? (

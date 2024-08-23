@@ -18,14 +18,10 @@ export const waitingListRouter = createTRPCRouter({
                 where: { courseId, studentUserId: userId },
                 include: { trainer: true }
             }))?.trainer.userId === ctx.session.user.id
-            if (!!currentUser
-                && !(currentUser.userType === "admin"
-                    || (currentUser.userType === "teacher"
-                        && currentUser.trainer?.role === "tester"
-                        && isAssignedTester))) throw new TRPCError({
-                            code: "UNAUTHORIZED",
-                            message: "You are not allowed to take that action!"
-                        })
+
+            if (!currentUser) throw new TRPCError({ code: "UNAUTHORIZED", message: "not logged in" })
+            if (currentUser.userType !== "teacher" && currentUser.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You can't take that action!" })
+            if (!isAssignedTester && currentUser.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You can't take that action!" })
 
             const user = await ctx.prisma.user.findUnique({ where: { id: userId }, include: { courseStatus: true } })
             if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "user not found!" })
@@ -48,13 +44,13 @@ export const waitingListRouter = createTRPCRouter({
                 include: { courseStatus: { include: { level: true } } }
             });
 
-            const note = await ctx.prisma.userNote.create({
+            await ctx.prisma.userNote.create({
                 data: {
                     sla: 0,
                     status: "Closed",
                     title: `Student added to waiting list by ${ctx.session.user.name}`,
                     type: "Info",
-                    createdForStudent: { connect: { id: updatedUser.name } },
+                    createdForStudent: { connect: { id: updatedUser.id } },
                     messages: [{
                         message: `User was added to waiting list of course ${course.name} at level ${updatedUser.courseStatus.find((s) => courseId === s.courseId)?.level.name}`,
                         updatedAt: new Date(),

@@ -39,7 +39,7 @@ const MyTasksPage: NextPage = () => {
                                 studentPhone: test.student.phone || "",
                                 studentImage: test.student.image || "",
                                 testLink: `/placement_test/${test.courseId}`,
-                                testTime: test.oralTestTime.testTime,
+                                testTime: test.oralTestTime,
                                 isWrittenTestDone: test.writtenTest.submissions.some(sub => sub.userId === test.studentUserId),
                                 writtenTestResult: test.writtenTest.submissions.find(sub => sub.userId === test.studentUserId)?.rating,
                                 writtenTestTotalPoints: test.writtenTest.totalPoints,

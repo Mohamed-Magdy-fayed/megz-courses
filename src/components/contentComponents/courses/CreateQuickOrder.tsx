@@ -40,7 +40,7 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
             email: email[0],
             courseDetails: { courseId: courseData.id, isPrivate },
         }, {
-            onSuccess: ({ order: { id, amount, orderNumber, user, courses, createdAt, courseTypes, salesOperationId, salesOperation }, paymentLink }) => {
+            onSuccess: ({ order: { id, amount, orderNumber, user, course, createdAt, courseType, salesOperationId, salesOperation }, paymentLink }) => {
                 const message = render(
                     <Email
                         logoUrl={siteData?.siteIdentity.logoPrimary || ""}
@@ -50,21 +50,18 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
                         orderNumber={orderNumber}
                         paymentLink={paymentLink}
                         customerName={user.name}
-                        courses={courses.map(course => ({
+                        course={{
                             courseName: course.name,
-                            coursePrice: courseTypes.find(type => type.id === course.id)?.isPrivate
+                            coursePrice: courseType.isPrivate
                                 ? formatPrice(course.privatePrice)
                                 : formatPrice(course.groupPrice)
-                        }))}
+                        }}
                     />, { pretty: true }
                 )
                 handleSendEmail({
-                    orderId: id,
                     email: user.email,
                     subject: `Thanks for your order ${orderNumber}`,
                     message,
-                    salesOperationId,
-                    salesOperation,
                 })
                 toastSuccess(`Order ${orderNumber} has been submitted successfully!`)
             },
@@ -81,7 +78,7 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
             phone,
             courseDetails: { courseId: courseData.id, isPrivate },
         }, {
-            onSuccess: ({ password, order: { id, amount, orderNumber, user, courses, createdAt, courseTypes, salesOperationId, salesOperation }, paymentLink }) => {
+            onSuccess: ({ password, order: { id, amount, orderNumber, user, course, createdAt, courseType, salesOperationId, salesOperation }, paymentLink }) => {
                 const message = render(
                     <Email
                         logoUrl={siteData?.siteIdentity.logoPrimary || ""}
@@ -91,12 +88,12 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
                         orderNumber={orderNumber}
                         paymentLink={paymentLink}
                         customerName={user.name}
-                        courses={courses.map(course => ({
+                        course={{
                             courseName: course.name,
-                            coursePrice: courseTypes.find(type => type.id === course.id)?.isPrivate
+                            coursePrice: courseType.isPrivate
                                 ? formatPrice(course.privatePrice)
                                 : formatPrice(course.groupPrice)
-                        }))}
+                        }}
                     />, { pretty: true }
                 )
                 sendWhatsAppMessage({
@@ -113,12 +110,9 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
                     \n\nيمكنك المتابعة إلى الدفع هنا: *${paymentLink}*`
                 })
                 handleSendEmail({
-                    orderId: id,
                     email: user.email,
                     subject: `Thanks for your order ${orderNumber}`,
                     message,
-                    salesOperationId,
-                    salesOperation,
                 })
                 toastSuccess(`Order ${orderNumber} has been submitted successfully!`)
                 sendWhatsAppMessage({
@@ -141,36 +135,24 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
     }
 
     const handleSendEmail = ({
-        orderId,
         email,
         subject,
         message,
-        salesOperationId,
-        salesOperation,
     }: {
-        orderId: string,
         email: string,
         subject: string,
         message: string,
-        salesOperationId: string,
-        salesOperation: SalesOperation & {
-            assignee: SalesAgent | null;
-        },
     }) => {
         sendEmailMutation.mutate({
             email,
             subject,
             message,
-            orderId,
-            salesOperationId,
-            alreadyUpdated: false
         }, {
             onError: (e) => toastError(e.message),
             onSettled: () => {
                 trpcUtils.invalidate()
                     .then(() => {
                         setLoading(false)
-                        window.open(`${env.NEXT_PUBLIC_NEXTAUTH_URL}/operation/${salesOperation.code}`, "_blank")
                     })
             }
         })

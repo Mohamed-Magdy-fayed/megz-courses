@@ -3,7 +3,7 @@ import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/
 import { TRPCError } from "@trpc/server";
 
 export const levelsRouter = createTRPCRouter({
-  getWaitingList: publicProcedure
+  getWaitingList: protectedProcedure
     .input(z.object({ slug: z.string() }))
     .query(async ({ input: { slug }, ctx }) => {
       const level = await ctx.prisma.courseLevel.findUnique({
@@ -27,7 +27,7 @@ export const levelsRouter = createTRPCRouter({
 
       return { watingUsers };
     }),
-  getWaitingLists: publicProcedure
+  getWaitingLists: protectedProcedure
     .query(async ({ ctx }) => {
       const levels = await ctx.prisma.courseLevel.findMany({
         include: { courseStatus: true }
@@ -135,6 +135,7 @@ export const levelsRouter = createTRPCRouter({
       slug,
       courseSlug,
     }, ctx }) => {
+      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
       const level = await ctx.prisma.courseLevel.create({
         data: {
           name,
@@ -160,6 +161,7 @@ export const levelsRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input: { name, slug, id } }) => {
+      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
       const updatedCourse = await ctx.prisma.course.update({
         where: {
           id,

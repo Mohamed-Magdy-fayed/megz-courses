@@ -4,8 +4,6 @@ import { ArrowUpDown } from "lucide-react";
 import { Typography } from "../ui/Typoghraphy";
 import Link from "next/link";
 import { SeverityPill, SeverityPillProps } from "../overview/SeverityPill";
-import useZoomMeeting from "@/hooks/useZoomMeeting";
-import { api } from "@/lib/api";
 import { env } from "@/env.mjs";
 
 export type CourseRow = {
@@ -121,14 +119,17 @@ export const columns: ColumnDef<CourseRow>[] = [
     accessorKey: "isOralTestScheduled",
     header: "Oral Test Time",
     cell: ({ row }) => {
-      if (row.original.isOralTestScheduled) return <Typography>{row.original.oralTestTime}</Typography>
+      if (!row.original.isOralTestScheduled) return <Typography>Not yet Scheduled</Typography>
 
       return (
-        <Link href={`/placement_test/${row.original.id}`}>
-          <Button customeColor={"primary"}>
-            Start
-          </Button>
-        </Link>
+        <div className="flex flex-col gap-2 items-center">
+          <Typography>{row.original.oralTestTime}</Typography>
+          <Link href={`/placement_test/${row.original.id}`}>
+            <Button customeColor={"primary"}>
+              Start
+            </Button>
+          </Link>
+        </div>
       )
     },
   },

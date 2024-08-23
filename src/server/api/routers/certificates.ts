@@ -2,8 +2,6 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from "@/server/api/trpc";
-import { TRPCError } from "@trpc/server";
-import id from "date-fns/locale/id";
 import { z } from "zod";
 
 export const certificatesRouter = createTRPCRouter({
@@ -22,7 +20,7 @@ export const certificatesRouter = createTRPCRouter({
           completionDate,
           course: { connect: { slug: courseSlug } },
           courseLevel: { connect: { slug: levelSlug } },
-          user: { connect: { id: studentId } }
+          user: { connect: { id: studentId } },
         }
       })
 
@@ -32,14 +30,14 @@ export const certificatesRouter = createTRPCRouter({
     }),
   getCertificate: protectedProcedure
     .input(z.object({
-      courseSlug: z.string()
+      courseSlug: z.string(),
+      levelSlug: z.string(),
     }))
-    .query(async ({ ctx, input: { courseSlug } }) => {
+    .query(async ({ ctx, input: { courseSlug, levelSlug } }) => {
       const certificate = await ctx.prisma.certificate.findFirst({
         where: {
-          course: {
-            slug: courseSlug,
-          },
+          course: { slug: courseSlug },
+          courseLevel: { slug: levelSlug },
           userId: ctx.session.user.id,
         },
         include: {

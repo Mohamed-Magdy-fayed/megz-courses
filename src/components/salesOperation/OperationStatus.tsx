@@ -21,7 +21,7 @@ const OperationStatus = ({ data }: {
         } | null;
         orderDetails: (Order & {
             user: User;
-            courses: Course[];
+            course: Course;
         }) | null;
     })
 }) => {

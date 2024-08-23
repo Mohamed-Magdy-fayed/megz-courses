@@ -24,6 +24,7 @@ import { api } from "@/lib/api"
 import { ScrollArea } from "../ui/scroll-area"
 import { useNavStore } from "@/zustand/store"
 import Image from "next/image"
+import { getInitials } from "@/lib/getInitials"
 
 export const LearningNavigationMenu = ({ siteIdentity }: { siteIdentity?: SiteIdentity }) => {
     const latestCoursesQuery = api.courses.getLatest.useQuery(undefined, {
@@ -252,7 +253,7 @@ const DesktopAuthenticatedProfileMenu = () => {
                                     <AvatarImage
                                         alt={session.data?.user.name || "NA"}
                                         src={session.data?.user.image || ""} />
-                                    <AvatarFallback>{session.data?.user.name || "NA"}</AvatarFallback>
+                                    <AvatarFallback>{getInitials(session.data?.user.name|| "NA")}</AvatarFallback>
                                 </Avatar>
                             </Button>
                         </DropdownMenuTrigger>
@@ -310,7 +311,7 @@ const MobileAuthenticatedProfileMenu = () => {
                                     <AvatarImage
                                         alt={session.data?.user.name || "NA"}
                                         src={session.data?.user.image || ""} />
-                                    <AvatarFallback>{session.data?.user.name || "NA"}</AvatarFallback>
+                                    <AvatarFallback>{getInitials(session.data?.user.name|| "NA")}</AvatarFallback>
                                 </Avatar>
                             </Button>
                         </DropdownMenuTrigger>

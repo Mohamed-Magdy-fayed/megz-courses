@@ -36,7 +36,7 @@ const OperationPage = () => {
     const [isScheduleTestOpen, setIsScheduleTestOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const [loadingToast, setLoadingToast] = useState<toastType>()
-    const { toastSuccess, toastError, toast } = useToast()
+    const { toastError, toast } = useToast()
     const [isOpen, setIsOpen] = useState(false);
 
     const session = useSession()
@@ -72,7 +72,7 @@ const OperationPage = () => {
             }
             refreshTokenMutation.mutate({ zoomClientId: zoomClient.id }, {
                 onSuccess: ({ updatedZoomClient }) => {
-                    if (!salesOperationData?.salesOperations?.orderDetails?.courseIds[0] || !trainerId[0] || !testTime) {
+                    if (!salesOperationData?.salesOperations?.orderDetails?.courseId || !trainerId[0] || !testTime) {
                         setLoading(false)
                         return loadingToast?.update({
                             id: loadingToast.id,
@@ -85,7 +85,7 @@ const OperationPage = () => {
 
                     createPlacementTestMeetingMutation.mutate({
                         zoomClientId: updatedZoomClient.id,
-                        courseId: salesOperationData.salesOperations.orderDetails.courseIds[0],
+                        courseId: salesOperationData.salesOperations.orderDetails.courseId,
                         testTime,
                         trainerId: trainerId[0],
                     }, {
@@ -98,7 +98,7 @@ const OperationPage = () => {
                             })
                             createPlacementTestMutation.mutate({
                                 userId: salesOperationData?.salesOperations?.orderDetails?.userId!,
-                                courseIds: salesOperationData?.salesOperations?.orderDetails?.courseIds!,
+                                courseId: salesOperationData?.salesOperations?.orderDetails?.courseId!,
                                 testTime,
                                 trainerId: trainerId[0]!,
                                 meetingNumber,
@@ -116,8 +116,7 @@ const OperationPage = () => {
                                                     loadingToast?.update({
                                                         id: loadingToast.id,
                                                         title: "Success",
-                                                        description: `${data?.placementTests.length} Placement tests created!`,
-                                                        duration: 2000,
+                                                        description: `Placement test created!`,
                                                         variant: "success",
                                                     })
                                                     setLoading(false)
@@ -137,7 +136,6 @@ const OperationPage = () => {
                                 id: loadingToast.id,
                                 title: "Error",
                                 description: message,
-                                duration: 2000,
                                 variant: "destructive",
                             })
                             setLoading(false)
@@ -150,7 +148,7 @@ const OperationPage = () => {
     const refreshTokenMutation = api.zoomMeetings.refreshToken.useMutation();
 
     const handleSchedulePlacementTest = () => {
-        if (!coursesData?.courses.some(course => salesOperationData?.salesOperations?.orderDetails?.courseIds.includes(course.id) && course.evaluationForms.some(form => form.type === "placementTest"))) return toastError("no placement test created for this course yet!")
+        if (!coursesData?.courses.some(course => salesOperationData?.salesOperations?.orderDetails?.courseId === course.id && course.evaluationForms.some(form => form.type === "placementTest"))) return toastError("no placement test created for this course yet!")
         if (!salesOperationData?.salesOperations?.orderDetails || !trainerId[0] || !testTime) return toastError("Missing some information here!")
         setLoading(true)
         availableZoomClientMutation.mutate({ startDate: testTime })

@@ -20,7 +20,7 @@ const OrderInfoPanel = ({ data }: {
         }) | null;
         orderDetails: (Order & {
             user: User;
-            courses: Course[];
+            course: Course;
         }) | null;
     }
 }) => {
@@ -120,12 +120,12 @@ const OrderInfoPanel = ({ data }: {
                 </div>
                 <div className="flex flex-col">
                     <div className="flex items-center gap-4">
-                        <Typography className="font-bold">Courses</Typography>
-                        <Typography>{data.orderDetails?.courses.length || "NA"}</Typography>
+                        <Typography className="font-bold">Course</Typography>
+                        <Typography>{data.orderDetails?.course.name || "NA"}</Typography>
                     </div>
-                    {data.orderDetails?.courses && (
+                    {data.orderDetails?.course && (
                         <DataTable
-                            data={data.orderDetails?.courses}
+                            data={[data.orderDetails?.course]}
                             onDelete={() => { }}
                             setData={() => { }}
                             columns={[
@@ -138,7 +138,7 @@ const OrderInfoPanel = ({ data }: {
                                     accessorKey: "price",
                                     header: "Price",
                                     cell: ({ row }) => <>{
-                                        formatPrice(data.orderDetails?.courseTypes.find(({ id }) => id === row.original.id)?.isPrivate
+                                        formatPrice(data.orderDetails?.courseType.isPrivate
                                             ? row.original.privatePrice
                                             : row.original.groupPrice)
                                     }</>

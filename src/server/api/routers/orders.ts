@@ -7,7 +7,7 @@ import { User } from "@prisma/client";
 import { randomUUID } from "crypto";
 import { env } from "@/env.mjs";
 import axios from "axios";
-import { formatAmountForPaymob } from "@/lib/paymobHelpers";
+import { createPaymentIntent, formatAmountForPaymob } from "@/lib/paymobHelpers";
 
 export const ordersRouter = createTRPCRouter({
     getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -15,7 +15,7 @@ export const ordersRouter = createTRPCRouter({
             include: {
                 user: true,
                 salesOperation: { include: { assignee: true } },
-                courses: true,
+                course: true,
             },
             orderBy: {
                 id: "desc"
@@ -33,7 +33,7 @@ export const ordersRouter = createTRPCRouter({
             include: {
                 user: true,
                 salesOperation: { include: { assignee: true } },
-                courses: true,
+                course: true,
             },
         });
 
@@ -51,7 +51,7 @@ export const ordersRouter = createTRPCRouter({
                 include: {
                     user: true,
                     salesOperation: { include: { assignee: true } },
-                    courses: true,
+                    course: true,
                 },
             });
             return { order };
@@ -68,7 +68,7 @@ export const ordersRouter = createTRPCRouter({
                 include: {
                     user: true,
                     salesOperation: { include: { assignee: true } },
-                    courses: true,
+                    course: true,
                 },
             });
             return { order };
@@ -76,15 +76,16 @@ export const ordersRouter = createTRPCRouter({
     createOrder: protectedProcedure
         .input(
             z.object({
-                coursesDetails: z.array(z.object({
+                courseDetails: z.object({
                     courseId: z.string(),
                     isPrivate: z.boolean(),
-                })),
+                }),
                 salesOperationId: z.string(),
                 email: z.string().email(),
             })
         )
-        .mutation(async ({ input: { coursesDetails, salesOperationId, email }, ctx }) => {
+        .mutation(async ({ input: { courseDetails, salesOperationId, email }, ctx }) => {
+            if (ctx.session.user.userType !== "admin" && ctx.session.user.userType !== "salesAgent") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to create orders, Please contact your admin!" })
             const user = await ctx.prisma.user.findUnique({
                 where: {
                     email
@@ -93,9 +94,7 @@ export const ordersRouter = createTRPCRouter({
             })
             if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "No user with this Email" })
 
-            const foundMatchingCourse = coursesDetails.some(({ courseId }) => {
-                return user?.courseStatus.some((status) => status.courseId === courseId)
-            });
+            const foundMatchingCourse = user?.courseStatus.some((status) => status.courseId === courseDetails.courseId);
 
             if (foundMatchingCourse) {
                 throw new TRPCError({
@@ -104,62 +103,17 @@ export const ordersRouter = createTRPCRouter({
                 });
             }
 
-            const courses = await ctx.prisma.course.findMany({
+            const course = await ctx.prisma.course.findUnique({
                 where: {
-                    id: { in: coursesDetails.map(course => course.courseId) }
+                    id: courseDetails.courseId
                 }
             })
-            const totalPrice = courses.map(course => coursesDetails.find(({
-                courseId
-            }) => course.id === courseId)?.isPrivate ? course.privatePrice : course.groupPrice)
-                .reduce((accumulator, value) => {
-                    return accumulator + value;
-                }, 0);
+            if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "No course found" })
+            const totalPrice = courseDetails.isPrivate ? course.privatePrice : course.groupPrice
 
             const orderNumber = orderCodeGenerator()
 
-            const intentData = {
-                special_reference: orderNumber,
-                amount: formatAmountForPaymob(totalPrice),
-                currency: "EGP",
-                payment_methods: [4618117, 4617984],
-                items: courses.map(course => ({
-                    name: course.name,
-                    amount: formatAmountForPaymob(coursesDetails.find(({
-                        courseId
-                    }) => course.id === courseId)?.isPrivate ? course.privatePrice : course.groupPrice),
-                    description: course.description,
-                    quantity: 1,
-                })),
-                billing_data: {
-                    first_name: user.name.split(" ")[0],
-                    last_name: user.name.split(" ")[-1] || "No last name",
-                    phone_number: user.phone,
-                    email: user.email,
-                },
-                customer: {
-                    first_name: user.name.split(" ")[0],
-                    last_name: user.name.split(" ")[-1] || "No last name",
-                    email: user.email,
-                },
-            };
-
-            const intentConfig = {
-                method: 'post',
-                maxBodyLength: Infinity,
-                url: `${env.PAYMOB_BASE_URL}/v1/intention/`,
-                headers: {
-                    'Authorization': `Token ${env.PAYMOB_API_SECRET}`,
-                    'Content-Type': 'application/json'
-                },
-                data: intentData
-            };
-
-            const intentResponse = (await axios.request(intentConfig).then(res => res.data).catch(e => {
-                throw new TRPCError({ code: "BAD_REQUEST", message: JSON.stringify(e.response.data) })
-            }))
-            if (!intentResponse.client_secret) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "intent failed" })
-
+            const intentResponse = await createPaymentIntent(totalPrice, course, user, orderNumber)
             const paymentLink = `${env.PAYMOB_BASE_URL}/unifiedcheckout/?publicKey=${env.PAYMOB_PUBLIC_KEY}&clientSecret=${intentResponse.client_secret}`
 
             const order = await ctx.prisma.order.create({
@@ -168,19 +122,19 @@ export const ordersRouter = createTRPCRouter({
                     orderNumber,
                     paymentId: intentResponse.id,
                     paymentLink,
-                    courses: { connect: coursesDetails.map(({ courseId }) => ({ id: courseId })) },
+                    course: { connect: { id: courseDetails.courseId } },
                     salesOperation: { connect: { id: salesOperationId } },
                     user: { connect: { email } },
-                    courseTypes: coursesDetails.map(({ courseId, isPrivate }) => ({ id: courseId, isPrivate }))
+                    courseType: { id: courseDetails.courseId, isPrivate: courseDetails.isPrivate }
                 },
                 include: {
-                    courses: true,
+                    course: true,
                     user: true,
                     salesOperation: { include: { assignee: { include: { user: true } } } }
                 },
             });
 
-            const note = await ctx.prisma.userNote.create({
+            await ctx.prisma.userNote.create({
                 data: {
                     sla: 0,
                     status: "Closed",
@@ -188,7 +142,7 @@ export const ordersRouter = createTRPCRouter({
                     type: "Info",
                     createdForStudent: { connect: { id: user.id } },
                     messages: [{
-                        message: `An order was placed by ${order.salesOperation.assignee?.user.name} for student ${user.name} regarding course ${courses[0]?.name} for a ${order.courseTypes[0]?.isPrivate ? "private" : "group"} purchase the order is now awaiting payment\nPayment Link: ${paymentLink}`,
+                        message: `An order was placed by ${order.salesOperation.assignee?.user.name} for student ${user.name} regarding course ${course?.name} for a ${order.courseType.isPrivate ? "private" : "group"} purchase the order is now awaiting payment\nPayment Link: ${paymentLink}`,
                         updatedAt: new Date(),
                         updatedBy: "System"
                     }],
@@ -226,6 +180,8 @@ export const ordersRouter = createTRPCRouter({
                 })
         )
         .mutation(async ({ input: { courseDetails, email, name, phone }, ctx }) => {
+            if (ctx.session.user.userType !== "admin" && ctx.session.user.userType !== "salesAgent") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to create orders, Please contact your admin!" })
+
             let user: User | null
             let password = ""
             if (!email && !!name) {
@@ -242,14 +198,13 @@ export const ordersRouter = createTRPCRouter({
             }
             if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to get user" })
 
-            const salesAgentUser = await ctx.prisma.user.findFirst({
+            const salesAgentUser = await ctx.prisma.user.findUnique({
                 where: {
                     id: ctx.session.user.id,
-                    userType: "salesAgent",
                 },
                 include: { salesAgent: true }
             })
-            if (!salesAgentUser) throw new TRPCError({ code: "BAD_REQUEST", message: "Not a sales agent!" })
+            if (!salesAgentUser) throw new TRPCError({ code: "BAD_REQUEST", message: "No user found!" })
             const salesAgentId = salesAgentUser.id
 
             const course = await ctx.prisma.course.findUnique({
@@ -319,19 +274,19 @@ export const ordersRouter = createTRPCRouter({
                     orderNumber,
                     paymentId: intentResponse.id,
                     paymentLink,
-                    courses: { connect: { id: courseDetails.courseId } },
+                    course: { connect: { id: courseDetails.courseId } },
                     salesOperation: { connect: { id: salesOperation.id } },
                     user: { connect: { id: user.id } },
-                    courseTypes: [{ id: courseDetails.courseId, isPrivate: courseDetails.isPrivate }]
+                    courseType: { id: courseDetails.courseId, isPrivate: courseDetails.isPrivate }
                 },
                 include: {
-                    courses: true,
+                    course: true,
                     user: true,
                     salesOperation: { include: { assignee: true } }
                 },
             });
 
-            const note = await ctx.prisma.userNote.create({
+            await ctx.prisma.userNote.create({
                 data: {
                     sla: 0,
                     status: "Closed",
@@ -339,7 +294,7 @@ export const ordersRouter = createTRPCRouter({
                     type: "Info",
                     createdForStudent: { connect: { id: user.id } },
                     messages: [{
-                        message: `An order was placed by ${salesAgentUser.name} for student ${user.name} regarding course ${course.name} for a ${order.courseTypes[0]?.isPrivate ? "private" : "group"} purchase the order is now awaiting payment\nPayment Link: ${paymentLink}`,
+                        message: `An order was placed by ${salesAgentUser.name} for student ${user.name} regarding course ${course.name} for a ${order.courseType.isPrivate ? "private" : "group"} purchase the order is now awaiting payment\nPayment Link: ${paymentLink}`,
                         updatedAt: new Date(),
                         updatedBy: "System"
                     }],
@@ -358,13 +313,13 @@ export const ordersRouter = createTRPCRouter({
             orderId: z.string()
         }))
         .mutation(async ({ input: { orderId }, ctx }) => {
-            const order = await ctx.prisma.order.findUnique({ where: { id: orderId }, include: { courses: true, user: true } })
+            const order = await ctx.prisma.order.findUnique({ where: { id: orderId }, include: { course: true, user: true } })
 
             if (!order || !order.paymentId) throw new TRPCError({ code: "BAD_REQUEST", message: "order not found" })
 
             const coursesPrice = await ctx.prisma.course.findMany({
                 where: {
-                    id: { in: order?.courseIds }
+                    id: order.courseId
                 }
             })
 
@@ -374,9 +329,7 @@ export const ordersRouter = createTRPCRouter({
                 payment_methods: [4618117, 4617984],
                 items: coursesPrice.map(course => ({
                     name: course.name,
-                    amount: formatAmountForPaymob(order.courseTypes.find(({
-                        id,
-                    }) => course.id === id)?.isPrivate ? course.privatePrice : course.groupPrice),
+                    amount: formatAmountForPaymob(order.courseType.isPrivate ? course.privatePrice : course.groupPrice),
                     description: course.description,
                     quantity: 1,
                 })),
@@ -415,13 +368,13 @@ export const ordersRouter = createTRPCRouter({
                     paymentId: intentResponse.id,
                 },
                 include: {
-                    courses: true,
+                    course: true,
                     user: true,
                     salesOperation: { include: { assignee: true } }
                 },
             });
 
-            const note = await ctx.prisma.userNote.create({
+            await ctx.prisma.userNote.create({
                 data: {
                     sla: 0,
                     status: "Closed",
@@ -449,7 +402,8 @@ export const ordersRouter = createTRPCRouter({
             paymentConfirmationImage: z.string(),
         }))
         .mutation(async ({ input: { id, amount, paymentConfirmationImage }, ctx }) => {
-            const order = await ctx.prisma.order.findUnique({ where: { id }, include: { user: true, courses: true } })
+            if (ctx.session.user.userType !== "admin" && ctx.session.user.userType !== "salesAgent") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to update payments, Please contact your admin!" })
+            const order = await ctx.prisma.order.findUnique({ where: { id }, include: { user: true, course: true } })
 
             if (!order?.id) throw new TRPCError({ code: "BAD_REQUEST", message: "incorrect information" })
             if (!order?.paymentId) throw new TRPCError({ code: "BAD_REQUEST", message: "incorrect information" })
@@ -472,7 +426,7 @@ export const ordersRouter = createTRPCRouter({
                     status: "paid",
                 },
                 include: {
-                    courses: true,
+                    course: true,
                     salesOperation: true,
                     user: true,
                 }
@@ -509,7 +463,7 @@ export const ordersRouter = createTRPCRouter({
                     orderNumber,
                 },
                 include: {
-                    courses: true,
+                    course: true,
                     salesOperation: true,
                     user: true,
                 }
@@ -533,13 +487,13 @@ export const ordersRouter = createTRPCRouter({
                     paymentId: transactionId,
                 },
                 include: {
-                    courses: true,
+                    course: true,
                     salesOperation: true,
                     user: true,
                 }
             })
 
-            const note = await ctx.prisma.userNote.create({
+            await ctx.prisma.userNote.create({
                 data: {
                     sla: 0,
                     status: "Closed",
@@ -562,6 +516,7 @@ export const ordersRouter = createTRPCRouter({
             orderId: z.string(),
         }))
         .mutation(async ({ input: { orderId }, ctx }) => {
+            if (ctx.session.user.userType !== "admin" && ctx.session.user.userType !== "salesAgent") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to update payments, Please contact your admin!" })
             const userId = ctx.session.user.id
             const user = await ctx.prisma.user.findUnique({ where: { id: userId } })
             if (!user?.email) throw new TRPCError({ code: "BAD_REQUEST", message: "Requester user don't exist!" })
@@ -602,7 +557,7 @@ export const ordersRouter = createTRPCRouter({
                         refundId: `${refundData.id}`,
                         refundRequester: user.id
                     },
-                    include: { courses: true }
+                    include: { course: true }
                 });
 
                 const updatedUser = await ctx.prisma.user.update({
@@ -612,15 +567,13 @@ export const ordersRouter = createTRPCRouter({
                     data: {
                         courseStatus: {
                             deleteMany: {
-                                courseId: {
-                                    in: order.courseIds
-                                }
+                                courseId: order.courseId
                             }
                         }
                     },
                 });
 
-                const note = await ctx.prisma.userNote.create({
+                await ctx.prisma.userNote.create({
                     data: {
                         sla: 0,
                         status: "Closed",
@@ -628,7 +581,7 @@ export const ordersRouter = createTRPCRouter({
                         type: "Info",
                         createdForStudent: { connect: { id: updatedUser.id } },
                         messages: [{
-                            message: `Order refunded and access revoked for course ${updatedOrder.courses[0]?.name}`,
+                            message: `Order refunded and access revoked for course ${updatedOrder.course.name}`,
                             updatedAt: new Date(),
                             updatedBy: "System"
                         }],
@@ -657,9 +610,7 @@ export const ordersRouter = createTRPCRouter({
                 data: {
                     courseStatus: {
                         deleteMany: {
-                            courseId: {
-                                in: order.courseIds
-                            }
+                            courseId: order.courseId
                         }
                     }
                 },
@@ -671,24 +622,21 @@ export const ordersRouter = createTRPCRouter({
         .input(
             z.object({
                 id: z.string(),
-                coursesDetails: z.array(z.object({
+                courseDetails: z.object({
                     courseId: z.string(),
                     isPrivate: z.boolean(),
-                })),
+                }),
             })
         )
-        .mutation(async ({ ctx, input: { id, coursesDetails } }) => {
-            const courses = await ctx.prisma.course.findMany({
+        .mutation(async ({ ctx, input: { id, courseDetails } }) => {
+            if (ctx.session.user.userType !== "admin" && ctx.session.user.userType !== "salesAgent") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to update payments, Please contact your admin!" })
+            const course = await ctx.prisma.course.findUnique({
                 where: {
-                    id: { in: coursesDetails.map(({ courseId }) => courseId) }
+                    id: courseDetails.courseId
                 }
             })
-            const totalPrice = courses.map(course => coursesDetails.find(({
-                courseId
-            }) => course.id === courseId)?.isPrivate ? course.privatePrice : course.groupPrice)
-                .reduce((accumulator, value) => {
-                    return accumulator + value;
-                }, 0);
+            if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "No course found!" })
+            const totalPrice = courseDetails.isPrivate ? course.privatePrice : course.groupPrice
 
             const updatedOrder = await ctx.prisma.order.update({
                 where: {
@@ -696,10 +644,10 @@ export const ordersRouter = createTRPCRouter({
                 },
                 data: {
                     amount: totalPrice,
-                    courses: { connect: coursesDetails.map(({ courseId }) => ({ id: courseId })) },
+                    course: { connect: { id: courseDetails.courseId } },
                 },
                 include: {
-                    courses: true,
+                    course: true,
                     user: true,
                     salesOperation: { include: { assignee: true } }
                 },

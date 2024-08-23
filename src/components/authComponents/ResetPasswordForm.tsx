@@ -74,6 +74,10 @@ const ResetPasswordForm: FC<ResetPasswordFormProps> = ({ setOpen }) => {
             description: message,
             title: "Error",
         }),
+        onSettled: () => {
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined)
+        }
     });
     const resetPasswordEmailMutation = api.auth.resetPasswordEmail.useMutation({
         onSettled: () => {

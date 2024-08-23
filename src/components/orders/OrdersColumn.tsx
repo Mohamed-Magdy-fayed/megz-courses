@@ -29,7 +29,7 @@ export type OrderRow = {
   userEmail: string;
   userImage: string;
   refundRequester: string | null;
-  courses: Course[];
+  course: Course;
   updatedAt: Date;
 }
 
@@ -142,15 +142,13 @@ export const columns: ColumnDef<OrderRow>[] = [
     ),
   },
   {
-    accessorKey: "courses",
+    accessorKey: "course",
     header: "Courses",
     cell: ({ row }) => (
       <div className="flex flex-col gap-2">
-        {row.original.courses.map(course => (
-          <Typography key={course.id}>
-            {course.name}
-          </Typography>
-        ))}
+        <Typography>
+          {row.original.course.name}
+        </Typography>
       </div>
     ),
   },

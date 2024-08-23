@@ -24,7 +24,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu"
 import useFileDownload from "@/hooks/useFileDownload";
-import { deleteFile } from "@/lib/firebaseStorage";
+import { deleteFile, deleteFiles } from "@/lib/firebaseStorage";
 import { useToast } from "@/components/ui/use-toast";
 
 const EditMaterialPage = () => {
@@ -37,9 +37,10 @@ const EditMaterialPage = () => {
   const { toastInfo } = useToast()
 
   const pathQuery = useMemo(() => router.query.path as string, [router.query.path])
-  const courseName = useMemo(() => data?.materialItem?.courseLevel?.course.name, [data?.materialItem?.courseLevel?.course.name])
-  const levelName = useMemo(() => data?.materialItem?.courseLevel?.name, [data?.materialItem?.courseLevel?.name])
-  const materialName = useMemo(() => data?.materialItem?.title, [data?.materialItem?.title])
+  const segments = useMemo(() => pathQuery?.split("/") || [], [pathQuery])
+  const courseName = api.courses.getBySlug.useQuery({ slug: segments[3]! }, { enabled: !!segments[3] }).data?.course?.name
+  const levelName = api.levels.getBySlug.useQuery({ slug: segments[4]! }, { enabled: !!segments[4] }).data?.level?.name
+  const materialName = api.materials.getBySlug.useQuery({ slug: segments[5]! }, { enabled: !!segments[5] }).data?.materialItem?.title
 
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -88,8 +89,14 @@ const EditMaterialPage = () => {
       .then(() => loadData())
   }
 
+  const handleDeleteFolder = async (path: string) => {
+    setLoading(true)
+    deleteFiles(path)
+      .then(() => loadData())
+  }
+
   const loadData = () => {
-    if (!pathQuery || !data?.materialItem || !courseName || !levelName || !materialName) return
+    if (!pathQuery) return
 
     const storageRef = ref(
       storage,
@@ -244,7 +251,7 @@ const EditMaterialPage = () => {
                         <Copy className="w-4 h-4 mr-2" />
                         <Typography>Copy Link</Typography>
                       </ContextMenuItem>
-                      <ContextMenuItem onClick={() => handleDelete(item.fullPath)}>
+                      <ContextMenuItem onClick={() => handleDeleteFolder(item.fullPath)}>
                         <Trash className="w-4 h-4 mr-2" />
                         <Typography>Delete</Typography>
                       </ContextMenuItem>

@@ -14,7 +14,7 @@ const OrdersClient = ({ data }: {
     salesOperation: SalesOperation & {
       assignee: SalesAgent | null;
     };
-    courses: Course[];
+    course: Course;
   })[]
 }) => {
   const [orders, setOrders] = useState<OrderRow[]>([])
@@ -22,7 +22,7 @@ const OrdersClient = ({ data }: {
   const { data: sessionData } = useSession()
   const formattedData = data.map(({
     amount,
-    courses,
+    course,
     id,
     orderNumber,
     paymentId,
@@ -45,7 +45,7 @@ const OrdersClient = ({ data }: {
     userEmail: user.email,
     userImage: user.image || "",
     refundRequester,
-    courses,
+    course,
     updatedAt,
   }))
 

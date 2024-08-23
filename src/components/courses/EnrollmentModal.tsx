@@ -32,7 +32,7 @@ const EnrollmentModal: FC<EnrollmentModalProps> = ({
     setOpen,
 }) => {
     const enrollCourseMutation = api.selfServe.enrollCourse.useMutation()
-    const { toastError, toast } = useToast()
+    const { toastError } = useToast()
     const router = useRouter()
     const session = useSession()
     const [loginModalOpen, setLoginModalOpen] = useState(false)

@@ -1,7 +1,6 @@
 import { z } from "zod";
 import {
     createTRPCRouter,
-    publicProcedure,
     protectedProcedure,
 } from "@/server/api/trpc";
 import bcrypt from "bcrypt";
@@ -40,22 +39,6 @@ export const chatAgentsRouter = createTRPCRouter({
             });
             return { chatAgent };
         }),
-    getChatAgentByEmail: publicProcedure
-        .input(
-            z.object({
-                email: z.string(),
-            })
-        )
-        .query(async ({ input: { email }, ctx }) => {
-            const user = await ctx.prisma.user.findUnique({
-                where: {
-                    email
-                },
-                include: { chatAgent: true },
-            });
-
-            return { user };
-        }),
     createChatAgent: protectedProcedure
         .input(
             z.object({
@@ -66,6 +49,7 @@ export const chatAgentsRouter = createTRPCRouter({
             })
         )
         .mutation(async ({ input, ctx }) => {
+            if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
             const hashedPassword = await bcrypt.hash(input.password, 10);
 
             // check if email is taken
