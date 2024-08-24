@@ -166,7 +166,7 @@ const OperationPage = () => {
                     <SelectField
                         data={
                             trainersData?.trainers
-                                ? trainersData.trainers.map(trainer => ({
+                                ? trainersData.trainers.filter(t => t.role === "tester").map(trainer => ({
                                     active: true,
                                     label: trainer.user.name,
                                     value: trainer.id,
