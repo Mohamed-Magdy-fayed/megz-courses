@@ -48,7 +48,7 @@ export const coursesRouter = createTRPCRouter({
         }
       })
 
-      const watingUsers = users.filter(u => u.courseStatus.some(({ courseId, status }) => courseId === course?.id && status === "waiting"))
+      const watingUsers = users.filter(u => u.courseStatus.some(({ courseId, status, courseLevelId }) => courseId === course?.id && u.courseStatus.some(s => courseLevelId === s.courseLevelId) && status === "waiting"))
 
       return { watingUsers };
     }),

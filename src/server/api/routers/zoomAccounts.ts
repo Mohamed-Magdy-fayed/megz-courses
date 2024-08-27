@@ -8,6 +8,7 @@ import { env } from "@/env.mjs";
 import axios, { AxiosError } from "axios";
 import QueryString from "qs";
 import { format } from "date-fns";
+import { ZoomClient } from "@prisma/client";
 
 export type Meeting = {
     uuid: string;
@@ -37,6 +38,8 @@ export const zoomAccountsRouter = createTRPCRouter({
             const zoomClients = await ctx.prisma.zoomClient.findMany({ include: { zoomSessions: true }, orderBy: { id: "desc" } })
             const endDate = new Date(startDate)
             endDate.setHours(startDate.getHours() + 2)
+
+            let mtngss: { client: ZoomClient, mtngs: Meeting[] }[] = []
 
             const availableClients = await Promise.all(zoomClients.map(async (client) => {
                 try {
@@ -69,7 +72,7 @@ export const zoomAccountsRouter = createTRPCRouter({
                     const config = {
                         method: 'get',
                         maxBodyLength: Infinity,
-                        url: `https://api.zoom.us/v2/users/me/meetings?type=scheduled${!startDate ? "" : `&from=${format(startDate, "yyyy-MM-dd")}`}${!endDate ? "" : `&to=${format(endDate, "yyyy-MM-dd")}`}&timezone=Africa%2FCairo`,
+                        url: `https://api.zoom.us/v2/users/me/meetings?type=upcoming${!startDate ? "" : `&from=${format(startDate, "yyyy-MM-dd")}`}${!endDate ? "" : `&to=${format(endDate, "yyyy-MM-dd")}`}&timezone=Africa%2FCairo`,
                         headers: {
                             'Accept': 'application/json',
                             'Authorization': `Bearer ${refreshResponse.data.access_token}`,
@@ -78,18 +81,17 @@ export const zoomAccountsRouter = createTRPCRouter({
 
                     const response = (await axios.request(config)).data;
                     const mtngs = response.meetings as Meeting[]
+                    mtngss.push({ client, mtngs })
 
                     const isOverlapping = mtngs.some(m => {
                         const existingStart = new Date(m.start_time);
                         const existingEnd = new Date(existingStart);
-                        existingEnd.setMinutes(existingEnd.getMinutes() + m.duration); // Assuming `m.duration` is in minutes
+                        existingEnd.setMinutes(existingEnd.getMinutes() + 120);
 
-                        // Check if the new meeting overlaps with the existing meeting
                         const newMeetingEnd = new Date(startDate);
                         newMeetingEnd.setHours(newMeetingEnd.getHours() + 2);
 
-                        return (startDate >= existingStart && startDate < existingEnd) || // New start time overlaps with an existing meeting
-                            (newMeetingEnd > existingStart && newMeetingEnd <= existingEnd); // New end time overlaps with an existing meeting
+                        return (startDate < existingEnd && newMeetingEnd > existingStart);
                     });
 
                     return isOverlapping ? null : client;
@@ -101,7 +103,7 @@ export const zoomAccountsRouter = createTRPCRouter({
             const filteredClients = availableClients.filter(client => client !== null);
             if (filteredClients.length === 0) return { zoomClient: null, zoomClients }
 
-            return { zoomClient: filteredClients[0], zoomClients }
+            return { zoomClient: filteredClients[0], zoomClients, mtngss }
         }),
     checkMeetings: protectedProcedure
         .input(z.object({

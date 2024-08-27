@@ -27,24 +27,17 @@ import { AlertModal } from "@/components/modals/AlertModal";
 const tabs = [
     { value: "site_identity", label: "Site Identity" },
     { value: "zoom_accounts", label: "Zoom Accounts" },
-    { value: "facebook", label: "Facebook Configuration" },
+    // { value: "facebook", label: "Facebook Configuration" },
     { value: "sales_channels", label: "Sales Channels" },
 ]
 
 const ConfigPage: NextPage = () => {
     const router = useRouter();
-    const tabName = router.query.tab as string;
 
     const [isZoomOpen, setIsZoomOpen] = useState(false)
-    const [tab, setTab] = useState("site_identity");
 
     const { data } = api.siteIdentity.getSiteIdentity.useQuery()
     const { data: metaClient } = api.metaAccount.getMetaClient.useQuery()
-
-    useEffect(() => {
-        if (tabName) setTab(tabName)
-        if (!tabName) router.push(`config?tab=${tab}`)
-    }, [tabName]);
 
     return (
         <AppLayout>
@@ -57,31 +50,17 @@ const ConfigPage: NextPage = () => {
                     <ZoomAccountForm setIsOpen={setIsZoomOpen} />
                 )}
             />
-            <Tabs className="w-full" value={tab}>
+            <Tabs className="w-full" id="config" defaultValue={"site_identity"}>
                 <TabsList className="w-full">
                     {tabs.map(tab => (
                         <TabsTrigger
                             key={tab.value}
                             value={tab.value}
-                            onClick={() => router.push(`config?tab=${tab.value}`)}
                         >
                             {tab.label}
                         </TabsTrigger>
                     ))}
                 </TabsList>
-                <TabsContent value="facebook">
-                    <ConceptTitle>Configure Facebook webhooks</ConceptTitle>
-                    <ApiAlert title="webhook callback url" description="https://megz-courses.vercel.app/api/facebook" />
-                    <div className="flex items-center justify-between p-4">
-                        <Typography>once verified successfully your potintial customers will be added to your database</Typography>
-                        <Link href={`/database`}>
-                            <Button className="whitespace-nowrap space-x-2" customeColor={"primaryOutlined"} variant={"outline"}>
-                                <Typography variant={"buttonText"}>Go to Database</Typography>
-                                <ArrowRightFromLineIcon></ArrowRightFromLineIcon>
-                            </Button>
-                        </Link>
-                    </div>
-                </TabsContent>
                 <TabsContent value="zoom_accounts">
                     <div className="space-y-4">
                         <div className="flex items-center justify-between w-full">

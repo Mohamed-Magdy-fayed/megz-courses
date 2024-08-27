@@ -2,7 +2,7 @@ import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
 import { api } from "@/lib/api";
-import { ArrowLeftToLine, Plus } from "lucide-react";
+import { ArrowLeftToLine } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Spinner from "@/components/Spinner";
@@ -38,10 +38,8 @@ const tabs = [
 const CoursePage = () => {
     const router = useRouter();
     const courseSlug = router.query?.courseSlug as string;
-    const tabName = router.query.tab as string;
     const { data, isLoading, isError } = api.courses.getBySlug.useQuery({ slug: courseSlug }, { enabled: !!courseSlug });
 
-    const [tab, setTab] = useState("levels");
     const [isUploadOpen, setIsUploadOpen] = useState(false);
     const [isTestOpen, setIsTestOpen] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
@@ -55,11 +53,6 @@ const CoursePage = () => {
         if (!data?.course) return
         setPlacementTest(data.course.evaluationForms.filter(form => form.type === "placementTest")[0])
     }, [data?.course?.evaluationForms]);
-
-    useEffect(() => {
-        if (!tabName && courseSlug) router.push(`${courseSlug}?tab=${tab}`)
-        if (tabName) setTab(tabName)
-    }, [tabName, courseSlug]);
 
     if (!isMounted) return null;
     if (!data?.course) return null;
@@ -106,13 +99,12 @@ const CoursePage = () => {
                 ) : !data.course?.levels ? (
                     <>No Levels yet</>
                 ) : (
-                    <Tabs className="w-full" value={tab}>
+                    <Tabs className="w-full" defaultValue="levels" id={data.course.id}>
                         <TabsList className="w-full" >
                             {tabs.map(tab => (
                                 <TabsTrigger
                                     key={tab.value}
                                     value={tab.value}
-                                    onClick={() => router.push(`${courseSlug}?tab=${tab.value}`)}
                                 >
                                     {tab.label}
                                 </TabsTrigger>

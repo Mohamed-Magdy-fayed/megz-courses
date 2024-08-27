@@ -1,7 +1,6 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
-import { useEffect, useState } from "react";
 import AccountHistory from "@/components/users/accountComponents/AccountHistory";
 import AccountNotes from "@/components/users/accountComponents/AccountNotes";
 import { useRouter } from "next/router";
@@ -14,35 +13,26 @@ import { UserGetPayload } from "@/pages/account/[id]";
 import CertificatesClient from "@/components/users/accountComponents/certificates/CertificateClient";
 
 const tabs = [
+    { value: "notes", label: "Account Notes" },
     { value: "groups", label: "Groups" },
     { value: "waiting_list", label: "Waiting list" },
     { value: "placement_tests", label: "Placement tests" },
     { value: "certificates", label: "Certificates" },
     { value: "history", label: "Account History" },
-    { value: "notes", label: "Account Notes" },
 ]
 
 export const UserAccountTabs = ({ user }: { user: UserGetPayload }) => {
     const router = useRouter()
     const id = router.query?.id as string;
-    const tabName = router.query.tab as string;
-
-    const [tab, setTab] = useState("groups");
-
-    useEffect(() => {
-        if (!tabName && id) router.push(`${id}?tab=${tab}`)
-        if (tabName) setTab(tabName)
-    }, [tabName, id]);
 
     return (
         <div>
-            <Tabs className="w-full" value={tab}>
+            <Tabs id={id} defaultValue="notes" className="w-full">
                 <TabsList className="w-full" >
                     {tabs.map(tab => (
                         <TabsTrigger
                             key={tab.value}
                             value={tab.value}
-                            onClick={() => router.push(`${id}?tab=${tab.value}`)}
                         >
                             {tab.label}
                         </TabsTrigger>

@@ -65,6 +65,8 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                     variant: "destructive",
                 })
                 setLoading(false)
+                loadingToast?.dismissAfter()
+                setLoadingToast(undefined)
                 return
             }
             refreshTokenMutation.mutate({ zoomClientId: zoomClient.id }, {

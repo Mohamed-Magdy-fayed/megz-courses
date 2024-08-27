@@ -1,4 +1,3 @@
-import { env } from "@/env.mjs";
 import { Dispatch, SetStateAction } from "react";
 
 interface GetMeetingConfigInput {

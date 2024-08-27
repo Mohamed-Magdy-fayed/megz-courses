@@ -1,5 +1,5 @@
-import '@zoomus/websdk/dist/css/react-select.css';
-import '@zoomus/websdk/dist/css/bootstrap.css';
+import '@zoom/meetingsdk/dist/css/react-select.css';
+import '@zoom/meetingsdk/dist/css/bootstrap.css';
 import { useRef } from 'react';
 
 const MeetingRoot = () => {

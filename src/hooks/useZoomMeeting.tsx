@@ -43,8 +43,8 @@ const useZoomMeeting = () => {
         sessionId: string
     ) => {
         setIsJoining(true)
-        import('@zoomus/websdk').then(({ ZoomMtg }) => {
-            ZoomMtg.setZoomJSLib('https://source.zoom.us/2.18.2/lib', '/av');
+        import('@zoom/meetingsdk').then(({ ZoomMtg }) => {
+            ZoomMtg.setZoomJSLib('https://source.zoom.us/3.8.5/lib', '/av');
             ZoomMtg.preLoadWasm();
             ZoomMtg.prepareWebSDK();
 

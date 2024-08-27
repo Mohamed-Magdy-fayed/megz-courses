@@ -118,7 +118,7 @@ export const columns: ColumnDef<SessionColumn>[] = [
       const editSessionStatusMutation = api.zoomGroups.editSessionStatus.useMutation({
         onMutate: () => setLoadingToast(toast({
           title: "Loading...",
-          duration: 3000,
+          duration: 30000,
           description: <Spinner className="w-4 h-4" />,
           variant: "info",
         })),

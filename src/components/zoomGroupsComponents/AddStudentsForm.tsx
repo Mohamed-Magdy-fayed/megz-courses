@@ -14,8 +14,9 @@ type AddStudentsFormProps = {
     setIsOpen: (val: boolean) => void,
     id: string,
     courseId: string,
+    lvlId: string,
 }
-const AddStudentsForm: FC<AddStudentsFormProps> = ({ setIsOpen, id, courseId }) => {
+const AddStudentsForm: FC<AddStudentsFormProps> = ({ setIsOpen, id, courseId, lvlId }) => {
     const [loading, setLoading] = useState(false);
     const [userIds, setUserIds] = useState<string[]>([]);
 
