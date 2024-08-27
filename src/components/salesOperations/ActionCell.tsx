@@ -168,7 +168,7 @@ const CellAction: React.FC<CellActionProps> = ({ id, assigneeId, code, status })
                         </DropdownMenuItem>
                     )}
                     <DropdownMenuItem>
-                        <Link className="flex gap-2" href={`/operation/${code}`}>
+                        <Link className="flex gap-2" href={`/sales_operations/${code}`}>
                             <SearchSlash className="w-4 h-4 mr-2" />
                             View
                         </Link>

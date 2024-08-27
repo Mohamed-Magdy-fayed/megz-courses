@@ -71,7 +71,7 @@ export const columns: ColumnDef<SessionColumn>[] = [
         <div className="flex flex-col gap-2">
           <Typography>{session.title} Session</Typography>
           {session.isSessionOngoing && (
-            <Link target="_blank" href={`/meeting/?mn=${session.meetingNumber}&pwd=${session.meetingPassword}&session_title=${session.title}&session_id=${session.id}&leave_url=${env.NEXT_PUBLIC_NEXTAUTH_URL}staff/my_sessions`}>
+            <Link target="_blank" href={`/meeting/?mn=${session.meetingNumber}&pwd=${session.meetingPassword}&session_title=${session.title}&session_id=${session.id}&leave_url=${env.NEXT_PUBLIC_NEXTAUTH_URL}edu_team/my_sessions`}>
               <Button type="button" customeColor={"info"}>Join Ongoing Session</Button>
             </Link>
           )}
@@ -182,7 +182,7 @@ export const columns: ColumnDef<SessionColumn>[] = [
           <Typography>{session.title} Session</Typography>
           <SeverityPill color="secondary">Starting soon</SeverityPill>
           <div className="flex gap-2 items-center [&>*]:flex-grow">
-            <Link target="_blank" href={`/meeting/?mn=${session.meetingNumber}&pwd=${session.meetingPassword}&session_title=${session.title}&session_id=${session.id}&leave_url=${env.NEXT_PUBLIC_NEXTAUTH_URL}staff/my_sessions`}>
+            <Link target="_blank" href={`/meeting/?mn=${session.meetingNumber}&pwd=${session.meetingPassword}&session_title=${session.title}&session_id=${session.id}&leave_url=${env.NEXT_PUBLIC_NEXTAUTH_URL}edu_team/my_sessions`}>
               <Button className="w-full" type="button" customeColor={"info"}>Start Zoom Session</Button>
             </Link>
             <Button

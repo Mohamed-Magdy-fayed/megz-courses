@@ -41,7 +41,7 @@ export const columns: ColumnDef<SalesOperationColumn>[] = [
     cell: ({ row }) => (
       <Tooltip>
         <TooltipTrigger>
-          <Link className="in-table-link" href={`/operation/${row.original.code}`}>{row.original.code}</Link>
+          <Link className="in-table-link" href={`/sales_operations/${row.original.code}`}>{row.original.code}</Link>
         </TooltipTrigger>
         <TooltipContent>
           Process operation

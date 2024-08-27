@@ -128,10 +128,10 @@ export function DataTable<TData, TValue>({
           <div className="py-2">
             <Accordion type="multiple">
               <AccordionItem className="border-0" value="search">
-                <AccordionTrigger className="!no-underline hover:bg-muted/10 data-[state=open]:bg-muted/10 data-[state=open]:rounded-b-none px-2 rounded-xl">
+                <AccordionTrigger className="!no-underline hover:bg-accent/10 data-[state=open]:bg-accent/10 data-[state=open]:rounded-b-none px-2 rounded-xl">
                   <Typography variant={"secondary"}>Search</Typography>
                 </AccordionTrigger>
-                <AccordionContent className="data-[state=open]:bg-muted/10 rounded-b-xl">
+                <AccordionContent className="data-[state=open]:bg-accent/10 rounded-b-xl">
                   <div className="flex items-center gap-2 flex-wrap px-2">
                     {searches.map(search => (
                       <div key={search.key} className="py-2 space-y-2">
@@ -159,10 +159,10 @@ export function DataTable<TData, TValue>({
           <div className="py-2">
             <Accordion type="multiple">
               <AccordionItem className="border-0" value="search">
-                <AccordionTrigger className="!no-underline data-[state=open]:bg-muted/10 data-[state=open]:rounded-b-none hover:bg-muted/10 px-2 rounded-xl">
+                <AccordionTrigger className="!no-underline data-[state=open]:bg-accent/10 data-[state=open]:rounded-b-none hover:bg-accent/10 px-2 rounded-xl">
                   <Typography variant={"secondary"}>Filters</Typography>
                 </AccordionTrigger>
-                <AccordionContent className="data-[state=open]:bg-muted/10 rounded-b-xl">
+                <AccordionContent className="data-[state=open]:bg-accent/10 rounded-b-xl">
                   <div className="py-4 flex flex-col gap-2 p-2">
                     {filters.map(filter => (
                       <div key={filter.key} className="space-y-2">

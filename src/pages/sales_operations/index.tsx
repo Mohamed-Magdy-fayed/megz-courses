@@ -46,28 +46,6 @@ const SalesAgentsPage = () => {
           <div className="flex justify-between">
             <div className="flex flex-col gap-2">
               <ConceptTitle>Sales Operations</ConceptTitle>
-              <div className="flex items-center gap-2">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant={"icon"} customeColor={"infoIcon"}>
-                      <FileDown />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <Typography>Import</Typography>
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant={"icon"} customeColor={"infoIcon"}>
-                      <FileUp />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <Typography>Export</Typography>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
             </div>
             <AssignModal
               isOpen={assignIsOpen}

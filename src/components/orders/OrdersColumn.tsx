@@ -162,7 +162,7 @@ export const columns: ColumnDef<OrderRow>[] = [
       if (row.original.isStudentView) return null
 
       return (
-        <Link href={`/operation/${row.original.salesOperationCode}`}>
+        <Link href={`/sales_operations/${row.original.salesOperationCode}`}>
           <Typography>
             {row.original.salesOperationCode}
           </Typography>

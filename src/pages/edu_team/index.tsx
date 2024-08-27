@@ -11,7 +11,7 @@ import TrainersClient from "@/components/staffComponents/TrainersClient";
 import Link from "next/link";
 import Modal from "@/components/ui/modal";
 
-const StaffPage = () => {
+const EducationalTeamPage = () => {
   const { data, isLoading, isError } = api.trainers.getTrainers.useQuery();
   const { data: currentTrainerData } = api.trainers.getCurrentTrainer.useQuery();
   const [isOpen, setIsOpen] = useState(false);
@@ -22,11 +22,11 @@ const StaffPage = () => {
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between gap-4">
             <div className="flex flex-col gap-2">
-              <ConceptTitle>Teachers</ConceptTitle>
+              <ConceptTitle>Educational Team</ConceptTitle>
             </div>
             <div className="space-x-4">
               {currentTrainerData?.trainer?.role === "tester" && (
-                <Link href={`/staff/my_tasks`}>
+                <Link href={`/edu_team/my_tasks`}>
                   <Button customeColor={"primary"}>
                     <ListChecks className="mr-2"></ListChecks>
                     <Typography variant={"buttonText"}>My Tasks</Typography>
@@ -34,7 +34,7 @@ const StaffPage = () => {
                 </Link>
               )}
               {currentTrainerData?.trainer?.role === "teacher" && (
-                <Link href={`/staff/my_sessions`}>
+                <Link href={`/edu_team/my_sessions`}>
                   <Button customeColor={"primary"}>
                     <ListChecks className="mr-2"></ListChecks>
                     <Typography variant={"buttonText"}>My Sessions</Typography>
@@ -71,4 +71,4 @@ const StaffPage = () => {
   );
 };
 
-export default StaffPage;
+export default EducationalTeamPage;

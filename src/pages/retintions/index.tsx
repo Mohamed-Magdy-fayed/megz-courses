@@ -22,28 +22,6 @@ const RetintionsPage = () => {
             <div className="flex flex-col gap-2">
               <ConceptTitle>Retintions List</ConceptTitle>
               <Typography variant={"secondary"}>Students who completed one or more courses</Typography>
-              <div className="flex items-center gap-2">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant={"icon"} customeColor={"infoIcon"}>
-                      <FileDown />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <Typography>Import</Typography>
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant={"icon"} customeColor={"infoIcon"}>
-                      <FileUp />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <Typography>Export</Typography>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
             </div>
           </div>
           {isOpen && (

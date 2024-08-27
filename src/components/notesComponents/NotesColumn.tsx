@@ -52,7 +52,7 @@ export const columns: ColumnDef<NotesColumn>[] = [
         header: "Note Title",
         cell: ({ row }) => (
             <Link href={`/notes/${row.original.id}`}>
-                <Typography className="whitespace-pre-wrap hover:underline hover:text-primary">{row.original.title}</Typography>
+                <Typography className="whitespace-nowrap hover:underline hover:text-primary">{row.original.title}</Typography>
             </Link>
         )
     },

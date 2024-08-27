@@ -36,20 +36,20 @@ export const mainNavLinks = [
     url: "students",
   },
   {
-    label: "Staff",
-    url: "staff",
+    label: "Educational Team",
+    url: "edu_team",
   },
   {
-    label: "Sales Team",
-    url: "sales-agents",
+    label: "Operational Team",
+    url: "ops_team",
   },
   {
     label: "Sales Operations",
-    url: "sales-operations",
+    url: "sales_operations",
   },
   {
     label: "Chat Team",
-    url: "chat-agents",
+    url: "chat_agents",
   },
   {
     label: "Content Management",

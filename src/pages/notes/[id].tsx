@@ -61,7 +61,11 @@ export default function NotePage() {
         }
     });
 
-    if (!data?.note) return <Spinner />
+    if (!data?.note) return (
+        <AppLayout>
+            <Spinner className="mx-auto" />
+        </AppLayout>
+    )
     if (
         !data.note.mentionsUserIds.some(id => sessionData?.user.id === id)
         && sessionData?.user.userType !== "admin"

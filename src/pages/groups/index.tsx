@@ -24,28 +24,6 @@ const GroupsPage: NextPage = () => {
                     <div className="flex justify-between">
                         <div className="flex flex-col gap-2">
                             <ConceptTitle>Zoom Groups</ConceptTitle>
-                            <div className="flex items-center gap-2">
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button variant={"icon"} customeColor={"infoIcon"}>
-                                            <FileDown />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <Typography>Import</Typography>
-                                    </TooltipContent>
-                                </Tooltip>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button variant={"icon"} customeColor={"infoIcon"}>
-                                            <FileUp />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <Typography>Export</Typography>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </div>
                         </div>
                         <Button onClick={() => setIsOpen(true)} customeColor={"primary"}>
                             <PlusIcon className="mr-2"></PlusIcon>

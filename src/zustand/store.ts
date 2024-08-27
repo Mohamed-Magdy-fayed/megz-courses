@@ -4,13 +4,24 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 export type ActiveLinkType =
   | ""
+  | "dashboard"
+  | "retintions"
+  | "notes"
+  | "groups"
+  | "orders"
   | "students"
-  | "staff"
+  | "edu_team"
+  | "ops_team"
+  | "sales_operations"
+  | "chat_agents"
   | "content"
+  | "database"
+  | "config"
   | "account"
-  | "settings"
-  | "login"
-  | "register"
+  | "privacy"
+  | "terms"
+  | "documentation"
+  | "support"
   | "404"
   | null;
 

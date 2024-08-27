@@ -20,49 +20,40 @@ const OrderPage: NextPage = () => {
             <main className="flex">
                 <div className="flex w-full flex-col gap-4">
                     <div className="flex justify-between gap-4">
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-2 flex-grow">
                             <ConceptTitle>Orders</ConceptTitle>
-                            <div className="flex items-center gap-2">
-                                <Button
-                                    variant={"icon"}
-                                    customeColor={"infoIcon"}
-                                    onClick={() => data?.orders && csvMaker(data?.orders)}
-                                >
-                                    <FileDown />
-                                </Button>
-                            </div>
+                            <Card className="flex flex-col lg:flex-row flex-grow w-full">
+                                <CardHeader>
+                                    All Orders States
+                                </CardHeader>
+                                <Separator orientation="vertical" className="hidden lg:block" />
+                                <CardContent className="flex items-center w-full justify-between p-4 gap-4 overflow-auto transition-all scrollbar-thin scrollbar-track-accent scrollbar-thumb-secondary">
+                                    <Typography>
+                                        Count: {data?.orders.length}
+                                    </Typography>
+                                    <Separator orientation="vertical" />
+                                    <Typography>
+                                        Paid: {data?.orders.filter(order => order.status === "paid").length}
+                                    </Typography>
+                                    <Separator orientation="vertical" />
+                                    <Typography>
+                                        Pending: {data?.orders.filter(order => order.status === "pending").length}
+                                    </Typography>
+                                    <Separator orientation="vertical" />
+                                    <Typography>
+                                        Cancelled: {data?.orders.filter(order => order.status === "cancelled").length}
+                                    </Typography>
+                                    <Separator orientation="vertical" />
+                                    <Typography>
+                                        Refunded: {data?.orders.filter(order => order.status === "refunded").length}
+                                    </Typography>
+                                </CardContent>
+                                <Separator orientation="vertical" className="hidden lg:block" />
+                                <CardFooter className="p-4">
+                                    Total Revenue: {formatPrice(data?.orders.map(order => order.status === "paid" ? order.amount : 0).reduce((a, b) => a + b, 0)!)}
+                                </CardFooter>
+                            </Card>
                         </div>
-                        <Card className="flex flex-col lg:flex-row flex-grow w-80">
-                            <CardHeader>
-                                All Orders States
-                            </CardHeader>
-                            <Separator orientation="vertical" className="hidden lg:block" />
-                            <CardContent className="flex items-center w-full justify-between p-4 gap-4 overflow-auto transition-all scrollbar-thin scrollbar-track-accent scrollbar-thumb-secondary">
-                                <Typography>
-                                    Count: {data?.orders.length}
-                                </Typography>
-                                <Separator orientation="vertical" />
-                                <Typography>
-                                    Paid: {data?.orders.filter(order => order.status === "paid").length}
-                                </Typography>
-                                <Separator orientation="vertical" />
-                                <Typography>
-                                    Pending: {data?.orders.filter(order => order.status === "pending").length}
-                                </Typography>
-                                <Separator orientation="vertical" />
-                                <Typography>
-                                    Cancelled: {data?.orders.filter(order => order.status === "cancelled").length}
-                                </Typography>
-                                <Separator orientation="vertical" />
-                                <Typography>
-                                    Refunded: {data?.orders.filter(order => order.status === "refunded").length}
-                                </Typography>
-                            </CardContent>
-                            <Separator orientation="vertical" className="hidden lg:block" />
-                            <CardFooter className="p-4">
-                                Total Revenue: {formatPrice(data?.orders.map(order => order.status === "paid" ? order.amount : 0).reduce((a, b) => a + b, 0)!)}
-                            </CardFooter>
-                        </Card>
                     </div>
                     <PaperContainer>
                         {isLoading ? (

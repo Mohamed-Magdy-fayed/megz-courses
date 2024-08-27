@@ -37,7 +37,7 @@ const CourseSearchBar: FC<{ setData?: Dispatch<SetStateAction<Course[]>> }> = ({
     });
 
     const onSubmit = (data: CourseSearchQuery) => {
-        router.push(`/search-courses?query=${data.query}`)
+        router.push(`/search_courses?query=${data.query}`)
     };
 
     return (

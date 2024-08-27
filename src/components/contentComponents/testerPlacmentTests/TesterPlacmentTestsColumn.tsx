@@ -286,7 +286,7 @@ export const columns: ColumnDef<Column>[] = [
                     {isOralTestTimePassed ? (
                         <Button onClick={() => setIsOpen(true)}>Reschedule</Button>
                     ) : (
-                        <Link target="_blank" className="w-fit" href={`/meeting/?mn=${row.original.oralTestMeeting.meetingNumber}&pwd=${row.original.oralTestMeeting.meetingPassword}&session_title=Placement_Test&leave_url=${env.NEXT_PUBLIC_NEXTAUTH_URL}staff/my_tasks`}>
+                        <Link target="_blank" className="w-fit" href={`/meeting/?mn=${row.original.oralTestMeeting.meetingNumber}&pwd=${row.original.oralTestMeeting.meetingPassword}&session_title=Placement_Test&leave_url=${env.NEXT_PUBLIC_NEXTAUTH_URL}edu_team/my_tasks`}>
                             <Button disabled={isOralTestTimePassed}>Join Meeting</Button>
                         </Link>
                     )}
