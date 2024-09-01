@@ -250,6 +250,7 @@ export const usersRouter = createTRPCRouter({
   editUser: protectedProcedure
     .input(
       z.object({
+        id: z.string(),
         name: z.string(),
         email: z.string().email(),
         password: z.string().optional(),
@@ -265,19 +266,19 @@ export const usersRouter = createTRPCRouter({
     .mutation(
       async ({
         ctx,
-        input: { name, email, password, userType, phone, state, country, street, city, device },
+        input: { id, name, email, password, userType, phone, state, country, street, city, device },
       }) => {
         if (ctx.session.user.userType !== "admin"
           && ctx.session.user.email !== email) {
           throw new TRPCError({ code: "UNAUTHORIZED" })
         }
 
-        const user = await ctx.prisma.user.findUnique({ where: { email } })
+        const user = await ctx.prisma.user.findUnique({ where: { id } })
         if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "user not found" })
 
         const updateOptions: Prisma.UserUpdateArgs = {
           where: {
-            email: email,
+            id,
           },
           data: {
             name,

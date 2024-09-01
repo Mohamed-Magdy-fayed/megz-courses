@@ -55,12 +55,6 @@ export const columns: ColumnDef<SessionColumn>[] = [
       return (
         <div className="flex items-center justify-between">
           Session
-          <Button
-            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <ArrowUpDown className="h-4 w-4 text-primary" />
-          </Button>
         </div>
       );
     },
@@ -209,12 +203,6 @@ export const columns: ColumnDef<SessionColumn>[] = [
       return (
         <div className="flex items-center justify-between">
           Created At
-          <Button
-            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <ArrowUpDown className="h-4 w-4 text-primary" />
-          </Button>
         </div>
       );
     },

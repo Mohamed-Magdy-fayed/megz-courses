@@ -44,6 +44,7 @@ export const LandingNavigationMenu = ({ siteIdentity }: { siteIdentity?: SiteIde
 
     if (session.data.user.device === (getDevice())) return
     editUserQuery.mutate({
+      id: session.data?.user.id || "",
       name: session.data?.user.name || "",
       email: session.data?.user.email || "",
       device: getDevice(),

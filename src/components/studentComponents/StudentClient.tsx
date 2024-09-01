@@ -5,6 +5,7 @@ import { User, Order, ZoomGroup, ZoomSession, EvaluationFormSubmission, CourseSt
 import { DataTable } from "@/components/ui/DataTable";
 import { Student, columns } from "./StudentColumn";
 import { useToast } from "../ui/use-toast";
+import { format } from "date-fns";
 
 export interface Users extends User {
   orders: Order[];
@@ -29,7 +30,7 @@ const StudentClient = ({ data }: { data: Users[] }) => {
     address: user.address ? getAddress(user.address) : "no address",
     userData: { user },
     coursesData,
-    createdAt: user.createdAt,
+    createdAt: format(user.createdAt, "dd MMM yyyy"),
   }));
 
   const { toastError, toastSuccess } = useToast();
@@ -61,7 +62,12 @@ const StudentClient = ({ data }: { data: Users[] }) => {
       data={formattedData}
       setData={setUsers}
       onDelete={onDelete}
-      searches={[{ key: "email", label: "Email" }]}
+      searches={[
+        { key: "email", label: "email" },
+        { key: "address", label: "address" },
+        { key: "phone", label: "phone" },
+        { key: "createdAt", label: "createdAt" },
+      ]}
     />
   );
 };

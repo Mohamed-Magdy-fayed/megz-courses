@@ -43,12 +43,6 @@ export const columns: ColumnDef<ChatAgentColumn>[] = [
       return (
         <div className="flex items-center justify-between">
           Info
-          <Button
-            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <ArrowUpDown className="h-4 w-4 text-primary" />
-          </Button>
         </div>
       );
     },
@@ -90,12 +84,6 @@ export const columns: ColumnDef<ChatAgentColumn>[] = [
       return (
         <div className="flex items-center justify-between">
           Joined
-          <Button
-            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <ArrowUpDown className="h-4 w-4 text-primary" />
-          </Button>
         </div>
       );
     },

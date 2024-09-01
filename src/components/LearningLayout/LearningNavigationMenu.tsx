@@ -45,6 +45,7 @@ export const LearningNavigationMenu = ({ siteIdentity }: { siteIdentity?: SiteId
 
         if (session.data.user.device === (getDevice())) return
         editUserQuery.mutate({
+            id: session.data?.user.id || "",
             name: session.data?.user.name || "",
             email: session.data?.user.email || "",
             device: getDevice(),
@@ -253,7 +254,7 @@ const DesktopAuthenticatedProfileMenu = () => {
                                     <AvatarImage
                                         alt={session.data?.user.name || "NA"}
                                         src={session.data?.user.image || ""} />
-                                    <AvatarFallback>{getInitials(session.data?.user.name|| "NA")}</AvatarFallback>
+                                    <AvatarFallback>{getInitials(session.data?.user.name || "NA")}</AvatarFallback>
                                 </Avatar>
                             </Button>
                         </DropdownMenuTrigger>
@@ -311,7 +312,7 @@ const MobileAuthenticatedProfileMenu = () => {
                                     <AvatarImage
                                         alt={session.data?.user.name || "NA"}
                                         src={session.data?.user.image || ""} />
-                                    <AvatarFallback>{getInitials(session.data?.user.name|| "NA")}</AvatarFallback>
+                                    <AvatarFallback>{getInitials(session.data?.user.name || "NA")}</AvatarFallback>
                                 </Avatar>
                             </Button>
                         </DropdownMenuTrigger>

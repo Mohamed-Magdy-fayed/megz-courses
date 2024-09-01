@@ -40,19 +40,7 @@ export const columns: ColumnDef<TrainerColumn>[] = [
   },
   {
     accessorKey: "email",
-    header: ({ column }) => {
-      return (
-        <div className="flex items-center justify-between">
-          Info
-          <Button
-            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <ArrowUpDown className="h-4 w-4 text-primary" />
-          </Button>
-        </div>
-      );
-    },
+    header: "Info",
     cell: ({ row }) => (
       <Link className="block w-fit" href={`/account/${row.original.userId}`}>
         <div className="flex items-center gap-2" >
@@ -81,27 +69,11 @@ export const columns: ColumnDef<TrainerColumn>[] = [
     header: "Role",
   },
   {
-    accessorKey: "taskCount",
-    header: "Tasks",
-  },
-  {
     accessorKey: "phone",
     header: "Phone",
   },
   {
     accessorKey: "createdAt",
-    header: ({ column }) => {
-      return (
-        <div className="flex items-center justify-between">
-          User Since
-          <Button
-            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <ArrowUpDown className="h-4 w-4 text-primary" />
-          </Button>
-        </div>
-      );
-    },
+    header: "User Since",
   },
 ];

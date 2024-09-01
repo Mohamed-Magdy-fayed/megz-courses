@@ -55,12 +55,6 @@ export const columns: ColumnDef<OrderColmun>[] = [
       return (
         <div className="flex items-center justify-between">
           <Typography variant={"secondary"}>Date</Typography>
-          <Button
-            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <ArrowUpDown className="h-4 w-4 text-primary" />
-          </Button>
         </div>
       );
     },
@@ -71,12 +65,6 @@ export const columns: ColumnDef<OrderColmun>[] = [
       return (
         <div className="flex items-center justify-between">
           <Typography variant={"secondary"}>Status</Typography>
-          <Button
-            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <ArrowUpDown className="h-4 w-4 text-primary" />
-          </Button>
         </div>
       );
     },

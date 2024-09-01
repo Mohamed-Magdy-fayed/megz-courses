@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Typography } from "../ui/Typoghraphy";
 import CellAction from "./ActionCell";
 import { format } from "date-fns";
-import { Course, EvaluationFormSubmission, Order, User, ZoomGroup, ZoomSession } from "@prisma/client";
+import { Course, Order, User } from "@prisma/client";
 import { Users } from "@/components/studentComponents/StudentClient";
 
 export type Student = {
@@ -28,7 +28,7 @@ export type Student = {
   userData: {
     user: Users
   }
-  createdAt: Date;
+  createdAt: string;
 };
 
 export const columns: ColumnDef<Student>[] = [
@@ -53,19 +53,7 @@ export const columns: ColumnDef<Student>[] = [
   },
   {
     accessorKey: "email",
-    header: ({ column }) => {
-      return (
-        <div className="flex items-center justify-between">
-          Info
-          <Button
-            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <ArrowUpDown className="h-4 w-4 text-primary" />
-          </Button>
-        </div>
-      );
-    },
+    header: "Info",
     cell: ({ row }) => (
       <Link className="block w-fit" href={`/account/${row.original.id}`}>
         <div className="flex items-center gap-2" >
@@ -103,20 +91,9 @@ export const columns: ColumnDef<Student>[] = [
       return (
         <div className="flex items-center justify-between">
           User Since
-          <Button
-            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <ArrowUpDown className="h-4 w-4 text-primary" />
-          </Button>
         </div>
       );
     },
-    cell: ({ row }) => {
-      return (
-        <>{format(row.original.createdAt, "dd MMM yyyy")}</>
-      )
-    }
   },
   {
     id: "actions",

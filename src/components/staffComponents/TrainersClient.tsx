@@ -53,10 +53,12 @@ const TrainersClient = ({ data }: { data: Trainers[] }) => {
       data={formattedData}
       setData={setTraiers}
       onDelete={onDelete}
-      searches={[{
-        key: "email",
-        label: "Email"
-      }]}
+      searches={[
+        { key: "email", label: "email" },
+        { key: "name", label: "name" },
+        { key: "phone", label: "phone" },
+        { key: "createdAt", label: "createdAt" },
+      ]}
       filters={[{
         key: "role",
         filterName: "Role",

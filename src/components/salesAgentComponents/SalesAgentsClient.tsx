@@ -53,6 +53,13 @@ const SalesAgentClient = ({ data }: { data: SalesAgents[] }) => {
       data={formattedData}
       setData={setSalesAgents}
       onDelete={onDelete}
+      searches={[
+        { key: "email", label: "email" },
+        { key: "salary", label: "salary" },
+        { key: "phone", label: "phone" },
+        { key: "tasks", label: "tasks" },
+        { key: "createdAt", label: "createdAt" },
+      ]}
     />
   );
 };

@@ -37,12 +37,6 @@ export const columns: ColumnDef<CourseRow>[] = [
       return (
         <div className="flex items-center justify-between">
           Course Name
-          <Button
-            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <ArrowUpDown className="h-4 w-4 text-primary" />
-          </Button>
         </div>
       );
     },
@@ -60,12 +54,6 @@ export const columns: ColumnDef<CourseRow>[] = [
       return (
         <div className="flex items-center justify-between">
           Zoom Group
-          <Button
-            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <ArrowUpDown className="h-4 w-4 text-primary" />
-          </Button>
         </div>
       );
     },
@@ -94,12 +82,6 @@ export const columns: ColumnDef<CourseRow>[] = [
       return (
         <div className="flex items-center justify-between">
           Status
-          <Button
-            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <ArrowUpDown className="h-4 w-4 text-primary" />
-          </Button>
         </div>
       );
     },

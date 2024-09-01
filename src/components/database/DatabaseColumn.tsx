@@ -55,12 +55,6 @@ export const columns: ColumnDef<Customer>[] = [
       return (
         <div className="flex items-center justify-between">
           Name
-          <Button
-            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <ArrowUpDown className="h-4 w-4 text-primary" />
-          </Button>
         </div>
       );
     },
@@ -76,12 +70,6 @@ export const columns: ColumnDef<Customer>[] = [
       return (
         <div className="flex items-center justify-between">
           Email
-          <Button
-            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <ArrowUpDown className="h-4 w-4 text-primary" />
-          </Button>
         </div>
       );
     },
@@ -97,12 +85,6 @@ export const columns: ColumnDef<Customer>[] = [
       return (
         <div className="flex items-center justify-between">
           ID
-          <Button
-            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <ArrowUpDown className="h-4 w-4 text-primary" />
-          </Button>
         </div>
       );
     },
@@ -118,12 +100,6 @@ export const columns: ColumnDef<Customer>[] = [
       return (
         <div className="flex items-center justify-between">
           Form ID
-          <Button
-            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <ArrowUpDown className="h-4 w-4 text-primary" />
-          </Button>
         </div>
       );
     },
@@ -139,12 +115,6 @@ export const columns: ColumnDef<Customer>[] = [
       return (
         <div className="flex items-center justify-between">
           Platform
-          <Button
-            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <ArrowUpDown className="h-4 w-4 text-primary" />
-          </Button>
         </div>
       );
     },
@@ -160,12 +130,6 @@ export const columns: ColumnDef<Customer>[] = [
       return (
         <div className="flex items-center justify-between">
           Phone
-          <Button
-            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <ArrowUpDown className="h-4 w-4 text-primary" />
-          </Button>
         </div>
       );
     },
@@ -181,12 +145,6 @@ export const columns: ColumnDef<Customer>[] = [
       return (
         <div className="flex items-center justify-between">
           Message
-          <Button
-            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <ArrowUpDown className="h-4 w-4 text-primary" />
-          </Button>
         </div>
       );
     },
