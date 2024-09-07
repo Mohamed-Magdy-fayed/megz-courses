@@ -7,7 +7,7 @@ import {
 import nodemailer from "nodemailer";
 import { env } from "@/env.mjs";
 import { TRPCError } from "@trpc/server";
-import { sendEmail } from "@/lib/gmailHelpers";
+import { sendZohoEmail } from "@/lib/gmailHelpers";
 
 export const emailsRouter = createTRPCRouter({
     sendWhatsappMessage: publicProcedure
@@ -57,7 +57,7 @@ export const emailsRouter = createTRPCRouter({
                 email,
                 subject,
             } }) => {
-            const isSuccess = sendEmail({ email, subject, html: message })
+            const isSuccess = sendZohoEmail({ email, subject, html: message })
 
             return { isSuccess }
         }),

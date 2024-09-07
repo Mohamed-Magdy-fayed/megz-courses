@@ -11,9 +11,6 @@ import StudentClient from "@/components/studentComponents/StudentClient";
 import Modal from "@/components/ui/modal";
 
 const StudentsPage = () => {
-  const { data, isLoading, isError } = api.users.getUsers.useQuery({
-    userType: "student",
-  });
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -39,15 +36,7 @@ const StudentsPage = () => {
             )}
           />
           <PaperContainer>
-            {isLoading ? (
-              <div className="w-full h-full grid place-content-center">
-                <Spinner></Spinner>
-              </div>
-            ) : isError ? (
-              <>Error</>
-            ) : (
-              <StudentClient data={data.users}></StudentClient>
-            )}
+            <StudentClient />
           </PaperContainer>
         </div>
       </main>

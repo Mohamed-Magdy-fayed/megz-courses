@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Course, SalesAgent, SalesOperation } from "@prisma/client"
 import { api } from "@/lib/api"
 import { render } from "@react-email/render"
@@ -16,7 +16,6 @@ import { PaperContainer } from "@/components/ui/PaperContainers"
 import { Typography } from "@/components/ui/Typoghraphy"
 import { useRouter } from "next/router"
 import { sendWhatsAppMessage } from "@/lib/whatsApp"
-import { env } from "@/env.mjs"
 
 const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
     const [loading, setLoading] = useState(false)
@@ -27,7 +26,8 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
 
     const router = useRouter()
     const { toastError, toastSuccess } = useToast()
-    const { data: siteData } = api.siteIdentity.getSiteIdentity.useQuery()
+
+    const { data: siteData, refetch } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: false })
     const { data: usersData } = api.users.getUsers.useQuery({ userType: "student" })
     const quickOrderMutation = api.orders.quickOrder.useMutation()
     const sendEmailMutation = api.emails.sendEmail.useMutation()
@@ -157,6 +157,8 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
             }
         })
     }
+
+    useEffect(() => { refetch() }, [])
 
     return (
         <div className="grid grid-cols-2 items-center justify-between gap-4">

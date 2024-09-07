@@ -7,12 +7,18 @@ import { ExternalLink } from "lucide-react"
 import Link from "next/link"
 import { ArrowLeftToLine } from "lucide-react"
 import { useRouter } from "next/router"
+import Spinner from "@/components/Spinner"
+import LandingLayout from "@/components/landingPageComponents/LandingLayout"
 
 const CoursePage = () => {
     const { course, user } = useLoadLearningData()
     const router = useRouter()
 
-    if (!course || !user) return "NO data"
+    if (!course || !user) return (
+        <LandingLayout>
+            <Spinner className="mx-auto" />
+        </LandingLayout>
+    )
 
     return (
         <LearningLayout>
@@ -38,7 +44,10 @@ const CoursePage = () => {
                                         <Typography>{lvl.name}</Typography>
                                     </Button>
                                 </Link>
-                            ))}
+                            ))
+                        }
+                        {course.levels
+                            .filter(lvl => user.courseStatus.some(({ courseId, courseLevelId }) => courseId === course.id && courseLevelId === lvl.id)).length === 0 && "No levels for now!"}
                     </div>
                 </div>
             </div>

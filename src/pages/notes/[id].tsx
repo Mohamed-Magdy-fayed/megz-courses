@@ -96,9 +96,10 @@ export default function NotePage() {
                 children={(
                     <NotesForm initialData={{
                         id: data.note.id,
-                        createdAt: format(data.note.createdAt, "PPPPp"),
+                        createdAt: data.note.createdAt,
                         createdByUserName: data.note.createdByUser.name,
                         createdForMentions: data.note.mentions,
+                        createdForMentionsCount: data.note.mentions.length,
                         noteType: data.note.type,
                         sla: data.note.sla.toString(),
                         status: data.note.status,
@@ -118,9 +119,10 @@ export default function NotePage() {
                     <div>
                         <NotesForm initialData={{
                             id: data.note.id,
-                            createdAt: format(data.note.createdAt, "PPPPp"),
+                            createdAt: data.note.createdAt,
                             createdByUserName: data.note.createdByUser.name,
                             createdForMentions: data.note.mentions,
+                            createdForMentionsCount: data.note.mentions.length,
                             noteType: data.note.type,
                             sla: data.note.sla.toString(),
                             status: data.note.status,

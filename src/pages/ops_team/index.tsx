@@ -11,7 +11,6 @@ import SalesAgentForm from "@/components/salesAgentComponents/SalesAgentForm";
 import Modal from "@/components/ui/modal";
 
 const SalesAgentsPage = () => {
-  const salesAgents = api.salesAgents.getSalesAgents.useQuery();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -37,13 +36,7 @@ const SalesAgentsPage = () => {
             )}
           />
           <PaperContainer>
-            {salesAgents.isLoading ? (
-              <Spinner></Spinner>
-            ) : salesAgents.isError ? (
-              <>Error</>
-            ) : (
-              <SalesAgentsClient data={salesAgents.data.salesAgents}></SalesAgentsClient>
-            )}
+            <SalesAgentsClient />
           </PaperContainer>
         </div>
       </main>

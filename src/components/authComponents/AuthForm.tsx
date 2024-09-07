@@ -12,12 +12,23 @@ import { signIn } from "next-auth/react";
 import { CardContent, CardFooter } from "../ui/card";
 import { Input } from "../ui/input";
 import { useRouter } from "next/router";
+import MobileNumberInput from "@/components/ui/phone-number-input";
 
 export const authFormSchema = z.object({
-    name: z.string().min(1, "Name can't be empty").optional(),
-    email: z.string().email().min(5, "Please add your email"),
-    password: z.string().min(4),
-    phone: z.string().min(1, "Phone can't be empty"),
+    name: z.string().optional(),
+    email: z.string().email("Not a valid Email").min(5, "Please add your email"),
+    password: z.string().min(6, "Password must be at least 6 characters long")
+        .refine(
+            (value) =>
+                /[a-z]/.test(value) &&   // At least one lowercase letter
+                /[A-Z]/.test(value) &&   // At least one uppercase letter
+                /[0-9]/.test(value) &&   // At least one number
+                /[!@#$%^&*(),.?":{}|<>]/.test(value),  // At least one special character
+            {
+                message: "Password must include uppercase, lowercase, number, and special character",
+            }
+        ),
+    phone: z.string().optional(),
 });
 
 export type AuthFormValues = z.infer<typeof authFormSchema>;
@@ -48,7 +59,7 @@ const AuthForm: FC<AuthFormProps> = ({ authType, setOpen }) => {
 
     const handleResgiter = ({ email, password, name, phone }: AuthFormValues) => {
         if (!name || !email || !password || !phone) {
-            return toastError("please fill all the data");
+            return toastError("Missing some of your info!");
         }
 
         setLoading(true);
@@ -67,9 +78,10 @@ const AuthForm: FC<AuthFormProps> = ({ authType, setOpen }) => {
                             setOpen(false)
                         })
                     } else {
-                        if (data.user)
+                        if (data.user) {
                             toastSuccess(`user (${data.user.name}) created successfully`);
-                        router.push('/authentication?variant=login')
+                            router.push('/authentication?variant=login')
+                        }
                     }
                 },
                 onError(error) {
@@ -109,11 +121,8 @@ const AuthForm: FC<AuthFormProps> = ({ authType, setOpen }) => {
     return (
         <Form {...form}>
             <form
-                onSubmit={(e) => {
-                    e.preventDefault()
-                    authType === "login" ? handleLogin(form.getValues()) : handleResgiter(form.getValues())
-                }}
-                className="flex w-full flex-col justify-between p-4"
+                onSubmit={form.handleSubmit(authType === "login" ? handleLogin : handleResgiter)}
+                className="flex w-full flex-col justify-between p-4 max-w-md"
             >
                 <CardContent className="p-4 grid">
                     <div className="flex-col flex gap-2">
@@ -164,13 +173,17 @@ const AuthForm: FC<AuthFormProps> = ({ authType, setOpen }) => {
                                     <FormItem>
                                         <FormLabel>Mobile</FormLabel>
                                         <FormControl>
-                                            <Input
-                                                type="tel"
-                                                autoComplete="tel"
-                                                disabled={loading}
-                                                placeholder="01234567890"
-                                                {...field}
-                                                className="pl-8"
+                                            <MobileNumberInput
+                                                onError={(isError) => {
+                                                    form.clearErrors("phone")
+                                                    if (isError) {
+                                                        form.setError("phone", { message: "Not a valid number!" })
+                                                        return
+                                                    }
+                                                }}
+                                                value={field.value || ""}
+                                                setValue={(val) => field.onChange(val)}
+                                                placeholder="Phone Number"
                                             />
                                         </FormControl>
                                         <FormMessage />

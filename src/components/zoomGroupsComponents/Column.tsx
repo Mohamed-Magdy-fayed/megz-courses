@@ -20,7 +20,9 @@ export type ColumnType = {
     groupNumber: string,
     groupStatus: GroupStatus,
     startDate: Date,
+    studentsCount: number,
     students: User[],
+    trainerName: string,
     trainer: Trainer & {
         user: User
     },
@@ -86,7 +88,7 @@ export const columns: ColumnDef<ColumnType>[] = [
         enableSorting: true
     },
     {
-        accessorKey: "trainer",
+        accessorKey: "trainerName",
         header: "Trainer",
         cell: ({ row }) => {
             return (
@@ -119,8 +121,9 @@ export const columns: ColumnDef<ColumnType>[] = [
         cell: ({ row }) => (<Typography>{format(row.original.startDate, "PPPp")}</Typography>)
     },
     {
-        accessorKey: "students",
+        accessorKey: "studentsCount",
         header: "Students",
+        filterFn: "weakEquals",
         cell: ({ row }) => (
             <Typography>{row.original.students.length}</Typography>
         )
@@ -128,7 +131,7 @@ export const columns: ColumnDef<ColumnType>[] = [
     {
         id: "actions",
         header: () => (
-            <Typography variant={"secondary"}>Actions</Typography>
+            <Typography className="text-muted">Actions</Typography>
         ),
         cell: ({ row }) => <ActionCell
             id={row.original.id}

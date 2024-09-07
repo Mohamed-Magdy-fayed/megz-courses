@@ -83,7 +83,7 @@ export const PaymentForm = ({
         <Form {...form}>
             <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="flex w-full flex-col justify-between p-0 md:h-full"
+                className="flex w-full flex-col justify-between p-0 py-2 md:h-full"
             >
                 <FormField
                     control={form.control}

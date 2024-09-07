@@ -221,8 +221,8 @@ const CoursePage = () => {
                                         orders,
                                         courseId,
                                         levelSlugs: data.course?.levels.map(lvl => ({ label: lvl.name, value: lvl.slug })) || [],
-                                        levelSlug: level.slug,
-                                        levelName: level.name,
+                                        levelSlug: level?.slug || "",
+                                        levelName: level?.name || "",
                                         createdAt,
                                         updatedAt,
                                     })) : []}

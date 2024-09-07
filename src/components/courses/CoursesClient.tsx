@@ -1,15 +1,20 @@
 import { columns, CourseRow } from "./CourseColumn";
 import { DataTable } from "../ui/DataTable";
 
-const CoursesClient = ({ formattedData }: { formattedData: CourseRow[] }) => {
+type CoursesClientProps = {
+  formattedData?: CourseRow[];
+};
+
+const CoursesClient = ({ formattedData }: CoursesClientProps) => {
   return (
     <DataTable
+      skele={!formattedData}
       columns={columns}
-      data={formattedData}
+      data={formattedData || []}
       setData={() => { }}
       onDelete={() => { }}
     />
-  );
+  )
 };
 
 export default CoursesClient;

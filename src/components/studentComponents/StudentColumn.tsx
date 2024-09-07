@@ -1,17 +1,14 @@
-import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowUpDown } from "lucide-react";
 import Link from "next/link";
 import { getInitials } from "@/lib/getInitials";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Typography } from "../ui/Typoghraphy";
 import CellAction from "./ActionCell";
 import { format } from "date-fns";
-import { Course, Order, User } from "@prisma/client";
-import { Users } from "@/components/studentComponents/StudentClient";
+import { Course, CourseStatus, Order, User } from "@prisma/client";
 
-export type Student = {
+export type StudentRow = {
   id: string;
   name: string;
   email: string;
@@ -26,12 +23,12 @@ export type Student = {
     })[];
   } | undefined;
   userData: {
-    user: Users
+    user: User & { courseStatus: CourseStatus[] }
   }
-  createdAt: string;
+  createdAt: Date;
 };
 
-export const columns: ColumnDef<Student>[] = [
+export const columns: ColumnDef<StudentRow>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -88,12 +85,23 @@ export const columns: ColumnDef<Student>[] = [
   {
     accessorKey: "createdAt",
     header: ({ column }) => {
+      let filterFn = column.getFilterFn()?.resolveFilterValue
+      filterFn = (val) => JSON.parse(val)
       return (
         <div className="flex items-center justify-between">
           User Since
         </div>
       );
     },
+    filterFn: (row, columnId, filterValue) => {
+      const val = row.original.createdAt
+      const startDate = new Date(filterValue.split("|")[0])
+      const endDate = new Date(filterValue.split("|")[1])
+      return val.getTime() >= startDate.getTime() && val.getTime() <= endDate.getTime()
+    },
+    cell: ({ row }) => (
+      <Typography>{format(row.original.createdAt, "dd/MMM/yyyy")}</Typography>
+    ),
   },
   {
     id: "actions",

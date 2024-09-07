@@ -9,7 +9,10 @@ import { SeverityPill } from "../overview/SeverityPill";
 
 export type SalesOperationColumn = {
   id: string,
-  assignee: string,
+  assigneeId: string,
+  assigneeName: string,
+  assigneeImage: string,
+  assigneeEmail: string,
   code: string,
   status: "created" | "assigned" | "ongoing" | "completed" | "cancelled",
   lastAction: string,
@@ -50,9 +53,14 @@ export const columns: ColumnDef<SalesOperationColumn>[] = [
     )
   },
   {
-    accessorKey: "assignee",
+    accessorKey: "assigneeEmail",
     header: "Assignee",
-    cell: ({ row }) => row.original.assignee.length > 0 ? (<AssigneeCell assigneeId={row.original.assignee} />) : (<>Not assigned</>),
+    cell: ({ row }) => <AssigneeCell
+      assigneeId={row.original.assigneeId}
+      assigneeName={row.original.assigneeName}
+      assigneeEmail={row.original.assigneeEmail}
+      assigneeImage={row.original.assigneeImage}
+    />,
   },
   {
     accessorKey: "status",
@@ -95,7 +103,7 @@ export const columns: ColumnDef<SalesOperationColumn>[] = [
       id={row.original.id}
       code={row.original.code}
       status={row.original.status}
-      assigneeId={row.original.assignee}
+      assigneeId={row.original.assigneeId}
     />,
   },
 ];

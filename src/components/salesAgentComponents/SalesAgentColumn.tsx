@@ -1,13 +1,11 @@
-import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowUpDown } from "lucide-react";
 import Link from "next/link";
 import { getInitials } from "@/lib/getInitials";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Typography } from "../ui/Typoghraphy";
 import AgentCellAction from "./AgentActionCell";
-import { SalesAgents } from "@/components/salesAgentComponents/SalesAgentsClient";
+import { SalesAgent } from "@prisma/client";
 
 export type SalesAgentsColumn = {
   id: string
@@ -17,7 +15,7 @@ export type SalesAgentsColumn = {
   phone: string
   salary: string
   tasks: number
-  agent: SalesAgents
+  agent: SalesAgent
   createdAt: string
 }
 
@@ -42,7 +40,7 @@ export const columns: ColumnDef<SalesAgentsColumn>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "name",
+    accessorKey: "email",
     header: ({ column }) => {
       return (
         <div className="flex items-center justify-between">

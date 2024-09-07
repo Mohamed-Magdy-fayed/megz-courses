@@ -72,6 +72,8 @@ const ChatWithUs = () => {
         };
     }, []);
 
+    if (!sessionData?.user || !sessionData.user.isVerified) return
+
     return (
         <ChatPopover
             onOpenChange={onOpenChange}

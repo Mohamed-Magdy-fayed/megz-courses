@@ -12,7 +12,6 @@ import Link from "next/link";
 import Modal from "@/components/ui/modal";
 
 const EducationalTeamPage = () => {
-  const { data, isLoading, isError } = api.trainers.getTrainers.useQuery();
   const { data: currentTrainerData } = api.trainers.getCurrentTrainer.useQuery();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -57,13 +56,7 @@ const EducationalTeamPage = () => {
             )}
           />
           <PaperContainer>
-            {isLoading ? (
-              <Spinner></Spinner>
-            ) : isError ? (
-              <>Error</>
-            ) : (
-              <TrainersClient data={data.trainers}></TrainersClient>
-            )}
+            <TrainersClient />
           </PaperContainer>
         </div>
       </main>

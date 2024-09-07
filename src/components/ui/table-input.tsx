@@ -9,18 +9,19 @@ export interface TableInputProps
 const TableInput = React.forwardRef<HTMLInputElement, TableInputProps>(
   ({ className, type, ...props }, ref) => {
     return (
-      <div className="relative">
+      <div className="relative w-full">
+        <label className="opacity-0 px-6 pointer-events-none">{props.placeholder}</label>
         <input
           type={"text"}
           autoComplete="off"
           className={cn(
-            "border-0 bg-transparent placeholder:text-muted p-1 rounded-md focus-visible:outline-none focus-visible:border-primary border-muted",
+            "absolute left-0 bottom-0 translate-y-1 w-full p-1 border-transparent border hover:border bg-transparent placeholder:text-muted rounded focus-visible:outline-none focus-visible:border-primary hover:border-muted",
             className
           )}
           ref={ref}
           {...props}
         />
-        <CaseSensitive className="w-4 h-4 text-muted absolute right-0 top-0 translate-y-1/2 pointer-events-none" />
+        <CaseSensitive className="w-4 h-4 text-muted absolute right-2 top-0 translate-y-1 pointer-events-none" />
       </div>
     );
   }

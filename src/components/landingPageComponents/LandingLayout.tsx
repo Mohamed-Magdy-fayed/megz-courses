@@ -1,11 +1,13 @@
-import { ReactNode } from 'react'
+import { ReactNode, useEffect } from 'react'
 import { LandingNavigationMenu } from './LandingNavMenu'
 import LandingFooter from './LandingFooter'
 import ChatWithUs from './ChatWithUs'
 import { api } from '@/lib/api'
 
 const LandingLayout = ({ children }: { children: ReactNode }) => {
-    const { data } = api.siteIdentity.getSiteIdentity.useQuery()
+    const { data, refetch } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: false })
+
+    useEffect(() => { refetch() }, [])
 
     return (
         <div className='flex flex-col items-center h-screen bg-background'>

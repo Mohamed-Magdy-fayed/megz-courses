@@ -1,6 +1,4 @@
-import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
 import { getInitials } from "@/lib/getInitials";
 import { formatPrice } from "@/lib/utils";
 import CellAction from "./cell-action";
@@ -30,6 +28,7 @@ export type OrderRow = {
   userImage: string;
   refundRequester: string | null;
   course: Course;
+  courseId: string;
   updatedAt: Date;
 }
 
@@ -124,7 +123,7 @@ export const columns: ColumnDef<OrderRow>[] = [
     ),
   },
   {
-    accessorKey: "course",
+    accessorKey: "courseId",
     header: "Courses",
     cell: ({ row }) => (
       <div className="flex flex-col gap-2">

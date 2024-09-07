@@ -10,9 +10,7 @@ import { Copy, MoreVertical, PackagePlus } from "lucide-react";
 import { useToast } from "../ui/use-toast";
 import { useState } from "react";
 import CreateOrderForStudent from "./CreateOrderForStudent";
-import Spinner from "../Spinner";
-import { Course, Order, User } from "@prisma/client";
-import { Users } from "@/components/studentComponents/StudentClient";
+import { Course, CourseStatus, Order, User } from "@prisma/client";
 
 interface CellActionProps {
     id: string;
@@ -24,7 +22,7 @@ interface CellActionProps {
         })[];
     } | undefined;
     userData: {
-        user: Users
+        user: User & { courseStatus: CourseStatus[] }
     }
 }
 

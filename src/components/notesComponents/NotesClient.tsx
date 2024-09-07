@@ -1,69 +1,77 @@
-import { columns, NotesColumn } from '@/components/notesComponents/NotesColumn';
-import { DataTable } from '@/components/ui/DataTable';
-import { api } from '@/lib/api';
-import { validNoteStatus, validNoteTypes, validUserTypes } from '@/lib/enumsTypes';
-import { format } from 'date-fns';
-import { upperFirst } from 'lodash';
-import React, { useState } from 'react'
+import { NotesColumn, notesColumns } from "@/components/notesComponents/NotesColumn";
+import { DataTable } from "@/components/ui/DataTable";
+import { api } from "@/lib/api";
+import { validNoteStatus, validNoteTypes } from "@/lib/enumsTypes";
+import { format } from "date-fns";
+import { upperFirst } from "lodash";
+import { useState } from "react";
 
-const NotesClient = ({ userId }: { userId?: string }) => {
-    const { data: userNotesData } = api.notes.getUserNotes.useQuery({ userId }, { enabled: !!userId })
-    const { data: notesData } = api.notes.getAllNotes.useQuery(undefined, { enabled: !userId })
-
+const NotesClient = () => {
     const [notes, setNotes] = useState<NotesColumn[]>([])
 
-    const formattedData: NotesColumn[] = notesData?.notes ? notesData.notes.map(note => ({
+    const trpcUtils = api.useContext();
+    const { data: notesData, isLoading: isNotesLoading } = api.notes.getAllNotes.useQuery()
+    const deleteMutation = api.notes.deleteNotes.useMutation()
+
+    const formattedNotesData: NotesColumn[] = notesData?.notes ? notesData.notes.map(note => ({
         id: note.id,
         title: note.title,
         messages: note.messages,
         noteType: note.type,
         status: note.status,
         createdByUserName: note.createdByUser.name,
+        createdForStudentName: note.createdForStudent.name,
         createdForStudent: note.createdForStudent,
+        createdForMentionsCount: note.mentions.length,
         createdForMentions: note.mentions,
         sla: note.sla.toString(),
-        createdAt: format(note.createdAt, "PPPp"),
-        updatedAt: format(note.updatedAt, "PPPp"),
-    })) : userNotesData?.notes ? userNotesData.notes.map(note => ({
-        id: note.id,
-        title: note.title,
-        messages: note.messages,
-        noteType: note.type,
-        status: note.status,
-        createdByUserName: note.createdByUser.name,
-        createdForStudent: note.createdForStudent,
-        createdForMentions: note.mentions,
-        sla: note.sla.toString(),
-        createdAt: format(note.createdAt, "PPPp"),
+        createdAt: note.createdAt,
         updatedAt: format(note.updatedAt, "PPPp"),
     })) : []
 
-    if (!notesData?.notes && !userNotesData?.notes) return <></>
+    const onDelete = (callback?: () => void) => {
+        deleteMutation.mutate({ ids: notes.map(n => n.id) }, {
+            onSuccess: () => {
+                trpcUtils.invalidate().then(() => callback?.())
+            }
+        })
+    }
 
     return (
         <DataTable
-            columns={columns}
-            data={formattedData || []}
+            skele={isNotesLoading}
+            columns={notesColumns}
+            data={formattedNotesData}
             setData={setNotes}
+            onDelete={onDelete}
+            dateRange={{ key: "createdAt", label: "Created At" }}
+            searches={[
+                { key: "title", label: "Title" },
+                { key: "createdForStudentName", label: "Student" },
+                { key: "createdForMentionsCount", label: "Mentioned" },
+            ]}
             filters={[
                 {
-                    key: "noteType",
-                    filterName: "Note Type",
-                    values: [...validNoteTypes.map(type => ({
+                    filterName: "Created By", key: "createdByUserName", values: [...formattedNotesData?.map(note => ({
+                        label: note.createdByUserName,
+                        value: note.createdByUserName,
+                    })) || []]
+                },
+                {
+                    filterName: "Type", key: "noteType", values: [...validNoteTypes?.map(type => ({
                         label: upperFirst(type),
                         value: type,
-                    }))]
-                }, {
-                    key: "status",
-                    filterName: "Note Status",
-                    values: [...validNoteStatus.map(type => ({
-                        label: type,
-                        value: type,
-                    }))]
-                }
+                    })) || []]
+                },
+                {
+                    filterName: "Status", key: "status", values: [...validNoteStatus?.map(status => ({
+                        label: upperFirst(status),
+                        value: status,
+                    })) || []]
+                },
             ]}
         />
     );
-}
+};
 
-export default NotesClient
+export default NotesClient;

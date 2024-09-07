@@ -9,16 +9,24 @@ import { toastType, useToast } from "../ui/use-toast";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
 import { Button } from "../ui/button";
 import Spinner from "../Spinner";
-import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
 import { Input } from "../ui/input";
-import { useRouter } from "next/router";
 import { render } from "@react-email/render";
 import ResetPasswordEmail from "../emails/ResetPasswordEmail";
 
 export const resetPasswordFormSchema = z.object({
     email: z.string().email().min(5, "please enter a valid email").optional(),
     code: z.string().optional(),
-    password: z.string().optional(),
+    password: z.string().min(6, "Password must be at least 6 characters long")
+        .refine(
+            (value) =>
+                /[a-z]/.test(value) &&   // At least one lowercase letter
+                /[A-Z]/.test(value) &&   // At least one uppercase letter
+                /[0-9]/.test(value) &&   // At least one number
+                /[!@#$%^&*(),.?":{}|<>]/.test(value),  // At least one special character
+            {
+                message: "Password must include uppercase, lowercase, number, and special character",
+            }
+        ).optional(),
     passwordConfirmation: z.string().optional(),
 });
 
@@ -142,12 +150,9 @@ const ResetPasswordForm: FC<ResetPasswordFormProps> = ({ setOpen }) => {
             </div>
             <Form {...form}>
                 <form
-                    onSubmit={(e) => {
-                        e.preventDefault()
-                        handleResetPassword(form.getValues())
-                    }}
+                    onSubmit={form.handleSubmit(handleResetPassword)}
                     aria-disabled={!!loadingToast}
-                    className="flex w-full flex-col justify-between p-4 space-y-4"
+                    className="flex w-full max-w-md flex-col justify-between p-4 space-y-4"
                 >
                     <div className="flex-col flex gap-2">
                         {!passwordForm ? (<FormField

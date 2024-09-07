@@ -1,27 +1,19 @@
 import { api } from "@/lib/api";
 import { useState } from "react";
 import { getAddress } from "@/lib/utils";
-import { User, Order, ZoomGroup, ZoomSession, EvaluationFormSubmission, CourseStatus } from "@prisma/client";
 import { DataTable } from "@/components/ui/DataTable";
-import { Student, columns } from "./StudentColumn";
+import { StudentRow, columns } from "./StudentColumn";
 import { useToast } from "../ui/use-toast";
-import { format } from "date-fns";
 
-export interface Users extends User {
-  orders: Order[];
-  zoomGroups: (ZoomGroup & {
-    zoomSessions: ZoomSession[];
-  })[];
-  courseStatus: CourseStatus[];
-  evaluationFormSubmissions: EvaluationFormSubmission[];
-}
-
-const StudentClient = ({ data }: { data: Users[] }) => {
-  const [users, setUsers] = useState<Student[]>([]);
+const StudentClient = () => {
+  const [users, setUsers] = useState<StudentRow[]>([]);
 
   const { data: coursesData } = api.courses.getAll.useQuery()
+  const { data, isLoading } = api.users.getUsers.useQuery({
+    userType: "student",
+  });
 
-  const formattedData: Student[] = data.map((user) => ({
+  const formattedData: StudentRow[] = data?.users.map((user) => ({
     id: user.id,
     name: user.name,
     email: user.email,
@@ -30,8 +22,8 @@ const StudentClient = ({ data }: { data: Users[] }) => {
     address: user.address ? getAddress(user.address) : "no address",
     userData: { user },
     coursesData,
-    createdAt: format(user.createdAt, "dd MMM yyyy"),
-  }));
+    createdAt: user.createdAt,
+  })) || [];
 
   const { toastError, toastSuccess } = useToast();
 
@@ -58,15 +50,16 @@ const StudentClient = ({ data }: { data: Users[] }) => {
 
   return (
     <DataTable
+      skele={isLoading}
       columns={columns}
       data={formattedData}
       setData={setUsers}
       onDelete={onDelete}
+      dateRange={{ key: "createdAt", label: "Created On" }}
       searches={[
         { key: "email", label: "email" },
         { key: "address", label: "address" },
         { key: "phone", label: "phone" },
-        { key: "createdAt", label: "createdAt" },
       ]}
     />
   );

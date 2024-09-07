@@ -6,7 +6,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import CoursesActionCell from "./CoursesActionCell";
 import { Typography } from "@/components/ui/Typoghraphy";
-import { Course, CourseLevel, Order, User } from "@prisma/client";
+import { CourseLevel, Order, User } from "@prisma/client";
 import { formatPrice } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -23,6 +23,7 @@ export type CourseRow = {
     instructorPrice: number,
     levels: CourseLevel[],
     orders: (Order & { user: User })[],
+    enrollments: number,
 };
 
 export const columns: ColumnDef<CourseRow>[] = [
@@ -113,7 +114,7 @@ export const columns: ColumnDef<CourseRow>[] = [
         )
     },
     {
-        accessorKey: "orders",
+        accessorKey: "enrollments",
         header: "Enrollments",
         cell: ({ row }) => (
             <div className="flex items-center gap-2">
@@ -163,7 +164,7 @@ export const columns: ColumnDef<CourseRow>[] = [
     {
         id: "actions",
         header: () => (
-            <Typography variant={"secondary"}>Actions</Typography>
+            <Typography>Actions</Typography>
         ),
         cell: ({ row }) => <CoursesActionCell
             id={row.original.id}

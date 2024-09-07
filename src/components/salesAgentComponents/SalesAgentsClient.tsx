@@ -3,17 +3,17 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { DataTable } from "@/components/ui/DataTable";
 import { SalesAgentsColumn, columns } from "./SalesAgentColumn";
-import { SalesAgent, SalesOperation, User } from "@prisma/client";
 import { useToast } from "../ui/use-toast";
 
-export interface SalesAgents extends SalesAgent {
-  user: User;
-  tasks: SalesOperation[];
-}
-
-const SalesAgentClient = ({ data }: { data: SalesAgents[] }) => {
+const SalesAgentClient = () => {
   const [salesAgents, setSalesAgents] = useState<SalesAgentsColumn[]>([]);
-  const formattedData = data.map((agent) => ({
+
+  const { toastError, toastSuccess } = useToast();
+  const trpcUtils = api.useContext();
+  const { data, isLoading } = api.salesAgents.getSalesAgents.useQuery();
+  const deleteMutation = api.users.deleteUser.useMutation();
+
+  const formattedData = data?.salesAgents.map((agent) => ({
     id: agent.user.id,
     name: agent.user.name || "no name",
     email: agent.user.email || "no email",
@@ -23,11 +23,7 @@ const SalesAgentClient = ({ data }: { data: SalesAgents[] }) => {
     salary: agent?.salary || "no salary",
     agent,
     createdAt: format(agent.user.createdAt, "MMMM do, yyyy"),
-  }));
-
-  const { toastError, toastSuccess } = useToast();
-  const deleteMutation = api.users.deleteUser.useMutation();
-  const trpcUtils = api.useContext();
+  })) || [];
 
   const onDelete = (callback?: () => void) => {
     deleteMutation.mutate(
@@ -49,16 +45,17 @@ const SalesAgentClient = ({ data }: { data: SalesAgents[] }) => {
 
   return (
     <DataTable
+      skele={isLoading}
       columns={columns}
       data={formattedData}
       setData={setSalesAgents}
       onDelete={onDelete}
+      dateRange={{ key: "createdAt", label: "Created At" }}
       searches={[
-        { key: "email", label: "email" },
-        { key: "salary", label: "salary" },
-        { key: "phone", label: "phone" },
-        { key: "tasks", label: "tasks" },
-        { key: "createdAt", label: "createdAt" },
+        { key: "email", label: "Email" },
+        { key: "salary", label: "Salary" },
+        { key: "phone", label: "Phone" },
+        { key: "tasks", label: "Tasks" },
       ]}
     />
   );

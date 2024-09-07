@@ -5,13 +5,14 @@ import { CourseRow, columns } from "./CoursesColumn";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 
-const CoursesClient = ({ formattedData }: { formattedData: CourseRow[] }) => {
+const CoursesClient = () => {
     const [loadingToast, setLoadingToast] = useState<ReturnType<typeof toast>>()
     const [courses, setCourses] = useState<CourseRow[]>([])
 
     const { toast } = useToast()
 
     const trpcUtils = api.useContext()
+    const { data: coursesData, isLoading } = api.courses.getAll.useQuery();
     const deleteMutation = api.courses.deleteCourses.useMutation({
         onMutate: () => {
             setLoadingToast(toast({
@@ -39,6 +40,22 @@ const CoursesClient = ({ formattedData }: { formattedData: CourseRow[] }) => {
         }),
     })
 
+    const formattedData = coursesData?.courses.map(course => ({
+        id: course.id,
+        name: course.name,
+        slug: course.slug,
+        image: course.image,
+        createdAt: course.createdAt,
+        updatedAt: course.updatedAt,
+        description: course.description,
+        groupPrice: course.groupPrice,
+        privatePrice: course.privatePrice,
+        instructorPrice: course.instructorPrice,
+        levels: course.levels,
+        orders: course.orders,
+        enrollments: course.orders.length,
+    }))
+
     const onDelete = (callback?: () => void) => {
         deleteMutation.mutate(courses.map(({ id }) => id), {
             onSuccess: () => callback?.(),
@@ -47,12 +64,17 @@ const CoursesClient = ({ formattedData }: { formattedData: CourseRow[] }) => {
 
     return (
         <DataTable
+            skele={isLoading}
             columns={columns}
             data={formattedData || []}
             setData={setCourses}
             onDelete={onDelete}
+            dateRange={{ key: "createdAt", label: "Created At" }}
             searches={[
                 { key: "name", label: "Name" },
+                { key: "groupPrice", label: "Group Price" },
+                { key: "privatePrice", label: "Private Price" },
+                { key: "instructorPrice", label: "Instructor Price" },
             ]}
         />
     );

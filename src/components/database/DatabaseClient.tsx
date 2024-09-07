@@ -1,10 +1,11 @@
 import { columns } from "./DatabaseColumn";
-import { PotintialCustomer } from "@prisma/client";
 import { DataTable } from "../ui/DataTable";
+import { api } from "@/lib/api";
 
-const DatabaseClient = ({ data }: { data: PotintialCustomer[] }) => {
+const DatabaseClient = () => {
+  const { data, isLoading } = api.potintialCustomers.getCustomers.useQuery();
 
-  const formattedData = data.map(({
+  const formattedData = data?.potintialCustomers.map(({
     userId,
     name,
     id,
@@ -28,11 +29,24 @@ const DatabaseClient = ({ data }: { data: PotintialCustomer[] }) => {
 
   return (
     <DataTable
+      skele={isLoading}
       columns={columns}
-      data={formattedData}
+      data={formattedData || []}
       setData={() => { }}
       onDelete={() => { }}
-      searches={[{ key: "name", label: "Name" }]}
+      searches={[
+        { key: "name", label: "Name" },
+        { key: "email", label: "Email" },
+        { key: "phone", label: "Phone" },
+      ]}
+      filters={[
+        {
+          key: "platform", filterName: "Platform", values: [...formattedData?.map(d => ({
+            label: d.platform,
+            value: d.platform,
+          })) || []]
+        }
+      ]}
     />
   );
 };

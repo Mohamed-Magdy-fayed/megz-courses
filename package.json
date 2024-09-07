@@ -11,7 +11,8 @@
     "ngrok": "ngrok http 3000",
     "db": "cd ./mongodb-cluster && docker compose up --wait",
     "dbprod": "cd ./mongodb-cluster-prod && docker compose up --wait",
-    "dep": "git add . & git commit -m \"auto commit\" & git push"
+    "dep": "git add . & git commit -m \"auto commit\" & git push",
+    "docker": "docker login ghcr.io && docker build . -t ghcr.io/mohamed-magdy-fayed/courses-app:latest && docker push ghcr.io/mohamed-magdy-fayed/courses-app:latest"
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",
@@ -64,6 +65,7 @@
     "formik": "2.2.9",
     "googleapis": "^126.0.1",
     "howler": "^2.2.4",
+    "jspdf": "^2.5.1",
     "jsrsasign": "^11.1.0",
     "lodash": "^4.17.21",
     "lucide-react": "^0.258.0",
@@ -84,6 +86,8 @@
     "react-day-picker": "^8.10.1",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.45.1",
+    "react-phone-number-input": "^3.4.5",
+    "sharp": "^0.33.5",
     "simplebar-react": "^3.2.4",
     "stripe": "^13.9.0",
     "superjson": "1.12.2",
@@ -106,6 +110,7 @@
     "@types/qs": "^6.9.15",
     "@types/react": "^18.2.6",
     "@types/react-dom": "^18.2.4",
+    "@types/react-phone-number-input": "^3.0.17",
     "@types/webpack": "^5.28.5",
     "@types/ws": "^8.5.7",
     "@typescript-eslint/eslint-plugin": "^5.59.6",

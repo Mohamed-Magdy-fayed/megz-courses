@@ -8,6 +8,11 @@ import bcrypt from "bcrypt";
 import { TRPCError } from "@trpc/server";
 import { Prisma } from "@prisma/client";
 import { validDeviceTypes, validUserTypes } from "@/lib/enumsTypes";
+import { getServerSession } from "next-auth";
+import { render } from "@react-email/render";
+import EmailConfirmation from "@/components/emails/EmailConfirmation";
+import { env } from "@/env.mjs";
+import { sendZohoEmail } from "@/lib/gmailHelpers";
 
 export const usersRouter = createTRPCRouter({
   queryUsers: protectedProcedure
@@ -268,13 +273,10 @@ export const usersRouter = createTRPCRouter({
         ctx,
         input: { id, name, email, password, userType, phone, state, country, street, city, device },
       }) => {
-        if (ctx.session.user.userType !== "admin"
-          && ctx.session.user.email !== email) {
-          throw new TRPCError({ code: "UNAUTHORIZED" })
-        }
-
         const user = await ctx.prisma.user.findUnique({ where: { id } })
         if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "user not found" })
+        if (ctx.session.user.userType !== "admin" && ctx.session.user.email !== user.email) throw new TRPCError({ code: "UNAUTHORIZED", message: "You're not authorized to take that action!" })
+        if (ctx.session.user.email !== user.email) throw new TRPCError({ code: "UNAUTHORIZED", message: "Can't edit others accounts!" })
 
         const updateOptions: Prisma.UserUpdateArgs = {
           where: {
@@ -294,9 +296,29 @@ export const usersRouter = createTRPCRouter({
             userType,
             trainer: userType === "teacher" ? {
               connectOrCreate: { where: { userId: user.id }, create: { role: "teacher" } }
-            } : undefined
+            } : undefined,
+            emailVerified: user.email !== email ? null : undefined
           },
         }
+
+        const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
+        const accessToken = await bcrypt.hash(user.id, 10);
+
+        const html = render(
+          <EmailConfirmation
+            logoUrl={logoUrl || ""}
+            confirmationLink={`${env.NEXTAUTH_URL}email_conf/${user.id}?access_token=${accessToken}`}
+            customerName={user.name}
+            userEmail={user.email}
+          />, { pretty: true }
+        )
+
+        sendZohoEmail({
+          email: user.email,
+          subject: `Confirm your new email ${user.email}`,
+          html,
+        })
+
 
         if (ctx.session.user.userType === "admin" && password) {
           const hashedPassword = await bcrypt.hash(password, 10)

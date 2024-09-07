@@ -7,14 +7,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Coins, Copy, LucideDollarSign, MoreVertical, Send } from "lucide-react";
-import { useToast } from "../ui/use-toast";
+import { toastType, useToast } from "../ui/use-toast";
 import { OrderStatus } from "@prisma/client";
 import { Dispatch, SetStateAction, useState } from "react";
 import { api } from "@/lib/api";
-import { render } from "@react-email/render";
-import Email from "../emails/Email";
-import { format } from "date-fns";
-import { formatPrice } from "@/lib/utils";
+import Spinner from "@/components/Spinner";
 
 interface CellActionProps {
     status: OrderStatus;
@@ -35,61 +32,19 @@ const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId, p
         toastInfo("Payment link copied to the clipboard");
     };
 
-    const { data: siteData } = api.siteIdentity.getSiteIdentity.useQuery()
-    const resendPaymentLinkMutation = api.orders.resendPaymentLink.useMutation()
-    const sendEmailMutation = api.emails.sendEmail.useMutation()
+    const resendPaymentLinkMutation = api.orders.resendPaymentLink.useMutation({
+        onSuccess: () => {
+            toastSuccess("Payment link resent to the customer")
+        },
+        onError: ({ message }) => toastError(message),
+        onSettled: () => trpcUtils.salesOperations.invalidate()
+    })
     const trpcUtils = api.useContext()
 
-    const handleSendEmail = ({
-        email,
-        subject,
-        message,
-    }: {
-        email: string,
-        subject: string,
-        message: string,
-    }) => {
-        sendEmailMutation.mutate({
-            email,
-            subject,
-            message,
-        }, {
-            onError: (e) => toastError(e.message),
-            onSettled: () => {
-                trpcUtils.salesOperations.invalidate()
-                toastSuccess("Payment link resent to the customer")
-                setOpen(false)
-            }
-        })
-    }
-
     const handleResendPaymentLink = () => {
-        resendPaymentLinkMutation.mutate({ orderId }, {
-            onSuccess: ({ updatedOrder: { amount, orderNumber, user, course, createdAt, courseType }, paymentLink }) => {
-                const message = render(
-                    <Email
-                        logoUrl={siteData?.siteIdentity.logoPrimary || ""}
-                        orderCreatedAt={format(createdAt, "dd MMM yyyy")}
-                        userEmail={user.email}
-                        orderAmount={formatPrice(amount)}
-                        orderNumber={orderNumber}
-                        paymentLink={paymentLink}
-                        customerName={user.name}
-                        course={{
-                            courseName: course.name,
-                            coursePrice: courseType.isPrivate
-                                ? formatPrice(course.privatePrice)
-                                : formatPrice(course.groupPrice)
-                        }} />, { pretty: true }
-                )
-                handleSendEmail({
-                    email: user.email,
-                    subject: `Thanks for your order ${orderNumber}`,
-                    message,
-                })
-            },
-            onError: (error) => toastError(error.message),
-        })
+        setIsOpen(false)
+
+        resendPaymentLinkMutation.mutate({ orderId })
     }
 
     return (

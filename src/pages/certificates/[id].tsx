@@ -12,7 +12,7 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 const CertificatePage: NextPage = () => {
     const router = useRouter()
@@ -78,7 +78,9 @@ type CertificateProps = {
 }
 
 const Certificate = ({ studentName, courseName, trainerName, completionDate, certificateId }: CertificateProps) => {
-    const { data } = api.siteIdentity.getSiteIdentity.useQuery()
+    const { data, refetch } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: false })
+
+    useEffect(() => { refetch() }, [])
 
     return (
         <div className="items-center flex flex-col">

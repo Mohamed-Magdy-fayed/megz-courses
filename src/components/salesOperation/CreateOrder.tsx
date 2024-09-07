@@ -4,12 +4,9 @@ import SelectField from "./SelectField"
 import { Address, Course, CourseStatus, Order, User } from "@prisma/client"
 import { Button } from "../ui/button"
 import { api } from "@/lib/api"
-import { render } from "@react-email/render"
-import Email from "../emails/Email"
-import { format } from "date-fns"
-import { useToast } from "../ui/use-toast"
-import { formatPrice } from "@/lib/utils"
+import { toastType, useToast } from "../ui/use-toast"
 import CoursesSelectField from "./CoursesSelectField"
+import Spinner from "@/components/Spinner"
 
 interface CreateOrderProps {
     loading: boolean
@@ -41,11 +38,36 @@ const CreateOrder: FC<CreateOrderProps> = ({
         active: boolean
     }[]>([])
     const [coursesGroupType, setCoursesGroupType] = useState<{ courseId: string, isPrivate: boolean }[]>([])
+    const [loadingToast, setLoadingToast] = useState<toastType>()
 
-    const { toastError, toastSuccess } = useToast()
-    const { data: siteData } = api.siteIdentity.getSiteIdentity.useQuery()
-    const createOrderMutation = api.orders.createOrder.useMutation()
-    const sendEmailMutation = api.emails.sendEmail.useMutation()
+    const { toastError, toast } = useToast()
+
+    const createOrderMutation = api.orders.createOrder.useMutation({
+        onMutate: () => setLoadingToast(toast({
+            title: "Loading...",
+            description: <Spinner className="w-4 h-4" />,
+            variant: "info",
+            duration: 30000,
+        })),
+        onSuccess: ({ isSuccess }) => isSuccess && loadingToast?.update({
+            id: loadingToast.id,
+            title: "Success",
+            description: "Order created successfully",
+            variant: "success",
+        }),
+        onError: ({ message }) => loadingToast?.update({
+            id: loadingToast.id,
+            title: "Error",
+            description: message,
+            variant: "success",
+        }),
+        onSettled: () => {
+            trpcUtils.salesOperations.invalidate()
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined)
+            setOpen(false)
+        }
+    })
     const trpcUtils = api.useContext()
 
     const handleAddCourse = () => {
@@ -56,61 +78,6 @@ const CreateOrder: FC<CreateOrderProps> = ({
             courseDetails: coursesGroupType[0],
             email: email[0],
             salesOperationId
-        }, {
-            onSuccess: ({ order: { amount, orderNumber, user, course, createdAt, courseType }, paymentLink }) => {
-                const message = render(
-                    <Email
-                        logoUrl={siteData?.siteIdentity.logoPrimary || ""}
-                        orderCreatedAt={format(createdAt, "dd MMM yyyy")}
-                        userEmail={user.email}
-                        orderAmount={formatPrice(amount)}
-                        orderNumber={orderNumber}
-                        paymentLink={paymentLink}
-                        customerName={user.name}
-                        course={{
-                            courseName: course.name,
-                            coursePrice: courseType.isPrivate
-                                ? formatPrice(course.privatePrice)
-                                : formatPrice(course.groupPrice)
-                        }}
-                    />, { pretty: true }
-                )
-                handleSendEmail({
-                    email: user.email,
-                    subject: `Thanks for your order ${orderNumber}`,
-                    message,
-                })
-
-                toastSuccess(`Order ${orderNumber} has been submitted successfully!`)
-            },
-            onError: (error) => {
-                toastError(error.message)
-            },
-        })
-    }
-
-    const handleSendEmail = ({
-        email,
-        subject,
-        message,
-    }: {
-        email: string,
-        subject: string,
-        message: string,
-    }) => {
-        sendEmailMutation.mutate({
-            email,
-            subject,
-            message,
-        }, {
-            onError: (e) => toastError(e.message),
-            onSettled: () => {
-                trpcUtils.salesOperations.invalidate()
-                    .then(() => {
-                        setOpen(false)
-                        setLoading(false)
-                    })
-            }
         })
     }
 

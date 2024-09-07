@@ -44,7 +44,7 @@ export const UserAccountTabs = ({ user }: { user: UserGetPayload }) => {
                             <CardTitle>Groups</CardTitle>
                         </CardHeader>
                         <CardContent className="flex flex-col items-center p-4">
-                            <ZoomGroupsClient zoomGroupsData={user.zoomGroups} />
+                            <ZoomGroupsClient />
                         </CardContent>
                         <CardFooter className="flex items-center justify-end">
                             <Button type="button">Add to group</Button>
@@ -57,20 +57,7 @@ export const UserAccountTabs = ({ user }: { user: UserGetPayload }) => {
                             <CardTitle>Waiting List</CardTitle>
                         </CardHeader>
                         <CardContent className="flex flex-col items-center p-4">
-                            <CoursesClient formattedData={user.orders.filter(order => user.courseStatus.some(status => status.courseId === order.course.id && status.status === "waiting")).map(order => ({
-                                id: order.course.id,
-                                name: order.course.name,
-                                slug: order.course.slug,
-                                image: order.course.image,
-                                createdAt: order.course.createdAt,
-                                updatedAt: order.course.updatedAt,
-                                description: order.course.description,
-                                groupPrice: order.course.groupPrice,
-                                privatePrice: order.course.privatePrice,
-                                instructorPrice: order.course.instructorPrice,
-                                levels: order.course.levels,
-                                orders: order.course.orders,
-                            }))} />
+                            <CoursesClient />
                         </CardContent>
                         <CardFooter className="flex items-center justify-end">
                             <Button type="button">Add to group</Button>

@@ -3,19 +3,14 @@ import { PaperContainer } from "@/components/ui/PaperContainers";
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import Modal from "@/components/ui/modal";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import ZoomGroupForm from "@/components/zoomGroupsComponents/Form";
 import ZoomGroupsClient from "@/components/zoomGroupsComponents/Client";
-import { FileDown, FileUp, PlusIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import type { NextPage } from "next";
 import { useState } from "react";
-import { api } from "@/lib/api";
-import Spinner from "@/components/Spinner";
 
 const GroupsPage: NextPage = () => {
     const [isOpen, setIsOpen] = useState(false);
-
-    const { data: zoomGroupsData, isLoading, isError } = api.zoomGroups.getzoomGroups.useQuery()
 
     return (
         <AppLayout>
@@ -40,11 +35,7 @@ const GroupsPage: NextPage = () => {
                         )}
                     />
                     <PaperContainer>
-                        {zoomGroupsData?.zoomGroups ? (
-                            <ZoomGroupsClient zoomGroupsData={zoomGroupsData.zoomGroups} />
-                        ) : (
-                            <Spinner />
-                        )}
+                        <ZoomGroupsClient />
                     </PaperContainer>
                 </div>
             </main>

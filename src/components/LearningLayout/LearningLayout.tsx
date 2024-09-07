@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { ReactNode, useEffect } from 'react'
 import { Sheet, SheetContent } from '../ui/sheet'
 import { useNavStore } from '@/zustand/store'
 import { LearningNavigationMenu } from './LearningNavigationMenu'
@@ -88,7 +88,9 @@ const LearningLayout = ({ children }: LearningLayoutProps) => {
     const { opened, openNav, closeNav } = useNavStore();
 
     const { course, level, user } = useLoadLearningData()
-    const { data } = api.siteIdentity.getSiteIdentity.useQuery()
+    const { data, refetch } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: false })
+
+    useEffect(() => { refetch() }, [])
 
     if (!course || !user) return null
 

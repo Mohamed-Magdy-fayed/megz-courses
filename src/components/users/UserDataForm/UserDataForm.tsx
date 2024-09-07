@@ -15,6 +15,7 @@ import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { validUserTypes } from "@/lib/enumsTypes";
+import MobileNumberInput from "@/components/ui/phone-number-input";
 
 const userDataFormSchema = z.object({
     id: z.string().min(1),
@@ -66,7 +67,7 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
         defaultValues,
     });
 
-    const { toastSuccess } = useToast()
+    const { toastSuccess, toastError } = useToast()
     const trpcUrils = api.useContext();
     const editUser = api.users.editUser.useMutation();
 
@@ -76,8 +77,10 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
             { ...data },
             {
                 onSuccess: (data) => {
+                    session.update()
                     toastSuccess(`User with the email: ${data.updatedUser.email} has been updated`)
                 },
+                onError: ({ message }) => toastError(message),
                 onSettled() {
                     trpcUrils.users.invalidate()
                         .then(() => setLoading(false));
@@ -131,14 +134,20 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
                                         <FormItem>
                                             <FormLabel>Phone</FormLabel>
                                             <FormControl>
-                                                <Input
-                                                    type="tel"
-                                                    disabled={loading}
-                                                    placeholder="01234567899"
-                                                    {...field}
-                                                    className="pl-8"
+                                                <MobileNumberInput
+                                                    onError={(isError) => {
+                                                        form.clearErrors("phone")
+                                                        if (isError) {
+                                                            form.setError("phone", { message: "Not a valid number!" })
+                                                            return
+                                                        }
+                                                    }}
+                                                    value={field.value || ""}
+                                                    setValue={(val) => field.onChange(val)}
+                                                    placeholder="Phone Number"
                                                 />
                                             </FormControl>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />

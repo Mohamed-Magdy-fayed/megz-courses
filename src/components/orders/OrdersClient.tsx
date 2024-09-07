@@ -8,19 +8,17 @@ import { validOrderStatuses } from "@/lib/enumsTypes";
 import { upperFirst } from "lodash";
 import { useSession } from "next-auth/react";
 
-const OrdersClient = ({ data }: {
-  data: (Order & {
-    user: User;
-    salesOperation: SalesOperation & {
-      assignee: SalesAgent | null;
-    };
-    course: Course;
-  })[]
-}) => {
+const OrdersClient = () => {
   const [orders, setOrders] = useState<OrderRow[]>([])
 
   const { data: sessionData } = useSession()
-  const formattedData = data.map(({
+
+  const trpcUtils = api.useContext()
+  const { data, isLoading } = api.orders.getAll.useQuery()
+  const deleteMutation = api.orders.deleteOrders.useMutation()
+  const { toastError, toastSuccess } = useToast()
+
+  const formattedData = data?.orders.map(({
     amount,
     course,
     id,
@@ -46,12 +44,9 @@ const OrdersClient = ({ data }: {
     userImage: user.image || "",
     refundRequester,
     course,
+    courseId: course.id,
     updatedAt,
-  }))
-
-  const trpcUtils = api.useContext()
-  const deleteMutation = api.orders.deleteOrders.useMutation()
-  const { toastError, toastSuccess } = useToast()
+  })) || []
 
   const onDelete = (callback?: () => void) => {
     deleteMutation.mutate(
@@ -73,17 +68,34 @@ const OrdersClient = ({ data }: {
 
   return (
     <DataTable
+      skele={isLoading}
       columns={columns}
       data={formattedData}
       setData={setOrders}
       onDelete={onDelete}
-      searches={[{ key: "orderNumber", label: "Order Number" }]}
-      filters={[{
-        key: "status", filterName: "Status", values: [...validOrderStatuses.map(status => ({
-          label: upperFirst(status),
-          value: status,
-        }))]
-      }]}
+      sum={{ key: "amount", label: "Total" }}
+      dateRange={{ key: "updatedAt", label: "Payment Date" }}
+      searches={[
+        { key: "orderNumber", label: "Order Number" },
+        { key: "userName", label: "User Name" },
+        { key: "salesOperationCode", label: "Operation Code" },
+      ]}
+      filters={[
+        {
+          key: "status", filterName: "Status", values: [...validOrderStatuses.map(status => ({
+            label: upperFirst(status),
+            value: status,
+          }))]
+        },
+        {
+          key: "courseId", filterName: "Course", values: [...formattedData.map(d => d.course.id)
+            .filter((value, index, self) => self.indexOf(value) === index)
+            .map(id => ({
+              label: formattedData.find(d => d.course.id === id)?.course.name || "",
+              value: id,
+            }))]
+        }
+      ]}
     />
   );
 };

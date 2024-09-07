@@ -36,7 +36,9 @@ const ConfigPage: NextPage = () => {
 
     const [isZoomOpen, setIsZoomOpen] = useState(false)
 
-    const { data } = api.siteIdentity.getSiteIdentity.useQuery()
+    const { data, refetch } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: false })
+
+    useEffect(() => { refetch() }, [])
     const { data: metaClient } = api.metaAccount.getMetaClient.useQuery()
 
     return (

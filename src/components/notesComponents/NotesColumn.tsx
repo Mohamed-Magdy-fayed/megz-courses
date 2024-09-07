@@ -20,14 +20,16 @@ export type NotesColumn = {
     createdByUserName: string,
     noteType: UserNoteTypes,
     status: UserNoteStatus,
+    createdForStudentName?: string,
     createdForStudent?: User,
+    createdForMentionsCount: number,
     createdForMentions: User[],
     sla: string,
-    createdAt: string,
+    createdAt: Date,
     updatedAt: string,
 };
 
-export const columns: ColumnDef<NotesColumn>[] = [
+export const notesColumns: ColumnDef<NotesColumn>[] = [
     {
         id: "select",
         header: ({ table }) => (
@@ -54,6 +56,13 @@ export const columns: ColumnDef<NotesColumn>[] = [
             <Link href={`/notes/${row.original.id}`}>
                 <Typography className="whitespace-nowrap hover:underline hover:text-primary">{row.original.title}</Typography>
             </Link>
+        )
+    },
+    {
+        accessorKey: "createdByUserName",
+        header: "Created By",
+        cell: ({ row }) => (
+            <Typography>{row.original.createdByUserName}</Typography>
         )
     },
     {
@@ -84,7 +93,7 @@ export const columns: ColumnDef<NotesColumn>[] = [
         )
     },
     {
-        accessorKey: "createdForStudent",
+        accessorKey: "createdForStudentName",
         header: ({ table }) => table.getCoreRowModel().rows.some(row => row.original.createdForStudent) ? "Student" : "",
         cell: ({ row }) => row.original.createdForStudent ? (
             <Link className="block w-fit" href={`/account/${row.original.createdForStudent.id}`}>
@@ -154,7 +163,7 @@ export const columns: ColumnDef<NotesColumn>[] = [
         }
     },
     {
-        accessorKey: "createdForMentions",
+        accessorKey: "createdForMentionsCount",
         header: "Mentiond Users",
         cell: ({ row }) => (
             <div className="flex flex-col gap-2">
@@ -179,6 +188,13 @@ export const columns: ColumnDef<NotesColumn>[] = [
                 </div>
             );
         },
+        filterFn: (row, columnId, filterValue) => {
+            const val = row.original.createdAt
+            const startDate = new Date(filterValue.split("|")[0])
+            const endDate = new Date(filterValue.split("|")[1])
+            return val.getTime() >= startDate.getTime() && val.getTime() <= endDate.getTime()
+        },
+        cell: ({ row }) => <Typography>{format(row.original.createdAt, "PPPp")}</Typography>
     },
     {
         id: "action",

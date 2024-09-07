@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import ResetPasswordForm from "@/components/authComponents/ResetPasswordForm";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Lock } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const AuthenticationPage = () => {
   const defaultVariant = useRouter().query.variant as "login" | "register"
@@ -24,78 +25,80 @@ const AuthenticationPage = () => {
   }, [session.status]);
 
   useEffect(() => {
-    if(!defaultVariant) router.push("authentication?variant=login")
+    if (!defaultVariant) router.push("authentication?variant=login")
     setVariant(defaultVariant)
   }, [defaultVariant]);
 
   return (
     <main className="min-h-screen bg-background p-4 grid gap-8 grid-cols-1 lg:grid-cols-2">
-      <div className="space-y-4 min-w-[24rem] mx-auto">
-        {variant === "register" ? (
-          <Card className="mt-2 flex flex-col items-center mx-auto">
-            <CardHeader className="flex flex-col items-center p-4">
-              <Lock />
-              <Typography variant={"primary"}>
-                Sign up
-              </Typography>
-            </CardHeader>
-            <AuthForm authType="register" />
-          </Card>
-        ) : (
-          <Card className="mt-2 flex flex-col items-center mx-auto">
-            <CardHeader className="flex flex-col items-center p-4">
-              <Lock />
-              <Typography variant={"primary"}>
-                Login
-              </Typography>
-            </CardHeader>
-            <AuthForm authType="login"></AuthForm>
-          </Card>
-        )}
-        <div className="grid place-content-center gap-2">
-          <Button
-            variant={"outline"}
-            customeColor={"destructiveOutlined"}
-            onClick={() => signIn("google")}
-          >
-            Sign in with Google
-          </Button>
-          <div>
-            <Dialog
-              open={open}
-              onOpenChange={setOpen}
-            >
-              <DialogTrigger asChild>
-                <Button variant="link" onClick={() => setOpen(true)}>
-                  Forgot password?
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <ResetPasswordForm setOpen={setOpen}></ResetPasswordForm>
-              </DialogContent>
-            </Dialog>
-          </div>
-          <div className="flex items-center">
-            <Typography>
-              {variant === "login"
-                ? "Don't have an account?"
-                : "Already have an account?"}
-            </Typography>
+      <ScrollArea className="h-[80vh] w-full">
+        <div className="space-y-4 min-w-[24rem] mx-auto max-w-md">
+          {variant === "register" ? (
+            <Card className="mt-2 flex flex-col items-center mx-auto">
+              <CardHeader className="flex flex-col items-center p-4">
+                <Lock />
+                <Typography variant={"primary"}>
+                  Sign up
+                </Typography>
+              </CardHeader>
+              <AuthForm authType="register" />
+            </Card>
+          ) : (
+            <Card className="mt-2 flex flex-col items-center mx-auto">
+              <CardHeader className="flex flex-col items-center p-4">
+                <Lock />
+                <Typography variant={"primary"}>
+                  Login
+                </Typography>
+              </CardHeader>
+              <AuthForm authType="login"></AuthForm>
+            </Card>
+          )}
+          <div className="grid place-content-center gap-2">
             <Button
-              variant="link"
-              onClick={() => {
-                setVariant(variant === "login" ? "register" : "login")
-                router.push(variant === "login" ? "authentication?variant=register" : "authentication?variant=login")
-              }
-              }
+              variant={"outline"}
+              customeColor={"destructiveOutlined"}
+              onClick={() => signIn("google")}
             >
-              <Typography className="ml-1">
-                {variant === "login" ? "Sign Up" : "Sign In"}
-              </Typography>
+              Sign in with Google
             </Button>
+            <div>
+              <Dialog
+                open={open}
+                onOpenChange={setOpen}
+              >
+                <DialogTrigger asChild>
+                  <Button variant="link" onClick={() => setOpen(true)}>
+                    Forgot password?
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <ResetPasswordForm setOpen={setOpen}></ResetPasswordForm>
+                </DialogContent>
+              </Dialog>
+            </div>
+            <div className="flex items-center">
+              <Typography>
+                {variant === "login"
+                  ? "Don't have an account?"
+                  : "Already have an account?"}
+              </Typography>
+              <Button
+                variant="link"
+                onClick={() => {
+                  setVariant(variant === "login" ? "register" : "login")
+                  router.push(variant === "login" ? "authentication?variant=register" : "authentication?variant=login")
+                }
+                }
+              >
+                <Typography className="ml-1">
+                  {variant === "login" ? "Sign Up" : "Sign In"}
+                </Typography>
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      </ScrollArea>
       <Skeleton className="w-full h-full lg:grid place-content-center hidden" >
         <ImageIcon size={200}></ImageIcon>
       </Skeleton>
@@ -104,7 +107,7 @@ const AuthenticationPage = () => {
           <Copyright />
         </div>
       </div>
-    </main>
+    </main >
   );
 };
 

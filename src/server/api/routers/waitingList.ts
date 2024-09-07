@@ -52,7 +52,7 @@ export const waitingListRouter = createTRPCRouter({
                     type: "Info",
                     createdForStudent: { connect: { id: updatedUser.id } },
                     messages: [{
-                        message: `User was added to waiting list of course ${course.name} at level ${updatedUser.courseStatus.find((s) => courseId === s.courseId)?.level.name}`,
+                        message: `User was added to waiting list of course ${course.name} at level ${updatedUser.courseStatus.find((s) => courseId === s.courseId)?.level?.name}`,
                         updatedAt: new Date(),
                         updatedBy: "System"
                     }],

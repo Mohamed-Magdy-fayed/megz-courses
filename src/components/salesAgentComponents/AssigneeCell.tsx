@@ -1,4 +1,3 @@
-import { api } from "@/lib/api"
 import { getInitials } from "@/lib/getInitials"
 import { FC } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
@@ -7,21 +6,23 @@ import Link from "next/link"
 
 interface AssigneeCellProps {
     assigneeId: string
+    assigneeName: string
+    assigneeImage: string
+    assigneeEmail: string
 }
 
-const AssigneeCell: FC<AssigneeCellProps> = ({ assigneeId }) => {
-    const { data, isLoading, isError } = api.users.getUserById.useQuery({ id: assigneeId })
+const AssigneeCell: FC<AssigneeCellProps> = ({ assigneeId, assigneeEmail, assigneeImage, assigneeName }) => {
     return (
         <div>
-            {isLoading ? <>Loading...</> : isError ? <>No Assignee</> : (
+            {!assigneeEmail ? <>No Assignee</> : (
                 <Link href={`/account/${assigneeId}`} className="flex flex-row gap-4 items-center hover:text-primary">
                     <Avatar>
-                        <AvatarImage src={`${data.user?.image}`} />
+                        <AvatarImage src={`${assigneeImage}`} />
                         <AvatarFallback>
-                            {getInitials(`${data.user?.name}`)}
+                            {getInitials(`${assigneeName}`)}
                         </AvatarFallback>
                     </Avatar>
-                    <Typography className="font-normal">{data.user?.email}</Typography>
+                    <Typography className="font-normal">{assigneeEmail}</Typography>
                 </Link>
             )}
         </div>

@@ -22,19 +22,27 @@ import {
 import { AlertModal } from "../modals/AlertModal";
 import { Typography } from "./Typoghraphy";
 import { Button } from "./button";
-import { ArrowLeft, ArrowRight, FileUp, SortAsc, SortDesc, Trash } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { csvMaker } from "@/lib/csvMaker";
-import { Separator } from "@/components/ui/separator";
+import { ArrowLeft, ArrowRight, SortAsc, SortDesc, Trash } from "lucide-react";
 import { TableInput } from "@/components/ui/table-input";
-import { upperFirst } from "lodash";
 import TableSelectField from "@/components/ui/TableSelectField";
+import { DateRangePicker } from "@/components/ui/DateRangePicker";
+import { formatPrice } from "@/lib/utils";
+import Spinner from "@/components/Spinner";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   setData: (data: TData[]) => void;
   onDelete?: (callback?: () => void) => void;
+  skele?: boolean,
+  sum?: {
+    key: Extract<keyof TData, string>,
+    label: string,
+  };
+  dateRange?: {
+    key: Extract<keyof TData, string>,
+    label: string,
+  };
   searches?: {
     key: Extract<keyof TData, string>,
     label: string,
@@ -51,13 +59,14 @@ export function DataTable<TData, TValue>({
   data,
   setData,
   onDelete,
+  skele,
+  sum,
+  dateRange,
   searches,
   filters,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
@@ -79,36 +88,89 @@ export function DataTable<TData, TValue>({
 
   const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
+  const [startDate, setStartDate] = React.useState<Date | undefined>(new Date())
+  const [endDate, setEndDate] = React.useState<Date | undefined>(new Date())
 
   const handleOpen = () => {
     setOpen(true);
     setData(table.getSelectedRowModel().rows.map((row) => row.original));
   };
 
+  // const handleExportPDF = () => {
+  //   const pdf = new jsPDF({ format: "a4", unit: "pt", orientation: "portrait" });
+
+  //   const dataToExport = table.getSelectedRowModel().rows.length > 0 ? table.getSelectedRowModel().rows
+  //     : table.getFilteredRowModel().rows.length > 0 ? table.getFilteredRowModel().rows
+  //       : table.getCoreRowModel().rows
+
+  //   // Add table headers
+  //   const headers = exportData?.map(({ key }) => key) || []; // Array of header keys
+
+  //   const content = dataToExport.map(row => {
+  //     const rowData: { [key: string]: string } = {};
+
+  //     // Iterate over the headers to ensure all keys are included in rowData
+  //     exportData?.forEach(col => {
+  //       // Assign the corresponding value or an empty string if it's missing
+  //       rowData[col.key] = row.original[col.key] as string ?? ''; // Fallback to empty string
+  //     });
+
+  //     return rowData;
+  //   });
+
+  //   // Convert the header and content arrays into a format jsPDF accepts
+  //   const image = new Image()
+  //   image.src = "/logos/logoPrimary.png"
+  //   image.onload = () => {
+  //     pdf.addImage(image, "", 20, 20, 50, 50)
+
+  //     addAlignedText({
+  //       pdf,
+  //       fontSize: 20,
+  //       text: exportName || "",
+  //       yPosition: 50,
+  //       alignment: "center",
+  //       underline: true,
+  //     })
+
+  //     addAlignedText({
+  //       pdf,
+  //       fontSize: 10,
+  //       text: format(new Date(), "PPPPp"),
+  //       yPosition: 10,
+  //       alignment: "right",
+  //       rightMargin: 20
+  //     })
+
+  //     pdf.table(40, 90, content, headers, { padding: 5 });
+  //     pdf.save(`${exportName}.pdf`);
+  //   };
+  // };
+
   return (
     <div className="w-full">
-      {table.getCoreRowModel().rows.length !== 0 && (
+      {/* {table.getCoreRowModel().rows.length !== 0 && (
         <>
-          <div className="flex items-center gap-2 p-2">
-            <Typography variant={"secondary"}>Export</Typography>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onClick={() => csvMaker(table.getSelectedRowModel().rows.length > 0 ? table.getSelectedRowModel().rows.map(row => row.original) : table.getCoreRowModel().rows.map(row => row.original))}
-                  variant={"icon"}
-                  customeColor={"infoIcon"}
-                >
-                  <FileUp />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <Typography>Export</Typography>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <Separator />
+        <div className="flex items-center gap-2 p-2">
+        <Typography variant={"secondary"}>Export</Typography>
+        <Tooltip>
+        <TooltipTrigger asChild>
+        <Button
+        onClick={handleExportPDF}
+        variant={"icon"}
+        customeColor={"infoIcon"}
+        >
+        <FileUp />
+        </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+        <Typography>Export</Typography>
+        </TooltipContent>
+        </Tooltip>
+        </div>
+        <Separator />
         </>
-      )}
+        )} */}
       {onDelete && <AlertModal
         isOpen={open}
         onClose={() => setOpen(false)}
@@ -123,6 +185,12 @@ export function DataTable<TData, TValue>({
         loading={loading}
       />}
       <div className="whitespace-nowrap grid">
+        {table.getAllColumns().some(col => !!col.getFilterValue()) && (
+          <Typography className="px-4 pb-4 text-sm text-muted">
+            {table.getFilteredRowModel().rows.length} of{" "}
+            {table.getCoreRowModel().rows.length} row(s) filtered.
+          </Typography>
+        )}
         {table.getSelectedRowModel().rows.length > 0 && (
           <div className="flex w-full flex-1 justify-between px-4 pb-4 text-sm text-muted">
             <Typography>
@@ -134,7 +202,7 @@ export function DataTable<TData, TValue>({
             </Button>}
           </div>
         )}
-        <Table>
+        <Table className={skele ? "bg-muted/20 animate-pulse" : ""}>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -144,7 +212,7 @@ export function DataTable<TData, TValue>({
                       {searches?.some(s => s.key === header.id) ? (
                         <div className="flex items-center gap-2 justify-between">
                           <TableInput
-                            placeholder={upperFirst(header.id)}
+                            placeholder={searches?.find(s => s.key === header.id)?.label}
                             value={(table.getColumn(header.id)?.getFilterValue() as string) ?? ""}
                             onChange={(event) =>
                               table.getColumn(header.id)?.setFilterValue(event.target.value)
@@ -172,7 +240,13 @@ export function DataTable<TData, TValue>({
                                 customLabel: (
                                   <div className="flex items-center justify-between gap-4 w-full">
                                     <Typography>{val.label}</Typography>
-                                    <Typography>{table.getCoreRowModel().rows.filter(row => row.original[filters.find(f => f.key === header.id)?.key as Extract<keyof TData, string>] === val.value).length}</Typography>
+                                    <Typography>
+                                      {
+                                        table.getFilteredRowModel().rows.length > 0
+                                          ? table.getFilteredRowModel().rows.filter(row => row.original[filters.find(f => f.key === header.id)?.key as Extract<keyof TData, string>] === val.value).length
+                                          : table.getCoreRowModel().rows.filter(row => row.original[filters.find(f => f.key === header.id)?.key as Extract<keyof TData, string>] === val.value).length
+                                      }
+                                    </Typography>
                                   </div>
                                 )
                               })) || []}
@@ -182,11 +256,9 @@ export function DataTable<TData, TValue>({
                                   header.column.columnDef.header,
                                   header.getContext()
                                 )}
-                              placeholder={upperFirst(header.id)}
+                              placeholder={filters.find(f => f.key === header.id)?.filterName || ""}
                               handleChange={(val) => {
                                 const isSameFilter = table.getColumn(header.id)?.getFilterValue() === val
-                                console.log("isSameFilter", isSameFilter);
-                                console.log("item", val);
                                 table.getColumn(header.id)?.setFilterValue(isSameFilter ? "" : val)
                               }}
                             />
@@ -202,12 +274,113 @@ export function DataTable<TData, TValue>({
                             </Button>
                           </div>
                         </div>
-                      ) : header.isPlaceholder
-                        ? null
-                        : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                      ) : dateRange?.key === header.id
+                        ? (
+                          <div className="flex gap-2 items-center justify-between">
+                            <DateRangePicker
+                              label={dateRange.label}
+                              handleReset={() => {
+                                const col = table.getColumn(dateRange.key)
+                                col?.setFilterValue(undefined)
+                              }}
+                              handleChange={() => {
+                                if (!startDate && !endDate) {
+                                  const col = table.getColumn(dateRange.key)
+                                  col?.setFilterValue(undefined)
+                                  return
+                                }
+
+                                if (!startDate && endDate) {
+                                  const newStartDate = new Date(endDate.getTime())
+                                  newStartDate.setHours(0, 0, 0)
+                                  const newEndDate = new Date(endDate.getTime())
+                                  newEndDate.setHours(23, 59, 59)
+                                  const col = table.getColumn(dateRange.key)
+                                  col?.setFilterValue(`${newStartDate}|${newEndDate}`)
+                                  return
+                                }
+
+                                if (!endDate && startDate) {
+                                  const newStartDate = new Date(startDate.getTime())
+                                  newStartDate.setHours(0, 0, 0)
+                                  const newEndDate = new Date(startDate.getTime())
+                                  newEndDate.setHours(23, 59, 59)
+                                  const col = table.getColumn(dateRange.key)
+                                  col?.setFilterValue(`${newStartDate}|${newEndDate}`)
+                                  return
+                                }
+
+                                if (startDate === endDate) {
+                                  const newStartDate = new Date(startDate?.getTime()!);
+                                  newStartDate.setHours(0, 0, 0);
+                                  const newEndDate = new Date(endDate?.getTime()!)
+                                  newEndDate.setHours(23, 59, 59)
+
+                                  const col = table.getColumn(dateRange.key)
+                                  col?.setFilterValue(`${newStartDate}|${newEndDate}`)
+                                  return
+                                }
+
+                                const newStartDate = new Date(startDate?.getTime()!);
+                                newStartDate.setHours(0, 0, 0);
+                                const newEndDate = new Date(endDate?.getTime()!)
+                                newEndDate.setHours(23, 59, 59)
+
+                                const col = table.getColumn(dateRange.key)
+                                col?.setFilterValue(`${newStartDate}|${newEndDate}`)
+                                return
+                              }}
+                              startDate={startDate}
+                              setStartDate={setStartDate}
+                              endDate={endDate}
+                              setEndDate={setEndDate}
+                            />
+                            <Button
+                              className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
+                              onClick={() => table.getColumn(header.id)?.toggleSorting(table.getColumn(header.id)?.getIsSorted() === "asc")}
+                            >
+                              {table.getColumn(header.id)?.getIsSorted() === "asc" ? (
+                                <SortAsc className="h-4 w-4 text-primary" />
+                              ) : (
+                                <SortDesc className="h-4 w-4 text-primary" />
+                              )}
+                            </Button>
+                          </div>
+                        ) : header.id === sum?.key
+                          ? (
+                            <div className="flex items-center gap-4">
+                              <Typography className="text-muted">{sum.label}</Typography>
+                              <Typography className="text-muted">
+                                {formatPrice(table.getFilteredSelectedRowModel().rows.length > 0 ? table.getFilteredSelectedRowModel().rows.map(r => r.original[sum.key]).reduce((a, b) => {
+                                  return Number(a) + Number(b)
+                                }, 0) : table.getFilteredRowModel().rows.map(r => r.original[sum.key]).reduce((a, b) => {
+                                  return Number(a) + Number(b)
+                                }, 0))}
+                              </Typography>
+                              <Button
+                                className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
+                                onClick={() => table.getColumn(header.id)?.toggleSorting(table.getColumn(header.id)?.getIsSorted() === "asc")}
+                              >
+                                {table.getColumn(header.id)?.getIsSorted() === "asc" ? (
+                                  <SortAsc className="h-4 w-4 text-primary" />
+                                ) : (
+                                  <SortDesc className="h-4 w-4 text-primary" />
+                                )}
+                              </Button>
+                            </div>
+                          )
+                          : header.isPlaceholder
+                            ? null
+                            : (
+                              <Typography className="text-muted">
+                                {
+                                  flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext()
+                                  )
+                                }
+                              </Typography>
+                            )}
                     </TableHead>
                   );
                 })}
@@ -231,6 +404,17 @@ export function DataTable<TData, TValue>({
                   ))}
                 </TableRow>
               ))
+            ) : skele ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24"
+                >
+                  <div className="flex w-fit mx-auto items-center gap-2">
+                    <Typography>Loading...</Typography><Spinner className="w-4 h-4" />
+                  </div>
+                </TableCell>
+              </TableRow>
             ) : (
               <TableRow>
                 <TableCell

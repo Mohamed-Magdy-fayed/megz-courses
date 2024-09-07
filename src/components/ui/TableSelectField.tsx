@@ -36,7 +36,7 @@ const TableSelectField: FC<TableSelectFieldProps<any>> = ({ placeholder, listTit
                 <Button
                     variant="outline"
                     customeColor={"foregroundOutlined"}
-                    className={cn('max-w-sm flex border-0 items-center h-fit gap-2 justify-start focus-visible:ring-0 focus-visible:ring-offset-0', className)}
+                    className={cn('max-w-sm flex border p-1 border-transparent hover:border-muted items-center h-fit gap-2 justify-start focus-visible:ring-0 focus-visible:ring-offset-0', isOpen ? "border-primary" : "", className)}
                     {...props}
                 >
                     {value.length === 0 ? (

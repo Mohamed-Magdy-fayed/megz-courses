@@ -42,7 +42,7 @@ export const LandingNavigationMenu = ({ siteIdentity }: { siteIdentity?: SiteIde
     const isTablet = /Tablet|iPad/i.test(navigator.userAgent);
     const getDevice = () => isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop'
 
-    if (session.data.user.device === (getDevice())) return
+    if (session.data.user.device === (getDevice()) || !session.data.user.isVerified) return
     editUserQuery.mutate({
       id: session.data?.user.id || "",
       name: session.data?.user.name || "",
@@ -118,24 +118,6 @@ const DesktopNavMenu = ({ courses }: {
             </ScrollArea>
           </NavigationMenuContent>
         </NavigationMenuItem>
-        <NavigationMenuItem className="hidden md:inline-flex">
-          <NavigationMenuTrigger className="hover:bg-primary/20 bg-transparent">
-            Careers
-          </NavigationMenuTrigger>
-          <NavigationMenuContent className="hidden md:inline-block">
-            <ul className="flex flex-col items-start p-0">
-              {["Join as a teacher", "Join as a sales agent", "Join as a project manager"].map((item) => (
-                <Link
-                  key={item}
-                  href={`/comming_soon`}
-                  className="hover:bg-primary/20 whitespace-nowrap w-full transition-colors p-4"
-                >
-                  <Typography variant={"secondary"}>{item}</Typography>
-                </Link>
-              ))}
-            </ul>
-          </NavigationMenuContent>
-        </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
   )
@@ -189,7 +171,6 @@ const MobileUnauthenticatedProfileMenu = () => {
             </Button>
           </Link>
           <DropdownMenuSeparator className="md:hidden" />
-          <MobileNavMenu />
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
@@ -352,7 +333,6 @@ const MobileAuthenticatedProfileMenu = () => {
             )}
           </div>
           <DropdownMenuSeparator className="md:hidden" />
-          <MobileNavMenu />
           <Separator></Separator>
           <Button customeColor={"primaryIcon"} disabled={loading} onClick={handleLogout} className="m-2 min-w-[10rem] relative">
             {loading && <Spinner className="w-6 h-6 absolute" />}
@@ -361,29 +341,5 @@ const MobileAuthenticatedProfileMenu = () => {
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  )
-}
-
-const MobileNavMenu = () => {
-
-  return (
-    <DropdownMenuSub>
-      <DropdownMenuSubTrigger className="md:hidden p-4">
-        Careers
-      </DropdownMenuSubTrigger>
-      <DropdownMenuSubContent className="md:hidden">
-        <ul className="flex flex-col items-start p-0">
-          {["Join as a teacher", "Join as a sales agent", "Join as a project manager"].map((item) => (
-            <Link
-              key={item}
-              href={`/comming_soon`}
-              className="hover:bg-primary/20 whitespace-nowrap w-full transition-colors p-4"
-            >
-              <Typography variant={"secondary"}>{item}</Typography>
-            </Link>
-          ))}
-        </ul>
-      </DropdownMenuSubContent>
-    </DropdownMenuSub>
   )
 }

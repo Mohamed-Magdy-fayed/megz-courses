@@ -25,7 +25,7 @@ import StudentForm from "@/components/studentComponents/StudentForm";
 const OperationPage = () => {
     const router = useRouter()
     const code = router.query.operationId as string
-    const { data: salesOperationData, isLoading, isError } = api.salesOperations.getByCode.useQuery({ code })
+    const { data: salesOperationData, isLoading, isError } = api.salesOperations.getByCode.useQuery({ code }, { enabled: !!code })
     const { data: coursesData } = api.courses.getAll.useQuery()
     const { data: usersData } = api.users.getUsers.useQuery({ userType: "student" })
     const { data: trainersData } = api.trainers.getTrainers.useQuery()

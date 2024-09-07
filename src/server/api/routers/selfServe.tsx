@@ -7,7 +7,7 @@ import Email from "@/components/emails/Email";
 import { format } from "date-fns";
 import { env } from "@/env.mjs";
 import { createPaymentIntent } from "@/lib/paymobHelpers";
-import { sendEmail } from "@/lib/gmailHelpers";
+import { sendZohoEmail } from "@/lib/gmailHelpers";
 
 export const selfServeRouter = createTRPCRouter({
     enrollCourse: protectedProcedure
@@ -35,13 +35,6 @@ export const selfServeRouter = createTRPCRouter({
                 });
             }
 
-            const salesOperation = await ctx.prisma.salesOperation.create({
-                data: {
-                    code: salesOperationCodeGenerator(),
-                    status: "created",
-                },
-            })
-
             const course = await ctx.prisma.course.findUnique({
                 where: {
                     id: courseId
@@ -57,6 +50,13 @@ export const selfServeRouter = createTRPCRouter({
             if (!intentResponse.client_secret) throw new TRPCError({ code: "BAD_REQUEST", message: "an error occured please try again!" })
 
             const paymentLink = `${env.PAYMOB_BASE_URL}/unifiedcheckout/?publicKey=${env.PAYMOB_PUBLIC_KEY}&clientSecret=${intentResponse.client_secret}`
+
+            const salesOperation = await ctx.prisma.salesOperation.create({
+                data: {
+                    code: salesOperationCodeGenerator(),
+                    status: "created",
+                },
+            })
 
             const order = await ctx.prisma.order.create({
                 data: {
@@ -74,9 +74,33 @@ export const selfServeRouter = createTRPCRouter({
                 include: {
                     course: true,
                     user: true,
-                    salesOperation: { include: { assignee: true } }
+                    salesOperation: { include: { assignee: { include: { user: true } } } }
                 },
             });
+
+            await ctx.prisma.courseStatus.create({
+                data: {
+                    status: "orderCreated",
+                    course: { connect: { id: courseId } },
+                    user: { connect: { id: user.id } },
+                }
+            })
+
+            await ctx.prisma.userNote.create({
+                data: {
+                    sla: 0,
+                    status: "Closed",
+                    title: `An Order Placed by the user ${user.name}`,
+                    type: "Info",
+                    createdForStudent: { connect: { id: user.id } },
+                    messages: [{
+                        message: `An order was placed by for the student by the system regarding course ${course?.name} for a ${order.courseType.isPrivate ? "private" : "group"} purchase the order is now awaiting payment\nPayment Link: ${paymentLink}`,
+                        updatedAt: new Date(),
+                        updatedBy: "System"
+                    }],
+                    createdByUser: { connect: { id: order.salesOperation.assignee?.user.id } },
+                }
+            })
 
             const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
 
@@ -93,7 +117,7 @@ export const selfServeRouter = createTRPCRouter({
                 />, { pretty: true }
             )
 
-            const isSuccess = sendEmail({
+            const isSuccess = sendZohoEmail({
                 email, subject: `Thanks for your order ${order.orderNumber}`, html
             })
             if (!isSuccess) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Email sending failed!" })

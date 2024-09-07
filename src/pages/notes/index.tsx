@@ -12,7 +12,7 @@ export default function NotesPage() {
                 </ConceptTitle>
             </div>
             <PaperContainer>
-                <NotesClient></NotesClient>
+                <NotesClient />
             </PaperContainer>
         </AppLayout>
     );

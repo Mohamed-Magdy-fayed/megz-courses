@@ -4,7 +4,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useNavStore } from "@/zustand/store";
 import { useSession } from "next-auth/react";
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import Spinner from "../Spinner";
 import UnauthorizedAccess from "./UnauthorizedAccess";
 import { api } from "@/lib/api";
@@ -13,7 +13,9 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
   const { opened, openNav, closeNav } = useNavStore();
 
   const { data: session, status } = useSession({ required: true })
-  const { data } = api.siteIdentity.getSiteIdentity.useQuery()
+  const { data, refetch } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: false })
+
+  useEffect(() => { refetch() }, [])
 
   if (status === "loading" || !session.user) return (
     <div className="grid place-content-center w-screen h-screen">

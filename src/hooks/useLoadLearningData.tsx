@@ -18,7 +18,7 @@ const useLoadLearningData = () => {
     const user = userQuery.data?.user
     const course = courseQuery.data?.course
     const level = levelQuery.data?.level
-    const levelSlugs = user?.courseStatus.filter((status) => status.courseId === course?.id).map(item => item.level.slug);
+    const levelSlugs = user?.courseStatus.filter((status) => status.courseId === course?.id).map(item => item.level?.slug);
 
     return {
         user: !user ? undefined : user,

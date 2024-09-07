@@ -1,13 +1,17 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
-import { orderCodeGenerator, salesOperationCodeGenerator } from "@/lib/utils";
+import { formatPrice, orderCodeGenerator, salesOperationCodeGenerator } from "@/lib/utils";
 import bcrypt from "bcrypt";
 import { TRPCError } from "@trpc/server";
-import { User } from "@prisma/client";
+import { Course, Order, User } from "@prisma/client";
 import { randomUUID } from "crypto";
 import { env } from "@/env.mjs";
 import axios from "axios";
 import { createPaymentIntent, formatAmountForPaymob } from "@/lib/paymobHelpers";
+import { render } from "@react-email/render";
+import Email from "@/components/emails/Email";
+import { sendZohoEmail } from "@/lib/gmailHelpers";
+import { format } from "date-fns";
 
 export const ordersRouter = createTRPCRouter({
     getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -134,6 +138,14 @@ export const ordersRouter = createTRPCRouter({
                 },
             });
 
+            await ctx.prisma.courseStatus.create({
+                data: {
+                    status: "orderCreated",
+                    course: { connect: { id: courseDetails.courseId } },
+                    user: { connect: { id: user.id } },
+                }
+            })
+
             await ctx.prisma.userNote.create({
                 data: {
                     sla: 0,
@@ -150,10 +162,29 @@ export const ordersRouter = createTRPCRouter({
                 }
             })
 
-            return {
-                order,
-                paymentLink
-            };
+            const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
+
+            const html = render(
+                <Email
+                    logoUrl={logoUrl || ""}
+                    orderCreatedAt={format(order.createdAt, "dd MMM yyyy")}
+                    userEmail={user.email}
+                    orderAmount={formatPrice(order.amount)}
+                    orderNumber={orderNumber}
+                    paymentLink={paymentLink}
+                    customerName={user.name}
+                    course={{
+                        courseName: course.name,
+                        coursePrice: order.courseType.isPrivate
+                            ? formatPrice(course.privatePrice)
+                            : formatPrice(course.groupPrice)
+                    }}
+                />, { pretty: true }
+            )
+
+            const isSuccess = sendZohoEmail({ email: user.email, subject: `Thanks for your order ${orderNumber}`, html })
+
+            return { isSuccess, orderNumber }
         }),
     quickOrder: protectedProcedure
         .input(
@@ -286,6 +317,14 @@ export const ordersRouter = createTRPCRouter({
                 },
             });
 
+            await ctx.prisma.courseStatus.create({
+                data: {
+                    status: "orderCreated",
+                    course: { connect: { id: courseDetails.courseId } },
+                    user: { connect: { id: user.id } },
+                }
+            })
+
             await ctx.prisma.userNote.create({
                 data: {
                     sla: 0,
@@ -317,83 +356,113 @@ export const ordersRouter = createTRPCRouter({
 
             if (!order || !order.paymentId) throw new TRPCError({ code: "BAD_REQUEST", message: "order not found" })
 
-            const coursesPrice = await ctx.prisma.course.findMany({
-                where: {
-                    id: order.courseId
-                }
-            })
+            const sendTheMail = async (order: Order & {
+                user: User;
+                course: Course;
+            }, paymentLink: string) => {
+                await ctx.prisma.userNote.create({
+                    data: {
+                        sla: 0,
+                        status: "Closed",
+                        title: `Payment Link resent by ${ctx.session.user.name}`,
+                        type: "Info",
+                        createdForStudent: { connect: { id: order.user.id } },
+                        messages: [{
+                            message: `Payment Link: ${paymentLink} was resent to the user`,
+                            updatedAt: new Date(),
+                            updatedBy: "System"
+                        }],
+                        createdByUser: { connect: { id: ctx.session.user.id } },
+                    }
+                })
 
-            const intentData = {
-                amount: formatAmountForPaymob(order.amount),
-                currency: "EGP",
-                payment_methods: [4618117, 4617984],
-                items: coursesPrice.map(course => ({
-                    name: course.name,
-                    amount: formatAmountForPaymob(order.courseType.isPrivate ? course.privatePrice : course.groupPrice),
-                    description: course.description,
-                    quantity: 1,
-                })),
-                billing_data: {
-                    first_name: order.user.name.split(" ")[0],
-                    last_name: order.user.name.split(" ")[-1] || "No last name",
-                    phone_number: order.user.phone,
-                    email: order.user.email,
-                },
-                customer: {
-                    first_name: order.user.name.split(" ")[0],
-                    last_name: order.user.name.split(" ")[-1] || "No last name",
-                    email: order.user.email,
-                },
-            };
+                const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
 
-            const intentConfig = {
-                method: 'post',
-                maxBodyLength: Infinity,
-                url: `${env.PAYMOB_BASE_URL}/v1/intention/`,
-                headers: {
-                    'Authorization': `Token ${env.PAYMOB_API_SECRET}`,
-                    'Content-Type': 'application/json'
-                },
-                data: intentData
-            };
+                const html = render(
+                    <Email
+                        logoUrl={logoUrl || ""}
+                        orderCreatedAt={format(order.createdAt, "dd MMM yyyy")}
+                        userEmail={order.user.email}
+                        orderAmount={formatPrice(order.amount)}
+                        orderNumber={order.orderNumber}
+                        paymentLink={paymentLink}
+                        customerName={order.user.name}
+                        course={{
+                            courseName: order.course.name,
+                            coursePrice: order.courseType.isPrivate
+                                ? formatPrice(order.course.privatePrice)
+                                : formatPrice(order.course.groupPrice)
+                        }} />, { pretty: true }
+                )
 
-            const intentResponse = (await axios.request(intentConfig)).data
-            if (!intentResponse.client_secret) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "intent failed" })
+                const isSuccess = sendZohoEmail({ email: order.user.email, subject: `Thanks for your order ${order.orderNumber}`, html })
 
-            const paymentLink = `${env.PAYMOB_BASE_URL}/unifiedcheckout/?publicKey=${env.PAYMOB_PUBLIC_KEY}&clientSecret=${intentResponse.client_secret}`
+                return { isSuccess }
+            }
 
-            const updatedOrder = await ctx.prisma.order.update({
-                where: { id: orderId },
-                data: {
-                    paymentId: intentResponse.id,
-                },
-                include: {
-                    course: true,
-                    user: true,
-                    salesOperation: { include: { assignee: true } }
-                },
-            });
+            if (order.paymentLink) {
+                return await sendTheMail(order, order.paymentLink)
+            } else {
+                const coursesPrice = await ctx.prisma.course.findMany({
+                    where: {
+                        id: order.courseId
+                    }
+                })
 
-            await ctx.prisma.userNote.create({
-                data: {
-                    sla: 0,
-                    status: "Closed",
-                    title: `Payment Link resent by ${ctx.session.user.name}`,
-                    type: "Info",
-                    createdForStudent: { connect: { id: order.user.id } },
-                    messages: [{
-                        message: `Payment Link: ${paymentLink} was resent to the user`,
-                        updatedAt: new Date(),
-                        updatedBy: "System"
-                    }],
-                    createdByUser: { connect: { id: ctx.session.user.id } },
-                }
-            })
+                const intentData = {
+                    special_reference: order.orderNumber,
+                    amount: formatAmountForPaymob(order.amount),
+                    currency: "EGP",
+                    payment_methods: [4618117, 4617984],
+                    items: coursesPrice.map(course => ({
+                        name: course.name,
+                        amount: formatAmountForPaymob(order.courseType.isPrivate ? course.privatePrice : course.groupPrice),
+                        description: course.description,
+                        quantity: 1,
+                    })),
+                    billing_data: {
+                        first_name: order.user.name.split(" ")[0],
+                        last_name: order.user.name.split(" ")[-1] || "No last name",
+                        phone_number: order.user.phone,
+                        email: order.user.email,
+                    },
+                    customer: {
+                        first_name: order.user.name.split(" ")[0],
+                        last_name: order.user.name.split(" ")[-1] || "No last name",
+                        email: order.user.email,
+                    },
+                };
 
-            return {
-                updatedOrder,
-                paymentLink
-            };
+                const intentConfig = {
+                    method: 'post',
+                    maxBodyLength: Infinity,
+                    url: `${env.PAYMOB_BASE_URL}/v1/intention/`,
+                    headers: {
+                        'Authorization': `Token ${env.PAYMOB_API_SECRET}`,
+                        'Content-Type': 'application/json'
+                    },
+                    data: intentData
+                };
+
+                const intentResponse = (await axios.request(intentConfig)).data
+                if (!intentResponse.client_secret) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "intent failed" })
+
+                const paymentLink = `${env.PAYMOB_BASE_URL}/unifiedcheckout/?publicKey=${env.PAYMOB_PUBLIC_KEY}&clientSecret=${intentResponse.client_secret}`
+
+                const newOrder = await ctx.prisma.order.update({
+                    where: { id: orderId },
+                    data: {
+                        paymentId: intentResponse.id,
+                    },
+                    include: {
+                        course: true,
+                        user: true,
+                        salesOperation: { include: { assignee: true } }
+                    },
+                });
+
+                return await sendTheMail(newOrder, paymentLink)
+            }
         }),
     payOrderManually: protectedProcedure
         .input(z.object({
@@ -432,6 +501,15 @@ export const ordersRouter = createTRPCRouter({
                 }
             })
 
+            const courseStatus = await ctx.prisma.courseStatus.updateMany({
+                where: {
+                    courseId: order.courseId
+                },
+                data: {
+                    status: "orderPaid",
+                }
+            })
+
             const note = await ctx.prisma.userNote.create({
                 data: {
                     sla: 0,
@@ -448,7 +526,7 @@ export const ordersRouter = createTRPCRouter({
                 }
             })
 
-            return { courseLink, updatedOrder }
+            return { courseLink, updatedOrder, courseStatus, note }
         }),
     payOrder: protectedProcedure
         .input(
@@ -493,7 +571,16 @@ export const ordersRouter = createTRPCRouter({
                 }
             })
 
-            await ctx.prisma.userNote.create({
+            const courseStatus = await ctx.prisma.courseStatus.updateMany({
+                where: {
+                    courseId: order.courseId
+                },
+                data: {
+                    status: "orderPaid",
+                }
+            })
+
+            const note = await ctx.prisma.userNote.create({
                 data: {
                     sla: 0,
                     status: "Closed",
@@ -509,7 +596,7 @@ export const ordersRouter = createTRPCRouter({
                 }
             })
 
-            return { courseLink, updatedOrder }
+            return { courseLink, updatedOrder, courseStatus, note }
         }),
     refundOrder: protectedProcedure
         .input(z.object({
@@ -573,7 +660,7 @@ export const ordersRouter = createTRPCRouter({
                     },
                 });
 
-                await ctx.prisma.userNote.create({
+                const note = await ctx.prisma.userNote.create({
                     data: {
                         sla: 0,
                         status: "Closed",
@@ -589,7 +676,7 @@ export const ordersRouter = createTRPCRouter({
                     }
                 })
 
-                return { success: isRefunded, refundData, updatedOrder, requestedBy: user, updatedUser };
+                return { success: isRefunded, refundData, updatedOrder, requestedBy: user, updatedUser, note };
             }
 
             const updatedOrder = await ctx.prisma.order.update({

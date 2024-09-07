@@ -26,7 +26,7 @@ export const DatePicker: FC<DatePickerProps> = ({ date, setDate, className, ...p
                 <Button
                     variant="outline"
                     customeColor={"foregroundOutlined"}
-                    className={cn('flex flex-wrap items-center h-fit gap-2 justify-start hover:bg-slate-50 hover:text-primary hover:border-primary', className)}
+                    className={cn('flex flex-wrap items-center h-fit gap-2 justify-start hover:bg-background hover:text-primary hover:border-primary', className)}
                     {...props}
                 >
                     <CalendarIcon className="mr-2 h-4 w-4" />

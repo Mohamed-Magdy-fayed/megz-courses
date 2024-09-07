@@ -5,10 +5,13 @@ import {
   protectedProcedure,
 } from "@/server/api/trpc";
 import bcrypt from "bcrypt";
-import nodemailer from "nodemailer";
 import { env } from "@/env.mjs";
 import { TRPCError } from "@trpc/server";
-import { sendEmail } from "@/lib/gmailHelpers";
+import { sendZohoEmail } from "@/lib/gmailHelpers";
+import { render } from "@react-email/render";
+import EmailConfirmation from "@/components/emails/EmailConfirmation";
+import EmailConfirmationSuccess from "@/components/emails/EmailConfirmed";
+import { signIn } from "next-auth/react";
 
 export const authRouter = createTRPCRouter({
   register: publicProcedure
@@ -29,10 +32,7 @@ export const authRouter = createTRPCRouter({
           email: input.email,
         },
       });
-      if (exists)
-        return {
-          error: { message: "Email already taken" },
-        };
+      if (exists) throw new TRPCError({ code: "BAD_REQUEST", message: "Email already taken" })
 
       const user = await ctx.prisma.user.create({
         data: {
@@ -43,9 +43,61 @@ export const authRouter = createTRPCRouter({
         },
       });
 
+      const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
+      const accessToken = await bcrypt.hash(user.id, 10);
+
+      const html = render(
+        <EmailConfirmation
+          logoUrl={logoUrl || ""}
+          confirmationLink={`${env.NEXTAUTH_URL}email_conf/${user.id}?access_token=${accessToken}`}
+          customerName={user.name}
+          userEmail={user.email}
+        />, { pretty: true }
+      )
+
+      sendZohoEmail({
+        email: user.email,
+        subject: `Confirm your email ${user.email}`,
+        html,
+      })
+
       return {
         user,
       };
+    }),
+  confirmUserEmail: publicProcedure
+    .input(z.object({
+      id: z.string(),
+      accessToken: z.string(),
+    }))
+    .mutation(async ({ ctx, input: { accessToken, id } }) => {
+      if (!(await bcrypt.compare(id, accessToken))) throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid access token!" })
+      if ((await ctx.prisma.user.findUnique({ where: { id } }))?.emailVerified) return { message: "Email already verified!" }
+
+      const user = await ctx.prisma.user.update({
+        where: { id },
+        data: { emailVerified: new Date() },
+        select: { id: true, name: true, email: true, hashedPassword: true }
+      })
+
+      const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
+
+      const html = render(
+        <EmailConfirmationSuccess
+          accountLink={`${env.NEXTAUTH_URL}my_account`}
+          customerName={user.name}
+          logoUrl={logoUrl || ""}
+          userEmail={user.email}
+        />
+      )
+
+      sendZohoEmail({
+        email: user.email,
+        html,
+        subject: `Congratulations, your email is now verified.`
+      })
+
+      return { user }
     }),
   resetPasswordRequest: publicProcedure
     .input(z.object({
@@ -75,7 +127,7 @@ export const authRouter = createTRPCRouter({
       message: z.string(),
     }))
     .mutation(async ({ input: { email, message } }) => {
-      sendEmail({
+      sendZohoEmail({
         email, subject: `Seems like you forgot your password!`, html: message
       })
 

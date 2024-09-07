@@ -1,14 +1,10 @@
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import AppLayout from "@/components/layout/AppLayout";
-import { api } from "@/lib/api";
 import type { NextPage } from "next";
 import { PaperContainer } from "@/components/ui/PaperContainers";
-import Spinner from "@/components/Spinner";
 import DatabaseClient from "@/components/database/DatabaseClient";
 
 const DatabasePage: NextPage = () => {
-    const { data, isLoading, isError } = api.potintialCustomers.getCustomers.useQuery();
-
     return (
         <AppLayout>
             <main className="flex">
@@ -20,13 +16,7 @@ const DatabasePage: NextPage = () => {
                         </div>
                     </div>
                     <PaperContainer>
-                        {isLoading ? (
-                            <Spinner></Spinner>
-                        ) : isError ? (
-                            <>Error</>
-                        ) : (
-                            <DatabaseClient data={data.potintialCustomers}></DatabaseClient>
-                        )}
+                        <DatabaseClient />
                     </PaperContainer>
                 </div>
             </main>

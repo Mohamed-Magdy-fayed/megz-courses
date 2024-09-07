@@ -1,30 +1,30 @@
 import { api } from "@/lib/api";
 import { useState } from "react";
 import { DataTable } from "@/components/ui/DataTable";
-import { SalesAgent, SalesOperation } from "@prisma/client";
 import { SalesOperationColumn, columns } from "./SalesOperationColumn";
 import { format } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
 import { validOperationStatus } from "@/lib/enumsTypes";
 import { upperFirst } from "lodash";
 
-interface SalesOperations extends SalesOperation {
-  assignee: SalesAgent | null;
-}
-
-const SalesOperationsClient = ({ data }: { data: SalesOperations[] }) => {
+const SalesOperationsClient = () => {
   const [salesOperations, setSalesOperations] = useState<SalesOperationColumn[]>([]);
-  const formattedData = data.map((operation) => ({
+
+  const trpcUtils = api.useContext();
+  const { data, isLoading } = api.salesOperations.getAll.useQuery();
+  const deleteMutation = api.salesOperations.deleteSalesOperations.useMutation();
+  const { toastError, toastSuccess } = useToast()
+
+  const formattedData = data?.salesOperations.map((operation) => ({
     id: operation.id,
-    assignee: operation.assignee?.userId || "",
+    assigneeId: operation.assignee?.user.id || "",
+    assigneeName: operation.assignee?.user.name || "",
+    assigneeImage: operation.assignee?.user.image || "",
+    assigneeEmail: operation.assignee?.user.email || "",
     code: operation.code,
     status: operation.status,
-    lastAction: format(operation.updatedAt, "MMMM do, yyyy"),
+    lastAction: format(operation.updatedAt, "P"),
   }));
-
-  const deleteMutation = api.salesOperations.deleteSalesOperations.useMutation();
-  const trpcUtils = api.useContext();
-  const { toastError, toastSuccess } = useToast()
 
   const onDelete = (callback?: () => void) => {
     deleteMutation.mutate(
@@ -46,11 +46,16 @@ const SalesOperationsClient = ({ data }: { data: SalesOperations[] }) => {
 
   return (
     <DataTable
+      skele={isLoading}
       columns={columns}
-      data={formattedData}
+      data={formattedData || []}
       setData={setSalesOperations}
       onDelete={onDelete}
-      searches={[{ key: "code", label: "Code" }]}
+      dateRange={{ key: "lastAction", label: "Last Action " }}
+      searches={[
+        { key: "code", label: "Code" },
+        { key: "assigneeEmail", label: "Assignee Email" },
+      ]}
       filters={[{
         key: "status", filterName: "Status", values: [...validOperationStatus.map(status => ({
           label: upperFirst(status),

@@ -21,7 +21,6 @@ const SuccessfullPaymentPage = () => {
     const orderNumber = router.query.merchant_order_id as string
     const { toast, toastError } = useToast()
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState("")
     const [orderData, setOrderData] = useState<Order & {
         user: User;
         salesOperation: SalesOperation;
@@ -34,20 +33,16 @@ const SuccessfullPaymentPage = () => {
     const trpcUtils = api.useContext()
 
     const handleSendEmail = ({
-        orderId,
         email,
         subject,
         message,
         courseLink,
-        alreadyUpdated,
         updatedOrder,
     }: {
-        orderId: string,
         email: string,
         subject: string,
         message: string,
         courseLink: string,
-        alreadyUpdated: boolean,
         updatedOrder: (Order & {
             salesOperation: SalesOperation;
         }),
@@ -105,12 +100,10 @@ const SuccessfullPaymentPage = () => {
                     />, { pretty: true }
                 )
                 handleSendEmail({
-                    orderId: data.updatedOrder.id,
                     email: data.updatedOrder.user.email,
                     subject: `Payment successfull ${data.updatedOrder.orderNumber}`,
                     courseLink: data.courseLink ? data.courseLink : "",
                     message,
-                    alreadyUpdated: data.courseLink === null,
                     updatedOrder: data.updatedOrder,
                 })
             },
@@ -120,7 +113,6 @@ const SuccessfullPaymentPage = () => {
                     title: "Error",
                     description: `Please contact support for assistance`
                 })
-                setError(message)
             },
             onSettled: () => {
                 setLoading(false)
@@ -136,7 +128,7 @@ const SuccessfullPaymentPage = () => {
                 <meta name="robots" content="index, follow" />
             </Head>
             <ConceptTitle className="mb-4">Payment Successfull</ConceptTitle>
-            {loading
+            {loading || !orderData
                 ? (
                     <Skeleton className="max-w-4xl mx-auto h-96 grid place-content-center">
                         <div className="flex items-center gap-2">
@@ -146,14 +138,9 @@ const SuccessfullPaymentPage = () => {
                             </Typography>
                         </div>
                     </Skeleton>
-                )
-                : !orderData
-                    ? (
-                        <>Error: {error}</>
-                    )
-                    : (
-                        <OrderReceipt adminView={false} order={orderData} />
-                    )}
+                ) : (
+                    <OrderReceipt adminView={false} order={orderData} />
+                )}
         </LandingLayout>
     )
 }

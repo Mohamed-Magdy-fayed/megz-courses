@@ -3,17 +3,17 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { DataTable } from "@/components/ui/DataTable";
 import { ChatAgentColumn, columns } from "./ChatAgentColumn";
-import { ChatAgent, SupportChat, User } from "@prisma/client";
 import { useToast } from "../ui/use-toast";
 
-interface ChatAgents extends ChatAgent {
-  user: User;
-  chats: SupportChat[];
-}
-
-const ChatAgentsClient = ({ data }: { data: ChatAgents[] }) => {
+const ChatAgentsClient = () => {
   const [chatAgents, setChatAgents] = useState<ChatAgentColumn[]>([]);
-  const formattedData = data.map((agent) => ({
+
+  const { toastError, toastSuccess } = useToast();
+  const trpcUtils = api.useContext();
+  const { data, isLoading } = api.chatAgents.getChatAgents.useQuery();
+  const deleteMutation = api.users.deleteUser.useMutation();
+
+  const formattedData = data?.chatAgents.map((agent) => ({
     id: agent.user.id,
     name: agent.user.name || "no name",
     image: agent.user.image || "",
@@ -21,10 +21,6 @@ const ChatAgentsClient = ({ data }: { data: ChatAgents[] }) => {
     chats: agent?.chats.length || 0,
     createdAt: format(agent.user.createdAt, "MMMM do, yyyy"),
   }));
-
-  const { toastError, toastSuccess } = useToast();
-  const deleteMutation = api.users.deleteUser.useMutation();
-  const trpcUtils = api.useContext();
 
   const onDelete = (callback?: () => void) => {
     deleteMutation.mutate(
@@ -46,10 +42,16 @@ const ChatAgentsClient = ({ data }: { data: ChatAgents[] }) => {
 
   return (
     <DataTable
+      skele={isLoading}
       columns={columns}
-      data={formattedData}
+      data={formattedData || []}
       setData={setChatAgents}
       onDelete={onDelete}
+      dateRange={{ key: "createdAt", label: "Created At" }}
+      searches={[
+        { key: "email", label: "Email" },
+        { key: "chats", label: "Chats" },
+      ]}
     />
   );
 };

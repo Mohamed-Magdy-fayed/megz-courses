@@ -12,7 +12,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useToast } from "@/components/ui/use-toast";
 
 const SalesAgentsPage = () => {
-  const salesOperations = api.salesOperations.getAll.useQuery();
   const [loading, setLoading] = useState(false);
   const [assignIsOpen, setAssingIsOpen] = useState(false);
 
@@ -56,17 +55,7 @@ const SalesAgentsPage = () => {
             <Button onClick={() => setAssingIsOpen(true)}>Create Operation</Button>
           </div>
           <PaperContainer>
-            {salesOperations.isLoading ? (
-              <Spinner></Spinner>
-            ) : salesOperations.isError ? (
-              <>Error</>
-            ) : (
-              <SalesOperationsClient
-                data={salesOperations.data?.salesOperations.sort((a, b) => {
-                  return a.createdAt > b.createdAt ? -1 : 1
-                })}
-              />
-            )}
+            <SalesOperationsClient />
           </PaperContainer>
         </div>
       </main>

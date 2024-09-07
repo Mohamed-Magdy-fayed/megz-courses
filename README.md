@@ -26,3 +26,22 @@ You can check out the [create-t3-app GitHub repository](https://github.com/t3-os
 ## How do I deploy this?
 
 Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+
+## Dockeriization
+
+docker build . -t ghcr.io/mohamed-magdy-fayed/courses-app:latest
+docker login ghcr.io
+username: mohamed-magdy-fayed
+password: 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
+docker push ghcr.io/mohamed-magdy-fayed/courses-app:latest
+
+## On the server
+
+apt-get install docker.io
+systemctl start docker
+systemctl enable docker
+
+docker login ghcr.io
+username: mohamed-magdy-fayed
+password: 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
+docker run -p 3000:3000 ghcr.io/mohamed-magdy-fayed/courses-app:latest

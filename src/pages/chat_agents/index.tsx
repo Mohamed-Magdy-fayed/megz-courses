@@ -11,7 +11,6 @@ import ChatAgentForm from "@/components/chatAgentsComponents/ChatAgentForm";
 import ChatAgentsClient from "@/components/chatAgentsComponents/ChatAgentsClient";
 
 const ChatAgentsPage = () => {
-  const chatAgents = api.chatAgents.getChatAgents.useQuery();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -21,28 +20,6 @@ const ChatAgentsPage = () => {
           <div className="flex justify-between">
             <div className="flex flex-col gap-2">
               <ConceptTitle>Chat Agents</ConceptTitle>
-              <div className="flex items-center gap-2">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant={"icon"} customeColor={"infoIcon"}>
-                      <FileDown />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <Typography>Import</Typography>
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant={"icon"} customeColor={"infoIcon"}>
-                      <FileUp />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <Typography>Export</Typography>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
             </div>
             <Button onClick={() => setIsOpen(true)} customeColor={"primary"}>
               <PlusIcon className="mr-2"></PlusIcon>
@@ -54,13 +31,7 @@ const ChatAgentsPage = () => {
           )}
 
           <PaperContainer>
-            {chatAgents.isLoading ? (
-              <Spinner></Spinner>
-            ) : chatAgents.isError ? (
-              <>Error</>
-            ) : (
-              <ChatAgentsClient data={chatAgents.data.chatAgents}></ChatAgentsClient>
-            )}
+            <ChatAgentsClient />
           </PaperContainer>
         </div>
       </main>

@@ -2,9 +2,13 @@ import { Typography } from '../ui/Typoghraphy'
 import CourseSearchBar from './CourseSearchBar'
 import HeroSvg from '../svgs/HeroSvg'
 import { api } from '@/lib/api'
+import { useEffect } from 'react'
 
 const HeroSection = () => {
-    const { data } = api.siteIdentity.getSiteIdentity.useQuery()
+    const { data, refetch } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: false })
+
+    useEffect(() => { refetch() }, [])
+
     return (
         <section className="min-h-[80vh] grid place-content-center">
             <div className="grid grid-cols-12 p-4 xl:gap-8">

@@ -1,24 +1,19 @@
 import { Dispatch, FC, SetStateAction, useEffect, useState } from "react"
-import { Course } from "@prisma/client"
+import { Course, CourseStatus, User } from "@prisma/client"
 import { Button } from "../ui/button"
 import { api } from "@/lib/api"
-import { render } from "@react-email/render"
-import Email from "../emails/Email"
-import { format } from "date-fns"
 import { useToast } from "../ui/use-toast"
-import { formatPrice } from "@/lib/utils"
 import CoursesSelectField from "../salesOperation/CoursesSelectField"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { Typography } from "../ui/Typoghraphy"
 import Modal from "@/components/ui/modal"
-import { Users } from "@/components/studentComponents/StudentClient"
 
 interface CreateOrderForStudentProps {
     loading: boolean
     setLoading: Dispatch<SetStateAction<boolean>>
     open: boolean
     setOpen: Dispatch<SetStateAction<boolean>>
-    userData: Users;
+    userData: User & { courseStatus: CourseStatus[] };
     coursesData: Course[];
 }
 
@@ -40,7 +35,9 @@ const CreateOrderForStudent: FC<CreateOrderForStudentProps> = ({
 
     const { toastError, toastSuccess } = useToast()
 
-    const { data: siteData } = api.siteIdentity.getSiteIdentity.useQuery()
+    const { data: siteData, refetch } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: false })
+
+    useEffect(() => { refetch() }, [])
     const { data: salesAgentsData } = api.users.getUsers.useQuery({ userType: "salesAgent" })
     const createSalesOperationMutation = api.salesOperations.createSalesOperation.useMutation({
         onMutate: () => setLoading(true),
@@ -55,67 +52,18 @@ const CreateOrderForStudent: FC<CreateOrderForStudentProps> = ({
         onSettled: () => { },
     })
     const createOrderMutation = api.orders.createOrder.useMutation({
-        onSuccess: ({ order: { id, amount, orderNumber, user, course, createdAt, courseType, salesOperationId }, paymentLink }) => {
-            const message = render(
-                <Email
-                    logoUrl={siteData?.siteIdentity.logoPrimary || ""}
-                    orderCreatedAt={format(createdAt, "dd MMM yyyy")}
-                    userEmail={user.email}
-                    orderAmount={formatPrice(amount)}
-                    orderNumber={orderNumber}
-                    paymentLink={paymentLink}
-                    customerName={user.name}
-                    course={{
-                        courseName: course.name,
-                        coursePrice: courseType.isPrivate
-                            ? formatPrice(course.privatePrice)
-                            : formatPrice(course.groupPrice)
-                    }}
-                />, { pretty: true }
-            )
-            handleSendEmail({
-                email: user.email,
-                subject: `Thanks for your order ${orderNumber}`,
-                message,
-            })
+        onSuccess: ({ orderNumber }) => {
             toastSuccess(`Order ${orderNumber} has been submitted successfully!`)
         },
         onError: (error) => {
             toastError(error.message)
         },
     })
-    const sendEmailMutation = api.emails.sendEmail.useMutation()
-    const trpcUtils = api.useContext()
 
     const handleAddCourses = () => {
         if (!coursesGroupType[0]) return toastError(`missing some info here!`)
 
         createSalesOperationMutation.mutate({ status: "ongoing", assigneeId: assigneeId })
-    }
-
-    const handleSendEmail = ({
-        email,
-        subject,
-        message,
-    }: {
-        email: string,
-        subject: string,
-        message: string,
-    }) => {
-        sendEmailMutation.mutate({
-            email,
-            subject,
-            message,
-        }, {
-            onError: (e) => toastError(e.message),
-            onSettled: () => {
-                trpcUtils.salesOperations.invalidate()
-                    .then(() => {
-                        setOpen(false)
-                        setLoading(false)
-                    })
-            }
-        })
     }
 
     useEffect(() => {

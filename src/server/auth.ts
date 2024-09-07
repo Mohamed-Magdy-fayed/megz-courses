@@ -25,6 +25,7 @@ declare module "next-auth" {
       id: string;
       userType: UserType;
       device: Devices | null;
+      isVerified: boolean;
       // ...other properties
     } & DefaultSession["user"];
   }
@@ -33,6 +34,7 @@ declare module "next-auth" {
     id: string;
     userType: UserType;
     device: Devices | null;
+    isVerified: boolean;
     // ...other properties
   }
 }
@@ -74,7 +76,7 @@ export const authOptions: NextAuthOptions = {
 
         if (!checkPassword) throw new Error("Incorrect email or password!");
 
-        return user;
+        return { ...user, isVerified: !!user.emailVerified };
       },
     }),
     /**
@@ -88,9 +90,12 @@ export const authOptions: NextAuthOptions = {
      */
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
+      if (trigger === "update" && session?.isVerified) {
+        token.isVerified = session.isVerified
+      }
       if (user) {
-        return { ...token, userType: user.userType, device: user.device }
+        return { ...token, userType: user.userType, device: user.device, isVerified: user.isVerified }
       }
       return token
     },
@@ -102,6 +107,7 @@ export const authOptions: NextAuthOptions = {
             ...session.user,
             userType: token.userType,
             device: token.device,
+            isVerified: token.isVerified,
             id: token.sub,
           }
         }

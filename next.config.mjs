@@ -8,6 +8,7 @@ import webpack from "webpack"
 
 /** @type {import("next").NextConfig} */
 const config = {
+  output: "standalone",
   reactStrictMode: true,
   eslint: {
     ignoreDuringBuilds: true,
@@ -24,11 +25,10 @@ const config = {
   },
   images: {
     domains: [
-      "res.cloudinary.com",
       "firebasestorage.googleapis.com",
     ]
   },
-  webpack: (config, { isServer }) => {
+  webpack: (config) => {
 
     config.plugins.push(
       new webpack.ProvidePlugin({
