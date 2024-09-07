@@ -11,6 +11,7 @@ import { sendZohoEmail } from "@/lib/gmailHelpers";
 import { render } from "@react-email/render";
 import EmailConfirmation from "@/components/emails/EmailConfirmation";
 import EmailConfirmationSuccess from "@/components/emails/EmailConfirmed";
+import nodemailer from "nodemailer";
 
 export const authRouter = createTRPCRouter({
   register: publicProcedure
@@ -54,11 +55,30 @@ export const authRouter = createTRPCRouter({
         />, { pretty: true }
       )
 
-      await sendZohoEmail({
-        email: user.email,
+      const transporter = nodemailer.createTransport({
+        host: "smtp.zoho.com",
+        port: 465,
+        secure: true,
+        auth: {
+          user: env.ZOHO_MAIL,
+          pass: env.ZOHO_PASS,
+        },
+      });
+
+      const mailOptions = {
+        from: env.ZOHO_MAIL,
+        to: user.email,
         subject: `Confirm your email ${user.email}`,
         html,
-      })
+      };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log(info);
+        }
+      });
 
       return {
         user,
