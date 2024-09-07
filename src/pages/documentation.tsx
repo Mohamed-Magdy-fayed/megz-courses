@@ -40,7 +40,7 @@ const DocumentationPage = () => {
                 <div>
                     <Typography variant={"secondary"}>Troubleshooting</Typography>
                     <div className="py-2 px-10 space-y-4">
-                        <Typography>For common issues, please report them to mohamed.ahmed.sc2@gmail.com.</Typography>
+                        <Typography>For common issues, please report them to info@megz.pro</Typography>
                     </div>
                 </div>
             </div>

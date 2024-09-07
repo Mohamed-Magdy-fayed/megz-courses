@@ -44,8 +44,8 @@ export const ResetPasswordEmail = ({
                     <Text style={paragraph}>Not expecting this email?</Text>
                     <Text style={paragraph}>
                         Contact{" "}
-                        <Link href={`mailto:${env.NEXT_PUBLIC_GMAIL_EMAIL}`} style={link}>
-                            {env.NEXT_PUBLIC_GMAIL_EMAIL}
+                        <Link href={`mailto:${env.NEXT_PUBLIC_ZOHO_MAIL}`} style={link}>
+                            {env.NEXT_PUBLIC_ZOHO_MAIL}
                         </Link>{" "}
                         if you did not request this code.
                     </Text>

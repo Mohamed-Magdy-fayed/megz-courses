@@ -16,8 +16,8 @@ const SupportPage = () => {
                 <div>
                     <Typography variant={"secondary"}>Support Contact</Typography>
                     <div className="py-2 px-10 space-y-4">
-                        <Typography>If you need support, please contact Mohamed Magdy at:</Typography>
-                        <Typography>Email: mohamed.ahmed.sc2@gmail.com</Typography>
+                        <Typography>If you need support, please contact out team at:</Typography>
+                        <Typography>Email: info@megz.pro</Typography>
                         <Typography>Phone: +201123862218 (WhatsApp available)</Typography>
                     </div>
                 </div>

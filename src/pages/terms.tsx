@@ -87,7 +87,7 @@ const TermsAndConditionsPage = () => {
                         <Typography>If you have any questions or concerns about these Terms and Conditions, please contact us at:</Typography>
                         <div className='grid'>
                             <Typography><strong>Megz Learning</strong></Typography>
-                            <Typography>Email: <a href={`mailto:${env.NEXT_PUBLIC_GMAIL_EMAIL}`} className="text-info underline">{env.NEXT_PUBLIC_GMAIL_EMAIL}</a></Typography>
+                            <Typography>Email: <a href={`mailto:${env.NEXT_PUBLIC_ZOHO_MAIL}`} className="text-info underline">{env.NEXT_PUBLIC_ZOHO_MAIL}</a></Typography>
                         </div>
                     </div>
                 </div>
