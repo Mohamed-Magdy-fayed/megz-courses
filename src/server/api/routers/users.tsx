@@ -276,7 +276,6 @@ export const usersRouter = createTRPCRouter({
         const user = await ctx.prisma.user.findUnique({ where: { id } })
         if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "user not found" })
         if (ctx.session.user.userType !== "admin" && ctx.session.user.email !== user.email) throw new TRPCError({ code: "UNAUTHORIZED", message: "You're not authorized to take that action!" })
-        if (ctx.session.user.email !== user.email) throw new TRPCError({ code: "UNAUTHORIZED", message: "Can't edit others accounts!" })
 
         const updateOptions: Prisma.UserUpdateArgs = {
           where: {
