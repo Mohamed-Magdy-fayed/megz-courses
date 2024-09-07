@@ -49,7 +49,7 @@ const CreateOrder: FC<CreateOrderProps> = ({
             variant: "info",
             duration: 30000,
         })),
-        onSuccess: ({ isSuccess }) => isSuccess && loadingToast?.update({
+        onSuccess: () => loadingToast?.update({
             id: loadingToast.id,
             title: "Success",
             description: "Order created successfully",

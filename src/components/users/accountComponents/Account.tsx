@@ -12,7 +12,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { UserGetPayload } from "@/pages/account/[id]";
 
-export const Account = ({ user }: {user: UserGetPayload}) => {
+export const Account = ({ user }: { user: UserGetPayload }) => {
   const { toastError, toastSuccess } = useToast()
   const session = useSession()
   const pathname = useRouter().pathname

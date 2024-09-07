@@ -182,9 +182,9 @@ export const ordersRouter = createTRPCRouter({
                 />, { pretty: true }
             )
 
-            const isSuccess = await sendZohoEmail({ email: user.email, subject: `Thanks for your order ${orderNumber}`, html })
+            await sendZohoEmail({ email: user.email, subject: `Thanks for your order ${orderNumber}`, html })
 
-            return { isSuccess, orderNumber }
+            return { orderNumber }
         }),
     quickOrder: protectedProcedure
         .input(
@@ -395,9 +395,9 @@ export const ordersRouter = createTRPCRouter({
                         }} />, { pretty: true }
                 )
 
-                const isSuccess = await sendZohoEmail({ email: order.user.email, subject: `Thanks for your order ${order.orderNumber}`, html })
+                await sendZohoEmail({ email: order.user.email, subject: `Thanks for your order ${order.orderNumber}`, html })
 
-                return { isSuccess }
+                return { isSuccess: true }
             }
 
             if (order.paymentLink) {

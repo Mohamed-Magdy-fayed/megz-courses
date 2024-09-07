@@ -117,7 +117,7 @@ export const selfServeRouter = createTRPCRouter({
                 />, { pretty: true }
             )
 
-            const isSuccess = await sendZohoEmail({
+            await sendZohoEmail({
                 email, subject: `Thanks for your order ${order.orderNumber}`, html
             })
 
