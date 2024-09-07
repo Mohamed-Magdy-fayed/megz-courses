@@ -90,7 +90,7 @@ export const authRouter = createTRPCRouter({
         />
       )
 
-      sendZohoEmail({
+      await sendZohoEmail({
         email: user.email,
         html,
         subject: `Congratulations, your email is now verified.`
@@ -126,7 +126,7 @@ export const authRouter = createTRPCRouter({
       message: z.string(),
     }))
     .mutation(async ({ input: { email, message } }) => {
-      sendZohoEmail({
+      await sendZohoEmail({
         email, subject: `Seems like you forgot your password!`, html: message
       })
 

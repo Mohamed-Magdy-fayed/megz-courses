@@ -7,7 +7,7 @@ type SendEmailInputs = {
     html: string,
 }
 
-export async function await sendZohoEmail({ email, html, subject }: SendEmailInputs) {
+export async function sendZohoEmail({ email, html, subject }: SendEmailInputs) {
     const transporter = nodemailer.createTransport({
         host: "smtp.zoho.com",
         port: 465,
