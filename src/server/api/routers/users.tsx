@@ -312,7 +312,7 @@ export const usersRouter = createTRPCRouter({
           />, { pretty: true }
         )
 
-        sendZohoEmail({
+        await sendZohoEmail({
           email: user.email,
           subject: `Confirm your new email ${user.email}`,
           html,

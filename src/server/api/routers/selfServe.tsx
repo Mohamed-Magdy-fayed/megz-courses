@@ -117,10 +117,9 @@ export const selfServeRouter = createTRPCRouter({
                 />, { pretty: true }
             )
 
-            const isSuccess = sendZohoEmail({
+            const isSuccess = await sendZohoEmail({
                 email, subject: `Thanks for your order ${order.orderNumber}`, html
             })
-            if (!isSuccess) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Email sending failed!" })
 
             return {
                 salesOperation,

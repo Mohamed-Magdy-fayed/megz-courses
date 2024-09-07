@@ -7,7 +7,7 @@ type SendEmailInputs = {
     html: string,
 }
 
-export function sendZohoEmail({ email, html, subject }: SendEmailInputs) {
+export async function await sendZohoEmail({ email, html, subject }: SendEmailInputs) {
     const transporter = nodemailer.createTransport({
         host: "smtp.zoho.com",
         port: 465,
@@ -25,17 +25,11 @@ export function sendZohoEmail({ email, html, subject }: SendEmailInputs) {
         html,
     };
 
-    try {
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                console.log(error);
-            } else {
-                console.log(info);
-            }
-        });
-        return true
-    } catch (error) {
-        console.log(error);
-        return false
-    }
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log(info);
+        }
+    });
 }

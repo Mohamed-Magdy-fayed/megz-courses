@@ -16,7 +16,7 @@ export const emailsRouter = createTRPCRouter({
             })
         )
         .mutation(async ({ input: { message, email, name } }) => {
-            const isSuccess = sendZohoEmail({
+            const isSuccess = await sendZohoEmail({
                 email,
                 html: `name: ${name} email: ${email} message: ${message}`,
                 subject: `${name}: ${message.split(" ").slice(0, 10).join(" ")}`,
@@ -38,7 +38,7 @@ export const emailsRouter = createTRPCRouter({
                 email,
                 subject,
             } }) => {
-            const isSuccess = sendZohoEmail({ email, subject, html: message })
+            const isSuccess = await sendZohoEmail({ email, subject, html: message })
 
             return { isSuccess }
         }),

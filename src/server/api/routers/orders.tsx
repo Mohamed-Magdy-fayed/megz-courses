@@ -182,7 +182,7 @@ export const ordersRouter = createTRPCRouter({
                 />, { pretty: true }
             )
 
-            const isSuccess = sendZohoEmail({ email: user.email, subject: `Thanks for your order ${orderNumber}`, html })
+            const isSuccess = await sendZohoEmail({ email: user.email, subject: `Thanks for your order ${orderNumber}`, html })
 
             return { isSuccess, orderNumber }
         }),
@@ -395,7 +395,7 @@ export const ordersRouter = createTRPCRouter({
                         }} />, { pretty: true }
                 )
 
-                const isSuccess = sendZohoEmail({ email: order.user.email, subject: `Thanks for your order ${order.orderNumber}`, html })
+                const isSuccess = await sendZohoEmail({ email: order.user.email, subject: `Thanks for your order ${order.orderNumber}`, html })
 
                 return { isSuccess }
             }

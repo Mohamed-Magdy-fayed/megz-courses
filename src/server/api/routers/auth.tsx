@@ -11,7 +11,6 @@ import { sendZohoEmail } from "@/lib/gmailHelpers";
 import { render } from "@react-email/render";
 import EmailConfirmation from "@/components/emails/EmailConfirmation";
 import EmailConfirmationSuccess from "@/components/emails/EmailConfirmed";
-import { signIn } from "next-auth/react";
 
 export const authRouter = createTRPCRouter({
   register: publicProcedure
@@ -55,7 +54,7 @@ export const authRouter = createTRPCRouter({
         />, { pretty: true }
       )
 
-      sendZohoEmail({
+      await sendZohoEmail({
         email: user.email,
         subject: `Confirm your email ${user.email}`,
         html,
