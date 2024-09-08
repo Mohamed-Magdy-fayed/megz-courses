@@ -42,23 +42,23 @@ export const authRouter = createTRPCRouter({
         },
       });
 
-      // const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
-      // const accessToken = await bcrypt.hash(user.id, 10);
+      const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
+      const accessToken = await bcrypt.hash(user.id, 10);
 
-      // const html = render(
-      //   <EmailConfirmation
-      //     logoUrl={logoUrl || ""}
-      //     confirmationLink={`${env.NEXTAUTH_URL}email_conf/${user.id}?access_token=${accessToken}`}
-      //     customerName={user.name}
-      //     userEmail={user.email}
-      //   />, { pretty: true }
-      // )
+      const html = render(
+        <EmailConfirmation
+          logoUrl={logoUrl || ""}
+          confirmationLink={`${env.NEXTAUTH_URL}email_conf/${user.id}?access_token=${accessToken}`}
+          customerName={user.name}
+          userEmail={user.email}
+        />, { pretty: true }
+      )
 
-      // sendZohoEmail({
-      //   email: user.email,
-      //   subject: `Confirm your email ${user.email}`,
-      //   html,
-      // })
+      sendZohoEmail({
+        email: user.email,
+        subject: `Confirm your email ${user.email}`,
+        html,
+      })
 
       return {
         user,
@@ -76,24 +76,26 @@ export const authRouter = createTRPCRouter({
       const user = await ctx.prisma.user.update({
         where: { id },
         data: { emailVerified: new Date() },
-        select: { id: true, name: true, email: true, hashedPassword: true }
+        select: { id: true, name: true, email: true }
       })
 
       const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
 
-      const html = render(
-        <EmailConfirmationSuccess
-          accountLink={`${env.NEXTAUTH_URL}my_account`}
-          customerName={user.name}
-          logoUrl={logoUrl || ""}
-          userEmail={user.email}
-        />
-      )
+      setImmediate(() => {
+        const html = render(
+          <EmailConfirmationSuccess
+            accountLink={`${env.NEXTAUTH_URL}my_account`}
+            customerName={user.name}
+            logoUrl={logoUrl || ""}
+            userEmail={user.email}
+          />
+        )
 
-      sendZohoEmail({
-        email: user.email,
-        html,
-        subject: `Congratulations, your email is now verified.`
+        sendZohoEmail({
+          email: user.email,
+          html,
+          subject: `Congratulations, your email is now verified.`
+        })
       })
 
       return { user }
