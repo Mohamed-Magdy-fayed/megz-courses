@@ -71,7 +71,7 @@ const CoursePage = () => {
                         </CardContent>
                         <CardFooter className="flex gap-4 items-center justify-between flex-wrap p-4">
                             {userQuery.data?.user?.courseStatus.some(status => status.courseId === course.id) ? (
-                                <Link href={`/my_courses/${userQuery.data?.user?.courseStatus.find(status => status.courseId === course.id)?.courseId}`}>
+                                <Link href={`/my_courses/${userQuery.data?.user?.courseStatus.find(status => status.courseId === course.id)?.course.slug}`}>
                                     <Button>
                                         <Typography>
                                             Go to courses

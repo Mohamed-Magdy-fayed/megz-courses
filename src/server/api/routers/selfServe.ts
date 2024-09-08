@@ -95,7 +95,7 @@ export const selfServeRouter = createTRPCRouter({
                         updatedAt: new Date(),
                         updatedBy: "System"
                     }],
-                    createdByUser: { connect: { id: order.salesOperation.assignee?.user.id } },
+                    createdByUser: { connect: { id: user.id } },
                 }
             })
 
