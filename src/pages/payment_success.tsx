@@ -29,7 +29,7 @@ const SuccessfullPaymentPage = () => {
 
     const { data: siteData, refetch: refetchSiteData } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: (!!transactionId && !!orderNumber) })
     const payOrderMutation = api.orders.payOrder.useMutation()
-    const sendEmailMutation = api.emails.sendEmail.useMutation()
+    const sendEmailMutation = api.emails.sendZohoEmail.useMutation()
     const trpcUtils = api.useContext()
 
     const handleSendEmail = ({
@@ -56,7 +56,7 @@ const SuccessfullPaymentPage = () => {
         sendEmailMutation.mutate({
             email,
             subject,
-            message,
+            html: message,
         }, {
             onError: (e) => toastError(e.message),
             onSettled: (data) => {

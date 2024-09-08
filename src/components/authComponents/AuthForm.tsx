@@ -59,6 +59,7 @@ const AuthForm: FC<AuthFormProps> = ({ authType, setOpen }) => {
     });
 
     const registerMutation = api.auth.register.useMutation();
+    const sendEmailMutation = api.emails.sendZohoEmail.useMutation()
 
     const handleResgiter = ({ email, password, name, phone }: AuthFormValues) => {
         if (!name || !email || !password || !phone) {
@@ -82,18 +83,19 @@ const AuthForm: FC<AuthFormProps> = ({ authType, setOpen }) => {
                         })
                     } else {
                         if (data.user) {
-                            toastSuccess(`user (${data.user.name}) created successfully`);
                             const html = render(
                                 <EmailConfirmation
                                     {...data.emailConfirmationProps}
                                 />, { pretty: true }
                             )
 
-                            sendZohoEmail({
+                            sendEmailMutation.mutate({
                                 email: data.user.email,
                                 subject: `Confirm your email ${data.user.email}`,
                                 html,
                             })
+
+                            toastSuccess(`user (${data.user.name}) created successfully`);
                             router.push('/authentication?variant=login')
                         }
                     }

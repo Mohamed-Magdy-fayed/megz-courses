@@ -72,6 +72,7 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
 
     const { toastSuccess, toastError } = useToast()
     const trpcUrils = api.useContext();
+    const sendEmailMutation = api.emails.sendZohoEmail.useMutation()
     const editUser = api.users.editUser.useMutation();
 
     const onSubmit = (data: UserDataFormValues) => {
@@ -88,7 +89,7 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
                             />, { pretty: true }
                         )
 
-                        sendZohoEmail({
+                        sendEmailMutation.mutate({
                             email: data.emailProps.userEmail,
                             subject: `Confirm your new email ${data.emailProps.userEmail}`,
                             html,

@@ -21,6 +21,7 @@ export default function ConfirmEmailPage() {
     const [message, setMessage] = useState("")
     const [success, setSuccess] = useState<boolean>()
 
+    const sendEmailMutation = api.emails.sendZohoEmail.useMutation()
     const confirmEmailMutation = api.auth.confirmUserEmail.useMutation()
 
     useEffect(() => {
@@ -30,15 +31,15 @@ export default function ConfirmEmailPage() {
             accessToken,
         },
             {
-                onSuccess: async ({ user, emailConfirmationSuccessProps }) => {
+                onSuccess: ({ user, emailConfirmationSuccessProps }) => {
                     setSuccess(true);
                     setMessage(user?.email || "");
 
                     if (data?.user.id === id) {
-                        await update({
+                        update({
                             isVerified: true,
                         });
-                        await update()
+                        update()
                     }
 
                     if (!emailConfirmationSuccessProps) return
@@ -49,7 +50,7 @@ export default function ConfirmEmailPage() {
                         />
                     )
 
-                    sendZohoEmail({
+                    sendEmailMutation.mutate({
                         email: user.email,
                         html,
                         subject: `Congratulations, your email is now verified.`

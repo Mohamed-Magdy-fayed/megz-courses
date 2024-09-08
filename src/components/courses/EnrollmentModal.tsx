@@ -34,6 +34,7 @@ const EnrollmentModal: FC<EnrollmentModalProps> = ({
     setLoading,
     setOpen,
 }) => {
+    const sendEmailMutation = api.emails.sendZohoEmail.useMutation()
     const enrollCourseMutation = api.selfServe.enrollCourse.useMutation()
     const { toastError } = useToast()
     const router = useRouter()
@@ -59,9 +60,12 @@ const EnrollmentModal: FC<EnrollmentModalProps> = ({
                     />, { pretty: true }
                 )
 
-                sendZohoEmail({
-                    email: data.emailProps.userEmail, subject: `Thanks for your order ${data.emailProps.orderNumber}`, html
+                sendEmailMutation.mutate({
+                    email: data.emailProps.userEmail,
+                    subject: `Thanks for your order ${data.emailProps.orderNumber}`,
+                    html,
                 })
+
                 router.push(data.paymentLink)
             },
             onError: (e) => toastError(e.message),

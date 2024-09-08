@@ -42,6 +42,7 @@ const CreateOrderForStudent: FC<CreateOrderForStudentProps> = ({
 
     useEffect(() => { refetch() }, [])
     const { data: salesAgentsData } = api.users.getUsers.useQuery({ userType: "salesAgent" })
+    const sendEmailMutation = api.emails.sendZohoEmail.useMutation()
     const createSalesOperationMutation = api.salesOperations.createSalesOperation.useMutation({
         onMutate: () => setLoading(true),
         onSuccess: ({ salesOperations }) => {
@@ -62,7 +63,7 @@ const CreateOrderForStudent: FC<CreateOrderForStudentProps> = ({
                 />, { pretty: true }
             )
 
-            sendZohoEmail({ email: emailProps.userEmail, subject: `Thanks for your order ${orderNumber}`, html })
+            sendEmailMutation.mutate({ email: emailProps.userEmail, subject: `Thanks for your order ${orderNumber}`, html })
             toastSuccess(`Order ${orderNumber} has been submitted successfully!`)
         },
         onError: (error) => {

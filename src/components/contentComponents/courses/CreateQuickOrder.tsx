@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Course, SalesAgent, SalesOperation } from "@prisma/client"
+import { Course } from "@prisma/client"
 import { api } from "@/lib/api"
 import { render } from "@react-email/render"
 import { format } from "date-fns"
@@ -14,7 +14,6 @@ import { FormItem } from "@/components/ui/form"
 import { Label } from "@/components/ui/label"
 import { PaperContainer } from "@/components/ui/PaperContainers"
 import { Typography } from "@/components/ui/Typoghraphy"
-import { useRouter } from "next/router"
 import { sendWhatsAppMessage } from "@/lib/whatsApp"
 
 const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
@@ -24,13 +23,12 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
     const [phone, setPhone] = useState<string>("")
     const [email, setEmail] = useState<string[]>([])
 
-    const router = useRouter()
     const { toastError, toastSuccess } = useToast()
 
     const { data: siteData, refetch } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: false })
     const { data: usersData } = api.users.getUsers.useQuery({ userType: "student" })
     const quickOrderMutation = api.orders.quickOrder.useMutation()
-    const sendEmailMutation = api.emails.sendEmail.useMutation()
+    const sendEmailMutation = api.emails.sendZohoEmail.useMutation()
     const trpcUtils = api.useContext()
 
     const handleQuickOrderForExistingUser = () => {
@@ -146,7 +144,7 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
         sendEmailMutation.mutate({
             email,
             subject,
-            message,
+            html: message,
         }, {
             onError: (e) => toastError(e.message),
             onSettled: () => {

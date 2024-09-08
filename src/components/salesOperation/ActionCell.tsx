@@ -35,6 +35,7 @@ const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId, p
         toastInfo("Payment link copied to the clipboard");
     };
 
+    const sendEmailMutation = api.emails.sendZohoEmail.useMutation()
     const resendPaymentLinkMutation = api.orders.resendPaymentLink.useMutation({
         onSuccess: ({ emailProps }) => {
             const html = render(
@@ -42,7 +43,7 @@ const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId, p
                     {...emailProps} />, { pretty: true }
             )
 
-            sendZohoEmail({ email: emailProps.userEmail, subject: `Thanks for your order ${emailProps.orderNumber}`, html })
+            sendEmailMutation.mutate({ email: emailProps.userEmail, subject: `Thanks for your order ${emailProps.orderNumber}`, html })
             toastSuccess("Payment link resent to the customer")
         },
         onError: ({ message }) => toastError(message),

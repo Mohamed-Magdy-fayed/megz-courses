@@ -1,45 +1,44 @@
 import { z } from "zod";
 import {
     createTRPCRouter,
-    protectedProcedure,
     publicProcedure,
 } from "@/server/api/trpc";
-import { sendZohoEmail } from "@/lib/gmailHelpers";
+import nodemailer from "nodemailer";
+import { env } from "@/env.mjs";
 
 export const emailsRouter = createTRPCRouter({
-    sendWhatsappMessage: publicProcedure
-        .input(
-            z.object({
-                name: z.string(),
-                email: z.string().email(),
-                message: z.string(),
-            })
-        )
-        .mutation(async ({ input: { message, email, name } }) => {
-            await sendZohoEmail({
-                email,
-                html: `name: ${name} email: ${email} message: ${message}`,
-                subject: `${name}: ${message.split(" ").slice(0, 10).join(" ")}`,
-            })
-
-            return { message: "your message is recieved, we will get back to you as soon as possible!" };
-        }),
-    sendEmail: protectedProcedure
+    sendZohoEmail: publicProcedure
         .input(
             z.object({
                 email: z.string().email(),
-                message: z.string(),
                 subject: z.string(),
+                html: z.string(),
             })
         )
-        .mutation(async ({
-            input: {
-                message,
-                email,
-                subject,
-            } }) => {
-            await sendZohoEmail({ email, subject, html: message })
+        .mutation(async ({ input }) => {
+            const transporter = nodemailer.createTransport({
+                host: "smtp.zoho.com",
+                port: 465,
+                secure: true,
+                auth: {
+                    user: env.ZOHO_MAIL,
+                    pass: env.ZOHO_PASS,
+                },
+            });
 
-            return { isSuccess: true }
+            const mailOptions = {
+                from: env.ZOHO_MAIL,
+                to: input.email,
+                subject: input.subject,
+                html: input.html,
+            };
+
+            try {
+                await transporter.sendMail(mailOptions);
+                return { success: true, message: "Email sent successfully" };
+            } catch (error) {
+                console.error("Error sending email:", error);
+                throw new Error("Error sending email");
+            }
         }),
 });

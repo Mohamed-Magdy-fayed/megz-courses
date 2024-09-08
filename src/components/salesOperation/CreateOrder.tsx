@@ -45,6 +45,7 @@ const CreateOrder: FC<CreateOrderProps> = ({
 
     const { toastError, toast } = useToast()
 
+    const sendEmailMutation = api.emails.sendZohoEmail.useMutation()
     const createOrderMutation = api.orders.createOrder.useMutation({
         onMutate: () => setLoadingToast(toast({
             title: "Loading...",
@@ -59,7 +60,7 @@ const CreateOrder: FC<CreateOrderProps> = ({
                 />, { pretty: true }
             )
 
-            sendZohoEmail({ email: emailProps.userEmail, subject: `Thanks for your order ${orderNumber}`, html })
+            sendEmailMutation.mutate({ email: emailProps.userEmail, subject: `Thanks for your order ${orderNumber}`, html })
             loadingToast?.update({
                 id: loadingToast.id,
                 title: "Success",

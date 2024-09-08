@@ -42,11 +42,15 @@ const ContactForm = () => {
         defaultValues,
     });
 
-    const mutation = api.emails.sendWhatsappMessage.useMutation()
+    const mutation = api.emails.sendZohoEmail.useMutation()
 
-    const onSubmit = (data: ContactFormValues) => {
+    const onSubmit = ({ email, message, name }: ContactFormValues) => {
         setLoading(true)
-        mutation.mutate(data, {
+        mutation.mutate({
+            email: email,
+            html: `name: ${name} email: ${email} message: ${message}`,
+            subject: `${name}: ${message.split(" ").slice(0, 10).join(" ")}`,
+        }, {
             onSuccess: ({ message }) => {
                 toastSuccess(message)
                 setLoading(false)
