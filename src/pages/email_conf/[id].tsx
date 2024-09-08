@@ -4,10 +4,9 @@ import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import { api } from "@/lib/api";
-import { sendZohoEmail } from "@/lib/gmailHelpers";
 import { render } from "@react-email/render";
-import { CheckSquare, Settings2, XSquare } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { CheckSquare, LogIn, Settings2, XSquare } from "lucide-react";
+import { getSession, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -31,16 +30,13 @@ export default function ConfirmEmailPage() {
             accessToken,
         },
             {
-                onSuccess: ({ user, emailConfirmationSuccessProps }) => {
+                onSuccess: ({ user, emailConfirmationSuccessProps, message }) => {
                     setSuccess(true);
-                    setMessage(user?.email || "");
+                    setMessage(message ? message : user?.email || "");
 
-                    if (data?.user.id === id) {
-                        update({
-                            isVerified: true,
-                        });
-                        update()
-                    }
+                    update({
+                        isVerified: true,
+                    });
 
                     if (!emailConfirmationSuccessProps) return
 
@@ -72,9 +68,15 @@ export default function ConfirmEmailPage() {
                             <>
                                 <ConceptTitle>Your Email is already verified</ConceptTitle>
                                 <CheckSquare className="text-success w-8 h-8 mx-auto my-8" />
-                                <Link href="/my_account" className="mx-auto">
-                                    <Button>Mange your account <Settings2 className="w-4 h-4 ml-2"></Settings2></Button>
-                                </Link>
+                                {data?.user ? (
+                                    <Link href="/my_account" className="mx-auto">
+                                        <Button>Mange your account <Settings2 className="w-4 h-4 ml-2"></Settings2></Button>
+                                    </Link>
+                                ) : (
+                                    <Link href="/authentication?variant=login" className="mx-auto">
+                                        <Button>Login to your account <LogIn className="w-4 h-4 ml-2"></LogIn></Button>
+                                    </Link>
+                                )}
                             </>
                         ) : (
                             <>

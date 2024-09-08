@@ -93,6 +93,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, trigger, session }) {
       if (trigger === "update" && session?.isVerified) {
         token.isVerified = session.isVerified
+        return token
       }
       if (user) {
         return { ...token, userType: user.userType, device: user.device, isVerified: user.isVerified }
