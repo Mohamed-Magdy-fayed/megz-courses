@@ -7,6 +7,9 @@ import { api } from "@/lib/api"
 import { toastType, useToast } from "../ui/use-toast"
 import CoursesSelectField from "./CoursesSelectField"
 import Spinner from "@/components/Spinner"
+import { render } from "@react-email/render"
+import Email from "@/components/emails/Email"
+import { sendZohoEmail } from "@/lib/gmailHelpers"
 
 interface CreateOrderProps {
     loading: boolean
@@ -49,12 +52,21 @@ const CreateOrder: FC<CreateOrderProps> = ({
             variant: "info",
             duration: 30000,
         })),
-        onSuccess: () => loadingToast?.update({
-            id: loadingToast.id,
-            title: "Success",
-            description: "Order created successfully",
-            variant: "success",
-        }),
+        onSuccess: ({ emailProps, orderNumber }) => {
+            const html = render(
+                <Email
+                    {...emailProps}
+                />, { pretty: true }
+            )
+
+            sendZohoEmail({ email: emailProps.userEmail, subject: `Thanks for your order ${orderNumber}`, html })
+            loadingToast?.update({
+                id: loadingToast.id,
+                title: "Success",
+                description: "Order created successfully",
+                variant: "success",
+            })
+        },
         onError: ({ message }) => loadingToast?.update({
             id: loadingToast.id,
             title: "Error",

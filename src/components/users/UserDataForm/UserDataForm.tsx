@@ -16,6 +16,9 @@ import { useSession } from "next-auth/react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { validUserTypes } from "@/lib/enumsTypes";
 import MobileNumberInput from "@/components/ui/phone-number-input";
+import { render } from "@react-email/components";
+import EmailConfirmation from "@/components/emails/EmailConfirmation";
+import { sendZohoEmail } from "@/lib/gmailHelpers";
 
 const userDataFormSchema = z.object({
     id: z.string().min(1),
@@ -78,6 +81,19 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
             {
                 onSuccess: (data) => {
                     session.update()
+                    if (data.emailProps) {
+                        const html = render(
+                            <EmailConfirmation
+                                {...data.emailProps}
+                            />, { pretty: true }
+                        )
+
+                        sendZohoEmail({
+                            email: data.emailProps.userEmail,
+                            subject: `Confirm your new email ${data.emailProps.userEmail}`,
+                            html,
+                        })
+                    }
                     toastSuccess(`User with the email: ${data.updatedUser.email} has been updated`)
                 },
                 onError: ({ message }) => toastError(message),

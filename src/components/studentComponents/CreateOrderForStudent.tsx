@@ -7,6 +7,9 @@ import CoursesSelectField from "../salesOperation/CoursesSelectField"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { Typography } from "../ui/Typoghraphy"
 import Modal from "@/components/ui/modal"
+import { render } from "@react-email/render"
+import Email from "@/components/emails/Email"
+import { sendZohoEmail } from "@/lib/gmailHelpers"
 
 interface CreateOrderForStudentProps {
     loading: boolean
@@ -52,7 +55,14 @@ const CreateOrderForStudent: FC<CreateOrderForStudentProps> = ({
         onSettled: () => { },
     })
     const createOrderMutation = api.orders.createOrder.useMutation({
-        onSuccess: ({ orderNumber }) => {
+        onSuccess: ({ emailProps, orderNumber }) => {
+            const html = render(
+                <Email
+                    {...emailProps}
+                />, { pretty: true }
+            )
+
+            sendZohoEmail({ email: emailProps.userEmail, subject: `Thanks for your order ${orderNumber}`, html })
             toastSuccess(`Order ${orderNumber} has been submitted successfully!`)
         },
         onError: (error) => {

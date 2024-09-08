@@ -8,9 +8,6 @@ import bcrypt from "bcrypt";
 import { env } from "@/env.mjs";
 import { TRPCError } from "@trpc/server";
 import { sendZohoEmail } from "@/lib/gmailHelpers";
-import { render } from "@react-email/render";
-import EmailConfirmation from "@/components/emails/EmailConfirmation";
-import EmailConfirmationSuccess from "@/components/emails/EmailConfirmed";
 
 export const authRouter = createTRPCRouter({
   register: publicProcedure
@@ -45,23 +42,14 @@ export const authRouter = createTRPCRouter({
       const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
       const accessToken = await bcrypt.hash(user.id, 10);
 
-      const html = render(
-        <EmailConfirmation
-          logoUrl={logoUrl || ""}
-          confirmationLink={`${env.NEXTAUTH_URL}email_conf/${user.id}?access_token=${accessToken}`}
-          customerName={user.name}
-          userEmail={user.email}
-        />, { pretty: true }
-      )
-
-      sendZohoEmail({
-        email: user.email,
-        subject: `Confirm your email ${user.email}`,
-        html,
-      })
-
       return {
         user,
+        emailConfirmationProps: {
+          logoUrl: logoUrl || "",
+          confirmationLink: `${env.NEXTAUTH_URL}email_conf/${user.id}?access_token=${accessToken}`,
+          customerName: user.name,
+          userEmail: user.email,
+        }
       };
     }),
   confirmUserEmail: publicProcedure
@@ -81,22 +69,15 @@ export const authRouter = createTRPCRouter({
 
       const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
 
-      const html = render(
-        <EmailConfirmationSuccess
-          accountLink={`${env.NEXTAUTH_URL}my_account`}
-          customerName={user.name}
-          logoUrl={logoUrl || ""}
-          userEmail={user.email}
-        />
-      )
-
-      sendZohoEmail({
-        email: user.email,
-        html,
-        subject: `Congratulations, your email is now verified.`
-      })
-
-      return { user }
+      return {
+        user,
+        emailConfirmationSuccessProps: {
+          accountLink: `${env.NEXTAUTH_URL}my_account`,
+          customerName: user.name,
+          logoUrl: logoUrl || "",
+          userEmail: user.email,
+        }
+      }
     }),
   resetPasswordRequest: publicProcedure
     .input(z.object({

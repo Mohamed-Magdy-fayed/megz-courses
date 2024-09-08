@@ -15,6 +15,9 @@ import ChatWithUs from '../landingPageComponents/ChatWithUs'
 import { useRouter } from 'next/router'
 import { useToast } from '../ui/use-toast'
 import LoginModal from '../modals/LoginModal'
+import { render } from '@react-email/render'
+import Email from '@/components/emails/Email'
+import { sendZohoEmail } from '@/lib/gmailHelpers'
 
 interface EnrollmentModalProps {
     setOpen: Dispatch<SetStateAction<boolean>>
@@ -49,7 +52,18 @@ const EnrollmentModal: FC<EnrollmentModalProps> = ({
             email: session.data.user.email,
             isPrivate,
         }, {
-            onSuccess: (data) => router.push(data.paymentLink),
+            onSuccess: (data) => {
+                const html = render(
+                    <Email
+                        {...data.emailProps}
+                    />, { pretty: true }
+                )
+
+                sendZohoEmail({
+                    email: data.emailProps.userEmail, subject: `Thanks for your order ${data.emailProps.orderNumber}`, html
+                })
+                router.push(data.paymentLink)
+            },
             onError: (e) => toastError(e.message),
             onSettled: () => {
                 setLoading(false)

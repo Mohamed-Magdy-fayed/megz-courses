@@ -8,9 +8,6 @@ import { randomUUID } from "crypto";
 import { env } from "@/env.mjs";
 import axios from "axios";
 import { createPaymentIntent, formatAmountForPaymob } from "@/lib/paymobHelpers";
-import { render } from "@react-email/render";
-import Email from "@/components/emails/Email";
-import { sendZohoEmail } from "@/lib/gmailHelpers";
 import { format } from "date-fns";
 
 export const ordersRouter = createTRPCRouter({
@@ -164,27 +161,24 @@ export const ordersRouter = createTRPCRouter({
 
             const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
 
-            const html = render(
-                <Email
-                    logoUrl={logoUrl || ""}
-                    orderCreatedAt={format(order.createdAt, "dd MMM yyyy")}
-                    userEmail={user.email}
-                    orderAmount={formatPrice(order.amount)}
-                    orderNumber={orderNumber}
-                    paymentLink={paymentLink}
-                    customerName={user.name}
-                    course={{
+            return {
+                orderNumber,
+                emailProps: {
+                    logoUrl: logoUrl || "",
+                    orderCreatedAt: format(order.createdAt, "dd MMM yyyy"),
+                    userEmail: user.email,
+                    orderAmount: formatPrice(order.amount),
+                    orderNumber: orderNumber,
+                    paymentLink: paymentLink,
+                    customerName: user.name,
+                    course: {
                         courseName: course.name,
                         coursePrice: order.courseType.isPrivate
                             ? formatPrice(course.privatePrice)
                             : formatPrice(course.groupPrice)
-                    }}
-                />, { pretty: true }
-            )
-
-            await sendZohoEmail({ email: user.email, subject: `Thanks for your order ${orderNumber}`, html })
-
-            return { orderNumber }
+                    },
+                }
+            }
         }),
     quickOrder: protectedProcedure
         .input(
@@ -378,26 +372,24 @@ export const ordersRouter = createTRPCRouter({
 
                 const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
 
-                const html = render(
-                    <Email
-                        logoUrl={logoUrl || ""}
-                        orderCreatedAt={format(order.createdAt, "dd MMM yyyy")}
-                        userEmail={order.user.email}
-                        orderAmount={formatPrice(order.amount)}
-                        orderNumber={order.orderNumber}
-                        paymentLink={paymentLink}
-                        customerName={order.user.name}
-                        course={{
+                return {
+                    isSuccess: true,
+                    emailProps: {
+                        logoUrl: logoUrl || "",
+                        orderCreatedAt: format(order.createdAt, "dd MMM yyyy"),
+                        userEmail: order.user.email,
+                        orderAmount: formatPrice(order.amount),
+                        orderNumber: order.orderNumber,
+                        paymentLink: paymentLink,
+                        customerName: order.user.name,
+                        course: {
                             courseName: order.course.name,
                             coursePrice: order.courseType.isPrivate
                                 ? formatPrice(order.course.privatePrice)
                                 : formatPrice(order.course.groupPrice)
-                        }} />, { pretty: true }
-                )
-
-                await sendZohoEmail({ email: order.user.email, subject: `Thanks for your order ${order.orderNumber}`, html })
-
-                return { isSuccess: true }
+                        },
+                    }
+                }
             }
 
             if (order.paymentLink) {

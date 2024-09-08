@@ -8,11 +8,7 @@ import bcrypt from "bcrypt";
 import { TRPCError } from "@trpc/server";
 import { Prisma } from "@prisma/client";
 import { validDeviceTypes, validUserTypes } from "@/lib/enumsTypes";
-import { getServerSession } from "next-auth";
-import { render } from "@react-email/render";
-import EmailConfirmation from "@/components/emails/EmailConfirmation";
 import { env } from "@/env.mjs";
-import { sendZohoEmail } from "@/lib/gmailHelpers";
 
 export const usersRouter = createTRPCRouter({
   queryUsers: protectedProcedure
@@ -303,21 +299,6 @@ export const usersRouter = createTRPCRouter({
         const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
         const accessToken = await bcrypt.hash(user.id, 10);
 
-        const html = render(
-          <EmailConfirmation
-            logoUrl={logoUrl || ""}
-            confirmationLink={`${env.NEXTAUTH_URL}email_conf/${user.id}?access_token=${accessToken}`}
-            customerName={user.name}
-            userEmail={user.email}
-          />, { pretty: true }
-        )
-
-        await sendZohoEmail({
-          email: user.email,
-          subject: `Confirm your new email ${user.email}`,
-          html,
-        })
-
 
         if (ctx.session.user.userType === "admin" && password) {
           const hashedPassword = await bcrypt.hash(password, 10)
@@ -333,7 +314,15 @@ export const usersRouter = createTRPCRouter({
 
         const updatedUser = await ctx.prisma.user.update(updateOptions);
 
-        return { updatedUser };
+        return {
+          updatedUser,
+          emailProps: user.email !== email ? {
+            logoUrl: logoUrl || "",
+            confirmationLink: `${env.NEXTAUTH_URL}email_conf/${user.id}?access_token=${accessToken}`,
+            customerName: user.name,
+            userEmail: user.email,
+          } : undefined,
+        };
       }
     ),
   deleteUser: adminProcedure

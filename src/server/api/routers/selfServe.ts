@@ -2,12 +2,9 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { formatPrice, orderCodeGenerator, salesOperationCodeGenerator } from "@/lib/utils";
 import { TRPCError } from "@trpc/server";
-import { render } from "@react-email/render";
-import Email from "@/components/emails/Email";
 import { format } from "date-fns";
 import { env } from "@/env.mjs";
 import { createPaymentIntent } from "@/lib/paymobHelpers";
-import { sendZohoEmail } from "@/lib/gmailHelpers";
 
 export const selfServeRouter = createTRPCRouter({
     enrollCourse: protectedProcedure
@@ -104,28 +101,23 @@ export const selfServeRouter = createTRPCRouter({
 
             const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
 
-            const html = render(
-                <Email
-                    logoUrl={logoUrl || ""}
-                    orderCreatedAt={format(order.createdAt, "dd MMM yyyy")}
-                    userEmail={email}
-                    orderAmount={formatPrice(order.amount)}
-                    orderNumber={order.orderNumber}
-                    paymentLink={paymentLink}
-                    customerName={customerName}
-                    course={{ courseName: course.name, coursePrice: formatPrice(price) }}
-                />, { pretty: true }
-            )
 
-            await sendZohoEmail({
-                email, subject: `Thanks for your order ${order.orderNumber}`, html
-            })
 
             return {
                 salesOperation,
                 course,
                 order,
                 paymentLink,
+                emailProps: {
+                    logoUrl: logoUrl || "",
+                    orderCreatedAt: format(order.createdAt, "dd MMM yyyy"),
+                    userEmail: email,
+                    orderAmount: formatPrice(order.amount),
+                    orderNumber: order.orderNumber,
+                    paymentLink: paymentLink,
+                    customerName: customerName,
+                    course: { courseName: course.name, coursePrice: formatPrice(price) },
+                }
             }
         }),
 });

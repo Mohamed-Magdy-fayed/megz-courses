@@ -12,6 +12,9 @@ import { OrderStatus } from "@prisma/client";
 import { Dispatch, SetStateAction, useState } from "react";
 import { api } from "@/lib/api";
 import Spinner from "@/components/Spinner";
+import { render } from "@react-email/render";
+import Email from "@/components/emails/Email";
+import { sendZohoEmail } from "@/lib/gmailHelpers";
 
 interface CellActionProps {
     status: OrderStatus;
@@ -33,7 +36,13 @@ const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId, p
     };
 
     const resendPaymentLinkMutation = api.orders.resendPaymentLink.useMutation({
-        onSuccess: () => {
+        onSuccess: ({ emailProps }) => {
+            const html = render(
+                <Email
+                    {...emailProps} />, { pretty: true }
+            )
+
+            sendZohoEmail({ email: emailProps.userEmail, subject: `Thanks for your order ${emailProps.orderNumber}`, html })
             toastSuccess("Payment link resent to the customer")
         },
         onError: ({ message }) => toastError(message),

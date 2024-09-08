@@ -1,8 +1,11 @@
+import EmailConfirmationSuccess from "@/components/emails/EmailConfirmed";
 import LandingLayout from "@/components/landingPageComponents/LandingLayout";
 import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import { api } from "@/lib/api";
+import { sendZohoEmail } from "@/lib/gmailHelpers";
+import { render } from "@react-email/render";
 import { CheckSquare, Settings2, XSquare } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -27,7 +30,7 @@ export default function ConfirmEmailPage() {
             accessToken,
         },
             {
-                onSuccess: async ({ user }) => {
+                onSuccess: async ({ user, emailConfirmationSuccessProps }) => {
                     setSuccess(true);
                     setMessage(user?.email || "");
 
@@ -37,6 +40,20 @@ export default function ConfirmEmailPage() {
                         });
                         await update()
                     }
+
+                    if (!emailConfirmationSuccessProps) return
+
+                    const html = render(
+                        <EmailConfirmationSuccess
+                            {...emailConfirmationSuccessProps}
+                        />
+                    )
+
+                    sendZohoEmail({
+                        email: user.email,
+                        html,
+                        subject: `Congratulations, your email is now verified.`
+                    })
                 },
                 onError: ({ message }) => {
                     setSuccess(false)

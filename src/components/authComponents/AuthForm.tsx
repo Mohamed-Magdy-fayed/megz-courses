@@ -13,6 +13,9 @@ import { CardContent, CardFooter } from "../ui/card";
 import { Input } from "../ui/input";
 import { useRouter } from "next/router";
 import MobileNumberInput from "@/components/ui/phone-number-input";
+import { render } from "@react-email/render";
+import EmailConfirmation from "@/components/emails/EmailConfirmation";
+import { sendZohoEmail } from "@/lib/gmailHelpers";
 
 export const authFormSchema = z.object({
     name: z.string().optional(),
@@ -80,6 +83,17 @@ const AuthForm: FC<AuthFormProps> = ({ authType, setOpen }) => {
                     } else {
                         if (data.user) {
                             toastSuccess(`user (${data.user.name}) created successfully`);
+                            const html = render(
+                                <EmailConfirmation
+                                    {...data.emailConfirmationProps}
+                                />, { pretty: true }
+                            )
+
+                            sendZohoEmail({
+                                email: data.user.email,
+                                subject: `Confirm your email ${data.user.email}`,
+                                html,
+                            })
                             router.push('/authentication?variant=login')
                         }
                     }

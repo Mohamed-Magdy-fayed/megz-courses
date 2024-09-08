@@ -13,9 +13,14 @@ import { Input } from "../ui/input";
 import { render } from "@react-email/render";
 import ResetPasswordEmail from "../emails/ResetPasswordEmail";
 
-export const resetPasswordFormSchema = z.object({
-    email: z.string().email().min(5, "please enter a valid email").optional(),
-    code: z.string().optional(),
+// Schema for requesting the reset password code
+export const requestResetPasswordSchema = z.object({
+    email: z.string().email().min(5, "Please enter a valid email"),
+});
+
+// Schema for resetting the password
+export const resetPasswordSchema = z.object({
+    code: z.string().min(4, "Security code is required"), // Security code length validation
     password: z.string().min(6, "Password must be at least 6 characters long")
         .refine(
             (value) =>
@@ -26,11 +31,15 @@ export const resetPasswordFormSchema = z.object({
             {
                 message: "Password must include uppercase, lowercase, number, and special character",
             }
-        ).optional(),
-    passwordConfirmation: z.string().optional(),
-});
+        ),
+    passwordConfirmation: z.string().optional()
+}).superRefine(({ password, passwordConfirmation }) => password === passwordConfirmation);
 
-export type ResetPasswordFormValues = z.infer<typeof resetPasswordFormSchema>;
+type RequestResetPasswordFormValues = z.infer<typeof requestResetPasswordSchema>;
+type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
+
+// Union type for the form values
+type FormValues = RequestResetPasswordFormValues | ResetPasswordFormValues;
 
 type ResetPasswordFormProps = {
     setOpen: Dispatch<SetStateAction<boolean>>
@@ -39,17 +48,21 @@ type ResetPasswordFormProps = {
 const ResetPasswordForm: FC<ResetPasswordFormProps> = ({ setOpen }) => {
     const [passwordForm, setPasswordForm] = useState(false);
     const [loadingToast, setLoadingToast] = useState<toastType>();
-    const { toastError, toastSuccess, toast } = useToast()
+    const { toastError, toast } = useToast()
 
-    const defaultValues: ResetPasswordFormValues = {
-        email: "",
-        code: "",
-        password: "",
-        passwordConfirmation: "",
-    }
+    const defaultValues: FormValues = passwordForm
+        ? {
+            code: "",
+            password: "",
+            passwordConfirmation: "",
+        }
+        : {
+            email: "",
+        };
 
-    const form = useForm<ResetPasswordFormValues>({
-        resolver: zodResolver(resetPasswordFormSchema),
+    const formSchema = passwordForm ? resetPasswordSchema : requestResetPasswordSchema;
+    const form = useForm<FormValues>({
+        resolver: zodResolver(formSchema),
         defaultValues,
     });
 
@@ -125,19 +138,35 @@ const ResetPasswordForm: FC<ResetPasswordFormProps> = ({ setOpen }) => {
         },
     });
 
-    const handleResetPassword = async ({ email, code, password, passwordConfirmation }: ResetPasswordFormValues) => {
-        if (!email) {
-            return toastError("please enter your email");
-        }
+    const handleResetPassword = async (data: FormValues) => {
+        if (!passwordForm) {
+            // Data is of type RequestResetPasswordFormValues
+            const { email } = data as RequestResetPasswordFormValues;
+            if (!email) {
+                return toastError("Please enter your email");
+            }
+            resetPasswordRequestMutation.mutate({ email });
+        } else {
+            // Data is of type ResetPasswordFormValues
+            const { code, password, passwordConfirmation } = data as ResetPasswordFormValues;
+            const email = form.getValues("email") as string;
 
-        if (passwordForm) {
-            if (!code) return toastError("Please provide security code from your email!")
-            if (!password) return toastError("Please add a new password!")
-            if (password !== passwordConfirmation) return toastError("Passwords don't match")
-            return resetPasswordWithCodeMutation.mutate({ email, newPassword: password, code })
-        }
+            if (!code) {
+                return toastError("Please provide the security code from your email!");
+            }
+            if (!password) {
+                return toastError("Please provide a new password!");
+            }
+            if (password !== passwordConfirmation) {
+                return toastError("Passwords don't match!");
+            }
 
-        resetPasswordRequestMutation.mutate({ email });
+            resetPasswordWithCodeMutation.mutate({
+                email,
+                newPassword: password,
+                code,
+            });
+        }
     };
 
     return (
