@@ -81,21 +81,19 @@ export const authRouter = createTRPCRouter({
 
       const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
 
-      setImmediate(() => {
-        const html = render(
-          <EmailConfirmationSuccess
-            accountLink={`${env.NEXTAUTH_URL}my_account`}
-            customerName={user.name}
-            logoUrl={logoUrl || ""}
-            userEmail={user.email}
-          />
-        )
+      const html = render(
+        <EmailConfirmationSuccess
+          accountLink={`${env.NEXTAUTH_URL}my_account`}
+          customerName={user.name}
+          logoUrl={logoUrl || ""}
+          userEmail={user.email}
+        />
+      )
 
-        sendZohoEmail({
-          email: user.email,
-          html,
-          subject: `Congratulations, your email is now verified.`
-        })
+      sendZohoEmail({
+        email: user.email,
+        html,
+        subject: `Congratulations, your email is now verified.`
       })
 
       return { user }
