@@ -202,7 +202,7 @@ export function DataTable<TData, TValue>({
             </Button>}
           </div>
         )}
-        <Table className={skele ? "bg-muted/20 animate-pulse" : ""}>
+        <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -387,7 +387,7 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
+          <TableBody className={skele ? "bg-muted/20 animate-pulse" : ""}>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow

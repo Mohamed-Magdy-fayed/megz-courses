@@ -1,5 +1,4 @@
 import { OrderRow, columns } from "./OrdersColumn";
-import { Course, Order, SalesAgent, SalesOperation, User } from "@prisma/client";
 import { DataTable } from "../ui/DataTable";
 import { useToast } from "../ui/use-toast";
 import { api } from "@/lib/api";
@@ -8,13 +7,13 @@ import { validOrderStatuses } from "@/lib/enumsTypes";
 import { upperFirst } from "lodash";
 import { useSession } from "next-auth/react";
 
-const OrdersClient = () => {
+const OrdersClient = ({ userId }: { userId?: string }) => {
   const [orders, setOrders] = useState<OrderRow[]>([])
 
   const { data: sessionData } = useSession()
 
   const trpcUtils = api.useContext()
-  const { data, isLoading } = api.orders.getAll.useQuery()
+  const { data, isLoading } = !userId ? api.orders.getAll.useQuery() : api.orders.getByUserId.useQuery({ userId })
   const deleteMutation = api.orders.deleteOrders.useMutation()
   const { toastError, toastSuccess } = useToast()
 

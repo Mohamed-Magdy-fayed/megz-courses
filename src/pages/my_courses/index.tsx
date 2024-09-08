@@ -42,11 +42,11 @@ const CoursesPage: NextPage = () => {
                             : !session.data?.user.isVerified ?
                                 (<Typography>Please verify your email!</Typography>)
                                 : isLoading ? (
-                                    <PaperContainer className={cn(isLoading && "animate-pulse bg-muted/10")}>
+                                    <PaperContainer>
                                         <GenericClient columns={columns} />
                                     </PaperContainer>
                                 ) : (
-                                    <PaperContainer className={cn(isLoading && "animate-pulse bg-muted/10")}>
+                                    <PaperContainer>
                                         <GenericClient
                                             columns={columns}
                                             formattedData={data?.courses ? data?.courses.map(({

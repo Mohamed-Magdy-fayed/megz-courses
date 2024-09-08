@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import OrdersClient from "@/components/orders/OrdersClient";
 import { useSession } from "next-auth/react";
 import GoBackButton from "@/components/ui/go-back";
+import AccountPaymentClient from "@/components/users/accountComponents/AccountPaymentClient";
 
 const Page = () => {
   const session = useSession();
@@ -39,7 +40,7 @@ const Page = () => {
                 <ConceptTitle className="whitespace-nowrap mb-8">My Orders History</ConceptTitle>
                 <Card>
                   <CardContent>
-                    <OrdersClient />
+                    <AccountPaymentClient data={data.user.orders} />
                   </CardContent>
                 </Card>
               </div>
