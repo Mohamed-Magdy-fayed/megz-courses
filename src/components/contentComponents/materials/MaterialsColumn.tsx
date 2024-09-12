@@ -95,7 +95,13 @@ export const columns: ColumnDef<MaterialsRow>[] = [
             return (
                 <>{format(row.original.createdAt, "dd MMM yyyy")}</>
             )
-        }
+        },
+        filterFn: (row, columnId, filterValue) => {
+            const val = row.original.createdAt
+            const startDate = new Date(filterValue.split("|")[0])
+            const endDate = new Date(filterValue.split("|")[1])
+            return val.getTime() >= startDate.getTime() && val.getTime() <= endDate.getTime()
+        },
     },
     {
         accessorKey: "levelSlug",

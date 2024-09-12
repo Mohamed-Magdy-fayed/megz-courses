@@ -19,7 +19,8 @@ const SessionsClient = () => {
     meetingNumber: session.zoomGroup?.meetingNumber || "",
     meetingPassword: session.zoomGroup?.meetingPassword || "",
     isSessionOngoing: session.sessionStatus === "ongoing",
-    sessionDate: format(session.sessionDate, "PPPp"),
+    sessionName: session.materialItem?.title || "",
+    sessionDate: session.sessionDate,
     createdAt: format(session.createdAt, "PPP"),
   })) || [];
 
@@ -29,13 +30,14 @@ const SessionsClient = () => {
       data={formattedData}
       setData={() => { }}
       searches={[{
-        key: "sessionDate",
-        label: "Time"
+        key: "sessionName",
+        label: "Session Title"
       }]}
       filters={[
         { key: "status", filterName: "Status", values: validSessionStatuses.map(s => ({ label: upperFirst(s), value: s })) },
         { key: "groupName", filterName: "Group", values: uniqBy(formattedData.map(d => ({ value: d.groupName, label: d.groupName })), "value") },
       ]}
+      dateRange={{ key: "sessionDate", label: "Session Time" }}
     />
   );
 };

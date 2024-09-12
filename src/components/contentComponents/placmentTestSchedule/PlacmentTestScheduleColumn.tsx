@@ -5,6 +5,7 @@ import { ArrowUpDown } from "lucide-react";
 import Link from "next/link";
 import { Typography } from "@/components/ui/Typoghraphy";
 import ActionCell from "./PlacmentTestScheduleActionCell";
+import { getInitials } from "@/lib/getInitials";
 
 export type PlacmentTestScheduleRow = {
     id: string;
@@ -48,7 +49,7 @@ export const columns: ColumnDef<PlacmentTestScheduleRow>[] = [
         enableHiding: false,
     },
     {
-        accessorKey: "studentId",
+        accessorKey: "studentName",
         header: ({ column }) => {
             return (
                 <div className="flex items-center justify-between">
@@ -65,7 +66,7 @@ export const columns: ColumnDef<PlacmentTestScheduleRow>[] = [
         cell: ({ row }) => (
             <Link className="block w-fit" href={`/account/${row.original.studentUserId}`}>
                 <div className="flex items-center gap-2" >
-                    <img alt={row.original.studentName} src={row.original.studentImage!} className="max-h-12" />
+                    <img alt={getInitials(row.original.studentName)} src={row.original.studentImage!} className="max-h-12" />
                     <div className="flex flex-col gap-2">
                         <Typography
                             className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
@@ -81,7 +82,7 @@ export const columns: ColumnDef<PlacmentTestScheduleRow>[] = [
         ),
     },
     {
-        accessorKey: "trainerId",
+        accessorKey: "trainerName",
         header: ({ column }) => {
             return (
                 <div className="flex items-center justify-between">
@@ -98,7 +99,7 @@ export const columns: ColumnDef<PlacmentTestScheduleRow>[] = [
         cell: ({ row }) => (
             <Link className="block w-fit" href={`/account/${row.original.trainerId}`}>
                 <div className="flex items-center gap-2" >
-                    <img alt={row.original.trainerName} src={row.original.trainerImage!} className="max-h-12" />
+                    <img alt={getInitials(row.original.trainerName)} src={row.original.trainerImage!} className="max-h-12" />
                     <div className="flex flex-col gap-2">
                         <Typography
                             className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"

@@ -81,8 +81,10 @@ export const evaluationFormRouter = createTRPCRouter({
           course: { include: { levels: true } },
           student: { include: { courseStatus: { include: { course: true, level: true } } } },
           trainer: { include: { user: true } },
-          writtenTest: { include: { submissions: true, questions: true } }
-        }
+          writtenTest: { include: { submissions: true, questions: true } },
+          createdBy: true,
+        },
+        orderBy: { createdAt: "desc" }
       })
 
       return { placementTests }

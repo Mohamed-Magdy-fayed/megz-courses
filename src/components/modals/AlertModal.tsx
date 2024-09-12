@@ -7,11 +7,13 @@ interface AlertModalProps {
   onClose: () => void;
   onConfirm: (callback?: () => void) => void;
   loading: boolean;
+  description?: string;
 }
 
 export const AlertModal = ({
   isOpen,
   loading,
+  description,
   onClose,
   onConfirm,
 }: AlertModalProps) => {
@@ -26,7 +28,7 @@ export const AlertModal = ({
   return (
     <Modal
       title="Are you sure?"
-      description="This action can't be undone!"
+      description={description ? description : "This action can't be undone!"}
       isOpen={isOpen}
       onClose={onClose}
     >

@@ -181,11 +181,9 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
     const totalWaitingUsers = useMemo(
         () => coursesData?.courses.map(course => {
             const userIds = new Set();
-            course.orders.forEach(order => {
-                if (order.user.courseStatus.some(({ courseId, status }) => courseId === course.id && status === "waiting")) {
-                    userIds.add(order.user.id);
-                }
-            });
+            course.courseStatus.forEach(stat => {
+                (stat.courseId === course.id && stat.status === "waiting") && userIds.add(stat.userId);
+            })
             return userIds.size;
         }).reduce((a, b) => a + b, 0),
         [coursesData?.courses]
@@ -225,7 +223,7 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                                     label: course.name,
                                     value: course.id,
                                     customLabel: (
-                                        <div className="flex items-center justify-between w-full">
+                                        <div className="flex items-center justify-between w-full gap-4">
                                             <Typography>{course.name}</Typography>
                                             <Typography className="text-xs text-muted">Waiting: {getWaitingList(course)}</Typography>
                                         </div>
@@ -238,9 +236,9 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                                     setValues={setCourseLevelId}
                                     placeholder="Select Level..."
                                     listTitle={(
-                                        <div className="flex items-center justify-between w-full">
+                                        <div className="flex items-center justify-between w-full gap-4">
                                             <Typography>Levels</Typography>
-                                            <Typography className="text-xs text-muted">Total waiting for level: {totalWaitingUsers}</Typography>
+                                            <Typography className="text-xs text-muted">Total waiting for course: {getWaitingList(course)}</Typography>
                                         </div>
                                     )}
                                     data={course.levels.map(level => ({
@@ -297,28 +295,25 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                             setValues={setUserIds}
                             placeholder="Select Users..."
                             listTitle="Users"
-                            data={(course?.orders || [])
-                                .filter((order, index, self) => {
-                                    const courseStatus = order.user.courseStatus.find(status => status.courseId === courseId[0])
-
-                                    return index === self.findIndex(({ userId }) => order.user.id === userId) && courseStatus?.courseLevelId === courseLevelId[0]
-                                })
-                                .map(order => {
-                                    const courseStatus = order.user.courseStatus.find(status => status.courseId === courseId[0])
-                                    const isPrivate = order.courseType.isPrivate
+                            data={course?.courseStatus
+                                .filter(stat => stat.courseLevelId === courseLevelId[0])
+                                .filter((stat, index, self) => index === self.findIndex(({ userId }) => stat.userId === userId))
+                                .map((stat, i) => {
+                                    const order = course?.orders.find(or => or.userId === stat.userId && or.courseId === stat.courseId)
+                                    const isPrivate = order?.courseType.isPrivate
 
                                     return ({
-                                        active: courseStatus?.status === "waiting",
-                                        label: order.user.name,
-                                        value: order.user.id,
+                                        active: stat.status === "waiting",
+                                        label: order?.user.name || `${i}`,
+                                        value: order?.user.id || `${i}`,
                                         customLabel: (
                                             <TooltipProvider>
-                                                <Typography className="mr-auto">{order.user.name}</Typography>
+                                                <Typography className="mr-auto">{order?.user.name}</Typography>
                                                 <Typography className="text-xs">{isPrivate ? "Private" : "Group"}</Typography>
                                                 <Tooltip delayDuration={10}>
                                                     <TooltipTrigger>
                                                         <Link
-                                                            href={`/account/${order.userId}`}
+                                                            href={`/account/${order?.userId}`}
                                                             target="_blank"
                                                             onClick={(e) => {
                                                                 e.stopPropagation()
@@ -336,7 +331,7 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                                             </TooltipProvider>
                                         )
                                     })
-                                })
+                                }) || []
                             }
                         />
                     )}

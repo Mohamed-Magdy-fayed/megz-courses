@@ -13,9 +13,8 @@ export default function Page() {
     const { toastError } = useToast()
     const trpcUtils = api.useContext()
     const createTokenMutation = api.zoomAccounts.createToken.useMutation({
-        onSuccess: () => trpcUtils.invalidate(),
+        onSuccess: () => trpcUtils.invalidate().then(() => window.close()),
         onError: ({ message }) => toastError(message),
-        onSettled: () => window.close(),
     })
 
     useEffect(() => {

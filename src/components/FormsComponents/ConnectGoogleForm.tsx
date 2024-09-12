@@ -65,7 +65,7 @@ const ConnectGoogleForm: FC<{
             duration: 3000,
             variant: "info",
         })),
-        onSuccess: () => trpcUtils.courses.invalidate()
+        onSuccess: () => trpcUtils.invalidate()
             .then(() => {
                 loadingToast?.update({
                     id: loadingToast.id,
@@ -74,7 +74,6 @@ const ConnectGoogleForm: FC<{
                     duration: 2000,
                     variant: "success",
                 })
-                setIsOpen(false)
             }),
         onError: ({ message }) => loadingToast?.update({
             id: loadingToast.id,

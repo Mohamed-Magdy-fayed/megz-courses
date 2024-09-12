@@ -1,12 +1,14 @@
+import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ArrowUpDown } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { Devices, Order } from "@prisma/client";
 import { getInitials } from "@/lib/getInitials";
 
-export type WaitingListRow = {
+export type FullWaitingListRow = {
     id: string,
     name: string,
     levelSlugs: {
@@ -20,12 +22,14 @@ export type WaitingListRow = {
     email: string,
     phone: string | null,
     orders: Order[] | null,
+    courseName: string,
+    courseSlug: string,
     courseId: string,
     createdAt: Date,
     updatedAt: Date,
 };
 
-export const columns: ColumnDef<WaitingListRow>[] = [
+export const columns: ColumnDef<FullWaitingListRow>[] = [
     {
         id: "select",
         header: ({ table }) => (
@@ -47,7 +51,19 @@ export const columns: ColumnDef<WaitingListRow>[] = [
     },
     {
         accessorKey: "email",
-        header: "Info",
+        header: ({ column }) => {
+            return (
+                <div className="flex items-center justify-between">
+                    Info
+                    <Button
+                        className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
+                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                    >
+                        <ArrowUpDown className="h-4 w-4 text-primary" />
+                    </Button>
+                </div>
+            );
+        },
         cell: ({ row }) => (
             <Link className="block w-fit" href={`/account/${row.original.id}`}>
                 <div className="flex items-center gap-2" >
@@ -67,8 +83,40 @@ export const columns: ColumnDef<WaitingListRow>[] = [
         ),
     },
     {
+        accessorKey: "courseName",
+        header: "Course Name",
+        cell: ({ row }) => {
+            return (
+                <Link href={`/content/courses/${row.original.courseSlug}`}>
+                    <Button variant={"link"} className="text-info">
+                        {row.original.courseName}
+                    </Button>
+                </Link>
+            )
+        },
+    },
+    {
+        accessorKey: "levelSlug",
+        header: "Level",
+        cell: ({ row }) => (
+            <Typography>{row.original.levelName}</Typography>
+        )
+    },
+    {
         accessorKey: "orders",
-        header: "Ordered on",
+        header: ({ column }) => {
+            return (
+                <div className="flex items-center justify-between">
+                    Ordered on
+                    <Button
+                        className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
+                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                    >
+                        <ArrowUpDown className="h-4 w-4 text-primary" />
+                    </Button>
+                </div>
+            );
+        },
         cell: ({ row }) => {
             return (
                 <>{format(row.original.orders?.find(order => order.courseId === row.original.courseId)?.createdAt || new Date(), "dd MMM yyyy")}</>
@@ -81,12 +129,5 @@ export const columns: ColumnDef<WaitingListRow>[] = [
             const endDate = new Date(filterValue.split("|")[1])
             return val.getTime() >= startDate.getTime() && val.getTime() <= endDate.getTime()
         },
-    },
-    {
-        accessorKey: "levelSlug",
-        header: "Level",
-        cell: ({ row }) => (
-            <Typography>{row.original.levelName}</Typography>
-        )
     },
 ];

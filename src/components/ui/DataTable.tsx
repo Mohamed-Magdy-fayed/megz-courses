@@ -9,6 +9,7 @@ import {
   getSortedRowModel,
   getPaginationRowModel,
   useReactTable,
+  PaginationState,
 } from "@tanstack/react-table";
 
 import {
@@ -22,12 +23,37 @@ import {
 import { AlertModal } from "../modals/AlertModal";
 import { Typography } from "./Typoghraphy";
 import { Button } from "./button";
-import { ArrowLeft, ArrowRight, SortAsc, SortDesc, Trash } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, DownloadCloud, SortAsc, SortDesc, Trash } from "lucide-react";
 import { TableInput } from "@/components/ui/table-input";
 import TableSelectField from "@/components/ui/TableSelectField";
 import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import { formatPrice } from "@/lib/utils";
 import Spinner from "@/components/Spinner";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import router from "next/router";
+import Modal from "@/components/ui/modal";
+import { api } from "@/lib/api";
+import { Prisma } from "@prisma/client";
+
+type Cursor = Prisma.UserNoteFindManyArgs["cursor"]
+type Distinct = Prisma.UserNoteFindManyArgs["distinct"]
+type Include = Prisma.UserNoteFindManyArgs["include"]
+type OrderBy = Prisma.UserNoteFindManyArgs["orderBy"]
+type Select = Prisma.UserNoteFindManyArgs["select"]
+type Skip = Prisma.UserNoteFindManyArgs["skip"]
+type Take = Prisma.UserNoteFindManyArgs["take"]
+type Where = Prisma.UserNoteFindManyArgs["where"]
+
+export type QueryNotesArgs = {
+  cursor?: Cursor;
+  distinct?: Distinct;
+  include?: Include;
+  orderBy?: OrderBy;
+  select?: Select;
+  skip?: Skip;
+  take?: Take;
+  where?: Where;
+}
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -65,7 +91,9 @@ export function DataTable<TData, TValue>({
   searches,
   filters,
 }: DataTableProps<TData, TValue>) {
+  const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [isExportOpen, setIsExportOpen] = React.useState<boolean>(false);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = React.useState({});
 
@@ -79,10 +107,12 @@ export function DataTable<TData, TValue>({
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
     onRowSelectionChange: setRowSelection,
+    onPaginationChange: setPagination,
     state: {
       sorting,
       columnFilters,
       rowSelection,
+      pagination,
     },
   });
 
@@ -184,6 +214,78 @@ export function DataTable<TData, TValue>({
         }}
         loading={loading}
       />}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-8">
+          <Typography>Total records {table.getCoreRowModel().rows.length}</Typography>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant={"icon"} customeColor={"mutedIcon"} onClick={() => setIsExportOpen(true)}>
+                <DownloadCloud className="text-primary" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              Export
+            </TooltipContent>
+          </Tooltip>
+          <Modal
+            title="Export Data"
+            description="Select what you need to export"
+            isOpen={isExportOpen}
+            onClose={() => setIsExportOpen(false)}
+            children={"Coming soon"}
+          />
+        </div>
+        <div className="flex flex-col gap-2 justify-center">
+          <div className="flex items-center justify-between gap-2">
+            {table.getPageCount() === 1 ? (
+              <Typography>Only 1 Page</Typography>
+            ) : (
+              <div className="flex items-center gap-2 justify-center w-full">
+                <Typography>Page</Typography>
+                <Typography>{pagination.pageIndex + 1}</Typography>
+                <Typography>of</Typography>
+                <Typography>{table.getPageCount()}</Typography>
+                <Typography>Pages</Typography>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              className="bg-primary h-4 w-8 p-0"
+              onClick={() => table.setPageIndex(0)}
+              disabled={pagination.pageIndex === 0}
+            >
+              <ChevronsLeft className="w-4" />
+            </Button>
+            <Button
+              className="bg-primary h-4 w-8 p-0"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              <ChevronLeft className="w-4" />
+            </Button>
+            <PaginationPageSelectors
+              pageCount={table.getPageCount()}
+              setPageIndex={table.setPageIndex}
+              currentPage={table.getState().pagination.pageIndex}
+            />
+            <Button
+              className="bg-primary h-4 w-8 p-0"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              <ChevronRight className="w-4" />
+            </Button>
+            <Button
+              className="bg-primary h-4 w-8 p-0"
+              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+              disabled={pagination.pageIndex === table.getPageCount() - 1}
+            >
+              <ChevronsRight className="w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
       <div className="whitespace-nowrap grid">
         {table.getAllColumns().some(col => !!col.getFilterValue()) && (
           <Typography className="px-4 pb-4 text-sm text-muted">
@@ -252,9 +354,16 @@ export function DataTable<TData, TValue>({
                               })) || []}
                               listTitle={header.isPlaceholder
                                 ? null
-                                : flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext()
+                                : (
+                                  <div className="flex items-center justify-between">
+                                    {flexRender(
+                                      header.column.columnDef.header,
+                                      header.getContext()
+                                    )}
+                                    <Typography className="text-info">
+                                      {table.getCoreRowModel().rows.length}
+                                    </Typography>
+                                  </div>
                                 )}
                               placeholder={filters.find(f => f.key === header.id)?.filterName || ""}
                               handleChange={(val) => {
@@ -428,26 +537,68 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      {
-        data.length > 10 && (
-          <div className="flex items-center justify-end space-x-2 py-4">
-            <Button
-              className="bg-primary"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <ArrowLeft></ArrowLeft>
-            </Button>
-            <Button
-              className="bg-primary"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              <ArrowRight></ArrowRight>
-            </Button>
-          </div>
-        )
-      }
-    </div >
+    </div>
   );
+}
+
+export interface PaginationPageSelectorsProps {
+  pageCount: number;
+  setPageIndex: (index: number) => void;
+  currentPage: number;
+}
+
+export const PaginationPageSelectors: React.FC<PaginationPageSelectorsProps> = ({ pageCount, setPageIndex, currentPage }) => {
+  const maxPages = 5;
+  const middleIndex = Math.floor(maxPages / 2);
+
+  // Determine the range of visible pages
+  const startPage = Math.max(0, Math.min(pageCount - maxPages, currentPage - middleIndex));
+  const visiblePages = Array.from({ length: Math.min(maxPages, pageCount) }, (_, i) => startPage + i);
+
+  return (
+    <div className="flex items-center gap-2 px-4">
+      {visiblePages.map(i => (
+        <Button
+          key={i}
+          variant={i === currentPage ? "default" : "outline"}
+          customeColor={i === currentPage ? "primary" : "primaryOutlined"}
+          className="h-4 w-8 p-0 transition-all duration-100"
+          onClick={() => setPageIndex(i)}
+        >
+          {i + 1}
+        </Button>
+      ))}
+    </div>
+  );
+};
+
+export const ExportForm = ({ setQueryProps, pagination }: {
+  pagination: PaginationState;
+  setQueryProps: React.Dispatch<React.SetStateAction<{
+    where?: Where;
+    cursor?: Cursor;
+    distinct?: Distinct;
+    include?: Include;
+    orderBy?: OrderBy;
+    select?: Select;
+    skip?: Skip;
+    take?: Take;
+  }>>
+}) => {
+  return (
+    <div>
+      Content
+      <Button onClick={() => {
+        setQueryProps({
+          take: pagination.pageSize,
+          skip: (pagination.pageIndex + 1) * pagination.pageSize,
+          include: { createdForStudent: true },
+          orderBy: { createdAt: "asc" },
+
+        })
+      }}>
+        setQueryProps
+      </Button>
+    </div>
+  )
 }

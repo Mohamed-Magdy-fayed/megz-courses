@@ -2,13 +2,14 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import CellAction from "./ActionCell";
 import { Typography } from "@/components/ui/Typoghraphy";
+import { format } from "date-fns";
 
 export type LevelRow = {
   id: string;
   name: string;
   slug: string;
   courseSlug: string;
-  createdAt: string;
+  createdAt: Date;
 };
 
 export const columns: ColumnDef<LevelRow>[] = [
@@ -44,7 +45,15 @@ export const columns: ColumnDef<LevelRow>[] = [
   },
   {
     accessorKey: "createdAt",
-    header: "Added on",
+    cell: ({ row }) => (
+      <Typography>{row.original.createdAt.toDateString()}</Typography>
+    ),
+    filterFn: (row, columnId, filterValue) => {
+      const val = row.original.createdAt
+      const startDate = new Date(filterValue.split("|")[0])
+      const endDate = new Date(filterValue.split("|")[1])
+      return val.getTime() >= startDate.getTime() && val.getTime() <= endDate.getTime()
+    },
   },
   {
     id: "actions",

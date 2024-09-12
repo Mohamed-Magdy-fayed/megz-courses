@@ -6,6 +6,7 @@ import { EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, Mater
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
+import { format } from "date-fns";
 
 export type QuizRow = {
     id: string,
@@ -17,13 +18,14 @@ export type QuizRow = {
     submissions: number,
     totalPoints: number,
     externalLink: string | null,
+    hasExternalLink: "true" | "false",
     evalForm: EvaluationForm & {
         materialItem: MaterialItem | null;
         submissions: EvaluationFormSubmission[];
         questions: EvaluationFormQuestion[];
     },
     createdBy: string,
-    createdAt: string,
+    createdAt: Date,
     updatedAt: string,
 };
 
@@ -52,7 +54,7 @@ export const columns: ColumnDef<QuizRow>[] = [
         header: "Material Item Title"
     },
     {
-        accessorKey: "externalLink",
+        accessorKey: "hasExternalLink",
         header: "Google Form",
         cell: ({ row }) => !!row.original.externalLink && (
             <Link href={row.original.externalLink} target="_blank">
@@ -76,7 +78,16 @@ export const columns: ColumnDef<QuizRow>[] = [
     },
     {
         accessorKey: "createdAt",
-        header: "Created on"
+        header: "Created on",
+        cell: ({ row }) => (
+            <Typography>{format(row.original.createdAt, "PPPp")}</Typography>
+        ),
+        filterFn: (row, columnId, filterValue) => {
+            const val = row.original.createdAt
+            const startDate = new Date(filterValue.split("|")[0])
+            const endDate = new Date(filterValue.split("|")[1])
+            return val.getTime() >= startDate.getTime() && val.getTime() <= endDate.getTime()
+        },
     },
     {
         accessorKey: "levelSlug",

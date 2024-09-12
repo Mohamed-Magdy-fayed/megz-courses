@@ -12,7 +12,7 @@ import {
     FormControl,
     FormMessage,
 } from "@/components/ui/form";
-import { Dispatch, FC, SetStateAction, useState } from "react";
+import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
 import ImageUploader from "../ui/ImageUploader";
 import { Plus, Trash, Upload } from "lucide-react";
 import { CheckCircle2 } from "lucide-react";
@@ -147,6 +147,7 @@ const CustomTestForm: FC<{
             duration: 30000,
             variant: "destructive"
         })
+
         if (!initialData) return createTestEvalFormMutation.mutate({
             fields: data.fields.map(field => field.type === "trueFalse" ? ({
                 ...field,
@@ -338,7 +339,11 @@ const CustomTestForm: FC<{
                             />
 
                             {questionType === "multipleChoice" && (
-                                <MultipleChoiceOptions index={i} control={control} errors={errors} />
+                                <MultipleChoiceOptions handleIsCorrectChange={(input) => {
+                                    console.log(input);
+                                    console.log(methods.getValues().fields.map((question, qIdx) => qIdx === input.questionIdx && question.options?.forEach((op, oIdx) => oIdx !== input.optionIdx && methods.setValue(`fields.${qIdx}.options.${oIdx}.isCorrect`, false))));
+
+                                }} index={i} control={control} errors={errors} />
                             )}
 
                             {questionType === "trueFalse" && (
@@ -391,11 +396,26 @@ const CustomTestForm: FC<{
     );
 };
 
-const MultipleChoiceOptions: React.FC<{ control: Control<IFormInput, any>, errors: FieldErrors<IFormInput>, index: number }> = ({ control, errors, index }) => {
-    const { fields, append, remove } = useFieldArray({
+const MultipleChoiceOptions: React.FC<{
+    control: Control<IFormInput, any>,
+    errors: FieldErrors<IFormInput>,
+    index: number,
+    handleIsCorrectChange: (input: {
+        questionIdx: number,
+        optionIdx: number,
+    }) => void,
+}> = ({ control, errors, index, handleIsCorrectChange }) => {
+    const { fields, append, remove, replace } = useFieldArray({
         control,
         name: `fields.${index}.options`,
     });
+
+    useEffect(() => {
+        fields.forEach((fel) => {
+            console.log(fel);
+        })
+
+    }, [fields])
 
     return (
         <div className=" flex flex-col gap-4 md:flex-wrap md:flex-row">
@@ -434,7 +454,10 @@ const MultipleChoiceOptions: React.FC<{ control: Control<IFormInput, any>, error
                                                 tabIndex={-1}
                                                 variant={"icon"}
                                                 customeColor={field.value ? "successIcon" : "destructiveIcon"}
-                                                onClick={() => field.onChange(!field.value)}
+                                                onClick={() => {
+                                                    handleIsCorrectChange({ optionIdx: i, questionIdx: index })
+                                                    field.onChange(!field.value)
+                                                }}
                                             >
                                                 <CheckCircle2 className="w-4 h-4" />
                                             </Button>

@@ -148,7 +148,10 @@ const CoursesActionCell: React.FC<CellActionProps> = ({ id, slug, description, g
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={() => router.push(`/content/courses/${slug}?tab=quick_order`)}>
+                    <DropdownMenuItem onClick={() => {
+                        sessionStorage.setItem(`activeTab${id}`, "quick_order");
+                        router.push(`/content/courses/${slug}`)
+                    }}>
                         <PlusSquare className="w-4 h-4 mr-2" />
                         Quick Order
                     </DropdownMenuItem>

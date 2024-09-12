@@ -2,23 +2,19 @@ import { api } from "@/lib/api";
 import { useEffect, useState } from "react";
 import { getAddress } from "@/lib/utils";
 import { DataTable } from "@/components/ui/DataTable";
-import { StudentRow, columns } from "./StudentColumn";
+import { RetintionsRow, columns } from "./RetintionsColumn";
 import { useToast } from "../ui/use-toast";
 
-const StudentClient = () => {
-  const [users, setUsers] = useState<StudentRow[]>([]);
+const RetintionsClient = () => {
+  const [users, setUsers] = useState<RetintionsRow[]>([]);
 
-  const { data: coursesData, refetch: refetchCourses } = api.courses.getAll.useQuery(undefined, { enabled: false })
-  const { data, isLoading, refetch: refetchUsers } = api.users.getUsers.useQuery({
-    userType: "student",
-  }, { enabled: false });
+  const { data, isLoading, refetch: refetchUsers } = api.users.getRetintionsUsers.useQuery(undefined, { enabled: false });
 
   useEffect(() => {
-    refetchCourses()
     refetchUsers()
   }, [])
 
-  const formattedData: StudentRow[] = data?.users.map((user) => ({
+  const formattedData: RetintionsRow[] = data?.users.map((user) => ({
     id: user.id,
     name: user.name,
     email: user.email,
@@ -26,7 +22,7 @@ const StudentClient = () => {
     phone: user.phone || "no phone",
     address: user.address ? getAddress(user.address) : "no address",
     userData: { user },
-    coursesData,
+    latestCourse: user.courseStatus.sort((a, b) => a.updatedAt.getTime() - b.updatedAt.getTime()).map(status => status.course.name)[0] || "No course!",
     createdAt: user.createdAt,
   })) || [];
 
@@ -60,6 +56,17 @@ const StudentClient = () => {
       data={formattedData}
       setData={setUsers}
       onDelete={onDelete}
+      filters={[
+        {
+          key: "latestCourse", filterName: "Latest Course", values: formattedData
+            .map(d => d.latestCourse)
+            .filter((value, index, self) => self.indexOf(value) === index)
+            .map(val => ({
+              label: val,
+              value: val,
+            }))
+        },
+      ]}
       dateRange={{ key: "createdAt", label: "Created On" }}
       searches={[
         { key: "email", label: "email" },
@@ -70,4 +77,4 @@ const StudentClient = () => {
   );
 };
 
-export default StudentClient;
+export default RetintionsClient;

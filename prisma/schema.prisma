@@ -92,7 +92,6 @@ model User {
     sessions                  Session[]
     orders                    Order[]
     courseStatus              CourseStatus[]
-    placementTests            PlacementTest[]
     certificates              Certificate[]
     evaluationFormSubmissions EvaluationFormSubmission[]
     studentNotes              UserNote[]                 @relation("CreatedForStudent")
@@ -111,6 +110,8 @@ model User {
     device                    Devices?
     updatedAt                 DateTime                   @updatedAt
     createdAt                 DateTime                   @default(now())
+    placementTests            PlacementTest[]            @relation("PlacementTestToStudent")
+    createdPlacementTests     PlacementTest[]            @relation("PlacementTestToCreatedBy")
 }
 
 model VerificationToken {
@@ -134,7 +135,7 @@ type Meeting {
 
 model PlacementTest {
     id               String         @id @default(auto()) @map("_id") @db.ObjectId
-    student          User           @relation(fields: [studentUserId], references: [id], onDelete: Cascade)
+    student          User           @relation("PlacementTestToStudent", fields: [studentUserId], references: [id], onDelete: Cascade)
     studentUserId    String         @db.ObjectId
     course           Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
     courseId         String         @db.ObjectId
@@ -144,6 +145,8 @@ model PlacementTest {
     oralTestTime     DateTime
     trainer          Trainer        @relation(fields: [trainerId], references: [id], onDelete: Cascade)
     trainerId        String         @db.ObjectId
+    createdBy        User?          @relation("PlacementTestToCreatedBy", fields: [createdByUserId], references: [id])
+    createdByUserId  String?        @db.ObjectId
     updatedAt        DateTime       @updatedAt
     createdAt        DateTime       @default(now())
 }

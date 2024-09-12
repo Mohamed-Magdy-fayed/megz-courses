@@ -10,6 +10,7 @@ import QueryString from "qs";
 import { MeetingResponse, ZoomMeeting } from "@/lib/zoomTypes";
 import { format } from "date-fns";
 import { generateGroupNumnber, getZoomSessionDays } from "@/lib/utils";
+import { env } from "@/env.mjs";
 
 export const zoomMeetingsRouter = createTRPCRouter({
     generateSDKSignature: protectedProcedure
@@ -188,7 +189,7 @@ export const zoomMeetingsRouter = createTRPCRouter({
             const meetingData: Partial<ZoomMeeting> = {
                 topic: `Placement Test for course ${course.name}`,
                 agenda: `Oral test with mr. ${trainer.user.name}`,
-                duration: 120,
+                duration: parseInt(env.NEXT_PUBLIC_PLACEMENT_TEST_TIME),
                 password: "abcd1234",
                 settings: {
                     auto_recording: "cloud",

@@ -63,15 +63,12 @@ export const usersRouter = createTRPCRouter({
     .query(async ({ ctx }) => {
       const users = await ctx.prisma.user.findMany({
         where: {
-          AND: {
-            userType: "student",
-            courseStatus: {
-              some: {
-                status: "completed"
-              }
+          userType: "student",
+          courseStatus: {
+            some: {
+              status: "completed"
             }
           }
-
         },
         orderBy: {
           id: "desc"
@@ -80,7 +77,7 @@ export const usersRouter = createTRPCRouter({
           orders: true,
           zoomGroups: { include: { zoomSessions: true } },
           evaluationFormSubmissions: true,
-          courseStatus: true,
+          courseStatus: { include: { course: true } },
         },
       });
 

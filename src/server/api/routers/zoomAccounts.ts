@@ -86,7 +86,7 @@ export const zoomAccountsRouter = createTRPCRouter({
                     const isOverlapping = mtngs.some(m => {
                         const existingStart = new Date(m.start_time);
                         const existingEnd = new Date(existingStart);
-                        existingEnd.setMinutes(existingEnd.getMinutes() + 120);
+                        existingEnd.setMinutes(existingEnd.getMinutes() + m.duration);
 
                         const newMeetingEnd = new Date(startDate);
                         newMeetingEnd.setHours(newMeetingEnd.getHours() + 2);
@@ -148,13 +148,6 @@ export const zoomAccountsRouter = createTRPCRouter({
                     id: { in: ids },
                 },
                 include: { zoomSessions: true }
-            })
-            console.log(zoomAccountsWithSessions);
-
-            if (zoomAccountsWithSessions.some(account => account.zoomSessions.length > 0)) throw new TRPCError({
-                code: "BAD_REQUEST",
-                message: `please delete all sessions using this account first!
-                \n${zoomAccountsWithSessions.map(account => account.name).reduce((a, b) => a + b, "")}`
             })
 
             const deletedZoomAccounts = await ctx.prisma.zoomClient.deleteMany({
@@ -220,7 +213,7 @@ export const zoomAccountsRouter = createTRPCRouter({
                 return { zoomClient }
             }
             catch (error) {
-                throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `error` })
+                throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: JSON.stringify(error) })
             }
         }),
 });

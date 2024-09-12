@@ -3,6 +3,9 @@ import { api } from "@/lib/api";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { MaterialsRow, columns } from "@/components/contentComponents/materials/MaterialsColumn";
+import { MaterialItemType } from "@prisma/client";
+import { validMaterialItemTypes } from "@/lib/enumsTypes";
+import { upperFirst } from "lodash";
 
 const MaterialsClient = ({ formattedData }: { formattedData: MaterialsRow[] }) => {
     const [materialItems, setMaterialItems] = useState<string[]>([])
@@ -32,7 +35,14 @@ const MaterialsClient = ({ formattedData }: { formattedData: MaterialsRow[] }) =
             searches={[{ key: "title", label: "Title" }]}
             filters={[
                 { key: "levelSlug", filterName: "Level", values: formattedData[0]?.levelSlugs || [] },
+                {
+                    key: "type", filterName: "Type", values: validMaterialItemTypes.map(type => ({
+                        label: type === "upload" ? "Downloadable" : "Interactive",
+                        value: type,
+                    })) || []
+                },
             ]}
+            dateRange={{ key: "createdAt", label: "Created On" }}
         />
     );
 };

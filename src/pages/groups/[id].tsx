@@ -415,7 +415,7 @@ const GroupPage: NextPage = () => {
                             <PaperContainer className="flex flex-col gap-4 col-span-3 h-fit">
                                 <Typography variant={"primary"}>Students</Typography>
                                 <Separator />
-                                <ScrollArea className="xl:max-h-[75vh]">
+                                <ScrollArea className="xl:h-[65vh]">
                                     {data.zoomGroup.students.map(student => (
                                         <div key={student.id} className="flex items-center gap-2">
                                             <Avatar>
@@ -442,6 +442,7 @@ const GroupPage: NextPage = () => {
                                         </div>
                                     ))}
                                 </ScrollArea>
+                                <Separator />
                                 <div>
                                     <Typography variant={"secondary"}>Attendance</Typography>
                                     {formatPercentage(calculateAttendancePercentages(data.zoomGroup).overallAttendancePercentage || 0)}

@@ -118,7 +118,7 @@ const CoursePage = () => {
                                     name: level.name,
                                     slug: level.slug,
                                     courseSlug,
-                                    createdAt: format(level.createdAt, "PPP"),
+                                    createdAt: level.createdAt,
                                 })) : []}
                             />
                         </TabsContent>
@@ -167,9 +167,10 @@ const CoursePage = () => {
                                         submissions: evalForm.submissions.length,
                                         totalPoints: evalForm.totalPoints,
                                         externalLink: evalForm.externalLink,
+                                        hasExternalLink: !!evalForm.externalLink ? "true" : "false",
                                         evalForm,
                                         createdBy: evalForm.createdBy,
-                                        createdAt: format(evalForm.createdAt, "PPPp"),
+                                        createdAt: evalForm.createdAt,
                                         updatedAt: format(evalForm.updatedAt, "PPPp"),
                                     })) : []}
                             />
@@ -190,9 +191,10 @@ const CoursePage = () => {
                                         submissions: evalForm.submissions.length,
                                         totalPoints: evalForm.totalPoints,
                                         externalLink: evalForm.externalLink,
+                                        hasExternalLink: !!evalForm.externalLink ? "true" : "false",
                                         evalForm,
                                         createdBy: evalForm.createdBy,
-                                        createdAt: format(evalForm.createdAt, "PPPp"),
+                                        createdAt: evalForm.createdAt,
                                         updatedAt: format(evalForm.updatedAt, "PPPp"),
                                     })) : []}
                             />

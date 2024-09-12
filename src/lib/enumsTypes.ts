@@ -1,4 +1,4 @@
-import { CourseStatuses, Devices, EvaluationFormTypes, GroupStatus, OrderStatus, SalesOperationStatus, SessionStatus, TrainerRole, UserNoteStatus, UserNoteTypes, UserType } from "@prisma/client";
+import { CourseStatuses, Devices, EvaluationFormTypes, GroupStatus, MaterialItemType, OrderStatus, SalesOperationStatus, SessionStatus, TrainerRole, UserNoteStatus, UserNoteTypes, UserType } from "@prisma/client";
 
 export const validTrainerRoles = [TrainerRole.teacher, TrainerRole.tester] as const;
 export const validUserTypes = [UserType.admin, UserType.chatAgent, UserType.salesAgent, UserType.student, UserType.teacher] as const;
@@ -10,5 +10,6 @@ export const validCourseStatuses = [CourseStatuses.cancelled, CourseStatuses.com
 export const validEvalFormTypes = [EvaluationFormTypes.assignment, EvaluationFormTypes.quiz, EvaluationFormTypes.placementTest, EvaluationFormTypes.finalTest] as const;
 export const validOrderStatuses = [OrderStatus.cancelled, OrderStatus.paid, OrderStatus.pending, OrderStatus.refunded] as const;
 export const validNoteTypes = [UserNoteTypes.ComplainLevel1, UserNoteTypes.ComplainLevel2, UserNoteTypes.ComplainLevel3, UserNoteTypes.Feedback, UserNoteTypes.Followup, UserNoteTypes.Info, UserNoteTypes.Query] as const;
+export const validMaterialItemTypes = [MaterialItemType.manual, MaterialItemType.upload] as const;
 export const validNoteStatus = [UserNoteStatus.Closed, UserNoteStatus.Created, UserNoteStatus.Opened] as const;
 export const validTrueOrFalse = ["true", "false"] as const;

@@ -85,6 +85,7 @@ const CellAction: React.FC<CellActionProps> = ({ id }) => {
         onSettled: () => {
             loadingToast?.dismissAfter()
             setLoadingToast(undefined)
+            setIsDeleteOpen(false)
         },
     });
 
@@ -100,6 +101,7 @@ const CellAction: React.FC<CellActionProps> = ({ id }) => {
         <>
             <AlertModal
                 isOpen={isDeleteOpen}
+                description="This action is very high risk, any associated sessions will lose Zoom account functionality!"
                 onClose={() => setIsDeleteOpen(false)}
                 loading={!!loadingToast}
                 onConfirm={onDelete}

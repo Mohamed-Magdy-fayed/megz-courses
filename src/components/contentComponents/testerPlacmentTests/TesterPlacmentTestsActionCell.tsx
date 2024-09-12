@@ -40,7 +40,7 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, testLink, courseId, userId,
             setAddToWaitingListToast(
                 toast({
                     title: "Loading...",
-                    description: <Spinner />,
+                    description: <Spinner className="w-4 h-4" />,
                     duration: 100000,
                     variant: "info",
                 })

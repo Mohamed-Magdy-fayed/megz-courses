@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/getInitials";
 import { SeverityPill, SeverityPillProps } from "@/components/overview/SeverityPill";
-import { formatPercentage, isTimePassed } from "@/lib/utils";
+import { formatPercentage, isTimeNow, isTimePassed } from "@/lib/utils";
 import { CourseLevel, Meeting } from "@prisma/client";
 import { format } from "date-fns";
 import { useState } from "react";
@@ -41,7 +41,7 @@ export type Column = {
     studentPhone: string,
     studentImage: string,
     testTime: Date,
-    isWrittenTestDone?: boolean,
+    isWrittenTestDone?: "true" | "false",
     writtenTestResult?: number,
     writtenTestTotalPoints?: number,
     oralTestMeeting: Meeting,
@@ -110,11 +110,11 @@ export const columns: ColumnDef<Column>[] = [
         accessorKey: "isWrittenTestDone",
         header: "Written Test Status",
         cell: ({ row }) => {
-            const color: SeverityPillProps["color"] = row.original.isWrittenTestDone ? "success" : "destructive"
+            const color: SeverityPillProps["color"] = row.original.isWrittenTestDone === "true" ? "success" : "destructive"
             const testResultPercentage = row.original.writtenTestResult && row.original.writtenTestTotalPoints && formatPercentage(row.original.writtenTestResult / row.original.writtenTestTotalPoints * 100)
             return (
                 <SeverityPill color={color}>
-                    {row.original.isWrittenTestDone ? `Done ${testResultPercentage}` : "Not completed"}
+                    {row.original.isWrittenTestDone === "true" ? `Done ${testResultPercentage}` : "Not completed"}
                 </SeverityPill>
             )
         }
@@ -132,6 +132,7 @@ export const columns: ColumnDef<Column>[] = [
             const currentTestTime = new Date(row.original.testTime).getTime();
 
             const isOralTestTimePassed = isTimePassed(currentTestTime)
+            const isOralTestTimeNow = isTimeNow(currentTestTime)
 
             const { toastError, toast } = useToast()
 
@@ -285,11 +286,11 @@ export const columns: ColumnDef<Column>[] = [
                     <Typography>{format(row.original.testTime, "PPPp")}</Typography>
                     {isOralTestTimePassed ? (
                         <Button onClick={() => setIsOpen(true)}>Reschedule</Button>
-                    ) : (
+                    ) : isOralTestTimeNow ? (
                         <Link target="_blank" className="w-fit" href={`/meeting/?mn=${row.original.oralTestMeeting.meetingNumber}&pwd=${row.original.oralTestMeeting.meetingPassword}&session_title=Placement_Test&leave_url=${env.NEXT_PUBLIC_NEXTAUTH_URL}edu_team/my_tasks`}>
                             <Button disabled={isOralTestTimePassed}>Join Meeting</Button>
                         </Link>
-                    )}
+                    ) : null}
                 </div>
             )
         }
@@ -324,6 +325,11 @@ export const columns: ColumnDef<Column>[] = [
                     </Button>
                 </div>
             );
+        },
+        cell: ({ row }) => {
+            return (
+                <Typography>{row.original.createdBy ? row.original.createdBy : "Null"}</Typography>
+            )
         },
     },
     {

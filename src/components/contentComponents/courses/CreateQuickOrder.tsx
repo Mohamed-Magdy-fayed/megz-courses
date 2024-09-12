@@ -15,6 +15,8 @@ import { Label } from "@/components/ui/label"
 import { PaperContainer } from "@/components/ui/PaperContainers"
 import { Typography } from "@/components/ui/Typoghraphy"
 import { sendWhatsAppMessage } from "@/lib/whatsApp"
+import MobileNumberInput from "@/components/ui/phone-number-input"
+import { CredentialsEmail } from "@/components/emails/CredintialsEmail"
 
 const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
     const [loading, setLoading] = useState(false)
@@ -39,6 +41,7 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
             courseDetails: { courseId: courseData.id, isPrivate },
         }, {
             onSuccess: ({ order: { id, amount, orderNumber, user, course, createdAt, courseType, salesOperationId, salesOperation }, paymentLink }) => {
+                setLoading(false)
                 const message = render(
                     <Email
                         logoUrl={siteData?.siteIdentity.logoPrimary || ""}
@@ -94,6 +97,7 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
                         }}
                     />, { pretty: true }
                 )
+                setLoading(false)
                 sendWhatsAppMessage({
                     toNumber: "201123862218",
                     textBody: `*Thanks for your order ${orderNumber}*
@@ -147,12 +151,6 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
             html: message,
         }, {
             onError: (e) => toastError(e.message),
-            onSettled: () => {
-                trpcUtils.invalidate()
-                    .then(() => {
-                        setLoading(false)
-                    })
-            }
         })
     }
 
@@ -168,7 +166,7 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
                 </div>
                 <div>
                     <Label htmlFor="name">Student Phone</Label>
-                    <Input placeholder="01234567899" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                    <MobileNumberInput placeholder="01234567899" value={phone} setValue={setPhone} />
                 </div>
                 <FormItem className="flex items-center gap-2 p-2">
                     <Checkbox

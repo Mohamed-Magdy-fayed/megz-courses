@@ -6,6 +6,7 @@ import { EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, Mater
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
 
 export type AssignmentRow = {
     id: string,
@@ -17,13 +18,14 @@ export type AssignmentRow = {
     submissions: number,
     totalPoints: number,
     externalLink: string | null,
+    hasExternalLink: "true" | "false",
     evalForm: EvaluationForm & {
         materialItem: MaterialItem | null;
         submissions: EvaluationFormSubmission[];
         questions: EvaluationFormQuestion[];
     },
     createdBy: string,
-    createdAt: string,
+    createdAt: Date,
     updatedAt: string,
 };
 
@@ -52,15 +54,15 @@ export const columns: ColumnDef<AssignmentRow>[] = [
         header: "Material Item Title"
     },
     {
-        accessorKey: "externalLink",
+        accessorKey: "hasExternalLink",
         header: "Google Form",
-        cell: ({ row }) => !!row.original.externalLink && (
+        cell: ({ row }) => !!row.original.externalLink ? (
             <Link href={row.original.externalLink} target="_blank">
                 <Button variant={"icon"} customeColor={"infoIcon"}>
                     <ExternalLink className="w-4 h-4" />
                 </Button>
             </Link>
-        )
+        ) : "No external link"
     },
     {
         accessorKey: "questions",
@@ -76,7 +78,16 @@ export const columns: ColumnDef<AssignmentRow>[] = [
     },
     {
         accessorKey: "createdAt",
-        header: "Created on"
+        header: "Created on",
+        cell: ({ row }) => (
+            <Typography>{format(row.original.createdAt, "PPPp")}</Typography>
+        ),
+        filterFn: (row, columnId, filterValue) => {
+            const val = row.original.createdAt
+            const startDate = new Date(filterValue.split("|")[0])
+            const endDate = new Date(filterValue.split("|")[1])
+            return val.getTime() >= startDate.getTime() && val.getTime() <= endDate.getTime()
+        },
     },
     {
         accessorKey: "levelSlug",
@@ -87,7 +98,7 @@ export const columns: ColumnDef<AssignmentRow>[] = [
     },
     {
         accessorKey: "createdBy",
-        header: "Created by"
+        header: "Created by",
     },
     {
         id: "actions",

@@ -415,7 +415,7 @@ const CustomForm: FC<{
 };
 
 const MultipleChoiceOptions: React.FC<{ control: Control<IFormInput, any>, errors: FieldErrors<IFormInput>, index: number }> = ({ control, errors, index }) => {
-    const { fields, append, remove } = useFieldArray({
+    const { fields, append, remove, update } = useFieldArray({
         control,
         name: `fields.${index}.options`,
     });
@@ -457,7 +457,14 @@ const MultipleChoiceOptions: React.FC<{ control: Control<IFormInput, any>, error
                                                 tabIndex={-1}
                                                 variant={"icon"}
                                                 customeColor={field.value ? "successIcon" : "destructiveIcon"}
-                                                onClick={() => field.onChange(!field.value)}
+                                                onClick={() => {
+                                                    fields.map(fel => {
+                                                        console.log(fel);
+
+                                                        fel.isCorrect === true && update(i, { isCorrect: false, isTrue: fel.isTrue, text: fel.text })
+                                                    })
+                                                    field.onChange(!field.value)
+                                                }}
                                             >
                                                 <CheckCircle2 className="w-4 h-4" />
                                             </Button>

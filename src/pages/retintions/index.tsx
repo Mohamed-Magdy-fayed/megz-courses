@@ -6,10 +6,9 @@ import Spinner from "@/components/Spinner";
 import AppLayout from "@/components/layout/AppLayout";
 import StudentForm from "@/components/studentComponents/StudentForm";
 import StudentClient from "@/components/studentComponents/StudentClient";
+import RetintionsClient from "@/components/retintionsComponents/RetintionsClient";
 
 const RetintionsPage = () => {
-  const { data, isLoading, isError } = api.users.getRetintionsUsers.useQuery();
-  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <AppLayout>
@@ -21,21 +20,8 @@ const RetintionsPage = () => {
               <Typography variant={"secondary"}>Students who completed one or more courses</Typography>
             </div>
           </div>
-          {isOpen && (
-            <PaperContainer>
-              <StudentForm setIsOpen={setIsOpen}></StudentForm>
-            </PaperContainer>
-          )}
           <PaperContainer>
-            {isLoading ? (
-              <div className="w-full h-full grid place-content-center">
-                <Spinner></Spinner>
-              </div>
-            ) : isError ? (
-              <>Error</>
-            ) : (
-              <StudentClient />
-            )}
+            <RetintionsClient />
           </PaperContainer>
         </div>
       </main>

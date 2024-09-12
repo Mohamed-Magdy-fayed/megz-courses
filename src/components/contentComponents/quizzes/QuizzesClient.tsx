@@ -34,7 +34,20 @@ const QuizzesClient = ({ formattedData }: { formattedData: QuizRow[] }) => {
             searches={[{ key: "materialItemTitle", label: "Material Title" }]}
             filters={[
                 { key: "levelSlug", filterName: "Level", values: formattedData[0]?.levelSlugs || [] },
+                {
+                    key: "hasExternalLink", filterName: "External Link", values: [
+                        { label: "Has external link", value: "true" },
+                        { label: "Don't have external link", value: "false" },
+                    ]
+                },
+                {
+                    key: "createdBy", filterName: "Created By", values: [...formattedData.map(d => ({
+                        label: d.createdBy,
+                        value: d.createdBy,
+                    }))]
+                },
             ]}
+            dateRange={{ key: "createdAt", label: "Created On" }}
         />
     );
 };

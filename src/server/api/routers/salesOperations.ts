@@ -10,6 +10,7 @@ export const salesOperationsRouter = createTRPCRouter({
             include: {
                 assignee: { include: { user: true } },
             },
+            orderBy: { createdAt: "desc" }
         });
 
         return { salesOperations };

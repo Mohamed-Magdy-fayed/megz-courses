@@ -3,6 +3,7 @@ import { type ClassValue, clsx } from "clsx";
 import { format } from "date-fns";
 import { twMerge } from "tailwind-merge";
 import { getInitials } from "./getInitials";
+import { env } from "@/env.mjs";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -32,6 +33,7 @@ export const formatPercentage = (value: number) => new Intl.NumberFormat("en-US"
 }).format(value / 100)
 
 export const formatNumbers = (value: number) => new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(value)
+export const formatNumber2Digits = (value: number) => new Intl.NumberFormat("en-US", { minimumIntegerDigits: 2 }).format(value)
 
 export const getLastWeekDate = (now = new Date()) => new Date(
   now.getFullYear(),
@@ -90,24 +92,19 @@ export type CourseType = Course & {
       orders: Order[];
     };
   })[];
+  courseStatus: CourseStatus[];
 }
 export const getWaitingList = (course: CourseType): number => {
-  return course.orders
-    .filter(order => order.user.courseStatus
-      .find(status => status.courseId === course.id)?.status === "waiting")
-    .filter((order, i, self) => i === self.findIndex(({ userId }) => order.user.id === userId))
-    .length
+  return course.courseStatus
+    .filter(stat => stat.status === "waiting" && stat.courseId === course.id)
+    .filter((stat, i, self) => i === self.findIndex(({ userId }) => stat.userId === userId))
+    .length;
 }
 
 export const getLevelWaitingList = (course: CourseType, levelId: string): number => {
-  return course.orders
-    .filter(order => {
-      const courseStatus = order.user.courseStatus.find(status => status.courseId === course.id)
-      if (!courseStatus) return 0
-
-      return courseStatus.status === "waiting" && courseStatus.courseLevelId === levelId
-    })
-    .filter((order, i, self) => i === self.findIndex(({ userId }) => order.user.id === userId))
+  return course.courseStatus
+    .filter(stat => stat.status === "waiting" && stat.courseLevelId === levelId)
+    .filter((stat, i, self) => i === self.findIndex(({ userId }) => stat.userId === userId))
     .length
 }
 
@@ -202,9 +199,20 @@ export const isTimePassed = (testTime: number) => {
   // Calculate the time difference in milliseconds
   const timeDifference = currentTime - testTime;
 
-  // Convert 30 minutes to milliseconds (30 minutes * 60 seconds * 1000 milliseconds)
-  const thirtyMinutesInMilliseconds = 30 * 60 * 1000;
+  // Convert minutes to milliseconds (minutes * 60 seconds * 1000 milliseconds)
+  const thirtyMinutesInMilliseconds = parseInt(env.NEXT_PUBLIC_PLACEMENT_TEST_TIME) * 60 * 1000;
 
-  // Check if the time difference is greater than 30 minutes
+  // Check if the time difference is greater than minutes
   return timeDifference > thirtyMinutesInMilliseconds;
+}
+export const isTimeNow = (testTime: number) => {
+  const currentTime = new Date().getTime();
+  // Calculate the time difference in milliseconds
+  const timeDifference = testTime - currentTime;
+
+  // Convert minutes to milliseconds (minutes * 60 seconds * 1000 milliseconds)
+  const thirtyMinutesInMilliseconds = parseInt(env.NEXT_PUBLIC_PLACEMENT_TEST_TIME) * 60 * 1000;
+
+  // Check if the time difference is less than 30 minutes
+  return timeDifference < thirtyMinutesInMilliseconds;
 }

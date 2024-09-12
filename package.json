@@ -12,7 +12,8 @@
     "db": "cd ./mongodb-cluster && docker compose up --wait",
     "dbprod": "cd ./mongodb-cluster-prod && docker compose up --wait",
     "dep": "git add . & git commit -m \"auto commit\" & git push",
-    "docker": "docker login ghcr.io && docker build . -t ghcr.io/mohamed-magdy-fayed/courses-app:latest && docker push ghcr.io/mohamed-magdy-fayed/courses-app:latest"
+    "docker": "docker login ghcr.io && docker build . -t ghcr.io/mohamed-magdy-fayed/courses-app:latest && docker push ghcr.io/mohamed-magdy-fayed/courses-app:latest",
+    "dockerdb": "docker login ghcr.io && docker build ./mongodb-cluster -t ghcr.io/mohamed-magdy-fayed/courses-app-db:latest && docker push ghcr.io/mohamed-magdy-fayed/courses-app-db:latest"
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",

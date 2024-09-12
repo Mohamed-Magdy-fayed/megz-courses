@@ -8,9 +8,9 @@ const CourseGroupsClient = ({ formattedData }: { formattedData: CourseRow[] }) =
             data={formattedData || []}
             setData={() => { }}
             onDelete={() => { }}
+            dateRange={{ key: "startDate", label: "Start Date" }}
             searches={[
                 { key: "groupNumber", label: "Group name" },
-                { key: "startDate", label: "Start Date" },
             ]}
             filters={[
                 { key: "levelSlug", filterName: "Level", values: formattedData[0]?.levelSlugs || [] },

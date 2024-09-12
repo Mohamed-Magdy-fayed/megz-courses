@@ -34,8 +34,8 @@ export const notesColumns: ColumnDef<NotesColumn>[] = [
         id: "select",
         header: ({ table }) => (
             <Checkbox
-                checked={table.getIsAllPageRowsSelected()}
-                onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                checked={table.getIsAllRowsSelected()}
+                onCheckedChange={(value) => table.toggleAllRowsSelected(!!value)}
                 aria-label="Select all"
             />
         ),

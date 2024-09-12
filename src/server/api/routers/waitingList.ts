@@ -3,6 +3,21 @@ import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 
 export const waitingListRouter = createTRPCRouter({
+    getFullWaitingList: protectedProcedure
+        .query(async ({ ctx }) => {
+            const fullList = await ctx.prisma.courseStatus.findMany({
+                where: {
+                    status: "waiting",
+                },
+                include: {
+                    course: { include: { levels: true, orders: true } },
+                    level: true,
+                    user: true,
+                },
+                orderBy: { createdAt: "asc" }
+            })
+            return { fullList }
+        }),
     addToWaitingList: protectedProcedure
         .input(z.object({
             courseId: z.string(),
@@ -26,7 +41,7 @@ export const waitingListRouter = createTRPCRouter({
             const user = await ctx.prisma.user.findUnique({ where: { id: userId }, include: { courseStatus: true } })
             if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "user not found!" })
 
-            const alreadySubmitted = user.courseStatus.find(s => s.courseId === courseId)
+            const alreadySubmitted = user.courseStatus.find(s => s.courseId === courseId && s.courseLevelId === levelId)
             if (alreadySubmitted) throw new TRPCError({ code: "BAD_REQUEST", message: `Result submitted already! ${alreadySubmitted.status}` })
 
             const course = await ctx.prisma.course.findUnique({ where: { id: courseId } })
@@ -38,7 +53,13 @@ export const waitingListRouter = createTRPCRouter({
                 },
                 data: {
                     courseStatus: {
-                        create: { status: "waiting", course: { connect: { id: courseId } }, level: { connect: { id: levelId } } }
+                        updateMany: {
+                            where: {
+                                courseId,
+                                courseLevelId: levelId,
+                                userId,
+                            }, data: { status: "waiting" }
+                        }
                     }
                 },
                 include: { courseStatus: { include: { level: true } } }

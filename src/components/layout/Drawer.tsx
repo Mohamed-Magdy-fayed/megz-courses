@@ -16,6 +16,10 @@ export const mainNavLinks = [
     url: "dashboard",
   },
   {
+    label: "Waiting List",
+    url: "waiting_list",
+  },
+  {
     label: "Retintions List",
     url: "retintions",
   },

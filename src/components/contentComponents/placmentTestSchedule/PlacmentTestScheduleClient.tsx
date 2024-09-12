@@ -9,6 +9,11 @@ const PlacmentTestScheduleClient = ({ formattedData }: { formattedData: Placment
             data={formattedData || []}
             setData={() => { }}
             onDelete={() => { }}
+            searches={[
+                { key: "studentName", label: "Student Name" },
+                { key: "trainerName", label: "Trainer Name" },
+            ]}
+            dateRange={{ key: "oralTestTiem", label: "Test Time" }}
         />
     );
 };

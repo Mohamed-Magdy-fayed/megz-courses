@@ -15,7 +15,6 @@ import { useRouter } from "next/router";
 import MobileNumberInput from "@/components/ui/phone-number-input";
 import { render } from "@react-email/render";
 import EmailConfirmation from "@/components/emails/EmailConfirmation";
-import { sendZohoEmail } from "@/lib/gmailHelpers";
 
 export const authFormSchema = z.object({
     name: z.string().optional(),

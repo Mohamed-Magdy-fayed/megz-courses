@@ -1,10 +1,35 @@
+import { QueryNotesArgs } from "@/components/ui/DataTable";
 import { validNoteStatus, validNoteTypes } from "@/lib/enumsTypes";
 import {
   createTRPCRouter,
   protectedProcedure,
 } from "@/server/api/trpc";
+import { Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+
+export type FilterParams = {
+  where?: Prisma.UserNoteFindManyArgs['where'];
+  orderBy?: Prisma.UserNoteFindManyArgs['orderBy'];
+  skip?: Prisma.UserNoteFindManyArgs['skip'];
+  take?: Prisma.UserNoteFindManyArgs['take'];
+};
+
+// Define a dynamic schema generator for `where` filters
+const createDynamicSchema = (model: any) => {
+  const schema: any = {};
+  for (const key in model) {
+    if (typeof model[key] === 'string') {
+      schema[key] = z.string().optional();
+    } else if (typeof model[key] === 'number') {
+      schema[key] = z.number().optional();
+    } else if (typeof model[key] === 'boolean') {
+      schema[key] = z.boolean().optional();
+    }
+    // Add more type mappings as needed
+  }
+  return z.object(schema);
+};
 
 export const notesRouter = createTRPCRouter({
   createNote: protectedProcedure
@@ -187,12 +212,21 @@ export const notesRouter = createTRPCRouter({
         notes,
       };
     }),
+  queryAllNotes: protectedProcedure
+    .input(z.any())
+    .query(async ({ ctx, input }) => {
+      const args = input as QueryNotesArgs
+      const notes = await ctx.prisma.userNote.findMany({
+        ...args
+      })
+
+      return {
+        notes,
+      };
+    }),
   getAllNotes: protectedProcedure
     .query(async ({ ctx }) => {
-      const id = ctx.session.user.id
-      const isAdmin = ctx.session.user.userType === "admin"
       const notes = await ctx.prisma.userNote.findMany({
-        where: isAdmin ? undefined : { mentionsUserIds: { has: id } },
         include: {
           createdByUser: true,
           createdForStudent: true,

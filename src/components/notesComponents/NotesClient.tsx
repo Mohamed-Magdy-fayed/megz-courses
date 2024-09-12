@@ -4,14 +4,25 @@ import { api } from "@/lib/api";
 import { validNoteStatus, validNoteTypes } from "@/lib/enumsTypes";
 import { format } from "date-fns";
 import { upperFirst } from "lodash";
-import { useState } from "react";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 
 const NotesClient = () => {
+    const router = useRouter()
+    const userId = router.query.id as string | undefined
     const [notes, setNotes] = useState<NotesColumn[]>([])
 
     const trpcUtils = api.useContext();
-    const { data: notesData, isLoading: isNotesLoading } = api.notes.getAllNotes.useQuery()
+    const { data: notesData, isLoading: isNotesLoading, refetch } = userId ? api.notes.getUserNotes.useQuery({ userId }, {
+        enabled: false
+    }) : api.notes.getAllNotes.useQuery(undefined, {
+        enabled: false
+    })
     const deleteMutation = api.notes.deleteNotes.useMutation()
+
+    useEffect(() => {
+        refetch()
+    }, [])
 
     const formattedNotesData: NotesColumn[] = notesData?.notes ? notesData.notes.map(note => ({
         id: note.id,
@@ -52,10 +63,13 @@ const NotesClient = () => {
             ]}
             filters={[
                 {
-                    filterName: "Created By", key: "createdByUserName", values: [...formattedNotesData?.map(note => ({
-                        label: note.createdByUserName,
-                        value: note.createdByUserName,
-                    })) || []]
+                    filterName: "Created By", key: "createdByUserName", values: [...formattedNotesData
+                        .map(d => d.createdByUserName)
+                        .filter((value, index, self) => self.indexOf(value) === index)
+                        .map(name => ({
+                            label: name,
+                            value: name,
+                        })) || []]
                 },
                 {
                     filterName: "Type", key: "noteType", values: [...validNoteTypes?.map(type => ({

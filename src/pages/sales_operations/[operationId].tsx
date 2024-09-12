@@ -7,7 +7,7 @@ import UserInfoPanel from "@/components/salesOperation/UserInfoPanel";
 import OperationStatus from "@/components/salesOperation/OperationStatus";
 import OrderInfoPanel from "@/components/salesOperation/OrderInfoPanel";
 import CreateOrder from "@/components/salesOperation/CreateOrder";
-import { Calendar, Loader } from "lucide-react";
+import { Calendar, CalendarIcon, Loader } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useSession } from "next-auth/react";
 import Spinner from "@/components/Spinner";
@@ -21,23 +21,27 @@ import { format } from "date-fns";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import StudentForm from "@/components/studentComponents/StudentForm";
+import { Label } from "@/components/ui/label";
+import { TimePicker } from "@/components/ui/TimePicker";
+import CalenderComp from "@/components/ui/calendar"
 
 const OperationPage = () => {
     const router = useRouter()
     const code = router.query.operationId as string
-    const { data: salesOperationData, isLoading, isError } = api.salesOperations.getByCode.useQuery({ code }, { enabled: !!code })
-    const { data: coursesData } = api.courses.getAll.useQuery()
-    const { data: usersData } = api.users.getUsers.useQuery({ userType: "student" })
-    const { data: trainersData } = api.trainers.getTrainers.useQuery()
-
     const [open, setOpen] = useState(false)
     const [testTime, setTestTime] = useState<Date | undefined>(new Date())
     const [trainerId, setTrainerId] = useState<string[]>([])
     const [isScheduleTestOpen, setIsScheduleTestOpen] = useState(false)
+    const [selectTime, setSelectTime] = useState(false)
     const [loading, setLoading] = useState(false)
     const [loadingToast, setLoadingToast] = useState<toastType>()
     const { toastError, toast } = useToast()
     const [isOpen, setIsOpen] = useState(false);
+
+    const { data: salesOperationData, isLoading, isError } = api.salesOperations.getByCode.useQuery({ code }, { enabled: !!code })
+    const { data: coursesData } = api.courses.getAll.useQuery()
+    const { data: usersData } = api.users.getUsers.useQuery({ userType: "student" })
+    const { data: trainersData } = api.trainers.getAvialableTesters.useQuery({ startTime: testTime! }, { enabled: !!testTime })
 
     const session = useSession()
     const trpcUtils = api.useContext()
@@ -162,7 +166,30 @@ const OperationPage = () => {
                 onClose={() => setIsScheduleTestOpen(false)}
                 title="Schedule"
             >
-                <div className="space-y-4">
+                <div className="space-y-4 p-2">
+                    <Button
+                        variant="outline"
+                        customeColor={"foregroundOutlined"}
+                        onClick={() => setSelectTime(!selectTime)}
+                        className={cn('flex flex-wrap items-center h-fit gap-2 justify-start hover:bg-background hover:text-primary hover:border-primary')}
+                    >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {testTime ? format(testTime, "PPPp") : <span>Pick a date</span>}
+                    </Button>
+                    <div className={cn("w-fit space-y-2", selectTime ? "grid" : "hidden")}>
+                        <div className="rounded-md border">
+                            <CalenderComp mode="single" selected={testTime} onSelect={setTestTime} initialFocus />
+                        </div>
+                        <Label htmlFor="hours" className="text-xs">
+                            Time
+                        </Label>
+                        <div className="flex gap-2 items-center">
+                            <TimePicker
+                                date={testTime}
+                                setDate={setTestTime}
+                            />
+                        </div>
+                    </div>
                     <SelectField
                         data={
                             trainersData?.trainers
@@ -177,10 +204,6 @@ const OperationPage = () => {
                         placeholder="Select Tester"
                         setValues={setTrainerId}
                         values={trainerId}
-                    />
-                    <DatePicker
-                        date={testTime}
-                        setDate={setTestTime}
                     />
                     <div>
                         <Button disabled={!!loadingToast} onClick={() => handleSchedulePlacementTest()}>

@@ -88,10 +88,11 @@ export const placementTestsRouter = createTRPCRouter({
 
             const placementTest = await ctx.prisma.placementTest.create({
                 data: {
-                    courseId,
-                    studentUserId: userId,
-                    evaluationFormId,
-                    trainerId,
+                    course: { connect: { id: courseId } },
+                    student: { connect: { id: userId } },
+                    trainer: { connect: { id: trainerId } },
+                    writtenTest: { connect: { id: evaluationFormId } },
+                    createdBy: { connect: { id: ctx.session.user.id } },
                     oralTestMeeting: {
                         meetingNumber,
                         meetingPassword,

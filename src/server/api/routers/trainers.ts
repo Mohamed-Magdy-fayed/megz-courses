@@ -8,6 +8,8 @@ import {
 import bcrypt from "bcrypt";
 import { TRPCError } from "@trpc/server";
 import { validTrainerRoles } from "@/lib/enumsTypes";
+import { addMinutes, subMinutes } from "date-fns";
+import { env } from "@/env.mjs";
 
 export const trainersRouter = createTRPCRouter({
   getTrainers: publicProcedure
@@ -23,6 +25,45 @@ export const trainersRouter = createTRPCRouter({
       });
 
       return { trainers };
+    }),
+  getAvialableTesters: protectedProcedure
+    .input(z.object({
+      startTime: z.date()
+    }))
+    .query(async ({ ctx, input: { startTime } }) => {
+      // Retrieve the env variable and parse it to an integer (test duration in minutes)
+      const placementTestTime = parseInt(env.NEXT_PUBLIC_PLACEMENT_TEST_TIME || "0", 10);
+
+      // Calculate the acceptable time range:
+      // 1. Lower bound: startTime - PLACEMENT_TEST_TIME minutes
+      // 2. Upper bound: startTime + PLACEMENT_TEST_TIME minutes
+      const lowerBoundTime = subMinutes(startTime, placementTestTime);
+      const upperBoundTime = addMinutes(startTime, placementTestTime);
+
+      const trainers = await ctx.prisma.trainer.findMany({
+        where: {
+          role: "tester",
+          assignedTests: {
+            none: {
+              // Ensure that no test overlaps with the given startTime, considering PLACEMENT_TEST_TIME in minutes
+              oralTestTime: {
+                gte: lowerBoundTime, // No test starting after this time (margin before startTime)
+                lte: upperBoundTime, // No test ending after this time (margin after startTime)
+              }
+            }
+          }
+        },
+        orderBy: {
+          id: "desc"
+        },
+        include: {
+          user: true,
+          groups: true,
+        },
+      });
+
+      return { trainers };
+
     }),
   getTrainerById: protectedProcedure
     .input(
@@ -58,7 +99,7 @@ export const trainersRouter = createTRPCRouter({
 
       const sessions = await ctx.prisma.zoomSession.findMany({
         where: { zoomGroup: { trainerId: trainer.id } },
-        orderBy: { sessionDate: "asc" },
+        orderBy: { sessionDate: "desc" },
         include: {
           zoomGroup: { include: { trainer: { include: { user: true } } } },
           materialItem: true

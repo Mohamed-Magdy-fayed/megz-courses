@@ -17,7 +17,6 @@ import { useToast } from '../ui/use-toast'
 import LoginModal from '../modals/LoginModal'
 import { render } from '@react-email/render'
 import Email from '@/components/emails/Email'
-import { sendZohoEmail } from '@/lib/gmailHelpers'
 
 interface EnrollmentModalProps {
     setOpen: Dispatch<SetStateAction<boolean>>

@@ -35,14 +35,14 @@ export const DatePicker: FC<DatePickerProps> = ({ date, setDate, className, ...p
             </PopoverTrigger>
             <PopoverContent
                 align="start"
-                collisionPadding={{ bottom: 30 }}
-                className="flex w-auto flex-col space-y-2 p-2 bg-background translate-y-20"
+                alignOffset={20}
+                className="flex w-auto flex-col space-y-2 p-2 bg-background translate-y-0"
             >
                 <div className="rounded-md border">
                     <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />
                 </div>
                 <Label htmlFor="hours" className="text-xs">
-                    Group Time
+                    Time
                 </Label>
                 <div className="flex gap-2 items-center">
                     <TimePicker

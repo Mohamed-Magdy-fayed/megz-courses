@@ -13,6 +13,7 @@ import Spinner from "@/components/Spinner";
 import { sendWhatsAppMessage } from "@/lib/whatsApp";
 import { env } from "@/env.mjs";
 import { SeverityPill } from "@/components/overview/SeverityPill";
+import { format } from "date-fns";
 
 export type SessionColumn = {
   id: string;
@@ -25,7 +26,8 @@ export type SessionColumn = {
   meetingNumber: string;
   meetingPassword: string;
   isSessionOngoing: boolean;
-  sessionDate: string;
+  sessionName: string;
+  sessionDate: Date;
   createdAt: string;
 };
 
@@ -50,7 +52,7 @@ export const columns: ColumnDef<SessionColumn>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "isSessionOngoing",
+    accessorKey: "sessionName",
     header: ({ column }) => {
       return (
         <div className="flex items-center justify-between">
@@ -77,7 +79,7 @@ export const columns: ColumnDef<SessionColumn>[] = [
     accessorKey: "sessionDate",
     header: "Session Time",
     cell: ({ row }) => (
-      <Typography>{row.original.sessionDate}</Typography>
+      <Typography>{format(row.original.sessionDate, "PPPp")}</Typography>
     ),
   },
   {

@@ -17,6 +17,7 @@ import {
 import { Typography } from "../ui/Typoghraphy";
 import { toastType, useToast } from "../ui/use-toast";
 import ImageUploader from "../ui/ImageUploader";
+import MobileNumberInput from "@/components/ui/phone-number-input";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name can't be empty"),
@@ -87,9 +88,9 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen, initialData }) => 
       variant: "destructive",
     }),
     onSettled: () => {
-            loadingToast?.dismissAfter()
-            setLoadingToast(undefined)
-        }
+      loadingToast?.dismissAfter()
+      setLoadingToast(undefined)
+    }
   });
   const trpcUtils = api.useContext();
 
@@ -187,12 +188,10 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen, initialData }) => 
                 <FormItem>
                   <FormLabel>Phone</FormLabel>
                   <FormControl>
-                    <Input
-                      type="tel"
-                      disabled={!!loadingToast}
+                    <MobileNumberInput
                       placeholder="01234567899"
-                      {...field}
-                      className="pl-8"
+                      value={field.value || ""}
+                      setValue={(val) => field.onChange(val)}
                     />
                   </FormControl>
                 </FormItem>
