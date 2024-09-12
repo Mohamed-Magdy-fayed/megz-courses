@@ -23,6 +23,7 @@ const RetintionsClient = () => {
     address: user.address ? getAddress(user.address) : "no address",
     userData: { user },
     latestCourse: user.courseStatus.sort((a, b) => a.updatedAt.getTime() - b.updatedAt.getTime()).map(status => status.course.name)[0] || "No course!",
+    latestLevel: user.courseStatus.sort((a, b) => a.updatedAt.getTime() - b.updatedAt.getTime()).map(status => status.level?.name)[0] || "No level!",
     createdAt: user.createdAt,
   })) || [];
 
@@ -60,6 +61,15 @@ const RetintionsClient = () => {
         {
           key: "latestCourse", filterName: "Latest Course", values: formattedData
             .map(d => d.latestCourse)
+            .filter((value, index, self) => self.indexOf(value) === index)
+            .map(val => ({
+              label: val,
+              value: val,
+            }))
+        },
+        {
+          key: "latestLevel", filterName: "Latest Level", values: formattedData
+            .map(d => d.latestLevel)
             .filter((value, index, self) => self.indexOf(value) === index)
             .map(val => ({
               label: val,

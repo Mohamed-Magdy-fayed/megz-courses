@@ -15,6 +15,7 @@ export type RetintionsRow = {
   phone?: string;
   address?: string;
   latestCourse: string;
+  latestLevel: string;
   userData: {
     user: User & { courseStatus: CourseStatus[] }
   }
@@ -70,6 +71,10 @@ export const columns: ColumnDef<RetintionsRow>[] = [
   {
     accessorKey: "latestCourse",
     header: "Latest Course",
+  },
+  {
+    accessorKey: "latestLevel",
+    header: "Latest Level",
   },
   {
     accessorKey: "phone",

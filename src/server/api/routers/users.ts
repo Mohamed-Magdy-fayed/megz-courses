@@ -77,7 +77,7 @@ export const usersRouter = createTRPCRouter({
           orders: true,
           zoomGroups: { include: { zoomSessions: true } },
           evaluationFormSubmissions: true,
-          courseStatus: { include: { course: true } },
+          courseStatus: { include: { course: true, level: true } },
         },
       });
 

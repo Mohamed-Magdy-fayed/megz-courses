@@ -6,12 +6,19 @@ import { LearningBreadcrumb } from '@/components/LearningLayout/LearningBreadcru
 import Image from 'next/image'
 import { SiteIdentity } from '@prisma/client'
 import { LogoPrimary } from '@/components/layout/Logo'
+import { useSession } from 'next-auth/react'
+import { formatPercentage } from '@/lib/utils'
 
 const LandingFooter = ({ course, level, siteIdentity }: {
     level?: LearningLayoutLevelType;
     course: LearningLayoutCourseType;
     siteIdentity?: SiteIdentity;
 }) => {
+    const { data } = useSession()
+
+    const zoomGroup = course.zoomGroups.find(g => g.studentIds.includes(data?.user.id!) && g.courseId === course.id && g.courseLevelId === level?.id)
+    const progress = zoomGroup?.zoomSessions.filter(session => session.sessionStatus === "completed").length! / zoomGroup?.zoomSessions.length! * 100
+
     if (!course) return <Typography>No Course Found!</Typography>;
 
     return (
@@ -29,7 +36,10 @@ const LandingFooter = ({ course, level, siteIdentity }: {
                     <div className='col-span-12 md:col-span-6 flex flex-col gap-4 p-4'>
                         <div className='flex items-center gap-4'>
                             <Typography>Progress</Typography>
-                            <Progress value={50} />
+                            <Typography>{formatPercentage(progress)}</Typography>
+                            {data?.user.id && level?.id && (
+                                <Progress value={progress} />
+                            )}
                         </div>
                         <div className='flex items-center justify-center gap-4'>
                             {!!level && <LearningBreadcrumb course={course} level={level} />}
