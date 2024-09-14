@@ -12,61 +12,99 @@ export const googleAccountsRouter = createTRPCRouter({
             const googleAccounts = await ctx.prisma.googleClient.findMany()
             return { googleAccounts }
         }),
-    // getGoogleForm: protectedProcedure
-    //     .input(z.object({
-    //         url: z.string()
-    //     }))
-    //     .mutation(async ({ ctx, input: { url } }) => {
+    getGoogleForm: protectedProcedure
+        .input(z.object({
+            url: z.string()
+        }))
+        .mutation(async ({ ctx, input: { url } }) => {
+            function getFormIdFromUrl(url: string) {
+                const match = url.match(/\/d\/([a-zA-Z0-9_-]+)\//);
+                return match ? match[1] : undefined;
+            }
 
-    //         function getFormIdFromUrl(url: string) {
-    //             const match = url.match(/\/d\/([a-zA-Z0-9_-]+)\//);
-    //             return match ? match[1] : undefined;
-    //         }
+            const googleClient = await ctx.prisma.googleClient.findMany({ orderBy: { id: "desc" }, take: 1 })
+            if (!googleClient[0]) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Google client not found" })
+            if (!googleClient[0].accessToken) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No access token" })
 
-    //         const googleClient = await ctx.prisma.googleClient.findMany({ orderBy: { id: "desc" }, take: 1 })
-    //         if (!googleClient[0]) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Google client not found" })
-    //         if (!googleClient[0].accessToken) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No access token" })
+            const oauth2Client = new google.auth.OAuth2(
+                process.env.GOOGLE_CLIENT_ID,
+                process.env.GOOGLE_CLIENT_SECRET,
+                process.env.GOOGLE_REDIRECT_URI
+            );
 
-    //         const oauth2Client = new google.auth.OAuth2(
-    //             process.env.GOOGLE_CLIENT_ID,
-    //             process.env.GOOGLE_CLIENT_SECRET,
-    //             process.env.GOOGLE_REDIRECT_URI
-    //         );
+            oauth2Client.setCredentials({
+                access_token: googleClient[0].accessToken,
+                refresh_token: googleClient[0].refreshToken,
+            });
 
-    //         oauth2Client.setCredentials({
-    //             access_token: googleClient[0].accessToken,
-    //             refresh_token: googleClient[0].refreshToken,
-    //         });
+            // Check if the token has expired and refresh it if necessary
+            if (googleClient[0].expiryDate && googleClient[0].expiryDate < Date.now()) {
+                try {
+                    const tokens = await oauth2Client.refreshAccessToken();
+                    const newTokens = tokens.credentials;
 
-    //         // Check if the token has expired and refresh it if necessary
-    //         if (googleClient[0].expiryDate && googleClient[0].expiryDate < Date.now()) {
-    //             try {
-    //                 const tokens = await oauth2Client.refreshAccessToken();
-    //                 const newTokens = tokens.credentials;
+                    // Update the tokens in the database
+                    await ctx.prisma.googleClient.update({
+                        where: { id: googleClient[0].id },
+                        data: {
+                            accessToken: newTokens.access_token,
+                            expiryDate: newTokens.expiry_date,
+                            idToken: newTokens.id_token,
+                            refreshToken: newTokens.refresh_token,
+                            scope: newTokens.scope,
+                        },
+                    });
 
-    //                 // Update the tokens in the database
-    //                 await ctx.prisma.googleClient.update({
-    //                     where: { id: googleClient[0].id },
-    //                     data: {
-    //                         accessToken: newTokens.access_token,
-    //                         expiryDate: newTokens.expiry_date,
-    //                         idToken: newTokens.id_token,
-    //                         refreshToken: newTokens.refresh_token,
-    //                         scope: newTokens.scope,
-    //                     },
-    //                 });
+                    oauth2Client.setCredentials(newTokens);
+                } catch (error) {
+                    throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Failed to refresh access token: ${error}` });
+                }
+            }
 
-    //                 oauth2Client.setCredentials(newTokens);
-    //             } catch (error) {
-    //                 throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Failed to refresh access token: ${error}` });
-    //             }
-    //         }
+            const forms: forms_v1.Forms = google.forms({ version: 'v1', auth: oauth2Client });
+            const form = (await forms.forms.get({ formId: getFormIdFromUrl(url) })).data
 
-    //         const forms: forms_v1.Forms = google.forms({ version: 'v1', auth: oauth2Client });
+            const responses = (await forms.forms.responses.list({ formId: getFormIdFromUrl(url) })).data.responses?.map(res => {
 
-    //         const data = await forms.forms.get({ formId: getFormIdFromUrl(url) })
-    //         return { data };
-    //     }),
+                return {
+                    responseId: res.responseId,
+                    formId: res.formId,
+                    userEmail: res.respondentEmail,
+                    totalScore: res.totalScore,
+                    answers: res.answers,
+                    createdAt: res.createTime,
+                }
+            })
+
+            const formRespondUrl = form.responderUri
+            const formId = form.formId
+            const title = form.info?.title
+            const questions = form.items?.map(i => {
+                const questionText = i.title
+                const questionImage = i.questionItem?.image
+                const questionPoints = i.questionItem?.question?.grading?.pointValue
+                const questionOptions = i.questionItem?.question?.choiceQuestion?.options
+                const correctAnswers = i.questionItem?.question?.grading?.correctAnswers?.answers
+
+                return ({
+                    questionText,
+                    questionImage,
+                    questionPoints,
+                    questionOptions,
+                    correctAnswers,
+                })
+            })
+
+            
+
+            return {
+                responses,
+                formRespondUrl,
+                formId,
+                title,
+                questions,
+            };
+        }),
     deleteGoogleAccounts: protectedProcedure
         .input(z.object({
             ids: z.array(z.string()),

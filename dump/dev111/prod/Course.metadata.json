@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"slug":{"$numberInt":"1"}},"name":"Course_slug_key","unique":true}],"uuid":"e8b11b7f474c41019b05d01af6ef356d","collectionName":"Course","type":"collection"}

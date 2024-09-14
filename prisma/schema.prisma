@@ -234,24 +234,50 @@ type EvaluationFormHistory {
     updatedAt DateTime
 }
 
+type GoogleOption {
+    value String
+}
+
+type GoogleAnswer {
+    value String
+}
+
+model GoogleFormQuestion {
+    id               String         @id @default(auto()) @map("_id") @db.ObjectId
+    questionText     String
+    questionImage    String
+    questionPoints   Int
+    questionOptions  GoogleOption[]
+    correctAnswers   GoogleAnswer[]
+    evaluationForm   EvaluationForm @relation(fields: [evaluationFormId], references: [id])
+    evaluationFormId String         @db.ObjectId
+    updatedAt        DateTime       @updatedAt
+    createdAt        DateTime       @default(now())
+}
+
 model EvaluationForm {
-    id             String                     @id @default(auto()) @map("_id") @db.ObjectId
-    type           EvaluationFormTypes
-    totalPoints    Int
-    externalLink   String?
-    courseLevel    CourseLevel?               @relation(fields: [courseLevelId], references: [id], onDelete: Cascade)
-    courseLevelId  String?                    @db.ObjectId
-    placementTests PlacementTest[]
-    submissions    EvaluationFormSubmission[]
-    questions      EvaluationFormQuestion[]
-    updateHistory  EvaluationFormHistory[]
-    materialItem   MaterialItem?              @relation(fields: [materialItemId], references: [id], onDelete: Cascade)
-    materialItemId String?                    @db.ObjectId
-    course         Course?                    @relation(fields: [courseId], references: [id], onDelete: Cascade)
-    courseId       String?                    @db.ObjectId
-    createdBy      String
-    updatedAt      DateTime                   @updatedAt
-    createdAt      DateTime                   @default(now())
+    id              String                     @id @default(auto()) @map("_id") @db.ObjectId
+    type            EvaluationFormTypes
+    totalPoints     Int
+    externalLink    String?
+    responses       String?
+    formRespondUrl  String?
+    formId          String?
+    title           String?
+    googleQuestions GoogleFormQuestion[]
+    courseLevel     CourseLevel?               @relation(fields: [courseLevelId], references: [id], onDelete: Cascade)
+    courseLevelId   String?                    @db.ObjectId
+    placementTests  PlacementTest[]
+    submissions     EvaluationFormSubmission[]
+    questions       EvaluationFormQuestion[]
+    updateHistory   EvaluationFormHistory[]
+    materialItem    MaterialItem?              @relation(fields: [materialItemId], references: [id], onDelete: Cascade)
+    materialItemId  String?                    @db.ObjectId
+    course          Course?                    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+    courseId        String?                    @db.ObjectId
+    createdBy       String
+    updatedAt       DateTime                   @updatedAt
+    createdAt       DateTime                   @default(now())
 }
 
 type MaterialItemManual {

@@ -48,19 +48,7 @@ export const columns: ColumnDef<CourseRow>[] = [
     },
     {
         accessorKey: "name",
-        header: ({ column }) => {
-            return (
-                <div className="flex items-center justify-between">
-                    Info
-                    <Button
-                        className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        <ArrowUpDown className="h-4 w-4 text-primary" />
-                    </Button>
-                </div>
-            );
-        },
+        header: "Info",
         cell: ({ row }) => (
             <Link className="block w-fit" href={`/content/courses/${row.original.slug}`}>
                 <div className="flex items-center gap-2" >
@@ -132,24 +120,18 @@ export const columns: ColumnDef<CourseRow>[] = [
     },
     {
         accessorKey: "createdAt",
-        header: ({ column }) => {
-            return (
-                <div className="flex items-center justify-between">
-                    Created on
-                    <Button
-                        className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        <ArrowUpDown className="h-4 w-4 text-primary" />
-                    </Button>
-                </div>
-            );
-        },
+        header: "Created on",
         cell: ({ row }) => {
             return (
                 <>{format(row.original.createdAt, "dd MMM yyyy")}</>
             )
-        }
+        },
+        filterFn: (row, columnId, filterValue) => {
+            const val = row.original.createdAt
+            const startDate = new Date(filterValue.split("|")[0])
+            const endDate = new Date(filterValue.split("|")[1])
+            return val.getTime() >= startDate.getTime() && val.getTime() <= endDate.getTime()
+        },
     },
     {
         accessorKey: "slug",

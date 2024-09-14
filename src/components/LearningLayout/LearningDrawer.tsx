@@ -29,7 +29,7 @@ export default function LearningDrawer({ level, course, user, siteIdentity }: {
   if (!course) return <Typography>No Course Found!</Typography>;
 
   return (
-    <div className="sticky left-0 top-0 flex items-center h-screen flex-col gap-4 overflow-auto bg-primary-foreground text-foreground p-4">
+    <div className="sticky left-0 top-0 flex items-center h-screen flex-col gap-4 overflow-auto bg-foreground text-background p-4">
       {siteIdentity?.logoPrimary ? (
         <Image src={siteIdentity.logoPrimary} height={1000} width={1000} alt="Logo" className='w-24 rounded-full' />
       ) : (
@@ -84,7 +84,7 @@ export default function LearningDrawer({ level, course, user, siteIdentity }: {
                             <Link
                               className={cn(
                                 "flex items-center justify-between gap-2 whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-primary hover:text-primary-foreground",
-                                zoomSession?.sessionStatus === "scheduled" && "pointer-events-none text-primary/30",
+                                zoomSession?.sessionStatus === "scheduled" && "pointer-events-none text-muted",
                               )}
                               href={`/my_courses/${course.slug}/${level.slug}/quiz/${item.slug}`}
                               onClick={() => {
@@ -99,7 +99,7 @@ export default function LearningDrawer({ level, course, user, siteIdentity }: {
                             <Link
                               className={cn(
                                 "flex items-center justify-between gap-2 whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-primary hover:text-primary-foreground",
-                                (zoomSession?.sessionStatus && ["starting", "scheduled"].includes(zoomSession.sessionStatus)) && "pointer-events-none text-primary/30",
+                                (zoomSession?.sessionStatus && ["starting", "scheduled"].includes(zoomSession.sessionStatus)) && "pointer-events-none text-muted",
                               )}
                               href={`/my_courses/${course.slug}/${level.slug}/session/${item.slug}`}
                               onClick={() => {
@@ -114,7 +114,7 @@ export default function LearningDrawer({ level, course, user, siteIdentity }: {
                             <Link
                               className={cn(
                                 "flex items-center justify-between gap-2 whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-primary hover:text-primary-foreground",
-                                zoomSession?.sessionStatus !== "completed" && "pointer-events-none text-primary/30",
+                                zoomSession?.sessionStatus !== "completed" && "pointer-events-none text-muted",
                               )}
                               href={`/my_courses/${course.slug}/${level.slug}/assignment/${item.slug}`}
                               onClick={() => {
@@ -142,7 +142,7 @@ export default function LearningDrawer({ level, course, user, siteIdentity }: {
                         <Link
                           className={cn(
                             "flex items-center justify-between gap-2 whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-primary hover:text-primary-foreground",
-                            !user.zoomGroups.some(group => group.courseId === course.id && group.zoomSessions.every(session => session.sessionStatus === "completed")) && "pointer-events-none text-primary/30"
+                            !user.zoomGroups.some(group => group.courseId === course.id && group.zoomSessions.every(session => session.sessionStatus === "completed")) && "pointer-events-none text-muted"
                           )}
                           onClick={() => {
                             navStore.closeNav();
@@ -158,7 +158,7 @@ export default function LearningDrawer({ level, course, user, siteIdentity }: {
                           className={
                             cn(
                               "flex items-center justify-between gap-2 whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-primary hover:text-primary-foreground",
-                              !user.certificates.find(cert => cert.courseLevel?.slug === level?.slug)?.id && "pointer-events-none text-primary/30",
+                              !user.certificates.find(cert => cert.courseLevel?.slug === level?.slug)?.id && "pointer-events-none text-muted",
                             )
                           }
                           href={`/my_courses/${course.slug}/${level.slug}/certificate`}

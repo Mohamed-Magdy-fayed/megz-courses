@@ -12,6 +12,8 @@
     "db": "cd ./mongodb-cluster && docker compose up --wait",
     "dbprod": "cd ./mongodb-cluster-prod && docker compose up --wait",
     "dep": "git add . & git commit -m \"auto commit\" & git push",
+    "local-to-cloud": "mongodump --uri=\"mongodb://mongo1:27017/dev111\" --out=./dump && mongorestore --uri=\"mongodb://megz:megz@ac-ojzympx-shard-00-00.qilsmnc.mongodb.net:27017,ac-ojzympx-shard-00-01.qilsmnc.mongodb.net:27017,ac-ojzympx-shard-00-02.qilsmnc.mongodb.net:27017/prod?ssl=true&replicaSet=atlas-ud3hsu-shard-0&authSource=admin&retryWrites=true&w=majority\" ./dump/dev111",
+    "cloud-to-local": "mongodump --uri=\"mongodb://megz:megz@ac-ojzympx-shard-00-00.qilsmnc.mongodb.net:27017,ac-ojzympx-shard-00-01.qilsmnc.mongodb.net:27017,ac-ojzympx-shard-00-02.qilsmnc.mongodb.net:27017/prod?ssl=true&replicaSet=atlas-ud3hsu-shard-0&authSource=admin&retryWrites=true&w=majority\" --out=./dump/dev111 && mongorestore --uri=\"mongodb://mongo1:27017/dev111\" ./dump",
     "docker": "docker login ghcr.io && docker build . -t ghcr.io/mohamed-magdy-fayed/courses-app:latest && docker push ghcr.io/mohamed-magdy-fayed/courses-app:latest",
     "dockerdb": "docker login ghcr.io && docker build ./mongodb-cluster -t ghcr.io/mohamed-magdy-fayed/courses-app-db:latest && docker push ghcr.io/mohamed-magdy-fayed/courses-app-db:latest"
   },

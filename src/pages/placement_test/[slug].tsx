@@ -10,7 +10,7 @@ import { toastType, useToast } from "@/components/ui/use-toast"
 import { env } from "@/env.mjs"
 import { api } from "@/lib/api"
 import { getInitials } from "@/lib/getInitials"
-import { cn, formatPercentage } from "@/lib/utils"
+import { cn, formatPercentage, isTimePassed } from "@/lib/utils"
 import { EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, Option } from "@prisma/client"
 import { format, subHours } from "date-fns"
 import { CheckSquare } from "lucide-react"
@@ -74,7 +74,8 @@ const CoursePlacementTestPage = () => {
         },
     })
 
-    const isOralTestTimePassed = (scheduleData?.placementTest?.oralTestTime.getDay() || 32) < new Date().getDay()
+    const isOralTestTimePassed = isTimePassed(scheduleData?.placementTest?.oralTestTime.getTime() || new Date().getTime())
+    const writtenTest = data?.course?.evaluationForms.find(form => form.type === "placementTest")
 
     const [open, setOpen] = useState<boolean>(false)
     const [submittedAlready, setSubmittedAlready] = useState<boolean>(false)
@@ -104,12 +105,12 @@ const CoursePlacementTestPage = () => {
 
     const handleSubmit = () => {
         console.log(answers)
-        data?.course?.evaluationForms.find(form => form.type === "placementTest")?.questions.map(question => {
+        writtenTest?.questions.map(question => {
             question.type === "multipleChoice" && console.log(answers.find(answer => answer.id === question.id)?.answer === question.options.find(option => option.isCorrect)?.text ? `question ${question.questionText} is Correct` : `question ${question.questionText} is NOT Correct`);
             question.type === "trueFalse" && console.log(answers.find(answer => answer.id === question.id)?.answer === (question.options.find(option => option.isCorrect)?.isTrue ? "true" : "false") ? `question ${question.questionText} is Correct` : `question ${question.questionText} is NOT Correct`);
         })
 
-        const evaluationFormId = data?.course?.evaluationForms.find(form => form.type === "placementTest")?.id
+        const evaluationFormId = writtenTest?.id
         if (!evaluationFormId) return toastError("form id not existing!")
 
         createSubmissionMutation.mutate({
@@ -179,7 +180,7 @@ const CoursePlacementTestPage = () => {
                     <CardFooter>
                         {scheduleData?.placementTest?.student.courseStatus.some(({ course }) => course.slug === slug) ? (
                             <Typography>
-                                Oral Test Result: {scheduleData?.placementTest?.student.courseStatus.find(({ course }) => course.slug === slug)?.level?.name}
+                                Oral Test Result: <span className="text-primary">{scheduleData?.placementTest?.student.courseStatus.find(({ course }) => course.slug === slug)?.level?.name}</span>
                             </Typography>
                         ) : (
                             <Link target="_blank" href={`/meeting/?mn=${scheduleData?.placementTest?.oralTestMeeting.meetingNumber}&pwd=${scheduleData?.placementTest?.oralTestMeeting.meetingPassword}&session_title=Placement_Test&leave_url=${env.NEXT_PUBLIC_NEXTAUTH_URL}placement_test/${scheduleData?.placementTest?.course.slug}`}>
@@ -193,7 +194,7 @@ const CoursePlacementTestPage = () => {
                         <Typography variant={"secondary"}>{data?.course?.name} Course Placement Test</Typography>
                     </CardHeader>
                     <CardContent>
-                        {data?.course?.evaluationForms.find(form => form.type === "placementTest")?.questions.map((question, i) => (
+                        {writtenTest?.questions.map((question, i) => (
                             <QuestionComponent
                                 key={question.id}
                                 question={question}
@@ -209,7 +210,19 @@ const CoursePlacementTestPage = () => {
                             ? (
                                 <Typography>Submitted Already - {formatPercentage(submission?.rating! / evaluationForm?.totalPoints! * 100)}</Typography>
                             )
-                            : (
+                            : writtenTest?.externalLink ? (
+                                <Button
+                                    type="button"
+                                    className="relative"
+                                    disabled={loading}
+                                    onClick={() => window.open(writtenTest.externalLink!, "_blank")}
+                                >
+                                    {loading && <Spinner className="w-4 h-4 mr-2" />}
+                                    <Typography>
+                                        {loading ? "Loading..." : "Go to form"}
+                                    </Typography>
+                                </Button>
+                            ) : (
                                 <Button
                                     type="button"
                                     className="relative"

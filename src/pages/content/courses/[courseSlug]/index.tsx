@@ -202,7 +202,7 @@ const CoursePage = () => {
                         <TabsContent value="waiting_list">
                             <WaitingListTabContent
                                 formattedData={data?.course.courseStatus ? data?.course.courseStatus
-                                    .filter(({ status }) => status === "waiting")
+                                    .filter(({ status, courseId }) => status === "waiting" && data.course?.id === courseId)
                                     .map(({ courseId, level, user: {
                                         id,
                                         name,

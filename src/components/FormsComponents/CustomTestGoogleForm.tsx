@@ -108,6 +108,8 @@ const CustomTestGoogleForm: FC<{
         },
     })
 
+    const asd = api.googleAccounts.getGoogleForm.useMutation()
+
     const onSubmit: SubmitHandler<TestGoogleFormValues> = ({ url }) => {
         if (!type) return toast({
             title: "Error",

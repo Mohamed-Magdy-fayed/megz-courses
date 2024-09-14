@@ -34,6 +34,7 @@ import router from "next/router";
 import Modal from "@/components/ui/modal";
 import { api } from "@/lib/api";
 import { Prisma } from "@prisma/client";
+import { useSession } from "next-auth/react";
 
 type Cursor = Prisma.UserNoteFindManyArgs["cursor"]
 type Distinct = Prisma.UserNoteFindManyArgs["distinct"]
@@ -177,6 +178,8 @@ export function DataTable<TData, TValue>({
   //   };
   // };
 
+  const { data: sessionData } = useSession()
+
   return (
     <div className="w-full">
       {/* {table.getCoreRowModel().rows.length !== 0 && (
@@ -215,29 +218,31 @@ export function DataTable<TData, TValue>({
         loading={loading}
       />}
       <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-8">
-          <Typography>Total records {table.getCoreRowModel().rows.length}</Typography>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant={"icon"} customeColor={"mutedIcon"} onClick={() => setIsExportOpen(true)}>
-                <DownloadCloud className="text-primary" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              Export
-            </TooltipContent>
-          </Tooltip>
-          <Modal
-            title="Export Data"
-            description="Select what you need to export"
-            isOpen={isExportOpen}
-            onClose={() => setIsExportOpen(false)}
-            children={"Coming soon"}
-          />
-        </div>
+        {sessionData?.user.userType !== "student" && (
+          <div className="flex items-center gap-8">
+            <Typography>Total records {table.getCoreRowModel().rows.length}</Typography>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant={"icon"} customeColor={"mutedIcon"} onClick={() => setIsExportOpen(true)}>
+                  <DownloadCloud className="text-primary" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                Export
+              </TooltipContent>
+            </Tooltip>
+            <Modal
+              title="Export Data"
+              description="Select what you need to export"
+              isOpen={isExportOpen}
+              onClose={() => setIsExportOpen(false)}
+              children={"Coming soon"}
+            />
+          </div>
+        )}
         <div className="flex flex-col gap-2 justify-center">
           <div className="flex items-center justify-between gap-2">
-            {table.getPageCount() === 1 ? (
+            {table.getPageCount() === 0 ? null : table.getPageCount() === 1 ? (
               <Typography>Only 1 Page</Typography>
             ) : (
               <div className="flex items-center gap-2 justify-center w-full">
@@ -279,7 +284,7 @@ export function DataTable<TData, TValue>({
             <Button
               className="bg-primary h-4 w-8 p-0"
               onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-              disabled={pagination.pageIndex === table.getPageCount() - 1}
+              disabled={!table.getCanNextPage()}
             >
               <ChevronsRight className="w-4" />
             </Button>

@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import CourseForm from "@/components/contentComponents/courses/CourseForm";
 import CoursesClient from "@/components/contentComponents/courses/CoursesClient";
-import Spinner from "@/components/Spinner";
 import Modal from "@/components/ui/modal";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 

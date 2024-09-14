@@ -23,11 +23,13 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { AlertModal } from "@/components/modals/AlertModal";
+import GoogleAccountsClient from "@/components/googleAccount/GoogleAccountsClient";
+import GoogleAccountForm from "@/components/googleAccount/GoogleAccountForm";
 
 const tabs = [
     { value: "site_identity", label: "Site Identity" },
     { value: "zoom_accounts", label: "Zoom Accounts" },
-    // { value: "facebook", label: "Facebook Configuration" },
+    { value: "google_accounts", label: "Google Accounts" },
     { value: "sales_channels", label: "Sales Channels" },
 ]
 
@@ -35,6 +37,7 @@ const ConfigPage: NextPage = () => {
     const router = useRouter();
 
     const [isZoomOpen, setIsZoomOpen] = useState(false)
+    const [isGoogleOpen, setIsGoogleOpen] = useState(false)
 
     const { data, refetch } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: false })
 
@@ -50,6 +53,15 @@ const ConfigPage: NextPage = () => {
                 onClose={() => setIsZoomOpen(false)}
                 children={(
                     <ZoomAccountForm setIsOpen={setIsZoomOpen} />
+                )}
+            />
+            <Modal
+                description=""
+                title="Add a google account"
+                isOpen={isGoogleOpen}
+                onClose={() => setIsGoogleOpen(false)}
+                children={(
+                    <GoogleAccountForm setIsOpen={setIsGoogleOpen} />
                 )}
             />
             <Tabs className="w-full" id="config" defaultValue={"site_identity"}>
@@ -74,6 +86,20 @@ const ConfigPage: NextPage = () => {
                         </div>
                         <PaperContainer>
                             <ZoomAccountsClient />
+                        </PaperContainer>
+                    </div>
+                </TabsContent>
+                <TabsContent value="google_accounts">
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between w-full">
+                            <ConceptTitle>Google Accounts</ConceptTitle>
+                            <Button onClick={() => setIsGoogleOpen(true)} >
+                                <PlusSquare className="w-4 h-4 mr-2" />
+                                Add an account
+                            </Button>
+                        </div>
+                        <PaperContainer>
+                            <GoogleAccountsClient />
                         </PaperContainer>
                     </div>
                 </TabsContent>
