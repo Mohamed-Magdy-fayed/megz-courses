@@ -2,7 +2,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Typography } from "@/components/ui/Typoghraphy";
 import ActionCell from "./QuizzesActionCell";
-import { EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, MaterialItem } from "@prisma/client";
+import { EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, GoogleForm, GoogleFormQuestion, MaterialItem } from "@prisma/client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
@@ -17,16 +17,18 @@ export type QuizRow = {
     questions: number,
     submissions: number,
     totalPoints: number,
-    externalLink: string | null,
-    hasExternalLink: "true" | "false",
+    isGoogleForm: "true" | "false",
     evalForm: EvaluationForm & {
         materialItem: MaterialItem | null;
         submissions: EvaluationFormSubmission[];
         questions: EvaluationFormQuestion[];
+        googleForm?: GoogleForm & {
+            googleFormQuestions: GoogleFormQuestion[]
+        } | null;
     },
     createdBy: string,
     createdAt: Date,
-    updatedAt: string,
+    updatedAt: Date,
 };
 
 export const columns: ColumnDef<QuizRow>[] = [
@@ -54,15 +56,15 @@ export const columns: ColumnDef<QuizRow>[] = [
         header: "Material Item Title"
     },
     {
-        accessorKey: "hasExternalLink",
+        accessorKey: "isGoogleForm",
         header: "Google Form",
-        cell: ({ row }) => !!row.original.externalLink && (
-            <Link href={row.original.externalLink} target="_blank">
+        cell: ({ row }) => !!row.original.evalForm.googleForm?.formRespondUrl ? (
+            <Link href={row.original.evalForm.googleForm?.formRespondUrl} target="_blank">
                 <Button variant={"icon"} customeColor={"infoIcon"}>
                     <ExternalLink className="w-4 h-4" />
                 </Button>
             </Link>
-        )
+        ) : "No externak link"
     },
     {
         accessorKey: "questions",

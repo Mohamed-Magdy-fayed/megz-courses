@@ -15,20 +15,24 @@ import {
 import { Dispatch, FC, SetStateAction, useState } from "react";
 import { api } from "@/lib/api";
 import { useRouter } from "next/router";
-import { EvaluationForm, EvaluationFormQuestion, EvaluationFormTypes, MaterialItem } from "@prisma/client";
+import { EvaluationForm, EvaluationFormQuestion, EvaluationFormTypes, GoogleForm, GoogleFormQuestion, MaterialItem } from "@prisma/client";
 import { toastType, useToast } from "../ui/use-toast";
 import SelectField from "@/components/salesOperation/SelectField";
 
 const TestGoogleFormSchema = z.object({
     url: z.string(),
+    clientId: z.string(),
 });
 
 export interface TestGoogleFormValues extends z.infer<typeof TestGoogleFormSchema> { }
 
 const CustomTestGoogleForm: FC<{
     initialData?: EvaluationForm & {
-        questions: EvaluationFormQuestion[],
-        materialItem: MaterialItem | null,
+        questions: EvaluationFormQuestion[];
+        materialItem: MaterialItem | null;
+        googleForm?: GoogleForm & {
+            googleFormQuestions: GoogleFormQuestion[]
+        } | null;
     }
     setIsOpen: Dispatch<SetStateAction<boolean>>
 }> = ({ initialData, setIsOpen }) => {
@@ -40,7 +44,8 @@ const CustomTestGoogleForm: FC<{
     const [type, setType] = useState<EvaluationFormTypes | undefined>(initialData ? initialData.type : undefined)
 
     const defaultValues: TestGoogleFormValues = {
-        url: initialData?.externalLink || "",
+        url: initialData?.googleFormUrl || "",
+        clientId: initialData?.googleForm?.googleClientId || "",
     }
 
     const form = useForm<TestGoogleFormValues>({
@@ -50,6 +55,7 @@ const CustomTestGoogleForm: FC<{
 
     const { toast } = useToast()
     const trpcUtils = api.useContext()
+    const { data: googleAccountsData } = api.googleAccounts.getGoogleAccounts.useQuery()
     const { data: courseData } = api.courses.getBySlug.useQuery({ slug: courseSlug }, { enabled: !!courseSlug })
     const { data: levelsData } = api.levels.getByCourseSlug.useQuery({ courseSlug }, { enabled: !!courseSlug })
     const createTestEvalGoogleFormMutation = api.evaluationForm.createTestEvalGoogleForm.useMutation({
@@ -108,16 +114,14 @@ const CustomTestGoogleForm: FC<{
         },
     })
 
-    const asd = api.googleAccounts.getGoogleForm.useMutation()
-
-    const onSubmit: SubmitHandler<TestGoogleFormValues> = ({ url }) => {
+    const onSubmit: SubmitHandler<TestGoogleFormValues> = ({ url, clientId }) => {
         if (!type) return toast({
             title: "Error",
             description: "Please select test type",
             variant: "destructive",
         })
-        if (initialData) return editTestEvalFormMutation.mutate({ id: initialData.id, url })
-        createTestEvalGoogleFormMutation.mutate({ type, slug: courseSlug, url, levelId: levelId[0] })
+        if (initialData) return editTestEvalFormMutation.mutate({ id: initialData.id, url, clientId })
+        createTestEvalGoogleFormMutation.mutate({ type, slug: courseSlug, url, clientId, levelId: levelId[0] })
     };
 
     return (
@@ -175,6 +179,36 @@ const CustomTestGoogleForm: FC<{
                             <FormLabel>Form URL</FormLabel>
                             <FormControl>
                                 <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name={`clientId`}
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Google Account</FormLabel>
+                            <FormControl>
+                                <Select
+                                    value={field.value || undefined}
+                                    onValueChange={(val) => field.onChange(val)}
+                                >
+                                    <SelectTrigger className="xl:w-fit">
+                                        <SelectValue placeholder="Select Google Account"></SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {googleAccountsData?.googleAccounts.map(account => (
+                                            <SelectItem
+                                                key={account.id}
+                                                value={account.id}
+                                            >
+                                                {account.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </FormControl>
                             <FormMessage />
                         </FormItem>

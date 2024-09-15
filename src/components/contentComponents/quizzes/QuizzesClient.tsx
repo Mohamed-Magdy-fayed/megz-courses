@@ -35,7 +35,7 @@ const QuizzesClient = ({ formattedData }: { formattedData: QuizRow[] }) => {
             filters={[
                 { key: "levelSlug", filterName: "Level", values: formattedData[0]?.levelSlugs || [] },
                 {
-                    key: "hasExternalLink", filterName: "External Link", values: [
+                    key: "isGoogleForm", filterName: "Is External Link", values: [
                         { label: "Has external link", value: "true" },
                         { label: "Don't have external link", value: "false" },
                     ]

@@ -2,7 +2,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Typography } from "@/components/ui/Typoghraphy";
 import ActionCell from "./AssignmentsActionCell";
-import { EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, MaterialItem } from "@prisma/client";
+import { EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, GoogleForm, GoogleFormQuestion, MaterialItem } from "@prisma/client";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,16 +17,18 @@ export type AssignmentRow = {
     questions: number,
     submissions: number,
     totalPoints: number,
-    externalLink: string | null,
-    hasExternalLink: "true" | "false",
+    isGoogleForm: "true" | "false",
     evalForm: EvaluationForm & {
         materialItem: MaterialItem | null;
         submissions: EvaluationFormSubmission[];
         questions: EvaluationFormQuestion[];
+        googleForm: GoogleForm & {
+            googleFormQuestions: GoogleFormQuestion[]
+        } | null;
     },
     createdBy: string,
     createdAt: Date,
-    updatedAt: string,
+    updatedAt: Date,
 };
 
 export const columns: ColumnDef<AssignmentRow>[] = [
@@ -54,10 +56,10 @@ export const columns: ColumnDef<AssignmentRow>[] = [
         header: "Material Item Title"
     },
     {
-        accessorKey: "hasExternalLink",
+        accessorKey: "isGoogleForm",
         header: "Google Form",
-        cell: ({ row }) => !!row.original.externalLink ? (
-            <Link href={row.original.externalLink} target="_blank">
+        cell: ({ row }) => !!row.original.evalForm.googleForm?.formRespondUrl ? (
+            <Link href={row.original.evalForm.googleForm?.formRespondUrl} target="_blank">
                 <Button variant={"icon"} customeColor={"infoIcon"}>
                     <ExternalLink className="w-4 h-4" />
                 </Button>
@@ -107,7 +109,6 @@ export const columns: ColumnDef<AssignmentRow>[] = [
         ),
         cell: ({ row }) => <ActionCell
             id={row.original.id}
-            externalLink={row.original.externalLink}
             evalForm={row.original.evalForm}
         />,
     },

@@ -166,12 +166,11 @@ const CoursePage = () => {
                                         questions: evalForm.questions.length,
                                         submissions: evalForm.submissions.length,
                                         totalPoints: evalForm.totalPoints,
-                                        externalLink: evalForm.externalLink,
-                                        hasExternalLink: !!evalForm.externalLink ? "true" : "false",
+                                        isGoogleForm: !!evalForm.googleFormUrl ? "true" : "false",
                                         evalForm,
                                         createdBy: evalForm.createdBy,
                                         createdAt: evalForm.createdAt,
-                                        updatedAt: format(evalForm.updatedAt, "PPPp"),
+                                        updatedAt: evalForm.updatedAt,
                                     })) : []}
                             />
                         </TabsContent>
@@ -190,12 +189,11 @@ const CoursePage = () => {
                                         questions: evalForm.questions.length,
                                         submissions: evalForm.submissions.length,
                                         totalPoints: evalForm.totalPoints,
-                                        externalLink: evalForm.externalLink,
-                                        hasExternalLink: !!evalForm.externalLink ? "true" : "false",
+                                        isGoogleForm: !!evalForm.googleFormUrl ? "true" : "false",
                                         evalForm,
                                         createdBy: evalForm.createdBy,
                                         createdAt: evalForm.createdAt,
-                                        updatedAt: format(evalForm.updatedAt, "PPPp"),
+                                        updatedAt: evalForm.updatedAt,
                                     })) : []}
                             />
                         </TabsContent>
@@ -272,11 +270,10 @@ const CoursePage = () => {
                                         questions: placementTest.questions.length,
                                         submissions: placementTest.submissions.length,
                                         totalPoints: placementTest.totalPoints,
-                                        externalLink: placementTest.externalLink,
                                         evalForm: placementTest,
                                         createdBy: placementTest.createdBy,
-                                        createdAt: format(placementTest.createdAt, "PPPp"),
-                                        updatedAt: format(placementTest.updatedAt, "PPPp"),
+                                        createdAt: placementTest.createdAt,
+                                        updatedAt: placementTest.updatedAt,
                                     }] : []}
                                 placementTestsSchedule={data.course.placementTests
                                     .filter(test => !test.writtenTest.submissions.some(sub => sub.userId === test.student.id))
@@ -307,7 +304,7 @@ const CoursePage = () => {
                                             studentName: student.name,
                                             studentEmail: student.email,
                                             studentImage: student.image,
-                                            oralTestTiem: format(oralTestTime, "PPPp"),
+                                            oralTestTime,
                                             testLink: `/placement_test/${course.slug}`,
                                             trainerId: trainer.user.id,
                                             trainerName: trainer.user.name,
@@ -317,8 +314,8 @@ const CoursePage = () => {
                                             rating: submission
                                                 ? formatPercentage(submission.rating / test.totalPoints * 100)
                                                 : "Not Submitted",
-                                            createdAt: format(createdAt, "Pp"),
-                                            updatedAt: format(updatedAt, "Pp"),
+                                            createdAt: createdAt,
+                                            updatedAt: updatedAt,
                                         })
                                     })}
                                 placementTestSubmissions={placementTest?.submissions ? placementTest.submissions.map(({
@@ -346,12 +343,11 @@ const CoursePage = () => {
                                         questions: finalTest.questions.length,
                                         submissions: finalTest.submissions.length,
                                         totalPoints: finalTest.totalPoints,
-                                        externalLink: finalTest.externalLink,
+                                        levelName: finalTest.courseLevel?.name || "level",
                                         evalForm: finalTest,
                                         createdBy: finalTest.createdBy,
-                                        createdAt: format(finalTest.createdAt, "PPPp"),
-                                        updatedAt: format(finalTest.updatedAt, "PPPp"),
-
+                                        createdAt: finalTest.createdAt,
+                                        updatedAt: finalTest.updatedAt,
                                     }))
                                     : []}
                                 finalTestSubmissions={data?.course.evaluationForms.filter(form => form.type === "finalTest").length > 0

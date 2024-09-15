@@ -210,12 +210,12 @@ const CoursePlacementTestPage = () => {
                             ? (
                                 <Typography>Submitted Already - {formatPercentage(submission?.rating! / evaluationForm?.totalPoints! * 100)}</Typography>
                             )
-                            : writtenTest?.externalLink ? (
+                            : writtenTest?.googleForm?.formRespondUrl ? (
                                 <Button
                                     type="button"
                                     className="relative"
                                     disabled={loading}
-                                    onClick={() => window.open(writtenTest.externalLink!, "_blank")}
+                                    onClick={() => window.open(writtenTest?.googleForm?.formRespondUrl!, "_blank")}
                                 >
                                     {loading && <Spinner className="w-4 h-4 mr-2" />}
                                     <Typography>

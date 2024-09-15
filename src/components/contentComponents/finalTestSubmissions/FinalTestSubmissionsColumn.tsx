@@ -24,7 +24,6 @@ export type FinalTestSubmissionRow = {
     evaluationForm: EvaluationForm;
     createdAt: Date;
     updatedAt: Date;
-
 };
 
 export const columns: ColumnDef<FinalTestSubmissionRow>[] = [
@@ -87,24 +86,18 @@ export const columns: ColumnDef<FinalTestSubmissionRow>[] = [
     },
     {
         accessorKey: "createdAt",
-        header: ({ column }) => {
-            return (
-                <div className="flex items-center justify-between">
-                    Submitted at
-                    <Button
-                        className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        <ArrowUpDown className="h-4 w-4 text-primary" />
-                    </Button>
-                </div>
-            );
-        },
+        header: "Submitted at",
         cell: ({ row }) => {
             return (
                 <>{format(row.original.createdAt, "dd MMM yyyy")}</>
             )
-        }
+        },
+        filterFn: (row, columnId, filterValue) => {
+            const val = row.original.createdAt
+            const startDate = new Date(filterValue.split("|")[0])
+            const endDate = new Date(filterValue.split("|")[1])
+            return val.getTime() >= startDate.getTime() && val.getTime() <= endDate.getTime()
+        },
     },
     {
         accessorKey: "courseName",

@@ -98,7 +98,7 @@ export const UserAccountTabs = ({ user }: { user: UserGetPayload }) => {
                                         studentName: student.name,
                                         studentEmail: student.email,
                                         studentImage: student.image,
-                                        oralTestTiem: format(oralTestTime, "PPPp"),
+                                        oralTestTime,
                                         testLink: `/placement_test/${course.slug}`,
                                         trainerId: trainer.user.id,
                                         trainerName: trainer.user.name,
@@ -108,8 +108,8 @@ export const UserAccountTabs = ({ user }: { user: UserGetPayload }) => {
                                         rating: Submission
                                             ? formatPercentage(Submission.rating / test.totalPoints * 100)
                                             : "Not Submitted",
-                                        createdAt: format(createdAt, "Pp"),
-                                        updatedAt: format(updatedAt, "Pp"),
+                                        createdAt,
+                                        updatedAt,
                                     })
                                 })}
                             />

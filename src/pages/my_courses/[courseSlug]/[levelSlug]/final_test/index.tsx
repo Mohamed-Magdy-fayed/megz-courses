@@ -168,8 +168,8 @@ const FinalTestPage: NextPage = () => {
                                     evaluationForm={finalTestQuery.data.finalTest!}
                                 />
                             ))}
-                            {finalTestQuery.data.finalTest.externalLink ? (
-                                <Link href={finalTestQuery.data.finalTest.externalLink} target="_blank" >
+                            {finalTestQuery.data.finalTest.googleForm?.formRespondUrl ? (
+                                <Link href={finalTestQuery.data.finalTest.googleForm?.formRespondUrl} target="_blank" >
                                     <Button>Open Google Forms</Button>
                                 </Link>
                             ) : !isSubmitted && (

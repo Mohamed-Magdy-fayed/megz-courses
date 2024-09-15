@@ -35,7 +35,7 @@ const AssignmentsClient = ({ formattedData }: { formattedData: AssignmentRow[] }
             filters={[
                 { key: "levelSlug", filterName: "Level", values: formattedData[0]?.levelSlugs || [] },
                 {
-                    key: "hasExternalLink", filterName: "External Link", values: [
+                    key: "isGoogleForm", filterName: "Is Google Form", values: [
                         { label: "Has external link", value: "true" },
                         { label: "Don't have external link", value: "false" },
                     ]

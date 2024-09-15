@@ -31,6 +31,18 @@ const FinalTestClient = ({ formattedData }: { formattedData: FinalTestRow[] }) =
             data={formattedData}
             setData={(data) => setIds(data.map(item => item.id))}
             onDelete={onDelete}
+            searches={[
+                { key: "createdBy", label: "Created By" },
+            ]}
+            dateRange={{ key: "createdAt", label: "Created At" }}
+            filters={[
+                {
+                    key: "levelName", filterName: "Level", values: formattedData.map(d => ({
+                        value: d.levelName,
+                        label: d.levelName,
+                    }))
+                },
+            ]}
         />
     );
 };

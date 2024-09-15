@@ -242,42 +242,62 @@ type GoogleAnswer {
     value String
 }
 
+type GoogleFormResponse {
+    responseId String
+    formId     String
+    userEmail  String
+    totalScore String
+    answers    String
+    createdAt  DateTime @default(now())
+}
+
+model GoogleForm {
+    id                  String               @id @default(auto()) @map("_id") @db.ObjectId
+    formId              String?              @unique
+    title               String?
+    formRespondUrl      String?
+    GoogleClient        GoogleClient         @relation(fields: [googleClientId], references: [id])
+    googleClientId      String               @db.ObjectId
+    responses           GoogleFormResponse[]
+    evaluationForm      EvaluationForm[]
+    googleFormQuestions GoogleFormQuestion[]
+    updatedAt           DateTime             @updatedAt
+    createdAt           DateTime             @default(now())
+}
+
 model GoogleFormQuestion {
-    id               String         @id @default(auto()) @map("_id") @db.ObjectId
-    questionText     String
-    questionImage    String
-    questionPoints   Int
-    questionOptions  GoogleOption[]
-    correctAnswers   GoogleAnswer[]
-    evaluationForm   EvaluationForm @relation(fields: [evaluationFormId], references: [id])
-    evaluationFormId String         @db.ObjectId
-    updatedAt        DateTime       @updatedAt
-    createdAt        DateTime       @default(now())
+    id              String         @id @default(auto()) @map("_id") @db.ObjectId
+    questionText    String
+    questionImage   String
+    questionPoints  Int
+    questionOptions GoogleOption[]
+    correctAnswers  GoogleAnswer[]
+    googleForm      GoogleForm     @relation(fields: [googleFormId], references: [id])
+    googleFormId    String         @db.ObjectId
+    updatedAt       DateTime       @updatedAt
+    createdAt       DateTime       @default(now())
 }
 
 model EvaluationForm {
-    id              String                     @id @default(auto()) @map("_id") @db.ObjectId
-    type            EvaluationFormTypes
-    totalPoints     Int
-    externalLink    String?
-    responses       String?
-    formRespondUrl  String?
-    formId          String?
-    title           String?
-    googleQuestions GoogleFormQuestion[]
-    courseLevel     CourseLevel?               @relation(fields: [courseLevelId], references: [id], onDelete: Cascade)
-    courseLevelId   String?                    @db.ObjectId
-    placementTests  PlacementTest[]
-    submissions     EvaluationFormSubmission[]
-    questions       EvaluationFormQuestion[]
-    updateHistory   EvaluationFormHistory[]
-    materialItem    MaterialItem?              @relation(fields: [materialItemId], references: [id], onDelete: Cascade)
-    materialItemId  String?                    @db.ObjectId
-    course          Course?                    @relation(fields: [courseId], references: [id], onDelete: Cascade)
-    courseId        String?                    @db.ObjectId
-    createdBy       String
-    updatedAt       DateTime                   @updatedAt
-    createdAt       DateTime                   @default(now())
+    id             String                     @id @default(auto()) @map("_id") @db.ObjectId
+    type           EvaluationFormTypes
+    totalPoints    Int
+    googleForm     GoogleForm?                @relation(fields: [googleFormId], references: [id])
+    googleFormId   String?                    @db.ObjectId
+    googleFormUrl  String?
+    courseLevel    CourseLevel?               @relation(fields: [courseLevelId], references: [id], onDelete: Cascade)
+    courseLevelId  String?                    @db.ObjectId
+    placementTests PlacementTest[]
+    submissions    EvaluationFormSubmission[]
+    questions      EvaluationFormQuestion[]
+    updateHistory  EvaluationFormHistory[]
+    materialItem   MaterialItem?              @relation(fields: [materialItemId], references: [id], onDelete: Cascade)
+    materialItemId String?                    @db.ObjectId
+    course         Course?                    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+    courseId       String?                    @db.ObjectId
+    createdBy      String
+    updatedAt      DateTime                   @updatedAt
+    createdAt      DateTime                   @default(now())
 }
 
 type MaterialItemManual {
@@ -559,15 +579,16 @@ model ZoomClient {
 }
 
 model GoogleClient {
-    id           String   @id @default(auto()) @map("_id") @db.ObjectId
+    id           String       @id @default(auto()) @map("_id") @db.ObjectId
     name         String
     accessToken  String?
     expiryDate   Int?
     refreshToken String?
     idToken      String?
     scope        String?
-    updatedAt    DateTime @updatedAt
-    createdAt    DateTime @default(now())
+    forms        GoogleForm[]
+    updatedAt    DateTime     @updatedAt
+    createdAt    DateTime     @default(now())
 }
 
 model MetaClient {

@@ -13,7 +13,7 @@ import { useState } from "react";
 import Modal from "@/components/ui/modal";
 import CustomTestGoogleForm from "@/components/FormsComponents/CustomTestGoogleForm";
 import CustomTestForm from "@/components/FormsComponents/CustomTestForm";
-import { EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, MaterialItem } from "@prisma/client";
+import { EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, GoogleForm, GoogleFormQuestion, MaterialItem } from "@prisma/client";
 import { api } from "@/lib/api";
 import { AlertModal } from "@/components/modals/AlertModal";
 import { Trash } from "lucide-react";
@@ -21,18 +21,19 @@ import Spinner from "@/components/Spinner";
 
 interface ActionCellProps {
     id: string;
-    externalLink: string | null;
     evalForm: EvaluationForm & {
         materialItem: MaterialItem | null;
         submissions: EvaluationFormSubmission[];
         questions: EvaluationFormQuestion[];
+        googleForm?: GoogleForm & {
+            googleFormQuestions: GoogleFormQuestion[]
+        } | null;
     };
 }
 
-const ActionCell: React.FC<ActionCellProps> = ({ id, evalForm, externalLink }) => {
+const ActionCell: React.FC<ActionCellProps> = ({ id, evalForm }) => {
     const { toastInfo, toast } = useToast();
     const [isOpen, setIsOpen] = useState(false)
-    const [isRefundOpen, setIsRefundOpen] = useState(false)
     const [isEditOpen, setIsEditOpen] = useState(false)
     const [isDeleteOpen, setIsDeleteOpen] = useState(false)
     const [loadingToast, setLoadingToast] = useState<toastType>()
@@ -94,7 +95,7 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, evalForm, externalLink }) =
                 onClose={() => setIsEditOpen(false)}
                 children={(
                     <div>
-                        {externalLink ? <CustomTestGoogleForm setIsOpen={setIsEditOpen} initialData={evalForm} /> : <CustomTestForm setIsOpen={setIsEditOpen} initialData={evalForm} />}
+                        {evalForm.googleFormUrl ? <CustomTestGoogleForm setIsOpen={setIsEditOpen} initialData={evalForm} /> : <CustomTestForm setIsOpen={setIsEditOpen} initialData={evalForm} />}
                     </div>
                 )}
             />

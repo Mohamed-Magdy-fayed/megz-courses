@@ -15,11 +15,12 @@ import {
 import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { useRouter } from "next/router";
-import { EvaluationForm, EvaluationFormQuestion, EvaluationFormTypes, MaterialItem } from "@prisma/client";
+import { EvaluationForm, EvaluationFormQuestion, EvaluationFormTypes, GoogleForm, MaterialItem } from "@prisma/client";
 import { toastType, useToast } from "@/components/ui/use-toast";
 
 const GoogleFormSchema = z.object({
     url: z.string(),
+    clientId: z.string(),
 });
 
 export interface GoogleFormValues extends z.infer<typeof GoogleFormSchema> { }
@@ -28,6 +29,7 @@ const ConnectGoogleForm: FC<{
     initialData?: EvaluationForm & {
         questions: EvaluationFormQuestion[],
         materialItem: MaterialItem | null,
+        googleForm?: GoogleForm | null,
     }
     setIsOpen: Dispatch<SetStateAction<boolean>>
 }> = ({ initialData, setIsOpen }) => {
@@ -47,7 +49,8 @@ const ConnectGoogleForm: FC<{
     const [type, setType] = useState<EvaluationFormTypes | undefined>(initialData ? initialData.type : undefined)
 
     const defaultValues: GoogleFormValues = {
-        url: initialData?.externalLink || "",
+        url: initialData?.googleFormUrl || "",
+        clientId: initialData?.googleForm?.googleClientId || "",
     }
 
     const form = useForm<GoogleFormValues>({
@@ -57,12 +60,13 @@ const ConnectGoogleForm: FC<{
 
     const { toast } = useToast()
     const trpcUtils = api.useContext()
+    const { data: googleAccountsData } = api.googleAccounts.getGoogleAccounts.useQuery()
     const { data: levelsData } = api.levels.getByCourseSlug.useQuery({ courseSlug }, { enabled: !!courseSlug })
     const { data: materialsData } = api.materials.getByCourseSlug.useQuery({ slug: courseSlug })
     const createGoogleEvalFormMutation = api.evaluationForm.createGoogleEvalForm.useMutation({
         onMutate: () => setLoadingToast(toast({
             title: "Loading...",
-            duration: 3000,
+            duration: 30000,
             variant: "info",
         })),
         onSuccess: () => trpcUtils.invalidate()
@@ -115,10 +119,10 @@ const ConnectGoogleForm: FC<{
         },
     })
 
-    const onSubmit = ({ url }: GoogleFormValues) => {
+    const onSubmit = ({ url, clientId }: GoogleFormValues) => {
         if (!type || !materialId) return
-        if (initialData) return editGoogleEvalFormMutation.mutate({ id: initialData.id, url })
-        createGoogleEvalFormMutation.mutate({ materialId, type, url })
+        if (initialData) return editGoogleEvalFormMutation.mutate({ id: initialData.id, url, clientId })
+        createGoogleEvalFormMutation.mutate({ materialId, type, url, clientId })
     };
 
     return (
@@ -206,6 +210,36 @@ const ConnectGoogleForm: FC<{
                             <FormLabel>Form URL</FormLabel>
                             <FormControl>
                                 <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name={`clientId`}
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Google Account</FormLabel>
+                            <FormControl>
+                                <Select
+                                    value={field.value || undefined}
+                                    onValueChange={(val) => field.onChange(val)}
+                                >
+                                    <SelectTrigger className="xl:w-fit">
+                                        <SelectValue placeholder="Select Google Account"></SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {googleAccountsData?.googleAccounts.map(account => (
+                                            <SelectItem
+                                                key={account.id}
+                                                value={account.id}
+                                            >
+                                                {account.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </FormControl>
                             <FormMessage />
                         </FormItem>

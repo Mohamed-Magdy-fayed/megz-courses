@@ -11,7 +11,7 @@ import { toastType, useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import Modal from "@/components/ui/modal";
 import ConnectGoogleForm from "@/components/FormsComponents/ConnectGoogleForm";
-import { EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, MaterialItem } from "@prisma/client";
+import { EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, GoogleForm, GoogleFormQuestion, MaterialItem } from "@prisma/client";
 import CustomForm from "@/components/FormsComponents/CustomForm";
 import { api } from "@/lib/api";
 import Spinner from "@/components/Spinner";
@@ -19,15 +19,17 @@ import { AlertModal } from "@/components/modals/AlertModal";
 
 interface ActionCellProps {
     id: string;
-    externalLink: string | null;
     evalForm: EvaluationForm & {
         materialItem: MaterialItem | null;
         submissions: EvaluationFormSubmission[];
         questions: EvaluationFormQuestion[];
+        googleForm?: GoogleForm & {
+            googleFormQuestions: GoogleFormQuestion[]
+        } | null;
     };
 }
 
-const ActionCell: React.FC<ActionCellProps> = ({ id, externalLink, evalForm }) => {
+const ActionCell: React.FC<ActionCellProps> = ({ id, evalForm }) => {
     const { toastInfo, toast } = useToast();
     const [isOpen, setIsOpen] = useState(false)
     const [isDeleteOpen, setIsDeleteOpen] = useState(false)
@@ -90,7 +92,7 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, externalLink, evalForm }) =
                 onClose={() => setIsEditOpen(false)}
                 children={(
                     <div>
-                        {externalLink ? <ConnectGoogleForm setIsOpen={setIsEditOpen} initialData={evalForm} /> : <CustomForm initialData={evalForm} />}
+                        {evalForm.googleForm ? <ConnectGoogleForm setIsOpen={setIsEditOpen} initialData={evalForm} /> : <CustomForm initialData={evalForm} />}
                     </div>
                 )}
             />

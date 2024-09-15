@@ -1,4 +1,5 @@
 import { validEvalFormTypes } from "@/lib/enumsTypes";
+import { getGoogleFormDetails } from "@/lib/googleApis";
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -29,7 +30,7 @@ export const evaluationFormRouter = createTRPCRouter({
 
       const evaluationForm = await ctx.prisma.evaluationForm.findFirst({
         where: { materialItem: { slug }, type },
-        include: { materialItem: { include: { zoomSessions: true } }, questions: true, submissions: true }
+        include: { materialItem: { include: { zoomSessions: true } }, questions: true, submissions: true, googleForm: true },
       })
 
       return { evaluationForm }
@@ -99,7 +100,10 @@ export const evaluationFormRouter = createTRPCRouter({
         include: {
           materialItem: {
             include: { zoomSessions: true }
-          }, questions: true, submissions: true
+          },
+          questions: true,
+          submissions: true,
+          googleForm: true,
         }
       })
 
@@ -134,10 +138,11 @@ export const evaluationFormRouter = createTRPCRouter({
   createGoogleEvalForm: protectedProcedure
     .input(z.object({
       url: z.string(),
+      clientId: z.string(),
       materialId: z.string(),
       type: z.enum(validEvalFormTypes),
     }))
-    .mutation(async ({ ctx, input: { url, materialId, type } }) => {
+    .mutation(async ({ ctx, input: { url, clientId, materialId, type } }) => {
       if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
 
       if (!ctx.session.user.email) throw new TRPCError({ code: "UNAUTHORIZED", message: "UNAUTHORIZED" })
@@ -150,11 +155,37 @@ export const evaluationFormRouter = createTRPCRouter({
         }
       })) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to create multible forms on the same type!" })
 
+      const formDetails = await getGoogleFormDetails(url, clientId)
+
       const evaluationForm = await ctx.prisma.evaluationForm.create({
         data: {
-          totalPoints: 0,
+          totalPoints: formDetails.questions.map(q => q.questionPoints).reduce((a, b) => a + b, 0),
           type,
-          externalLink: url,
+          googleFormUrl: url,
+          googleForm: {
+            connectOrCreate: {
+              where: { formId: formDetails.formId },
+              create: {
+                GoogleClient: {
+                  connect: { id: clientId }
+                },
+                formId: formDetails.formId,
+                formRespondUrl: formDetails.formRespondUrl,
+                title: formDetails.title,
+                googleFormQuestions: {
+                  createMany: !formDetails.questions ? undefined : {
+                    data: formDetails.questions.map(q => ({
+                      questionImage: q.questionImage.toString() || "",
+                      questionPoints: q.questionPoints || 1,
+                      questionText: q.questionText || "",
+                      correctAnswers: q.correctAnswers.map((a, i) => ({ value: a.value || `val${i}` })),
+                      questionOptions: q.questionOptions.map((o, i) => ({ value: o.value || `val${i}` })),
+                    }))
+                  }
+                },
+              }
+            }
+          },
           materialItem: { connect: { id: materialId } },
           createdBy: ctx.session.user.email,
         },
@@ -169,18 +200,42 @@ export const evaluationFormRouter = createTRPCRouter({
     .input(z.object({
       id: z.string(),
       url: z.string(),
+      clientId: z.string(),
     }))
-    .mutation(async ({ ctx, input: { url, id } }) => {
+    .mutation(async ({ ctx, input: { url, id, clientId } }) => {
       if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
       if (!ctx.session.user.email) throw new TRPCError({ code: "UNAUTHORIZED", message: "UNAUTHORIZED" })
+
+      const formDetails = await getGoogleFormDetails(url, clientId)
 
       const evaluationForm = await ctx.prisma.evaluationForm.update({
         where: {
           id
         },
         data: {
-          totalPoints: 0,
-          externalLink: url,
+          totalPoints: formDetails.questions.map(q => q.questionPoints).reduce((a, b) => a + b, 0),
+          googleFormUrl: url,
+          googleForm: {
+            create: {
+              GoogleClient: {
+                connect: { id: clientId }
+              },
+              formId: formDetails.formId,
+              formRespondUrl: formDetails.formRespondUrl,
+              title: formDetails.title,
+              googleFormQuestions: {
+                createMany: !formDetails.questions ? undefined : {
+                  data: formDetails.questions.map(q => ({
+                    questionImage: q.questionImage.toString() || "",
+                    questionPoints: q.questionPoints || 1,
+                    questionText: q.questionText || "",
+                    correctAnswers: q.correctAnswers.map((a, i) => ({ value: a.value || `val${i}` })),
+                    questionOptions: q.questionOptions.map((o, i) => ({ value: o.value || `val${i}` })),
+                  }))
+                }
+              },
+            }
+          },
           createdBy: ctx.session.user.email,
         },
         include: { materialItem: true, questions: true, submissions: true }
@@ -307,19 +362,48 @@ export const evaluationFormRouter = createTRPCRouter({
       levelId: z.string().optional(),
       type: z.enum(validEvalFormTypes),
       url: z.string(),
+      clientId: z.string(),
     }))
-    .mutation(async ({ ctx, input: { slug, url, levelId, type } }) => {
+    .mutation(async ({ ctx, input: { slug, url, levelId, type, clientId } }) => {
       if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
       if (!ctx.session.user.email) throw new TRPCError({ code: "UNAUTHORIZED", message: "UNAUTHORIZED" })
       const forms = await ctx.prisma.evaluationForm.findMany({ where: { course: { slug } }, include: { course: true, courseLevel: true } })
-      if (forms.some(form => (form.course?.slug === slug && type === "placementTest") || (form.courseLevel?.id === levelId && !!levelId))) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to create multible forms on the same type!" })
+      if (forms.some(form => (form.course?.slug === slug && form.type === "placementTest" && type === "placementTest") || (form.courseLevel?.id === levelId && !!levelId))) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to create multible forms on the same type!" })
+
+      const formDetails = await getGoogleFormDetails(url, clientId)
 
       const evaluationForm = await ctx.prisma.evaluationForm.create({
         data: {
-          totalPoints: 0,
+          totalPoints: formDetails.questions.map(q => q.questionPoints).reduce((a, b) => a + b, 0),
           type,
           course: { connect: { slug } },
-          externalLink: url,
+          googleFormUrl: url,
+          googleForm: {
+            connectOrCreate: {
+              where: {
+                formId: formDetails.formId,
+              },
+              create: {
+                GoogleClient: {
+                  connect: { id: clientId }
+                },
+                formId: formDetails.formId,
+                formRespondUrl: formDetails.formRespondUrl,
+                title: formDetails.title,
+                googleFormQuestions: {
+                  createMany: !formDetails.questions ? undefined : {
+                    data: formDetails.questions.map(q => ({
+                      questionImage: q.questionImage.toString() || "",
+                      questionPoints: q.questionPoints || 1,
+                      questionText: q.questionText || "",
+                      correctAnswers: q.correctAnswers.map((a, i) => ({ value: a.value || `val${i}` })),
+                      questionOptions: q.questionOptions.map((o, i) => ({ value: o.value || `val${i}` })),
+                    }))
+                  }
+                },
+              }
+            }
+          },
           createdBy: ctx.session.user.email,
           courseLevel: levelId ? { connect: { id: levelId } } : undefined
         },

@@ -33,7 +33,7 @@ const ActionCell = (rowData: QuizRow) => {
                 onClose={() => setIsEditOpen(false)}
                 children={(
                     <div>
-                        {rowData.externalLink ? <ConnectGoogleForm setIsOpen={setIsEditOpen} initialData={rowData.evalForm} /> : <CustomForm initialData={rowData.evalForm} />}
+                        {rowData.evalForm.googleForm ? <ConnectGoogleForm setIsOpen={setIsEditOpen} initialData={rowData.evalForm} /> : <CustomForm initialData={rowData.evalForm} />}
                     </div>
                 )}
             />

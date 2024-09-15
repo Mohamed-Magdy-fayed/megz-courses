@@ -14,6 +14,7 @@ const FinalTestSubmissionsClient = ({ formattedData }: { formattedData: FinalTes
             filters={[
                 { key: "levelSlug", filterName: "Level", values: formattedData[0]?.levelSlugs || [] },
             ]}
+            dateRange={{ key: "createdAt", label: "Submitted At" }}
         />
     );
 };

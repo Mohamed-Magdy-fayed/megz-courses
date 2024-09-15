@@ -17,6 +17,7 @@ import Spinner from "@/components/Spinner";
 import { Meeting } from "@/server/api/routers/zoomAccounts";
 import { format } from "date-fns";
 import Calendar from "@/components/ui/calendar";
+import GoogleAccountCellAction from "@/components/googleAccount/GoogleAccountCellAction";
 
 export type GoogleAccountColumn = {
     id: string;
@@ -81,7 +82,7 @@ export const columns: ColumnDef<GoogleAccountColumn>[] = [
     {
         id: "actions",
         header: "Actions",
-        cell: ({ row }) => <CellAction
+        cell: ({ row }) => <GoogleAccountCellAction
             id={row.original.id}
         />,
     },

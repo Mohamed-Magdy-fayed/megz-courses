@@ -4,23 +4,27 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowUpDown } from "lucide-react";
 import { Typography } from "@/components/ui/Typoghraphy";
 import ActionCell from "./FinalTestsActionCell";
-import { CourseLevel, EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, MaterialItem } from "@prisma/client";
+import { CourseLevel, EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, GoogleForm, GoogleFormQuestion, MaterialItem } from "@prisma/client";
+import { format } from "date-fns";
 
 export type FinalTestRow = {
     id: string,
     questions: number,
     submissions: number,
     totalPoints: number,
-    externalLink: string | null,
+    levelName: string,
     evalForm: EvaluationForm & {
         materialItem: MaterialItem | null;
         submissions: EvaluationFormSubmission[];
         questions: EvaluationFormQuestion[];
         courseLevel: CourseLevel | null;
+        googleForm?: GoogleForm & {
+            googleFormQuestions: GoogleFormQuestion[]
+        } | null;
     },
     createdBy: string,
-    createdAt: string,
-    updatedAt: string,
+    createdAt: Date,
+    updatedAt: Date,
 };
 
 export const columns: ColumnDef<FinalTestRow>[] = [
@@ -61,15 +65,21 @@ export const columns: ColumnDef<FinalTestRow>[] = [
     },
     {
         accessorKey: "questions",
+        cell: ({ row }) => (
+            <Typography>{row.original.evalForm.googleForm ? row.original.evalForm.googleForm.googleFormQuestions.length : row.original.evalForm.questions.length}</Typography>
+        )
     },
     {
         accessorKey: "submissions",
+        cell: ({ row }) => (
+            <Typography>{row.original.evalForm.googleForm ? row.original.evalForm.googleForm.responses.length : row.original.evalForm.submissions.length}</Typography>
+        )
     },
     {
         accessorKey: "totalPoints",
     },
     {
-        accessorKey: "evalForm",
+        accessorKey: "levelName",
         header: "Level",
         cell: ({ row }) => {
             return (<Typography>{row.original.evalForm.courseLevel?.name}</Typography>)
@@ -90,6 +100,15 @@ export const columns: ColumnDef<FinalTestRow>[] = [
                 </div>
             );
         },
+        cell: ({ row }) => (
+            <Typography>{format(row.original.createdAt, "PPPp")}</Typography>
+        ),
+        filterFn: (row, columnId, filterValue) => {
+            const val = row.original.createdAt
+            const startDate = new Date(filterValue.split("|")[0])
+            const endDate = new Date(filterValue.split("|")[1])
+            return val.getTime() >= startDate.getTime() && val.getTime() <= endDate.getTime()
+        },
     },
     {
         id: "actions",
@@ -98,7 +117,6 @@ export const columns: ColumnDef<FinalTestRow>[] = [
         ),
         cell: ({ row }) => <ActionCell
             id={row.original.id}
-            externalLink={row.original.externalLink}
             evalForm={row.original.evalForm}
         />,
     },

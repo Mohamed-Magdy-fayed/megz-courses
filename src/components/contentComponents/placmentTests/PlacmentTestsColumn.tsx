@@ -4,22 +4,25 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowUpDown } from "lucide-react";
 import { Typography } from "@/components/ui/Typoghraphy";
 import ActionCell from "./PlacmentTestsActionCell";
-import { EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, MaterialItem } from "@prisma/client";
+import { EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, GoogleForm, GoogleFormQuestion, MaterialItem } from "@prisma/client";
+import { format } from "date-fns";
 
 export type PlacmentTestRow = {
     id: string,
     questions: number,
     submissions: number,
     totalPoints: number,
-    externalLink: string | null,
     evalForm: EvaluationForm & {
         materialItem: MaterialItem | null;
         submissions: EvaluationFormSubmission[];
         questions: EvaluationFormQuestion[];
+        googleForm?: GoogleForm & {
+            googleFormQuestions: GoogleFormQuestion[]
+        } | null;
     },
     createdBy: string,
-    createdAt: string,
-    updatedAt: string,
+    createdAt: Date,
+    updatedAt: Date,
 };
 
 export const columns: ColumnDef<PlacmentTestRow>[] = [
@@ -60,9 +63,15 @@ export const columns: ColumnDef<PlacmentTestRow>[] = [
     },
     {
         accessorKey: "questions",
+        cell: ({ row }) => (
+            <Typography>{row.original.evalForm.googleForm ? row.original.evalForm.googleForm.googleFormQuestions.length : row.original.evalForm.questions.length}</Typography>
+        )
     },
     {
         accessorKey: "submissions",
+        cell: ({ row }) => (
+            <Typography>{row.original.evalForm.googleForm ? row.original.evalForm.googleForm.responses.length : row.original.evalForm.submissions.length}</Typography>
+        )
     },
     {
         accessorKey: "totalPoints",
@@ -82,6 +91,15 @@ export const columns: ColumnDef<PlacmentTestRow>[] = [
                 </div>
             );
         },
+        cell: ({ row }) => (
+            <Typography>{format(row.original.createdAt, "PPPp")}</Typography>
+        ),
+        filterFn: (row, columnId, filterValue) => {
+            const val = row.original.createdAt
+            const startDate = new Date(filterValue.split("|")[0])
+            const endDate = new Date(filterValue.split("|")[1])
+            return val.getTime() >= startDate.getTime() && val.getTime() <= endDate.getTime()
+        },
     },
     {
         id: "actions",
@@ -90,7 +108,6 @@ export const columns: ColumnDef<PlacmentTestRow>[] = [
         ),
         cell: ({ row }) => <ActionCell
             id={row.original.id}
-            externalLink={row.original.externalLink}
             evalForm={row.original.evalForm}
         />,
     },

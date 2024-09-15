@@ -167,8 +167,8 @@ const AssignmentPage: NextPage = () => {
                                     evaluationForm={evalFormQuery.data.evaluationForm!}
                                 />
                             ))}
-                            {evalFormQuery.data.evaluationForm.externalLink ? (
-                                <Link href={evalFormQuery.data.evaluationForm.externalLink} target="_blank" >
+                            {evalFormQuery.data.evaluationForm.googleForm?.formRespondUrl ? (
+                                <Link href={evalFormQuery.data.evaluationForm.googleForm?.formRespondUrl} target="_blank" >
                                     <Button>Open Google Forms</Button>
                                 </Link>
                             ) : !isSubmitted && (

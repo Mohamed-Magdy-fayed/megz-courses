@@ -190,7 +190,7 @@ export const coursesRouter = createTRPCRouter({
               materialItems: {
                 include: {
                   courseLevel: true,
-                  evaluationForms: { include: { materialItem: { include: { courseLevel: true } }, questions: true, submissions: true } }
+                  evaluationForms: { include: { googleForm: { include: { GoogleClient: true, googleFormQuestions: true } }, materialItem: { include: { courseLevel: true } }, questions: true, submissions: true } }
                 }
               },
               evaluationForms: { include: { materialItem: true, questions: true, submissions: true, courseLevel: true } },
@@ -200,6 +200,7 @@ export const coursesRouter = createTRPCRouter({
           },
           evaluationForms: {
             include: {
+              googleForm: { include: { GoogleClient: true, googleFormQuestions: true } },
               questions: true,
               submissions: {
                 include: {

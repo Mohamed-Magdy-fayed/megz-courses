@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Typography } from "@/components/ui/Typoghraphy";
 import ActionCell from "./PlacmentTestScheduleActionCell";
 import { getInitials } from "@/lib/getInitials";
+import { format } from "date-fns";
 
 export type PlacmentTestScheduleRow = {
     id: string;
@@ -17,15 +18,15 @@ export type PlacmentTestScheduleRow = {
     studentName: string;
     studentEmail: string;
     studentImage: string | null;
-    oralTestTiem: string;
+    oralTestTime: Date;
     trainerId: string;
     trainerName: string;
     trainerEmail: string;
     trainerImage: string | null;
     rating: string;
     link: string;
-    createdAt: string;
-    updatedAt: string;
+    createdAt: Date;
+    updatedAt: Date;
 };
 
 export const columns: ColumnDef<PlacmentTestScheduleRow>[] = [
@@ -115,7 +116,7 @@ export const columns: ColumnDef<PlacmentTestScheduleRow>[] = [
         ),
     },
     {
-        accessorKey: "oralTestTiem",
+        accessorKey: "oralTestTime",
         header: ({ column }) => {
             return (
                 <div className="flex items-center justify-between">
@@ -129,6 +130,15 @@ export const columns: ColumnDef<PlacmentTestScheduleRow>[] = [
                 </div>
             );
         },
+        cell: ({ row }) => (
+            <Typography>{format(row.original.oralTestTime, "PPPp")}</Typography>
+        ),
+        filterFn: (row, columnId, filterValue) => {
+            const val = row.original.createdAt
+            const startDate = new Date(filterValue.split("|")[0])
+            const endDate = new Date(filterValue.split("|")[1])
+            return val.getTime() >= startDate.getTime() && val.getTime() <= endDate.getTime()
+        },
     },
     {
         accessorKey: "rating",
@@ -137,6 +147,9 @@ export const columns: ColumnDef<PlacmentTestScheduleRow>[] = [
     {
         accessorKey: "createdAt",
         header: "Created On",
+        cell: ({ row }) => (
+            <Typography>{format(row.original.createdAt, "Pp")}</Typography>
+        ),
     },
     {
         id: "actions",

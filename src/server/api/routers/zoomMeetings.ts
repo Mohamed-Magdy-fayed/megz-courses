@@ -99,9 +99,7 @@ export const zoomMeetingsRouter = createTRPCRouter({
                     refreshToken: response.data.refresh_token,
                 }
             })
-
             return { updatedZoomClient }
-
         }),
     createMeeting: protectedProcedure
         .input(z.object({

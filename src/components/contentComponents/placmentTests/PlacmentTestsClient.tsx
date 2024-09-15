@@ -58,6 +58,10 @@ const PlacmentTestClient = ({ formattedData }: { formattedData: PlacmentTestRow[
             data={formattedData}
             setData={setData}
             onDelete={onDelete}
+            searches={[
+                { key: "createdBy", label: "Created By" },
+            ]}
+            dateRange={{ key: "createdAt", label: "Created At" }}
         />
     );
 };
