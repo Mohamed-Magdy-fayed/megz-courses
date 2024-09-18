@@ -10,7 +10,7 @@ const PlacmentTestSubmissionsClient = ({ formattedData }: { formattedData: Place
             searches={[
                 { key: "studentName", label: "Student Name" },
             ]}
-            dateRange={{ key: "createdAt", label: "Submitted At" }}
+            dateRanges={[{ key: "createdAt", label: "Submitted At" }]}
         />
     );
 };

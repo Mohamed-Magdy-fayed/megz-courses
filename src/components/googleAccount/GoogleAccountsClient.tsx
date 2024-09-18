@@ -43,7 +43,7 @@ const GoogleAccountsClient = () => {
             data={formattedData}
             setData={setAccounts}
             onDelete={onDelete}
-            dateRange={{ key: "createdAt", label: "Added On" }}
+            dateRanges={[{ key: "createdAt", label: "Added On" }]}
             searches={[{ key: "name", label: "Name" }]}
         />
     );

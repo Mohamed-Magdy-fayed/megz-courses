@@ -12,7 +12,6 @@ import Modal from "@/components/ui/modal";
 import UploadMaterialForm from "@/components/contentComponents/materials/uploadForm/UploadMaterialForm";
 import CreateQuickOrder from "@/components/contentComponents/courses/CreateQuickOrder";
 import CustomTestGoogleForm from "@/components/FormsComponents/CustomTestGoogleForm";
-import { format } from "date-fns";
 import { formatPercentage } from "@/lib/utils";
 import LevelsTabContent from "@/components/contentComponents/levels/LevelsTabContent";
 import MaterialsTabContent from "@/components/contentComponents/materials/MaterialsTabContent";
@@ -166,7 +165,7 @@ const CoursePage = () => {
                                         questions: evalForm.questions.length,
                                         submissions: evalForm.submissions.length,
                                         totalPoints: evalForm.totalPoints,
-                                        isGoogleForm: !!evalForm.googleFormUrl ? "true" : "false",
+                                        googleFormTitle: evalForm.googleForm?.title ? "Google Form" : "System Form",
                                         evalForm,
                                         createdBy: evalForm.createdBy,
                                         createdAt: evalForm.createdAt,
@@ -189,7 +188,7 @@ const CoursePage = () => {
                                         questions: evalForm.questions.length,
                                         submissions: evalForm.submissions.length,
                                         totalPoints: evalForm.totalPoints,
-                                        isGoogleForm: !!evalForm.googleFormUrl ? "true" : "false",
+                                        googleFormTitle: evalForm.googleForm?.title ? "Google Form" : "System Form",
                                         evalForm,
                                         createdBy: evalForm.createdBy,
                                         createdAt: evalForm.createdAt,

@@ -37,7 +37,7 @@ const SessionsClient = () => {
         { key: "status", filterName: "Status", values: validSessionStatuses.map(s => ({ label: upperFirst(s), value: s })) },
         { key: "groupName", filterName: "Group", values: uniqBy(formattedData.map(d => ({ value: d.groupName, label: d.groupName })), "value") },
       ]}
-      dateRange={{ key: "sessionDate", label: "Session Time" }}
+      dateRanges={[{ key: "sessionDate", label: "Session Time" }]}
     />
   );
 };

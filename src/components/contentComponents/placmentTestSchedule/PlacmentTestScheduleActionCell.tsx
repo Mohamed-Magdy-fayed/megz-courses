@@ -47,18 +47,18 @@ const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, isL
             )
             setLoading(true)
         },
-        onSuccess: ({ updatedUser, course }) => {
+        onSuccess: ({ user, course }) => {
             addToWaitingListToast?.update({
                 id: addToWaitingListToast.id,
                 title: "Success",
                 description: <Typography>
-                    Added student {updatedUser.name} to waiting list of course {course.name} at level {courseLevels.find(courseLevel => courseLevel.value === level[0])?.label}
+                    Added student {user.name} to waiting list of course {course.name} at level {courseLevels.find(courseLevel => courseLevel.value === level[0])?.label}
                 </Typography>,
                 variant: "success",
             })
             sendWhatsAppMessage({
                 toNumber: "201123862218",
-                textBody: `Hi ${updatedUser.name}, congtulations your placement test result for course ${course.name} has been submitted and placed you at level ${level}
+                textBody: `Hi ${user.name}, congtulations your placement test result for course ${course.name} has been submitted and placed you at level ${level}
             \nYou're now just one step away from starting your course.
             \nOur Team.`,
             })

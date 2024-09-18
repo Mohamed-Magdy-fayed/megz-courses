@@ -17,7 +17,7 @@ export type AssignmentRow = {
     questions: number,
     submissions: number,
     totalPoints: number,
-    isGoogleForm: "true" | "false",
+    googleFormTitle: string,
     evalForm: EvaluationForm & {
         materialItem: MaterialItem | null;
         submissions: EvaluationFormSubmission[];
@@ -56,15 +56,16 @@ export const columns: ColumnDef<AssignmentRow>[] = [
         header: "Material Item Title"
     },
     {
-        accessorKey: "isGoogleForm",
-        header: "Google Form",
+        accessorKey: "googleFormTitle",
+        header: "Form Type",
         cell: ({ row }) => !!row.original.evalForm.googleForm?.formRespondUrl ? (
             <Link href={row.original.evalForm.googleForm?.formRespondUrl} target="_blank">
-                <Button variant={"icon"} customeColor={"infoIcon"}>
+                <Button customeColor={"infoIcon"}>
                     <ExternalLink className="w-4 h-4" />
+                    <Typography>{row.original.googleFormTitle}</Typography>
                 </Button>
             </Link>
-        ) : "No external link"
+        ) : "System Form"
     },
     {
         accessorKey: "questions",

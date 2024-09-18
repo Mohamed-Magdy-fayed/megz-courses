@@ -35,10 +35,10 @@ const AssignmentsClient = ({ formattedData }: { formattedData: AssignmentRow[] }
             filters={[
                 { key: "levelSlug", filterName: "Level", values: formattedData[0]?.levelSlugs || [] },
                 {
-                    key: "isGoogleForm", filterName: "Is Google Form", values: [
-                        { label: "Has external link", value: "true" },
-                        { label: "Don't have external link", value: "false" },
-                    ]
+                    key: "googleFormTitle", filterName: "Form type", values: formattedData
+                        .map(d => d.googleFormTitle)
+                        .filter((value, index, self) => self.indexOf(value) === index)
+                        .map(title => ({ label: title, value: title }))
                 },
                 {
                     key: "createdBy", filterName: "Created By", values: [...formattedData.map(d => ({
@@ -47,7 +47,7 @@ const AssignmentsClient = ({ formattedData }: { formattedData: AssignmentRow[] }
                     }))]
                 },
             ]}
-            dateRange={{ key: "createdAt", label: "Created On" }}
+            dateRanges={[{ key: "createdAt", label: "Created On" }]}
         />
     );
 };

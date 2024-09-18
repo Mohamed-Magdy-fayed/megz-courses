@@ -24,7 +24,9 @@ const FullWaitingListClient = ({ formattedData }: { formattedData: FullWaitingLi
                         .map(val => ({ label: val, value: val }))
                 },
             ]}
-            dateRange={{ key: "orders", label: "Ordered On" }}
+            dateRanges={[
+                { key: "orders", label: "Ordered On" },
+            ]}
         />
     );
 };

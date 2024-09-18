@@ -171,7 +171,7 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, courseLevel, startDate,
                 isOpen={isResumeFormOpen}
                 onClose={() => setIsResumeFormOpen(false)}
                 children={(
-                    <ResumeStudentsForm setIsOpen={setIsResumeFormOpen} id={id} courseId={courseId} />
+                    <ResumeStudentsForm setIsOpen={setIsResumeFormOpen} />
                 )}
             />
             <Modal

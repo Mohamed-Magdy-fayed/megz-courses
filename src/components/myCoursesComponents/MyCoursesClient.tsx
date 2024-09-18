@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 const MyCoursesClient = () => {
     const session = useSession()
 
-    const { data, isLoading } = api.courses.getStudentCourses.useQuery(undefined, { enabled: session.data?.user.isVerified })
+    const { data, isLoading } = api.courses.getStudentCourses.useQuery(undefined, { enabled: !!session.data?.user.emailVerified })
 
     const formattedData: MyCoursesRow[] = data?.courses ? data?.courses.map(({
         id,

@@ -32,14 +32,6 @@ const landingNavLinks = [
         label: "Terms of Use",
         url: "/terms",
     },
-    {
-        label: "Documentation",
-        url: "/documentation",
-    },
-    {
-        label: "Support",
-        url: "/support",
-    },
 ]
 
 const LandingFooter = ({ siteIdentity }: { siteIdentity?: SiteIdentity }) => {

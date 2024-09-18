@@ -40,8 +40,20 @@ const MyTasksPage: NextPage = () => {
                                 studentImage: test.student.image || "",
                                 testLink: `/placement_test/${test.courseId}`,
                                 testTime: test.oralTestTime,
-                                isWrittenTestDone: test.writtenTest.submissions.some(sub => sub.userId === test.studentUserId) ? "true" : "false",
-                                writtenTestResult: test.writtenTest.submissions.find(sub => sub.userId === test.studentUserId)?.rating,
+                                isWrittenTestDone:
+                                    (
+                                        test.writtenTest.googleForm?.responses
+                                            .some(sub => sub.userEmail === test.student.email)
+                                        || test.writtenTest.submissions
+                                            .some(sub => sub.userId === test.studentUserId)
+                                    ) ? "true" : "false",
+                                writtenTestResult:
+                                    Number(
+                                        test.writtenTest.googleForm?.responses
+                                            .find(sub => sub.userEmail === test.student.email)?.totalScore
+                                    )
+                                    || test.writtenTest.submissions
+                                        .find(sub => sub.userId === test.studentUserId)?.rating,
                                 writtenTestTotalPoints: test.writtenTest.totalPoints,
                                 oralTestMeeting: test.oralTestMeeting,
                                 createdBy: test.createdBy?.name || "Null",

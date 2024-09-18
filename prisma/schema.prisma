@@ -94,6 +94,8 @@ model User {
     courseStatus              CourseStatus[]
     certificates              Certificate[]
     evaluationFormSubmissions EvaluationFormSubmission[]
+    placementTests            PlacementTest[]            @relation("PlacementTestToStudent")
+    createdPlacementTests     PlacementTest[]            @relation("PlacementTestToCreatedBy")
     studentNotes              UserNote[]                 @relation("CreatedForStudent")
     userNotes                 UserNote[]                 @relation("CreatedByUser")
     userNoteMention           UserNote[]                 @relation("MentionedUser", fields: [userNoteId], references: [id])
@@ -110,8 +112,6 @@ model User {
     device                    Devices?
     updatedAt                 DateTime                   @updatedAt
     createdAt                 DateTime                   @default(now())
-    placementTests            PlacementTest[]            @relation("PlacementTestToStudent")
-    createdPlacementTests     PlacementTest[]            @relation("PlacementTestToCreatedBy")
 }
 
 model VerificationToken {
@@ -247,7 +247,6 @@ type GoogleFormResponse {
     formId     String
     userEmail  String
     totalScore String
-    answers    String
     createdAt  DateTime @default(now())
 }
 
@@ -256,7 +255,7 @@ model GoogleForm {
     formId              String?              @unique
     title               String?
     formRespondUrl      String?
-    GoogleClient        GoogleClient         @relation(fields: [googleClientId], references: [id])
+    GoogleClient        GoogleClient         @relation(fields: [googleClientId], references: [id], onDelete: Cascade)
     googleClientId      String               @db.ObjectId
     responses           GoogleFormResponse[]
     evaluationForm      EvaluationForm[]
@@ -272,7 +271,7 @@ model GoogleFormQuestion {
     questionPoints  Int
     questionOptions GoogleOption[]
     correctAnswers  GoogleAnswer[]
-    googleForm      GoogleForm     @relation(fields: [googleFormId], references: [id])
+    googleForm      GoogleForm     @relation(fields: [googleFormId], references: [id], onDelete: Cascade)
     googleFormId    String         @db.ObjectId
     updatedAt       DateTime       @updatedAt
     createdAt       DateTime       @default(now())
@@ -282,7 +281,7 @@ model EvaluationForm {
     id             String                     @id @default(auto()) @map("_id") @db.ObjectId
     type           EvaluationFormTypes
     totalPoints    Int
-    googleForm     GoogleForm?                @relation(fields: [googleFormId], references: [id])
+    googleForm     GoogleForm?                @relation(fields: [googleFormId], references: [id], onDelete: SetNull)
     googleFormId   String?                    @db.ObjectId
     googleFormUrl  String?
     courseLevel    CourseLevel?               @relation(fields: [courseLevelId], references: [id], onDelete: Cascade)
@@ -630,7 +629,7 @@ model UserNote {
     status              UserNoteStatus
     mentions            User[]         @relation("MentionedUser", references: [id], fields: [mentionsUserIds])
     mentionsUserIds     String[]       @db.ObjectId
-    createdByUser       User           @relation("CreatedByUser", fields: [createdByUserId], references: [id])
+    createdByUser       User           @relation("CreatedByUser", fields: [createdByUserId], references: [id], onDelete: Cascade)
     createdByUserId     String         @db.ObjectId
     createdForStudent   User           @relation("CreatedForStudent", fields: [createdForStudentId], references: [id], onDelete: Cascade)
     createdForStudentId String         @db.ObjectId

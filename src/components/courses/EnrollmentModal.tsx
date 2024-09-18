@@ -17,6 +17,7 @@ import { useToast } from '../ui/use-toast'
 import LoginModal from '../modals/LoginModal'
 import { render } from '@react-email/render'
 import Email from '@/components/emails/Email'
+import MobileNumberInput from '@/components/ui/phone-number-input'
 
 interface EnrollmentModalProps {
     setOpen: Dispatch<SetStateAction<boolean>>
@@ -41,13 +42,15 @@ const EnrollmentModal: FC<EnrollmentModalProps> = ({
     const [loginModalOpen, setLoginModalOpen] = useState(false)
     const [checkedAgreement, setcheckedAgreement] = useState(false)
     const [isPrivate, setIsPrivate] = useState(false)
+    const [phone, setPhone] = useState("")
 
     const onEnroll = () => {
         if (!session.data?.user.email || !session.data?.user.name) return setLoginModalOpen(true)
-
+        if (!session.data.user.phone && !phone) return toastError("Please add your phone number!")
         setLoading(true)
         enrollCourseMutation.mutate({
             courseId: course.id,
+            phone,
             customerName: session.data.user.name,
             email: session.data.user.email,
             isPrivate,
@@ -112,6 +115,16 @@ const EnrollmentModal: FC<EnrollmentModalProps> = ({
                             <Typography >{session.data?.user.email}</Typography>
                         </div>
                     </div>
+                    {!session.data?.user.phone && (
+                        <div className="flex flex-col items-center justify-between p-4">
+                            <div className="self-start">
+                                <Typography variant={"secondary"}>Please add your phone number:</Typography>
+                            </div>
+                            <div className="self-end">
+                                <MobileNumberInput placeholder='01111111111' setValue={setPhone} value={phone} />
+                            </div>
+                        </div>
+                    )}
                     <Separator />
                     <div className="flex items-center gap-2">
                         <Checkbox

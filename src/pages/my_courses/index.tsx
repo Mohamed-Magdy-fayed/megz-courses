@@ -33,7 +33,7 @@ const CoursesPage: NextPage = () => {
                     {
                         !session.data?.user
                             ? (<Typography>Please login to continue!</Typography>)
-                            : !session.data?.user.isVerified ?
+                            : !session.data?.user.emailVerified ?
                                 (<Typography>Please verify your email!</Typography>)
                                 : (
                                     <PaperContainer>

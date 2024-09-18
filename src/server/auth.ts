@@ -21,20 +21,25 @@ import type { Devices, UserType } from "@prisma/client";
  */
 declare module "next-auth" {
   interface Session extends DefaultSession {
+    accessToken: string;
     user: {
       id: string;
+      phone: string | null;
       userType: UserType;
       device: Devices | null;
-      isVerified: boolean;
+      emailVerified: Date | null;
+      hasPassword: boolean;
       // ...other properties
     } & DefaultSession["user"];
   }
 
   interface User extends DefaultUser {
     id: string;
+    phone: string | null;
     userType: UserType;
     device: Devices | null;
-    isVerified: boolean;
+    emailVerified: Date | null;
+    hasPassword: boolean;
     // ...other properties
   }
 }
@@ -50,6 +55,11 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          prompt: "login",
+        },
+      },
     }),
     CredentialsProvider({
       name: "credentials",
@@ -76,7 +86,7 @@ export const authOptions: NextAuthOptions = {
 
         if (!checkPassword) throw new Error("Incorrect email or password!");
 
-        return { ...user, isVerified: !!user.emailVerified };
+        return { ...user, emailVerified: user.emailVerified, hasPassword: true };
       },
     }),
     /**
@@ -90,30 +100,91 @@ export const authOptions: NextAuthOptions = {
      */
   ],
   callbacks: {
+    async signIn({ user, account }) {
+
+      const { email, name, image, emailVerified } = user;
+      const isEmailVerified = !!emailVerified || account?.provider === "google";
+
+      // Check if user exists in the database
+      if (!email) return `?error=${encodeURIComponent("Email was not provided!")}`
+      let userDoc = await prisma.user.findUnique({
+        where: { email },
+      });
+
+      // Handle user creation if not present
+      if (!userDoc) {
+        if (!name) return `?error=${encodeURIComponent("Name was not provided!")}`
+        userDoc = await prisma.user.create({
+          data: {
+            email,
+            name,
+            image,
+            emailVerified: isEmailVerified ? new Date() : null,
+          },
+        });
+        if (!!account && !!account.provider && !!account.providerAccountId && !!account.type) {
+          const { provider, providerAccountId, type, access_token, expires_at, id_token, scope, token_type } = account
+          await prisma.account.create({
+            data: {
+              provider,
+              providerAccountId,
+              access_token,
+              expires_at,
+              scope,
+              type,
+              token_type,
+              id_token,
+              user: { connect: { email } }
+            },
+          });
+        }
+      }
+
+      return true;
+    },
     async jwt({ token, user, trigger, session }) {
-      if (trigger === "update" && session?.isVerified) {
-        token.isVerified = session.isVerified
-        return token
+      if (trigger === "update") {
+        return {
+          ...token,
+          name: session.name,
+          email: session.email,
+          phone: session.phone,
+          picture: session.image,
+          device: session.device,
+          emailVerified: session.emailVerified,
+        }
       }
       if (user) {
-        return { ...token, userType: user.userType, device: user.device, isVerified: user.isVerified }
+        return {
+          ...token,
+          userType: user.userType,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          picture: user.image,
+          device: user.device,
+          hasPassword: user.hasPassword,
+          emailVerified: !!user.emailVerified,
+        }
       }
       return token
     },
     async session({ session, token }) {
-      if (token.userType) {
-        return {
-          ...session,
-          user: {
-            ...session.user,
-            userType: token.userType,
-            device: token.device,
-            isVerified: token.isVerified,
-            id: token.sub,
-          }
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          name: token.name,
+          email: token.email,
+          phone: token.phone,
+          hasPassword: token.hasPassword,
+          picture: token.picture,
+          userType: token.userType,
+          device: token.device,
+          emailVerified: token.emailVerified,
+          id: token.sub,
         }
       }
-      return session
     }
   },
   debug: env.NODE_ENV === "development",

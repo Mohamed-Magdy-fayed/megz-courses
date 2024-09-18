@@ -10,6 +10,7 @@ import {
   getPaginationRowModel,
   useReactTable,
   PaginationState,
+  Updater,
 } from "@tanstack/react-table";
 
 import {
@@ -23,37 +24,27 @@ import {
 import { AlertModal } from "../modals/AlertModal";
 import { Typography } from "./Typoghraphy";
 import { Button } from "./button";
-import { ArrowLeft, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, DownloadCloud, SortAsc, SortDesc, Trash } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, DownloadCloud, SortAsc, SortDesc, Trash } from "lucide-react";
 import { TableInput } from "@/components/ui/table-input";
 import TableSelectField from "@/components/ui/TableSelectField";
 import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import { formatPrice } from "@/lib/utils";
 import Spinner from "@/components/Spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import router from "next/router";
 import Modal from "@/components/ui/modal";
-import { api } from "@/lib/api";
 import { Prisma } from "@prisma/client";
 import { useSession } from "next-auth/react";
 
-type Cursor = Prisma.UserNoteFindManyArgs["cursor"]
-type Distinct = Prisma.UserNoteFindManyArgs["distinct"]
-type Include = Prisma.UserNoteFindManyArgs["include"]
-type OrderBy = Prisma.UserNoteFindManyArgs["orderBy"]
-type Select = Prisma.UserNoteFindManyArgs["select"]
-type Skip = Prisma.UserNoteFindManyArgs["skip"]
-type Take = Prisma.UserNoteFindManyArgs["take"]
-type Where = Prisma.UserNoteFindManyArgs["where"]
+type Cursor = Prisma.UserFindManyArgs["cursor"]
+type OrderBy = Prisma.UserFindManyArgs["orderBy"]
+type Skip = Prisma.UserFindManyArgs["skip"]
+type Take = Prisma.UserFindManyArgs["take"]
 
-export type QueryNotesArgs = {
+export type QueryArgs = {
   cursor?: Cursor;
-  distinct?: Distinct;
-  include?: Include;
   orderBy?: OrderBy;
-  select?: Select;
   skip?: Skip;
   take?: Take;
-  where?: Where;
 }
 
 interface DataTableProps<TData, TValue> {
@@ -66,10 +57,10 @@ interface DataTableProps<TData, TValue> {
     key: Extract<keyof TData, string>,
     label: string,
   };
-  dateRange?: {
+  dateRanges?: {
     key: Extract<keyof TData, string>,
     label: string,
-  };
+  }[];
   searches?: {
     key: Extract<keyof TData, string>,
     label: string,
@@ -88,7 +79,7 @@ export function DataTable<TData, TValue>({
   onDelete,
   skele,
   sum,
-  dateRange,
+  dateRanges,
   searches,
   filters,
 }: DataTableProps<TData, TValue>) {
@@ -241,10 +232,10 @@ export function DataTable<TData, TValue>({
           </div>
         )}
         <div className="flex flex-col gap-2 justify-center">
-          <div className="flex items-center justify-between gap-2">
-            {table.getPageCount() === 0 ? null : table.getPageCount() === 1 ? (
-              <Typography>Only 1 Page</Typography>
-            ) : (
+          {table.getPageCount() === 0 ? null : table.getPageCount() === 1 ? (
+            <Typography>Only 1 Page</Typography>
+          ) : (
+            <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2 justify-center w-full">
                 <Typography>Page</Typography>
                 <Typography>{pagination.pageIndex + 1}</Typography>
@@ -252,42 +243,49 @@ export function DataTable<TData, TValue>({
                 <Typography>{table.getPageCount()}</Typography>
                 <Typography>Pages</Typography>
               </div>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              className="bg-primary h-4 w-8 p-0"
-              onClick={() => table.setPageIndex(0)}
-              disabled={pagination.pageIndex === 0}
-            >
-              <ChevronsLeft className="w-4" />
-            </Button>
-            <Button
-              className="bg-primary h-4 w-8 p-0"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <ChevronLeft className="w-4" />
-            </Button>
-            <PaginationPageSelectors
-              pageCount={table.getPageCount()}
-              setPageIndex={table.setPageIndex}
-              currentPage={table.getState().pagination.pageIndex}
+              <div className="flex items-center gap-2">
+                <Button
+                  className="bg-primary h-4 w-8 p-0"
+                  onClick={() => table.setPageIndex(0)}
+                  disabled={pagination.pageIndex === 0}
+                >
+                  <ChevronsLeft className="w-4" />
+                </Button>
+                <Button
+                  className="bg-primary h-4 w-8 p-0"
+                  onClick={() => table.previousPage()}
+                  disabled={!table.getCanPreviousPage()}
+                >
+                  <ChevronLeft className="w-4" />
+                </Button>
+                <PaginationPageSelectors
+                  pageCount={table.getPageCount()}
+                  setPageIndex={table.setPageIndex}
+                  currentPage={table.getState().pagination.pageIndex}
+                />
+                <Button
+                  className="bg-primary h-4 w-8 p-0"
+                  onClick={() => table.nextPage()}
+                  disabled={!table.getCanNextPage()}
+                >
+                  <ChevronRight className="w-4" />
+                </Button>
+                <Button
+                  className="bg-primary h-4 w-8 p-0"
+                  onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                  disabled={!table.getCanNextPage()}
+                >
+                  <ChevronsRight className="w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+          <div className="flex items-center gap-2 justify-center w-full">
+            <PaginationPageSizeSelectors
+              pageSize={10}
+              setPageSize={table.setPageSize}
+              options={[5, 10, 50, 100]}
             />
-            <Button
-              className="bg-primary h-4 w-8 p-0"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              <ChevronRight className="w-4" />
-            </Button>
-            <Button
-              className="bg-primary h-4 w-8 p-0"
-              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-              disabled={!table.getCanNextPage()}
-            >
-              <ChevronsRight className="w-4" />
-            </Button>
           </div>
         </div>
       </div>
@@ -388,18 +386,18 @@ export function DataTable<TData, TValue>({
                             </Button>
                           </div>
                         </div>
-                      ) : dateRange?.key === header.id
+                      ) : dateRanges?.some(dr => dr.key === header.id)
                         ? (
                           <div className="flex gap-2 items-center justify-between">
                             <DateRangePicker
-                              label={dateRange.label}
+                              label={dateRanges.find(dr => dr.key === header.id)?.label || "No Label"}
                               handleReset={() => {
-                                const col = table.getColumn(dateRange.key)
+                                const col = table.getColumn(header.id)
                                 col?.setFilterValue(undefined)
                               }}
                               handleChange={() => {
                                 if (!startDate && !endDate) {
-                                  const col = table.getColumn(dateRange.key)
+                                  const col = table.getColumn(header.id)
                                   col?.setFilterValue(undefined)
                                   return
                                 }
@@ -409,7 +407,7 @@ export function DataTable<TData, TValue>({
                                   newStartDate.setHours(0, 0, 0)
                                   const newEndDate = new Date(endDate.getTime())
                                   newEndDate.setHours(23, 59, 59)
-                                  const col = table.getColumn(dateRange.key)
+                                  const col = table.getColumn(header.id)
                                   col?.setFilterValue(`${newStartDate}|${newEndDate}`)
                                   return
                                 }
@@ -419,7 +417,7 @@ export function DataTable<TData, TValue>({
                                   newStartDate.setHours(0, 0, 0)
                                   const newEndDate = new Date(startDate.getTime())
                                   newEndDate.setHours(23, 59, 59)
-                                  const col = table.getColumn(dateRange.key)
+                                  const col = table.getColumn(header.id)
                                   col?.setFilterValue(`${newStartDate}|${newEndDate}`)
                                   return
                                 }
@@ -430,7 +428,7 @@ export function DataTable<TData, TValue>({
                                   const newEndDate = new Date(endDate?.getTime()!)
                                   newEndDate.setHours(23, 59, 59)
 
-                                  const col = table.getColumn(dateRange.key)
+                                  const col = table.getColumn(header.id)
                                   col?.setFilterValue(`${newStartDate}|${newEndDate}`)
                                   return
                                 }
@@ -440,7 +438,7 @@ export function DataTable<TData, TValue>({
                                 const newEndDate = new Date(endDate?.getTime()!)
                                 newEndDate.setHours(23, 59, 59)
 
-                                const col = table.getColumn(dateRange.key)
+                                const col = table.getColumn(header.id)
                                 col?.setFilterValue(`${newStartDate}|${newEndDate}`)
                                 return
                               }}
@@ -577,15 +575,43 @@ export const PaginationPageSelectors: React.FC<PaginationPageSelectorsProps> = (
   );
 };
 
+export interface PaginationPageSizeSelectorsProps {
+  pageSize: number;
+  options: number[];
+  setPageSize: (updater: Updater<number>) => void
+}
+
+export const PaginationPageSizeSelectors: React.FC<PaginationPageSizeSelectorsProps> = ({ setPageSize, options }) => {
+  const [localPageSize, setLocalPageSize] = React.useState(10)
+
+  return (
+    <div className="flex flex-col items-center gap-2 px-4">
+      <Typography>Page Size</Typography>
+      <div className="flex items-center gap-2 px-4">
+        {options.map(item => (
+          <Button
+            key={`${item}DataTablePageSize`}
+            variant={item === localPageSize ? "default" : "outline"}
+            customeColor={item === localPageSize ? "primary" : "primaryOutlined"}
+            className="h-4 w-8 p-0 transition-all duration-100"
+            onClick={() => {
+              setPageSize(item)
+              setLocalPageSize(item)
+            }}
+          >
+            {item}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export const ExportForm = ({ setQueryProps, pagination }: {
   pagination: PaginationState;
   setQueryProps: React.Dispatch<React.SetStateAction<{
-    where?: Where;
     cursor?: Cursor;
-    distinct?: Distinct;
-    include?: Include;
     orderBy?: OrderBy;
-    select?: Select;
     skip?: Skip;
     take?: Take;
   }>>
@@ -597,9 +623,7 @@ export const ExportForm = ({ setQueryProps, pagination }: {
         setQueryProps({
           take: pagination.pageSize,
           skip: (pagination.pageIndex + 1) * pagination.pageSize,
-          include: { createdForStudent: true },
           orderBy: { createdAt: "asc" },
-
         })
       }}>
         setQueryProps

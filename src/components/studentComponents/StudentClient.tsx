@@ -9,13 +9,12 @@ const StudentClient = () => {
   const [users, setUsers] = useState<StudentRow[]>([]);
 
   const { data: coursesData, refetch: refetchCourses } = api.courses.getAll.useQuery(undefined, { enabled: false })
-  const { data, isLoading, refetch: refetchUsers } = api.users.getUsers.useQuery({
+  const { data, isLoading } = api.users.getUsers.useQuery({
     userType: "student",
-  }, { enabled: false });
+  });
 
   useEffect(() => {
     refetchCourses()
-    refetchUsers()
   }, [])
 
   const formattedData: StudentRow[] = data?.users.map((user) => ({
@@ -60,7 +59,7 @@ const StudentClient = () => {
       data={formattedData}
       setData={setUsers}
       onDelete={onDelete}
-      dateRange={{ key: "createdAt", label: "Created On" }}
+      dateRanges={[{ key: "createdAt", label: "Created On" }]}
       searches={[
         { key: "email", label: "email" },
         { key: "address", label: "address" },

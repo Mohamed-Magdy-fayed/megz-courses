@@ -55,7 +55,7 @@ const ZoomGroupsClient = () => {
             skele={isGroupsLoading}
             setData={setZoomGroups}
             onDelete={onDelete}
-            dateRange={{ key: "startDate", label: "Start Date" }}
+            dateRanges={[{ key: "startDate", label: "Start Date" }]}
             searches={[
                 { key: "groupNumber", label: "Group Number" },
                 { key: "trainerName", label: "Trainer" },

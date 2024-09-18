@@ -1,26 +1,63 @@
-import { ConceptTitle } from "@/components/ui/Typoghraphy";
+import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { api } from "@/lib/api";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import AppLayout from "@/components/layout/AppLayout";
 import FullWaitingListClient from "@/components/fullWaitingList/FullWaitingListClient";
-import { useEffect } from "react";
+import { useState } from "react";
+import { CourseStatuses } from "@prisma/client";
+import { validCourseStatuses } from "@/lib/enumsTypes";
+import { PlayCircle } from "lucide-react";
+import Modal from "@/components/ui/modal";
+import ResumeStudentsForm from "@/components/zoomGroupsComponents/ResumeStudentsForm";
+import { Button } from "@/components/ui/button";
+import { upperFirst } from "lodash";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 
 const WaitingListPage = () => {
-    const { data: waitingList, refetch } = api.waitingList.getFullWaitingList.useQuery(undefined, { enabled: false });
+    const [status, setStatus] = useState<CourseStatuses>("waiting")
+    const [isResumeFormOpen, setIsResumeFormOpen] = useState(false);
 
-    useEffect(() => {
-        refetch()
-    }, [])
-    
+    const { data: waitingList } = api.waitingList.queryFullList.useQuery({ status });
+
     return (
         <AppLayout>
             <main>
                 <div className="flex flex-col gap-2">
-                    <div className="flex items-center justify-between gap-4">
-                        <div className="flex flex-col gap-2">
-                            <ConceptTitle>Waiting List</ConceptTitle>
-                        </div>
-                    </div>
+                    <Tabs defaultValue="waiting">
+                        <TabsList className="flex">
+                            {validCourseStatuses.map(st => (
+                                <TabsTrigger key={st} value={st} onClick={() => setStatus(st)}>{upperFirst(st)}</TabsTrigger>
+                            ))}
+                        </TabsList>
+                        {validCourseStatuses.map(st => (
+                            <TabsContent key={st} value={st}>
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="flex flex-col gap-2">
+                                        <ConceptTitle>{upperFirst(status)} List</ConceptTitle>
+                                    </div>
+                                    {status === "postponded" && (
+                                        <div className="flex flex-col gap-2">
+                                            <Modal
+                                                title="Resume studnets"
+                                                description="move studnets to back to waiting list"
+                                                isOpen={isResumeFormOpen}
+                                                onClose={() => setIsResumeFormOpen(false)}
+                                                children={(
+                                                    <ResumeStudentsForm setIsOpen={setIsResumeFormOpen} />
+                                                )}
+                                            />
+                                            <Button onClick={() => {
+                                                setIsResumeFormOpen(true)
+                                            }}>
+                                                <PlayCircle className="w-4 h-4 mr-2" />
+                                                Resume students
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
+                            </TabsContent>
+                        ))}
+                    </Tabs>
                     <PaperContainer>
                         <FullWaitingListClient formattedData={waitingList?.fullList.map(item => ({
                             id: item.user.id,

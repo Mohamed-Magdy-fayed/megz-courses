@@ -69,7 +69,7 @@ const CoursesClient = () => {
             data={formattedData || []}
             setData={setCourses}
             onDelete={onDelete}
-            dateRange={{ key: "createdAt", label: "Created On" }}
+            dateRanges={[{ key: "createdAt", label: "Created On" }]}
             searches={[
                 { key: "name", label: "Name" },
                 { key: "groupPrice", label: "Group Price" },

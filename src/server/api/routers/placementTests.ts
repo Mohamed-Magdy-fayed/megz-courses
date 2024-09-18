@@ -21,7 +21,7 @@ export const placementTestsRouter = createTRPCRouter({
                     course: true,
                     student: { include: { courseStatus: { include: { level: true, course: true } } } },
                     trainer: { include: { user: true } },
-                    writtenTest: { include: { submissions: true } },
+                    writtenTest: { include: { submissions: true, googleForm: true, questions: true } },
                 }
             })
 

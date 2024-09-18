@@ -61,7 +61,7 @@ const PlacmentTestClient = ({ formattedData }: { formattedData: PlacmentTestRow[
             searches={[
                 { key: "createdBy", label: "Created By" },
             ]}
-            dateRange={{ key: "createdAt", label: "Created At" }}
+            dateRanges={[{ key: "createdAt", label: "Created At" }]}
         />
     );
 };

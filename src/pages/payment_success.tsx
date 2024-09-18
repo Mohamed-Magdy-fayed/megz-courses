@@ -63,7 +63,7 @@ const SuccessfullPaymentPage = () => {
                 toast({
                     variant: "success",
                     title: "Order payment successfull",
-                    description: `Thanks for completeing the payment for order: `
+                    description: `Thanks for completing the payment for order: ${updatedOrder.orderNumber}`
                 })
                 trpcUtils.salesOperations.invalidate()
                 setLoading(false)

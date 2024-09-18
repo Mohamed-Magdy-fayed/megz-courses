@@ -50,7 +50,7 @@ const SalesAgentClient = () => {
       data={formattedData}
       setData={setSalesAgents}
       onDelete={onDelete}
-      dateRange={{ key: "createdAt", label: "Created At" }}
+      dateRanges={[{ key: "createdAt", label: "Created At" }]}
       searches={[
         { key: "email", label: "Email" },
         { key: "salary", label: "Salary" },

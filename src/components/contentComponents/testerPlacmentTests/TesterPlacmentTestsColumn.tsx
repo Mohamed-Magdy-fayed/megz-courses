@@ -108,13 +108,24 @@ export const columns: ColumnDef<Column>[] = [
     },
     {
         accessorKey: "isWrittenTestDone",
-        header: "Written Test Status",
         cell: ({ row }) => {
             const color: SeverityPillProps["color"] = row.original.isWrittenTestDone === "true" ? "success" : "destructive"
             const testResultPercentage = row.original.writtenTestResult && row.original.writtenTestTotalPoints && formatPercentage(row.original.writtenTestResult / row.original.writtenTestTotalPoints * 100)
             return (
                 <SeverityPill color={color}>
                     {row.original.isWrittenTestDone === "true" ? `Done ${testResultPercentage}` : "Not completed"}
+                </SeverityPill>
+            )
+        }
+    },
+    {
+        accessorKey: "isLevelSubmittedString",
+        cell: ({ row }) => {
+            const color: SeverityPillProps["color"] = row.original.isLevelSubmittedString === "Completed" ? "success" : "destructive"
+            const testResult = row.original.level
+            return (
+                <SeverityPill color={color}>
+                    {row.original.isLevelSubmittedString === "Completed" ? `${testResult}` : "Not completed"}
                 </SeverityPill>
             )
         }
@@ -127,7 +138,6 @@ export const columns: ColumnDef<Column>[] = [
             const [trainerId, setTrainerId] = useState<string[]>([])
             const [testTime, setTestTime] = useState<Date | undefined>(new Date())
             const [loadingToast, setLoadingToast] = useState<toastType>()
-
 
             const currentTestTime = new Date(row.original.testTime).getTime();
 
@@ -237,17 +247,6 @@ export const columns: ColumnDef<Column>[] = [
                 availableZoomClientMutation.mutate({ startDate: testTime })
             }
 
-            if (row.original.isLevelSubmitted) {
-                const level = row.original.level
-                const color: SeverityPillProps["color"] =
-                    level === "A0_A1_Beginner_Elementary" || level === "A2_Pre_Intermediate" ? "info"
-                        : level === "B1_Intermediate" || level === "B2_Upper_Intermediate" ? "success"
-                            : "destructive"
-                return (
-                    <SeverityPill className="max-w-fit p-2" color={color}>{level}</SeverityPill>
-                )
-            }
-
             return (
                 <div className="flex flex-col gap-2">
                     <Modal
@@ -284,58 +283,23 @@ export const columns: ColumnDef<Column>[] = [
                         )}
                     />
                     <Typography>{format(row.original.testTime, "PPPp")}</Typography>
-                    {isOralTestTimePassed ? (
-                        <Button onClick={() => setIsOpen(true)}>Reschedule</Button>
-                    ) : isOralTestTimeNow ? (
-                        <Link target="_blank" className="w-fit" href={`/meeting/?mn=${row.original.oralTestMeeting.meetingNumber}&pwd=${row.original.oralTestMeeting.meetingPassword}&session_title=Placement_Test&leave_url=${env.NEXT_PUBLIC_NEXTAUTH_URL}edu_team/my_tasks`}>
-                            <Button disabled={isOralTestTimePassed}>Join Meeting</Button>
-                        </Link>
-                    ) : null}
+                    {row.original.isLevelSubmitted ? null :
+                        isOralTestTimePassed ? (
+                            <Button onClick={() => setIsOpen(true)}>Reschedule</Button>
+                        ) : isOralTestTimeNow ? (
+                            <Link target="_blank" className="w-fit" href={`/meeting/?mn=${row.original.oralTestMeeting.meetingNumber}&pwd=${row.original.oralTestMeeting.meetingPassword}&session_title=Placement_Test&leave_url=${env.NEXT_PUBLIC_NEXTAUTH_URL}edu_team/my_tasks`}>
+                                <Button disabled={isOralTestTimePassed}>Join Meeting</Button>
+                            </Link>
+                        ) : null}
                 </div>
             )
         }
     },
     {
         accessorKey: "createdBy",
-        header: ({ column }) => {
-            return (
-                <div className="flex items-center justify-between">
-                    Sales Agent
-                    <Button
-                        className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        <ArrowUpDown className="h-4 w-4 text-primary" />
-                    </Button>
-                </div>
-            );
-        },
     },
     {
         accessorKey: "createdAt",
-        header: ({ column }) => {
-            return (
-                <div className="flex items-center justify-between">
-                    Created at
-                    <Button
-                        className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        <ArrowUpDown className="h-4 w-4 text-primary" />
-                    </Button>
-                </div>
-            );
-        },
-        cell: ({ row }) => {
-            return (
-                <Typography>{row.original.createdBy ? row.original.createdBy : "Null"}</Typography>
-            )
-        },
-    },
-    {
-        accessorKey: "isLevelSubmittedString",
-        header: "",
-        cell: "",
     },
     {
         id: "actions",
@@ -345,9 +309,11 @@ export const columns: ColumnDef<Column>[] = [
         cell: ({ row }) => <ActionCell
             id={row.original.id}
             isLevelSubmitted={row.original.isLevelSubmitted}
+            levelName={row.original.level || ""}
             testLink={row.original.testLink}
             userId={row.original.studentUserId}
             courseId={row.original.courseId}
+            courseName={row.original.courseName}
             courseLevels={row.original.courseLevels}
         />,
     },

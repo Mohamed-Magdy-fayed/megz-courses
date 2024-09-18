@@ -4,9 +4,8 @@ import {
     protectedProcedure,
 } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import { forms_v1, google } from "googleapis";
-import { env } from "@/env.mjs";
-import { getGoogleFormDetails, refreshGoogleToken } from "@/lib/googleApis";
+import { google } from "googleapis";
+import { getFormResponses, getGoogleFormDetails, refreshGoogleToken, revokeToken } from "@/lib/googleApis";
 
 export const googleAccountsRouter = createTRPCRouter({
     getGoogleAccounts: protectedProcedure
@@ -23,12 +22,51 @@ export const googleAccountsRouter = createTRPCRouter({
             const formDetails = await getGoogleFormDetails(url, clientId)
             return { formDetails }
         }),
+    getGoogleFormResponses: protectedProcedure
+        .input(z.object({
+            url: z.string(),
+            clientId: z.string(),
+        }))
+        .mutation(async ({ ctx, input: { url, clientId } }) => {
+            const responses = await getFormResponses(url, clientId)
+
+            const userResponse = responses?.find(res => res.userEmail === ctx.session.user.email)
+            if (!userResponse) throw new TRPCError({ code: "BAD_REQUEST", message: "Your response is not submitted yet!\nIf you're typing the email manually please make sure it's the correct email address!" })
+
+
+            if (!userResponse.formId) throw new TRPCError({ code: "BAD_REQUEST", message: "Missing formId from response details!" })
+
+            const form = await ctx.prisma.googleForm.findUnique({ where: { formId: userResponse.formId } })
+            if (form?.responses.some(res => res.responseId === userResponse.responseId)) return {
+                userResponse
+            }
+
+            const updatedForm = await ctx.prisma.googleForm.update({
+                where: { formId: userResponse.formId }, data: {
+                    responses: {
+                        push: {
+                            formId: userResponse.formId || "No Data",
+                            responseId: userResponse.responseId || "No Data",
+                            totalScore: userResponse.totalScore?.toFixed(0) || "No Data",
+                            userEmail: userResponse.userEmail || "No Data",
+                            createdAt: userResponse.createdAt || "No Data",
+                        }
+                    }
+                }
+            })
+
+            return { userResponse, updatedForm }
+        }),
     deleteGoogleAccounts: protectedProcedure
         .input(z.object({
             ids: z.array(z.string()),
         }))
         .mutation(async ({ ctx, input: { ids } }) => {
             if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action" });
+            const accounts = await ctx.prisma.googleClient.findMany({ where: { id: { in: ids } } })
+
+            accounts.forEach(acc => revokeToken(acc.accessToken || "", acc.refreshToken || ""))
+
             const deletedGoogleAccounts = await ctx.prisma.googleClient.deleteMany({
                 where: { id: { in: ids } }
             });
@@ -47,8 +85,13 @@ export const googleAccountsRouter = createTRPCRouter({
             const oAuth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
 
             const googleAuthUrl = oAuth2Client.generateAuthUrl({
-                access_type: 'offline',
-                scope: ['https://www.googleapis.com/auth/forms', "https://www.googleapis.com/auth/drive.file"],
+                access_type: "offline",
+                scope: [
+                    "https://www.googleapis.com/auth/forms",
+                    "https://www.googleapis.com/auth/drive.file",
+                    "https://www.googleapis.com/auth/forms.responses.readonly",
+                    "https://www.googleapis.com/auth/forms.body.readonly",
+                ],
                 state: name,
             });
 

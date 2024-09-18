@@ -51,7 +51,7 @@ const SalesOperationsClient = () => {
       data={formattedData || []}
       setData={setSalesOperations}
       onDelete={onDelete}
-      dateRange={{ key: "lastAction", label: "Last Action " }}
+      dateRanges={[{ key: "lastAction", label: "Last Action " }]}
       searches={[
         { key: "code", label: "Code" },
         { key: "assigneeEmail", label: "Assignee Email" },

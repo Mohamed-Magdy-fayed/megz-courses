@@ -12,16 +12,29 @@ export const selfServeRouter = createTRPCRouter({
             customerName: z.string(),
             email: z.string(),
             courseId: z.string(),
+            phone: z.string().optional(),
             isPrivate: z.boolean().optional(),
         }))
-        .mutation(async ({ input: { courseId, email, customerName, isPrivate }, ctx }) => {
-            const user = await ctx.prisma.user.findUnique({
+        .mutation(async ({ input: { courseId, email, phone, customerName, isPrivate }, ctx }) => {
+            let user = await ctx.prisma.user.findUnique({
                 where: {
                     email
                 },
                 include: { courseStatus: true }
             })
             if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to get user" })
+            if (!!phone) {
+                user = await ctx.prisma.user.update({
+                    where: {
+                        email
+                    },
+                    data: {
+                        phone,
+                    },
+                    include: { courseStatus: true }
+                })
+            }
+            if (!user.phone) throw new TRPCError({ code: "BAD_REQUEST", message: "Phone!!" })
 
             const foundMatchingCourse = user?.courseStatus.some((status) => status.courseId === courseId)
 

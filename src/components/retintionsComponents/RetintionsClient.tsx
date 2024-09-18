@@ -77,7 +77,7 @@ const RetintionsClient = () => {
             }))
         },
       ]}
-      dateRange={{ key: "createdAt", label: "Created On" }}
+      dateRanges={[{ key: "createdAt", label: "Created On" }]}
       searches={[
         { key: "email", label: "email" },
         { key: "address", label: "address" },

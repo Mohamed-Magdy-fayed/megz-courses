@@ -73,7 +73,7 @@ const OrdersClient = ({ userId }: { userId?: string }) => {
       setData={setOrders}
       onDelete={onDelete}
       sum={{ key: "amount", label: "Total" }}
-      dateRange={{ key: "updatedAt", label: "Payment Date" }}
+      dateRanges={[{ key: "updatedAt", label: "Payment Date" }]}
       searches={[
         { key: "orderNumber", label: "Order Number" },
         { key: "userName", label: "User Name" },

@@ -82,7 +82,7 @@ export const evaluationFormRouter = createTRPCRouter({
           course: { include: { levels: true } },
           student: { include: { courseStatus: { include: { course: true, level: true } } } },
           trainer: { include: { user: true } },
-          writtenTest: { include: { submissions: true, questions: true } },
+          writtenTest: { include: { submissions: true, questions: true, googleForm: true } },
           createdBy: true,
         },
         orderBy: { createdAt: "desc" }
@@ -216,24 +216,29 @@ export const evaluationFormRouter = createTRPCRouter({
           totalPoints: formDetails.questions.map(q => q.questionPoints).reduce((a, b) => a + b, 0),
           googleFormUrl: url,
           googleForm: {
-            create: {
-              GoogleClient: {
-                connect: { id: clientId }
+            connectOrCreate: {
+              where: {
+                formId: formDetails.formId,
               },
-              formId: formDetails.formId,
-              formRespondUrl: formDetails.formRespondUrl,
-              title: formDetails.title,
-              googleFormQuestions: {
-                createMany: !formDetails.questions ? undefined : {
-                  data: formDetails.questions.map(q => ({
-                    questionImage: q.questionImage.toString() || "",
-                    questionPoints: q.questionPoints || 1,
-                    questionText: q.questionText || "",
-                    correctAnswers: q.correctAnswers.map((a, i) => ({ value: a.value || `val${i}` })),
-                    questionOptions: q.questionOptions.map((o, i) => ({ value: o.value || `val${i}` })),
-                  }))
-                }
-              },
+              create: {
+                GoogleClient: {
+                  connect: { id: clientId }
+                },
+                formId: formDetails.formId,
+                formRespondUrl: formDetails.formRespondUrl,
+                title: formDetails.title,
+                googleFormQuestions: {
+                  createMany: !formDetails.questions ? undefined : {
+                    data: formDetails.questions.map(q => ({
+                      questionImage: q.questionImage.toString() || "",
+                      questionPoints: q.questionPoints || 1,
+                      questionText: q.questionText || "",
+                      correctAnswers: q.correctAnswers.map((a, i) => ({ value: a.value || `val${i}` })),
+                      questionOptions: q.questionOptions.map((o, i) => ({ value: o.value || `val${i}` })),
+                    }))
+                  }
+                },
+              }
             }
           },
           createdBy: ctx.session.user.email,

@@ -26,6 +26,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { validTrainerRoles } from "@/lib/enumsTypes";
 import ImageUploader from "../ui/ImageUploader";
+import MobileNumberInput from "@/components/ui/phone-number-input";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name can't be empty"),
@@ -170,12 +171,10 @@ const TrainerForm: React.FC<TrainerFormProps> = ({ setIsOpen }) => {
               <FormItem>
                 <FormLabel>Phone</FormLabel>
                 <FormControl>
-                  <Input
-                    type="tel"
-                    disabled={loading}
+                  <MobileNumberInput
                     placeholder="01234567899"
-                    {...field}
-                    className="pl-8"
+                    setValue={(val) => field.onChange(val)}
+                    value={field.value || ""}
                   />
                 </FormControl>
               </FormItem>

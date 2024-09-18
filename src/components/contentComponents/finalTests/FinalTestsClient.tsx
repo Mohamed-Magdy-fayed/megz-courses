@@ -34,7 +34,7 @@ const FinalTestClient = ({ formattedData }: { formattedData: FinalTestRow[] }) =
             searches={[
                 { key: "createdBy", label: "Created By" },
             ]}
-            dateRange={{ key: "createdAt", label: "Created At" }}
+            dateRanges={[{ key: "createdAt", label: "Created At" }]}
             filters={[
                 {
                     key: "levelName", filterName: "Level", values: formattedData.map(d => ({

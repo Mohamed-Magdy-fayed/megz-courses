@@ -13,7 +13,7 @@ const WaitingListClient = ({ formattedData }: { formattedData: WaitingListRow[] 
             filters={[
                 { key: "levelSlug", filterName: "Level", values: formattedData[0]?.levelSlugs || [] }
             ]}
-            dateRange={{ key: "orders", label: "Ordered On" }}
+            dateRanges={[{ key: "orders", label: "Ordered On" }]}
         />
     );
 };

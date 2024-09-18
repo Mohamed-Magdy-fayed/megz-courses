@@ -8,7 +8,7 @@ const CourseGroupsClient = ({ formattedData }: { formattedData: CourseRow[] }) =
             data={formattedData || []}
             setData={() => { }}
             onDelete={() => { }}
-            dateRange={{ key: "startDate", label: "Start Date" }}
+            dateRanges={[{ key: "startDate", label: "Start Date" }]}
             searches={[
                 { key: "groupNumber", label: "Group name" },
             ]}

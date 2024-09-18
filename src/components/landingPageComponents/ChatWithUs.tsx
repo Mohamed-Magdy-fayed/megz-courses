@@ -72,7 +72,7 @@ const ChatWithUs = () => {
         };
     }, []);
 
-    if (!sessionData?.user || !sessionData.user.isVerified) return
+    if (!sessionData?.user || !sessionData.user.emailVerified) return
 
     return (
         <ChatPopover

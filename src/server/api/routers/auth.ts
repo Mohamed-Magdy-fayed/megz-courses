@@ -172,7 +172,7 @@ export const authRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-        oldPassword: z.string(),
+        oldPassword: z.string().optional(),
         newPassword: z.string(),
         newPasswordConfirmation: z.string(),
       })
@@ -189,12 +189,14 @@ export const authRouter = createTRPCRouter({
           where: { id },
         });
 
-        const checkOldPassword = await bcrypt.compare(
-          oldPassword,
-          user?.hashedPassword!
-        );
-        if (!checkOldPassword) {
-          throw new Error(`incorrect old password`);
+        if (oldPassword) {
+          const checkOldPassword = await bcrypt.compare(
+            oldPassword,
+            user?.hashedPassword!
+          );
+          if (!checkOldPassword) {
+            throw new Error(`incorrect old password`);
+          }
         }
 
         const hashedPassword = await bcrypt.hash(newPassword, 10);

@@ -13,19 +13,19 @@ const TesterPlacmentTestClient = ({ formattedData }: { formattedData: Column[] }
             ]}
             filters={[
                 {
-                    key: "isLevelSubmittedString", filterName: "Submission status", values: [
+                    key: "isLevelSubmittedString", filterName: "Oral Test", values: [
                         {
                             label: "Completed",
-                            value: "Completed",
+                            value: "true",
                         },
                         {
-                            label: "Waiting",
-                            value: "Waiting",
+                            label: "Not Completed",
+                            value: "false",
                         },
                     ]
                 },
                 {
-                    key: "isWrittenTestDone", filterName: "Submission status", values: [
+                    key: "isWrittenTestDone", filterName: "Written Test", values: [
                         {
                             label: "Completed",
                             value: "true",
@@ -46,7 +46,7 @@ const TesterPlacmentTestClient = ({ formattedData }: { formattedData: Column[] }
                         }))
                 },
             ]}
-            dateRange={{ key: "testTime", label: "Oral Test Time" }}
+            dateRanges={[{ key: "testTime", label: "Oral Test Time" }]}
         />
     );
 };

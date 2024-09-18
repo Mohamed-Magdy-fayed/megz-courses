@@ -112,7 +112,7 @@ const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
   if (!ctx.session || !ctx.session.user) {
     throw new TRPCError({ code: "UNAUTHORIZED", message: "Please login to continue!" });
   }
-  if (!ctx.session.user.isVerified) {
+  if (!ctx.session.user.emailVerified) {
     throw new TRPCError({ code: "FORBIDDEN", message: "Please verify your email!" });
   }
   return next({

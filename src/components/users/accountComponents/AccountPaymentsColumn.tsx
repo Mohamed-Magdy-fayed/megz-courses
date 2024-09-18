@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowUpDown } from "lucide-react";
-import Link from "next/link";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { OrderStatus } from "@prisma/client";
 import { SeverityPill, SeverityPillProps } from "@/components/overview/SeverityPill";
@@ -41,29 +40,11 @@ export const columns: ColumnDef<Order>[] = [
     },
     {
         accessorKey: "orderNumber",
-        header: ({ column }) => {
-            return (
-                <div className="flex items-center justify-between">
-                    Order Number
-                    <Button
-                        className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        <ArrowUpDown className="h-4 w-4 text-primary" />
-                    </Button>
-                </div>
-            );
-        },
+        header: "Order Number",
         cell: ({ row }) => (
-            <Link className="block w-fit" href={`/orders/${row.original.id}`}>
-                <div className="flex flex-col gap-2">
-                    <Typography
-                        className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
-                    >
-                        {row.original.orderNumber}
-                    </Typography>
-                </div>
-            </Link>
+            <Typography>
+                {row.original.orderNumber}
+            </Typography>
         ),
     },
     {

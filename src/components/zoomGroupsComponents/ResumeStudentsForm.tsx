@@ -12,30 +12,27 @@ import Spinner from "../Spinner";
 
 type ResumeStudentsFormProps = {
     setIsOpen: (val: boolean) => void,
-    id: string,
-    courseId: string,
 }
-const ResumeStudentsForm: FC<ResumeStudentsFormProps> = ({ setIsOpen, id, courseId }) => {
+const ResumeStudentsForm: FC<ResumeStudentsFormProps> = ({ setIsOpen }) => {
     const [loading, setLoading] = useState(false);
     const [userIds, setUserIds] = useState<string[]>([]);
 
     const action = "Continue";
 
-    const { data: coursePostpondedListData } = api.courses.getUsersWithStatus.useQuery({ id: courseId, status: "postponded" });
-    const moveStudentsToWaitingListMutation = api.zoomGroups.moveStudentsToWaitingList.useMutation();
+    const { data: postpondedListData } = api.waitingList.queryFullList.useQuery({ status: "postponded" });
+    const resumeStudentsMutation = api.zoomGroups.resumeStudents.useMutation();
     const trpcUtils = api.useContext();
     const { toastError, toastSuccess } = useToast()
 
     const onSubmit = () => {
         setLoading(true);
-        moveStudentsToWaitingListMutation.mutate({
-            id,
+        resumeStudentsMutation.mutate({
             studentIds: userIds
         }, {
             onSuccess: (data) => {
                 trpcUtils.zoomGroups.invalidate()
                     .then(() => {
-                        toastSuccess(`the group now has ${data.updatedZoomGroup.studentIds.length} students!`)
+                        toastSuccess(`${data.updatedCourseStatus.count} students has beed added to waiting list!`)
                         setIsOpen(false);
                         setLoading(false);
                     })
@@ -50,26 +47,26 @@ const ResumeStudentsForm: FC<ResumeStudentsFormProps> = ({ setIsOpen, id, course
     return (
         <div>
             <div className="flex flex-col p-4 items-start gap-4 h-full">
-                {!coursePostpondedListData?.usersWithStatus ? <Spinner className="mx-auto" /> :
+                {!postpondedListData?.fullList ? <Spinner className="mx-auto" /> :
                     <SelectField
-                        disabled={coursePostpondedListData.usersWithStatus.length === 0 || loading}
+                        disabled={postpondedListData?.fullList.length === 0 || loading}
                         className="col-span-2"
                         multiSelect
                         values={userIds}
                         setValues={setUserIds}
-                        placeholder={coursePostpondedListData.usersWithStatus.length === 0 ? "No students in postpond list!" : "Select Users..."}
+                        placeholder={postpondedListData?.fullList.length === 0 ? "No students in postpond list!" : "Select Users..."}
                         listTitle="Users"
-                        data={coursePostpondedListData.usersWithStatus.map(user => ({
+                        data={postpondedListData?.fullList.map(status => ({
                             active: true,
-                            label: user.email,
-                            value: user.id,
+                            label: status.user.name,
+                            value: status.user.id,
                             customLabel: (
                                 <TooltipProvider>
-                                    <Typography className="mr-auto">{user.email}</Typography>
+                                    <Typography className="mr-auto">{status.user.name}</Typography>
                                     <Tooltip delayDuration={10}>
                                         <TooltipTrigger>
                                             <Link
-                                                href={`/account/${user.id}`}
+                                                href={`/account/${status.user.id}`}
                                                 target="_blank"
                                                 onClick={(e) => {
                                                     e.stopPropagation()

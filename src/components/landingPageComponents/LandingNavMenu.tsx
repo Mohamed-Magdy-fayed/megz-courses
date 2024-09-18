@@ -42,7 +42,7 @@ export const LandingNavigationMenu = ({ siteIdentity }: { siteIdentity?: SiteIde
     const isTablet = /Tablet|iPad/i.test(navigator.userAgent);
     const getDevice = () => isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop'
 
-    if (session.data.user.device === (getDevice()) || !session.data.user.isVerified) return
+    if (session.data.user.device === (getDevice()) || !session.data.user.emailVerified) return
     editUserQuery.mutate({
       id: session.data?.user.id || "",
       name: session.data?.user.name || "",
@@ -222,7 +222,7 @@ const DesktopAuthenticatedProfileMenu = () => {
                   className="h-8 w-8 cursor-pointer outline outline-primary/30 hover:outline-primary/70"
                 >
                   <AvatarImage
-                    alt={session.data?.user.name || "NA"}
+                    alt={getInitials(session.data?.user.name || "")}
                     src={session.data?.user.image || ""} />
                   <AvatarFallback>{getInitials(session.data?.user.name || "NA")}</AvatarFallback>
                 </Avatar>

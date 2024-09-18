@@ -1,4 +1,3 @@
-import { QueryNotesArgs } from "@/components/ui/DataTable";
 import { validNoteStatus, validNoteTypes } from "@/lib/enumsTypes";
 import {
   createTRPCRouter,
@@ -206,18 +205,6 @@ export const notesRouter = createTRPCRouter({
           createdForStudent: true,
           mentions: true,
         }
-      })
-
-      return {
-        notes,
-      };
-    }),
-  queryAllNotes: protectedProcedure
-    .input(z.any())
-    .query(async ({ ctx, input }) => {
-      const args = input as QueryNotesArgs
-      const notes = await ctx.prisma.userNote.findMany({
-        ...args
       })
 
       return {

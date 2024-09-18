@@ -52,7 +52,7 @@ const TrainersClient = () => {
       data={formattedData}
       setData={setTraiers}
       onDelete={onDelete}
-      dateRange={{ key: "createdAt", label: "Created At" }}
+      dateRanges={[{ key: "createdAt", label: "Created At" }]}
       searches={[
         { key: "email", label: "Email" },
         { key: "name", label: "Name" },

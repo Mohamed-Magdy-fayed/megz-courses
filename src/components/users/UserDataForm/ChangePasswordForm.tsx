@@ -6,15 +6,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Lock } from 'lucide-react'
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardFooter, CardHeader } from "@/components/ui/card";
 import Spinner from "@/components/Spinner";
 import { api } from "@/lib/api";
-import { useSession } from "next-auth/react";
+import { useSession, getProviders, getSession, getCsrfToken } from "next-auth/react";
 import { useToast } from "@/components/ui/use-toast";
+import { useRouter } from "next/router";
 
 const passwordFormSchema = z.object({
-    oldPassword: z.string().min(1, "Please enter your old password"),
+    oldPassword: z.string().optional(),
     newPassword: z.string().min(1, "Please add a new password"),
     newPasswordConfirmation: z.string().min(1, "Please confirm the new password"),
 }).superRefine(({ oldPassword, newPassword, newPasswordConfirmation }, ctx) => {
@@ -35,6 +36,7 @@ type PasswordFormValues = z.infer<typeof passwordFormSchema>
 const ChangePassword = () => {
     const [loading, setLoading] = useState(false)
     const session = useSession()
+    const router = useRouter()
 
     const { toastError, toastSuccess } = useToast()
 
@@ -53,6 +55,7 @@ const ChangePassword = () => {
 
     const handlePasswordChange = ({ newPassword, newPasswordConfirmation, oldPassword }: PasswordFormValues) => {
         setLoading(true)
+
         changePasswordMutation.mutate({
             id: session.data?.user.id!,
             newPassword,
@@ -64,6 +67,13 @@ const ChangePassword = () => {
             onSettled: () => setLoading(false),
         })
     }
+
+    useEffect(() => {
+        if (!router.query.data) return
+        console.log(router.query);
+        console.log(JSON.parse(router.query.data as string));
+
+    }, [])
 
     return (
         <Card className="col-span-12">
@@ -77,25 +87,27 @@ const ChangePassword = () => {
                     className="flex w-full flex-col justify-between p-0 md:h-full"
                 >
                     <div className="p-4 flex flex-col gap-4">
-                        <FormField
-                            control={passwordForm.control}
-                            name="oldPassword"
-                            render={({ field }) => (
-                                <FormItem className="col-span-12 md:col-span-6 lg:col-span-4">
-                                    <FormLabel>Old Password</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            type="password"
-                                            disabled={loading}
-                                            placeholder="Password"
-                                            {...field}
-                                            className="pl-8"
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                        {session.data?.user.hasPassword && (
+                            <FormField
+                                control={passwordForm.control}
+                                name="oldPassword"
+                                render={({ field }) => (
+                                    <FormItem className="col-span-12 md:col-span-6 lg:col-span-4">
+                                        <FormLabel>Old Password</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="password"
+                                                disabled={loading}
+                                                placeholder="Password"
+                                                {...field}
+                                                className="pl-8"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
                         <FormField
                             control={passwordForm.control}
                             name="newPassword"

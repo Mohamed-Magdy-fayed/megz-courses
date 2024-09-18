@@ -9,15 +9,15 @@ import { ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 
 export type QuizRow = {
-    id: string,
-    materialItemTitle: string,
-    levelSlugs: { label: string, value: string }[],
-    levelSlug: string,
-    levelName: string,
-    questions: number,
-    submissions: number,
-    totalPoints: number,
-    isGoogleForm: "true" | "false",
+    id: string;
+    materialItemTitle: string;
+    levelSlugs: { label: string, value: string }[];
+    levelSlug: string;
+    levelName: string;
+    questions: number;
+    submissions: number;
+    totalPoints: number;
+    googleFormTitle: string;
     evalForm: EvaluationForm & {
         materialItem: MaterialItem | null;
         submissions: EvaluationFormSubmission[];
@@ -26,9 +26,9 @@ export type QuizRow = {
             googleFormQuestions: GoogleFormQuestion[]
         } | null;
     },
-    createdBy: string,
-    createdAt: Date,
-    updatedAt: Date,
+    createdBy: string;
+    createdAt: Date;
+    updatedAt: Date;
 };
 
 export const columns: ColumnDef<QuizRow>[] = [
@@ -56,15 +56,16 @@ export const columns: ColumnDef<QuizRow>[] = [
         header: "Material Item Title"
     },
     {
-        accessorKey: "isGoogleForm",
-        header: "Google Form",
+        accessorKey: "googleFormTitle",
+        header: "Form Type",
         cell: ({ row }) => !!row.original.evalForm.googleForm?.formRespondUrl ? (
             <Link href={row.original.evalForm.googleForm?.formRespondUrl} target="_blank">
-                <Button variant={"icon"} customeColor={"infoIcon"}>
+                <Button customeColor={"infoIcon"}>
                     <ExternalLink className="w-4 h-4" />
+                    <Typography>{row.original.googleFormTitle}</Typography>
                 </Button>
             </Link>
-        ) : "No externak link"
+        ) : "System Form"
     },
     {
         accessorKey: "questions",

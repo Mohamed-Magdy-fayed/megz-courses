@@ -13,7 +13,7 @@ import AccountPaymentClient from "@/components/users/accountComponents/AccountPa
 const Page = () => {
   const session = useSession();
 
-  const { data, isLoading, error } = api.users.getCurrentUser.useQuery(undefined, { enabled: !!session.data?.user.isVerified });
+  const { data, isLoading, error } = api.users.getCurrentUser.useQuery(undefined, { enabled: !!session.data?.user.emailVerified });
 
   return (
     <LandingLayout>
@@ -21,7 +21,7 @@ const Page = () => {
         <GoBackButton />
         <ConceptTitle>My Account</ConceptTitle>
       </div>
-      {!session.data?.user.isVerified ? (
+      {!session.data?.user.emailVerified ? (
         <Typography>Please verify your email!</Typography>
       ) : isLoading
         ? (<div className="w-full h-full grid place-content-center"><Spinner /></div>)

@@ -13,7 +13,7 @@ const PlacmentTestScheduleClient = ({ formattedData }: { formattedData: Placment
                 { key: "studentName", label: "Student Name" },
                 { key: "trainerName", label: "Trainer Name" },
             ]}
-            dateRange={{ key: "oralTestTime", label: "Test Time" }}
+            dateRanges={[{ key: "oralTestTime", label: "Test Time" }]}
         />
     );
 };

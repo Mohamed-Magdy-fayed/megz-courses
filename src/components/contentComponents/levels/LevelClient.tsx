@@ -40,7 +40,7 @@ const LevelClient = ({ formattedData }: { formattedData: LevelRow[] }) => {
         { key: "name", label: "Name" },
         { key: "slug", label: "Slug" },
       ]}
-      dateRange={{ key: "createdAt", label: "Created On" }}
+      dateRanges={[{ key: "createdAt", label: "Created On" }]}
     />
   );
 };

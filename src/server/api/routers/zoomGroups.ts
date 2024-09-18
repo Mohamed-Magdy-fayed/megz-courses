@@ -528,6 +528,20 @@ export const zoomGroupsRouter = createTRPCRouter({
 
             return { updatedZoomGroup, updatedCourseStatus }
         }),
+    resumeStudents: protectedProcedure
+        .input(z.object({
+            studentIds: z.array(z.string()),
+        }))
+        .mutation(async ({ ctx, input: { studentIds } }) => {
+            const updatedCourseStatus = await ctx.prisma.courseStatus.updateMany({
+                where: { userId: { in: studentIds } },
+                data: {
+                    status: "waiting",
+                }
+            })
+
+            return { updatedCourseStatus }
+        }),
     deleteZoomGroup: protectedProcedure
         .input(z.array(z.string()))
         .mutation(async ({ input, ctx }) => {

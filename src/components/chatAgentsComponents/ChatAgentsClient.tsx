@@ -47,7 +47,7 @@ const ChatAgentsClient = () => {
       data={formattedData || []}
       setData={setChatAgents}
       onDelete={onDelete}
-      dateRange={{ key: "createdAt", label: "Created At" }}
+      dateRanges={[{ key: "createdAt", label: "Created At" }]}
       searches={[
         { key: "email", label: "Email" },
         { key: "chats", label: "Chats" },

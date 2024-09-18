@@ -656,18 +656,16 @@ export const ordersRouter = createTRPCRouter({
                     include: { course: true }
                 });
 
-                const updatedUser = await ctx.prisma.user.update({
-                    where: {
-                        id: userId,
-                    },
+                const statuses = await ctx.prisma.courseStatus.findMany({
+                    where: { userId: order.userId, courseId: order.courseId },
+                    orderBy: { createdAt: "desc" },
+                })
+                const updatedStatus = await ctx.prisma.courseStatus.update({
+                    where: { id: statuses[0]?.id },
                     data: {
-                        courseStatus: {
-                            deleteMany: {
-                                courseId: order.courseId
-                            }
-                        }
-                    },
-                });
+                        status: "refunded"
+                    }
+                })
 
                 const note = await ctx.prisma.userNote.create({
                     data: {
@@ -675,7 +673,7 @@ export const ordersRouter = createTRPCRouter({
                         status: "Closed",
                         title: `Order was refunded by ${ctx.session.user.name}`,
                         type: "Info",
-                        createdForStudent: { connect: { id: updatedUser.id } },
+                        createdForStudent: { connect: { id: user.id } },
                         messages: [{
                             message: `Order refunded and access revoked for course ${updatedOrder.course.name}`,
                             updatedAt: new Date(),
@@ -685,8 +683,20 @@ export const ordersRouter = createTRPCRouter({
                     }
                 })
 
-                return { success: isRefunded, refundData, updatedOrder, requestedBy: user, updatedUser, note };
+                return { success: isRefunded, refundData, updatedOrder, updatedStatus, requestedBy: user, note };
             }
+
+            const statuses = await ctx.prisma.courseStatus.findMany({
+                where: { userId: order.userId, courseId: order.courseId },
+                orderBy: { createdAt: "desc" },
+            })
+
+            const updatedStatus = await ctx.prisma.courseStatus.update({
+                where: { id: statuses[0]?.id },
+                data: {
+                    status: "refunded"
+                }
+            })
 
             const updatedOrder = await ctx.prisma.order.update({
                 where: {
@@ -712,7 +722,7 @@ export const ordersRouter = createTRPCRouter({
                 },
             });
 
-            return { success: true, updatedOrder, requestedBy: user, updatedUser };
+            return { success: true, updatedOrder, requestedBy: user, updatedUser, updatedStatus };
         }),
     editOrder: protectedProcedure
         .input(

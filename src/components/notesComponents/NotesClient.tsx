@@ -55,7 +55,7 @@ const NotesClient = () => {
             data={formattedNotesData}
             setData={setNotes}
             onDelete={onDelete}
-            dateRange={{ key: "createdAt", label: "Created At" }}
+            dateRanges={[{ key: "createdAt", label: "Created At" }]}
             searches={[
                 { key: "title", label: "Title" },
                 { key: "createdForStudentName", label: "Student" },

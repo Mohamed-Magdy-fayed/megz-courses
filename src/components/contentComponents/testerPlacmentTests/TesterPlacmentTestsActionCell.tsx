@@ -20,13 +20,15 @@ import { CourseLevel } from "@prisma/client";
 interface ActionCellProps {
     id: string;
     isLevelSubmitted: boolean;
+    levelName: string;
     testLink: string;
     userId: string;
     courseId: string;
+    courseName: string;
     courseLevels: CourseLevel[]
 }
 
-const ActionCell: React.FC<ActionCellProps> = ({ id, testLink, courseId, userId, isLevelSubmitted, courseLevels }) => {
+const ActionCell: React.FC<ActionCellProps> = ({ id, testLink, courseId, courseName, userId, isLevelSubmitted, levelName, courseLevels }) => {
     const { toastInfo, toast, toastError } = useToast();
     const [loading, setLoading] = useState(false)
     const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -47,19 +49,19 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, testLink, courseId, userId,
             )
             setLoading(true)
         },
-        onSuccess: ({ updatedUser, course }) => {
+        onSuccess: ({ user, course }) => {
             addToWaitingListToast?.update({
                 id: addToWaitingListToast.id,
                 title: "Success",
                 description: <Typography>
-                    Added student {updatedUser.name} to waiting list of course {course.name} at level {updatedUser.courseStatus.find(status => status.courseId === course.id)?.level?.name}
+                    Added student {user.name} to waiting list of course {course.name} at level {levelName}
                 </Typography>,
                 duration: 3000,
                 variant: "success",
             })
             sendWhatsAppMessage({
                 toNumber: "201123862218",
-                textBody: `Hi ${updatedUser.name}, congtulations your placement test result for course ${course.name} has been submitted and placed you at level ${updatedUser.courseStatus.find(status => status.courseId === course.id)?.level?.name}
+                textBody: `Hi ${user.name}, congtulations your placement test result for course ${course.name} has been submitted and placed you at level ${levelName}
                 \nYou're now just one step away from starting your course.
                 \nOur Team.`,
             })
@@ -93,7 +95,7 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, testLink, courseId, userId,
     return (
         <>
             <Modal
-                title="Submit student level"
+                title={courseName}
                 description="Select the appropriate level for the student"
                 isOpen={isOpen}
                 onClose={() => setIsOpen(false)}
@@ -122,10 +124,12 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, testLink, courseId, userId,
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={() => {
-                        setIsOpen(true)
-                        setIsMenuOpen(false)
-                    }}>
+                    <DropdownMenuItem
+                        disabled={isLevelSubmitted}
+                        onClick={() => {
+                            setIsOpen(true)
+                            setIsMenuOpen(false)
+                        }}>
                         <CheckSquare className="w-4 h-4 mr-2" />
                         Submit Level
                     </DropdownMenuItem>

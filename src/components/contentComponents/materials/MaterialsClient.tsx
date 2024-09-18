@@ -42,7 +42,7 @@ const MaterialsClient = ({ formattedData }: { formattedData: MaterialsRow[] }) =
                     })) || []
                 },
             ]}
-            dateRange={{ key: "createdAt", label: "Created On" }}
+            dateRanges={[{ key: "createdAt", label: "Created On" }]}
         />
     );
 };
