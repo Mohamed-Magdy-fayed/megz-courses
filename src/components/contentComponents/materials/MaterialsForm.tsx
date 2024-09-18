@@ -78,6 +78,7 @@ const MaterialsForm = ({
   const [selectCards, setSelectCards] = useState<
     { id: string; text: string }[]
   >([]);
+  const [uploadingImage, setUploadingImage] = useState<boolean>(false);
 
   return (
     <Form {...form}>
@@ -132,6 +133,7 @@ const MaterialsForm = ({
                   disabled={loading}
                   value={field.value}
                   onChange={(url) => field.onChange(url)}
+                  onLoading={setUploadingImage}
                   onRemove={() => field.onChange("")}
                   customeImage={field.value && field.value.length > 0 ? (
                     <div className="flex gap-4 rounded-md">
@@ -218,7 +220,7 @@ const MaterialsForm = ({
           >
             Reset
           </Button>
-          <Button disabled={loading} type="submit">
+          <Button disabled={loading || uploadingImage} type="submit">
             Create Material
           </Button>
         </div>

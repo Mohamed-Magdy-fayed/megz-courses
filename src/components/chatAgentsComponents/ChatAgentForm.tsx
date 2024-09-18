@@ -35,6 +35,7 @@ interface ChatAgentFormProps {
 
 const ChatAgentForm: React.FC<ChatAgentFormProps> = ({ setIsOpen }) => {
   const [loading, setLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState<boolean>(false);
 
   const title = "Chat Operator";
   const description = "Create Chat Operator Account";
@@ -111,6 +112,7 @@ const ChatAgentForm: React.FC<ChatAgentFormProps> = ({ setIsOpen }) => {
                       value={field.value}
                       disabled={loading}
                       onChange={(url) => field.onChange(url)}
+                      onLoading={setUploadingImage}
                       onRemove={() => field.onChange("")}
                     />
                   </FormControl>
@@ -193,7 +195,7 @@ const ChatAgentForm: React.FC<ChatAgentFormProps> = ({ setIsOpen }) => {
             >
               Reset
             </Button>
-            <Button disabled={loading} type="submit">
+            <Button disabled={loading || uploadingImage} type="submit">
               {action}
             </Button>
           </CardFooter>

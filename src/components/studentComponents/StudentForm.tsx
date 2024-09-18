@@ -39,6 +39,7 @@ interface StudentFormProps {
 }
 const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen, initialData }) => {
   const [loadingToast, setLoadingToast] = useState<toastType>();
+  const [uploadingImage, setUploadingImage] = useState<boolean>(false);
 
   const { toast } = useToast()
 
@@ -115,6 +116,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen, initialData }) => 
                     <ImageUploader
                       value={field.value}
                       disabled={!!loadingToast}
+                      onLoading={setUploadingImage}
                       onChange={(url) => field.onChange(url)}
                       onRemove={() => field.onChange("")}
                     />
@@ -292,7 +294,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen, initialData }) => 
             >
               <Typography variant={"buttonText"}>Reset</Typography>
             </Button>
-            <Button disabled={!!loadingToast} type="submit">
+            <Button disabled={!!loadingToast || !!uploadingImage} type="submit">
               <Typography variant={"buttonText"}>{action}</Typography>
             </Button>
           </div>

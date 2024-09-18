@@ -35,6 +35,7 @@ export const SiteIdentityForm = ({ initialData }: {
     initialData?: SiteIdentityFormValues;
 }) => {
     const [loadingToast, setLoadingToast] = useState<toastType>()
+    const [uploadingImage, setUploadingImage] = useState<boolean>(false);
 
     const { toast } = useToast()
     const trpcUtils = api.useContext()
@@ -118,6 +119,7 @@ export const SiteIdentityForm = ({ initialData }: {
                                             value={field.value}
                                             disabled={!!loadingToast}
                                             onChange={(url) => field.onChange(url)}
+                                            onLoading={setUploadingImage}
                                             onRemove={() => field.onChange("")}
                                             noPadding
                                             customeButton={(
@@ -140,6 +142,7 @@ export const SiteIdentityForm = ({ initialData }: {
                                             value={field.value}
                                             disabled={!!loadingToast}
                                             onChange={(url) => field.onChange(url)}
+                                            onLoading={setUploadingImage}
                                             onRemove={() => field.onChange("")}
                                             noPadding
                                             customeButton={(
@@ -162,6 +165,7 @@ export const SiteIdentityForm = ({ initialData }: {
                                             value={field.value}
                                             disabled={!!loadingToast}
                                             onChange={(url) => field.onChange(url)}
+                                            onLoading={setUploadingImage}
                                             onRemove={() => field.onChange("")}
                                             noPadding
                                             customeButton={(
@@ -282,7 +286,7 @@ export const SiteIdentityForm = ({ initialData }: {
                     </div>
                     <Separator />
                     <div className="grid place-content-center">
-                        <Button disabled={!!loadingToast} type="submit">
+                        <Button disabled={!!loadingToast || uploadingImage} type="submit">
                             <SaveAll className="w-4 h-4" />
                             <Typography>Submit</Typography>
                         </Button>

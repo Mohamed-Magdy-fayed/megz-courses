@@ -214,6 +214,9 @@ export const notesRouter = createTRPCRouter({
   getAllNotes: protectedProcedure
     .query(async ({ ctx }) => {
       const notes = await ctx.prisma.userNote.findMany({
+        where: {
+          mentionsUserIds: { has: ctx.session.user.id }
+        },
         include: {
           createdByUser: true,
           createdForStudent: true,

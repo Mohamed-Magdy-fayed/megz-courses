@@ -55,6 +55,7 @@ const CustomTestForm: FC<{
     const [loadingToast, setLoadingToast] = useState<toastType>()
     const [levelId, setLevelId] = useState<string[]>(initialData?.materialItem?.courseLevelId ? [initialData.materialItem?.courseLevelId] : [])
     const [type, setType] = useState<EvaluationFormTypes | undefined>(initialData ? initialData.type : undefined)
+    const [uploadingImage, setUploadingImage] = useState<boolean>(false);
 
     const defaultQuestion: IFormInput["fields"][number] = {
         type: "multipleChoice",
@@ -263,6 +264,7 @@ const CustomTestForm: FC<{
                                                         noPadding
                                                         value={!field.value ? "" : field.value}
                                                         disabled={!!loadingToast?.id}
+                                                        onLoading={setUploadingImage}
                                                         onChange={(url) => {
                                                             field.onChange(url)
 
@@ -388,7 +390,7 @@ const CustomTestForm: FC<{
                     <Button
                         customeColor={"success"}
                         type="submit"
-                        disabled={!!loadingToast?.id}
+                        disabled={!!loadingToast?.id || uploadingImage}
                     >Submit</Button>
                 </div>
             </form>

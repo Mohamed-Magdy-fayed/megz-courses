@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { Dispatch, ReactNode, SetStateAction, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ImageOff, ImagePlus, Trash } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
@@ -17,6 +17,7 @@ interface ImageUploaderProps {
     value?: string;
     onChange: (url: string) => void;
     onRemove?: () => void;
+    onLoading?: Dispatch<SetStateAction<boolean>>;
     customeImage?: ReactNode;
     customeButton?: ReactNode;
     noPadding?: boolean;
@@ -25,6 +26,7 @@ interface ImageUploaderProps {
 const ImageUploader: React.FC<ImageUploaderProps> = ({
     onChange,
     onRemove,
+    onLoading,
     value,
     disabled,
     customeImage,
@@ -59,13 +61,16 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
         try {
             setLoading(true)
+            onLoading?.(true)
             const snapshotRef = await uploadTask;
             const downloadURL = await getDownloadURL(snapshotRef);
             onChange(downloadURL)
             setProgress(0)
             setLoading(false)
+            onLoading?.(false)
         } catch (error) {
             setLoading(false)
+            onLoading?.(false)
             throw new Error(`Error uploading file: ${error}`);
         }
     };

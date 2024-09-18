@@ -45,6 +45,7 @@ interface TrainerFormProps {
 
 const TrainerForm: React.FC<TrainerFormProps> = ({ setIsOpen }) => {
   const [loading, setLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState<boolean>(false);
 
   const action = "Create";
 
@@ -100,6 +101,7 @@ const TrainerForm: React.FC<TrainerFormProps> = ({ setIsOpen }) => {
                   <ImageUploader
                     value={field.value}
                     disabled={loading}
+                    onLoading={setUploadingImage}
                     onChange={(url) => field.onChange(url)}
                     onRemove={() => field.onChange("")}
                   />
@@ -229,7 +231,7 @@ const TrainerForm: React.FC<TrainerFormProps> = ({ setIsOpen }) => {
           >
             Reset
           </Button>
-          <Button disabled={loading} type="submit">
+          <Button disabled={loading || uploadingImage} type="submit">
             {action}
           </Button>
         </div>

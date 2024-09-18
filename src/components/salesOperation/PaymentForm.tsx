@@ -34,6 +34,7 @@ export const PaymentForm = ({
     onClose,
 }: PaymentFormProps) => {
     const [isMounted, setIsMounted] = useState(false);
+    const [uploadingImage, setUploadingImage] = useState<boolean>(false);
     const { toastError, toastSuccess } = useToast();
 
     const defaultValues: z.infer<typeof formSchema> = {
@@ -108,6 +109,7 @@ export const PaymentForm = ({
                                     disabled={loading}
                                     onRemove={() => field.onChange("")}
                                     onChange={(url) => field.onChange(url)}
+                                    onLoading={setUploadingImage}
                                     customeImage={field.value && field.value.length > 0 ? (
                                         <img alt="user image" src={field.value} className="max-h-[72px]" />
                                     ) : (
@@ -120,7 +122,7 @@ export const PaymentForm = ({
                     )}
                 />
                 <div className="flex w-full items-center justify-end space-x-2 pt-6">
-                    <Button disabled={loading} variant="default" type="submit">
+                    <Button disabled={loading || uploadingImage} variant="default" type="submit">
                         Confirm payment
                     </Button>
                 </div>

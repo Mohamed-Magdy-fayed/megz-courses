@@ -23,6 +23,7 @@ const typographyVariants = cva(
     variants: {
       variant: {
         default: "",
+        pre: "lg:text-lg md:text-base text-sm font-medium font-[inhirit]",
         primary: "md:text-4xl text-2xl font-extrabold leading-loose tracking-wide",
         secondary: "lg:text-xl md:text-lg text-base font-semibold leading-tight tracking-wide",
         menuButton: "lg:text-2xl md:text-xl text-lg font-medium leading-4 tracking-tight uppercase",
@@ -42,7 +43,7 @@ export interface TypographyProps
 }
 
 const Typography: React.FC<TypographyProps> = ({ className, variant, ...props }) => {
-  const Comp = variant === "primary" ? "h1" : variant === "secondary" ? "h2" : variant === "bodyText" ? "p" : "span"
+  const Comp = variant === "primary" ? "h1" : variant === "secondary" ? "h2" : variant === "bodyText" ? "p" : variant === "pre" ? "pre" : "span"
 
   return (
     <Comp

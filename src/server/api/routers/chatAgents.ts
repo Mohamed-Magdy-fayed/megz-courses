@@ -66,6 +66,7 @@ export const chatAgentsRouter = createTRPCRouter({
                         create: {
                             name: input.name,
                             email: input.email,
+                            emailVerified: new Date(),
                             hashedPassword,
                             image: input.image,
                             userType: "chatAgent",

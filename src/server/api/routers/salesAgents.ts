@@ -75,6 +75,7 @@ export const salesAgentsRouter = createTRPCRouter({
                 data: {
                     name: input.name,
                     email: input.email,
+                    emailVerified: new Date(),
                     hashedPassword,
                     phone: input.phone,
                     image: input.image,

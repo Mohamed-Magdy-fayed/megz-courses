@@ -41,6 +41,7 @@ const CourseForm = ({ initialData, setIsOpen }: {
 }) => {
   const [loading, setLoading] = useState(false);
   const [loadingToast, setLoadingToast] = useState<ReturnType<typeof toast>>()
+  const [uploadingImage, setUploadingImage] = useState<boolean>(false);
 
   const { toast } = useToast()
 
@@ -154,6 +155,7 @@ const CourseForm = ({ initialData, setIsOpen }: {
                   value={field.value}
                   disabled={loading}
                   onChange={(url) => field.onChange(url)}
+                  onLoading={setUploadingImage}
                   onRemove={() => field.onChange("")}
                   customeImage={
                     form.getValues().image ? (
@@ -267,7 +269,7 @@ const CourseForm = ({ initialData, setIsOpen }: {
           >
             Reset
           </Button>
-          <Button disabled={loading} type="submit">
+          <Button disabled={loading || uploadingImage} type="submit">
             {initialData ? "Submit" : "Create Course"}
           </Button>
         </div>

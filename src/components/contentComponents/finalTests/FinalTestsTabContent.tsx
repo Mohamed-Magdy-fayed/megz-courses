@@ -41,7 +41,7 @@ const FinalTestsTabContent = ({ finalTests, finalTestSubmissions }: {
             <div className="p-4 space-x-4">
                 <Button onClick={() => setIsOpen(true)}>
                     <PlusSquare />
-                    <Typography>Add Placement Test</Typography>
+                    <Typography>Add Final Test</Typography>
                 </Button>
                 <Button onClick={() => setIsGoogleOpen(true)}>
                     <PlusSquare />

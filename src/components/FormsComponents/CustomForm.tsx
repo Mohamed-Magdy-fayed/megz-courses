@@ -54,6 +54,7 @@ const CustomForm: FC<{
     const [levelId, setLevelId] = useState(initialData?.materialItem?.courseLevelId ? initialData.materialItem?.courseLevelId : undefined)
     const [materialId, setMaterialId] = useState(initialData?.materialItemId ? initialData.materialItemId : undefined)
     const [type, setType] = useState<EvaluationFormTypes | undefined>(initialData ? initialData.type : undefined)
+    const [uploadingImage, setUploadingImage] = useState<boolean>(false);
 
     const defaultQuestion: IFormInput["fields"][number] = {
         type: "multipleChoice",
@@ -293,6 +294,7 @@ const CustomForm: FC<{
                                                             field.onChange(url)
 
                                                         }}
+                                                        onLoading={setUploadingImage}
                                                         onRemove={() => field.onChange("")}
                                                         customeButton={(
                                                             <Upload className="w-4 h-4" />
@@ -407,7 +409,7 @@ const CustomForm: FC<{
                         <Plus className="w-4 h-4" />
                         Add Question
                     </Button>
-                    <Button disabled={!!loadingToast?.id} customeColor={"success"} type="submit">Submit</Button>
+                    <Button disabled={!!loadingToast?.id || uploadingImage} customeColor={"success"} type="submit">Submit</Button>
                 </div>
             </form>
         </Form>

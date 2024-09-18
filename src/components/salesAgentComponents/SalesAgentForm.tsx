@@ -38,6 +38,7 @@ interface SalesAgentFormProps {
 
 const SalesAgentForm: React.FC<SalesAgentFormProps> = ({ setIsOpen, initialData }) => {
   const [loadingToast, setLoadingToast] = useState<toastType>();
+  const [uploadingImage, setUploadingImage] = useState<boolean>(false);
 
   const action = initialData ? "Edit" : "Create";
 
@@ -138,6 +139,7 @@ const SalesAgentForm: React.FC<SalesAgentFormProps> = ({ setIsOpen, initialData 
                 <FormControl>
                   <ImageUploader
                     value={field.value}
+                    onLoading={setUploadingImage}
                     onChange={(url) => field.onChange(url)}
                     onRemove={() => field.onChange("")}
                     disabled={!!loadingToast}
@@ -259,7 +261,7 @@ const SalesAgentForm: React.FC<SalesAgentFormProps> = ({ setIsOpen, initialData 
           >
             Reset
           </Button>
-          <Button disabled={!!loadingToast} type="submit">
+          <Button disabled={!!loadingToast || uploadingImage} type="submit">
             {action}
           </Button>
         </CardFooter>
