@@ -24,8 +24,6 @@ const AuthenticationPage = () => {
 
   useEffect(() => {
     setLoading(true)
-    console.log(session.status);
-
     if (session.status === "authenticated") session.data.user.userType === "student" ? router.push("/") : router.push("/dashboard");
     if (session.status !== "loading" && session.status !== "authenticated") setLoading(false)
   }, [session.status]);

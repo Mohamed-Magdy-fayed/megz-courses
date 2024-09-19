@@ -51,18 +51,6 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
-  cookies: {
-    sessionToken: {
-      name: "__Host-next-auth.session-token",
-      options: {
-        domain: '.megz.pro',  // Allows cookie sharing across subdomains like courses.megz.pro
-        secure: process.env.NODE_ENV === 'production',
-        httpOnly: true,
-        sameSite: 'Lax',
-        path: '/'
-      },
-    }
-  },
   providers: [
     GoogleProvider({
       clientId: env.GOOGLE_CLIENT_ID,
