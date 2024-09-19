@@ -21,7 +21,7 @@ const landingNavLinks = [
     },
     {
         label: "Developer Portfolio",
-        url: "https://megz-portfolio-dev.vercel.app/",
+        url: "https://megz.pro/",
         inNewTab: true,
     },
     {
