@@ -278,15 +278,20 @@ export function DataTable<TData, TValue>({
                   <ChevronsRight className="w-4" />
                 </Button>
               </div>
+              <div className="flex items-center gap-2 justify-center w-full">
+                <PaginationPageSizeSelectors
+                  pageSize={10}
+                  setPageSize={table.setPageSize}
+                  options={
+                    table.getCoreRowModel().rows.length > 100 ? [5, 10, 50, 100]
+                      : table.getCoreRowModel().rows.length > 50 ? [5, 10, 50]
+                        : table.getCoreRowModel().rows.length > 10 ? [5, 10]
+                          : table.getCoreRowModel().rows.length > 5 ? [5] : []
+                  }
+                />
+              </div>
             </div>
           )}
-          <div className="flex items-center gap-2 justify-center w-full">
-            <PaginationPageSizeSelectors
-              pageSize={10}
-              setPageSize={table.setPageSize}
-              options={[5, 10, 50, 100]}
-            />
-          </div>
         </div>
       </div>
       <div className="whitespace-nowrap grid">
