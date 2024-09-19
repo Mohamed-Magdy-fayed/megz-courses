@@ -232,9 +232,7 @@ export function DataTable<TData, TValue>({
           </div>
         )}
         <div className="flex flex-col gap-2 justify-center">
-          {table.getPageCount() === 0 ? null : table.getPageCount() === 1 ? (
-            <Typography>Only 1 Page</Typography>
-          ) : (
+          {table.getPageCount() === 0 ? null : table.getPageCount() === 1 ? null : (
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2 justify-center w-full">
                 <Typography>Page</Typography>

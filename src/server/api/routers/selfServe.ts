@@ -79,7 +79,8 @@ export const selfServeRouter = createTRPCRouter({
                     courseType: {
                         id: course.id,
                         isPrivate: isPrivate ? isPrivate : false,
-                    }
+                    },
+                    paymentLink,
                 },
                 include: {
                     course: true,
@@ -113,8 +114,6 @@ export const selfServeRouter = createTRPCRouter({
             })
 
             const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
-
-
 
             return {
                 salesOperation,

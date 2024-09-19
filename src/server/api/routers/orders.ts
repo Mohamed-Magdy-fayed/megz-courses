@@ -363,114 +363,118 @@ export const ordersRouter = createTRPCRouter({
             orderId: z.string()
         }))
         .mutation(async ({ input: { orderId }, ctx }) => {
-            const order = await ctx.prisma.order.findUnique({ where: { id: orderId }, include: { course: true, user: true } })
+            try {
+                const order = await ctx.prisma.order.findUnique({ where: { id: orderId }, include: { course: true, user: true } })
 
-            if (!order || !order.paymentId) throw new TRPCError({ code: "BAD_REQUEST", message: "order not found" })
+                if (!order || !order.paymentId) throw new TRPCError({ code: "BAD_REQUEST", message: "order not found" })
 
-            const sendTheMail = async (order: Order & {
-                user: User;
-                course: Course;
-            }, paymentLink: string) => {
-                await ctx.prisma.userNote.create({
-                    data: {
-                        sla: 0,
-                        status: "Closed",
-                        title: `Payment Link resent by ${ctx.session.user.name}`,
-                        type: "Info",
-                        createdForStudent: { connect: { id: order.user.id } },
-                        messages: [{
-                            message: `Payment Link: ${paymentLink} was resent to the user`,
-                            updatedAt: new Date(),
-                            updatedBy: "System"
-                        }],
-                        createdByUser: { connect: { id: ctx.session.user.id } },
-                    }
-                })
+                const sendTheMail = async (order: Order & {
+                    user: User;
+                    course: Course;
+                }, paymentLink: string) => {
+                    await ctx.prisma.userNote.create({
+                        data: {
+                            sla: 0,
+                            status: "Closed",
+                            title: `Payment Link resent by ${ctx.session.user.name}`,
+                            type: "Info",
+                            createdForStudent: { connect: { id: order.user.id } },
+                            messages: [{
+                                message: `Payment Link: ${paymentLink} was resent to the user`,
+                                updatedAt: new Date(),
+                                updatedBy: "System"
+                            }],
+                            createdByUser: { connect: { id: ctx.session.user.id } },
+                        }
+                    })
 
-                const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
+                    const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
 
-                return {
-                    isSuccess: true,
-                    emailProps: {
-                        logoUrl: logoUrl || "",
-                        orderCreatedAt: format(order.createdAt, "dd MMM yyyy"),
-                        userEmail: order.user.email,
-                        orderAmount: formatPrice(order.amount),
-                        orderNumber: order.orderNumber,
-                        paymentLink: paymentLink,
-                        customerName: order.user.name,
-                        course: {
-                            courseName: order.course.name,
-                            coursePrice: order.courseType.isPrivate
-                                ? formatPrice(order.course.privatePrice)
-                                : formatPrice(order.course.groupPrice)
-                        },
+                    return {
+                        isSuccess: true,
+                        emailProps: {
+                            logoUrl: logoUrl || "",
+                            orderCreatedAt: format(order.createdAt, "dd MMM yyyy"),
+                            userEmail: order.user.email,
+                            orderAmount: formatPrice(order.amount),
+                            orderNumber: order.orderNumber,
+                            paymentLink: paymentLink,
+                            customerName: order.user.name,
+                            course: {
+                                courseName: order.course.name,
+                                coursePrice: order.courseType.isPrivate
+                                    ? formatPrice(order.course.privatePrice)
+                                    : formatPrice(order.course.groupPrice)
+                            },
+                        }
                     }
                 }
-            }
 
-            if (order.paymentLink) {
-                return await sendTheMail(order, order.paymentLink)
-            } else {
-                const coursesPrice = await ctx.prisma.course.findMany({
-                    where: {
-                        id: order.courseId
-                    }
-                })
+                if (order.paymentLink) {
+                    return await sendTheMail(order, order.paymentLink)
+                } else {
+                    const coursesPrice = await ctx.prisma.course.findMany({
+                        where: {
+                            id: order.courseId
+                        }
+                    })
 
-                const intentData = {
-                    special_reference: order.orderNumber,
-                    amount: formatAmountForPaymob(order.amount),
-                    currency: "EGP",
-                    payment_methods: [4618117, 4617984],
-                    items: coursesPrice.map(course => ({
-                        name: course.name,
-                        amount: formatAmountForPaymob(order.courseType.isPrivate ? course.privatePrice : course.groupPrice),
-                        description: course.description,
-                        quantity: 1,
-                    })),
-                    billing_data: {
-                        first_name: order.user.name.split(" ")[0],
-                        last_name: order.user.name.split(" ")[-1] || "No last name",
-                        phone_number: order.user.phone,
-                        email: order.user.email,
-                    },
-                    customer: {
-                        first_name: order.user.name.split(" ")[0],
-                        last_name: order.user.name.split(" ")[-1] || "No last name",
-                        email: order.user.email,
-                    },
-                };
+                    const intentData = {
+                        special_reference: order.orderNumber,
+                        amount: formatAmountForPaymob(order.amount),
+                        currency: "EGP",
+                        payment_methods: [4618117, 4617984],
+                        items: coursesPrice.map(course => ({
+                            name: course.name,
+                            amount: formatAmountForPaymob(order.courseType.isPrivate ? course.privatePrice : course.groupPrice),
+                            description: course.description,
+                            quantity: 1,
+                        })),
+                        billing_data: {
+                            first_name: order.user.name.split(" ")[0],
+                            last_name: order.user.name.split(" ")[-1] || "No last name",
+                            phone_number: order.user.phone,
+                            email: order.user.email,
+                        },
+                        customer: {
+                            first_name: order.user.name.split(" ")[0],
+                            last_name: order.user.name.split(" ")[-1] || "No last name",
+                            email: order.user.email,
+                        },
+                    };
 
-                const intentConfig = {
-                    method: 'post',
-                    maxBodyLength: Infinity,
-                    url: `${env.PAYMOB_BASE_URL}/v1/intention/`,
-                    headers: {
-                        'Authorization': `Token ${env.PAYMOB_API_SECRET}`,
-                        'Content-Type': 'application/json'
-                    },
-                    data: intentData
-                };
+                    const intentConfig = {
+                        method: 'post',
+                        maxBodyLength: Infinity,
+                        url: `${env.PAYMOB_BASE_URL}/v1/intention/`,
+                        headers: {
+                            'Authorization': `Token ${env.PAYMOB_API_SECRET}`,
+                            'Content-Type': 'application/json'
+                        },
+                        data: intentData
+                    };
 
-                const intentResponse = (await axios.request(intentConfig)).data
-                if (!intentResponse.client_secret) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "intent failed" })
+                    const intentResponse = (await axios.request(intentConfig)).data
+                    if (!intentResponse.client_secret) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "intent failed" })
 
-                const paymentLink = `${env.PAYMOB_BASE_URL}/unifiedcheckout/?publicKey=${env.PAYMOB_PUBLIC_KEY}&clientSecret=${intentResponse.client_secret}`
+                    const paymentLink = `${env.PAYMOB_BASE_URL}/unifiedcheckout/?publicKey=${env.PAYMOB_PUBLIC_KEY}&clientSecret=${intentResponse.client_secret}`
 
-                const newOrder = await ctx.prisma.order.update({
-                    where: { id: orderId },
-                    data: {
-                        paymentId: intentResponse.id,
-                    },
-                    include: {
-                        course: true,
-                        user: true,
-                        salesOperation: { include: { assignee: true } }
-                    },
-                });
+                    const newOrder = await ctx.prisma.order.update({
+                        where: { id: orderId },
+                        data: {
+                            paymentId: intentResponse.id,
+                        },
+                        include: {
+                            course: true,
+                            user: true,
+                            salesOperation: { include: { assignee: true } }
+                        },
+                    });
 
-                return await sendTheMail(newOrder, paymentLink)
+                    return await sendTheMail(newOrder, paymentLink)
+                }
+            } catch (error) {
+                console.log(error);
             }
         }),
     payOrderManually: protectedProcedure
