@@ -105,7 +105,7 @@ export const columns: ColumnDef<CourseRow>[] = [
       return (
         <div className="flex flex-col gap-2 items-center">
           <Typography>{row.original.oralTestTime}</Typography>
-          <Link href={`/placement_test/${row.original.slig}`}>
+          <Link href={`/placement_test/${row.original.slug}`}>
             <Button customeColor={"primary"}>
               Start
             </Button>

@@ -1,11 +1,12 @@
-import { z } from "zod";
+import { unknown, z } from "zod";
 import {
     createTRPCRouter,
     protectedProcedure,
 } from "@/server/api/trpc";
-import { TRPCError } from "@trpc/server";
+import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
 import { google } from "googleapis";
 import { getFormResponses, getGoogleFormDetails, refreshGoogleToken, revokeToken } from "@/lib/googleApis";
+import { TRPCErrorResponse } from "@trpc/server/rpc";
 
 export const googleAccountsRouter = createTRPCRouter({
     getGoogleAccounts: protectedProcedure
@@ -28,34 +29,38 @@ export const googleAccountsRouter = createTRPCRouter({
             clientId: z.string(),
         }))
         .mutation(async ({ ctx, input: { url, clientId } }) => {
-            const responses = await getFormResponses(url, clientId)
+            try {
+                const responses = await getFormResponses(url, clientId)
 
-            const userResponse = responses?.find(res => res.userEmail === ctx.session.user.email)
-            if (!userResponse) throw new TRPCError({ code: "BAD_REQUEST", message: "Your response is not submitted yet!\nIf you're typing the email manually please make sure it's the correct email address!" })
+                const userResponse = responses?.find(res => res.userEmail === ctx.session.user.email)
+                if (!userResponse) throw new TRPCError({ code: "BAD_REQUEST", message: "Your response is not submitted yet!\nIf you're typing the email manually please make sure it's the correct email address!" })
 
+                if (!userResponse.formId) throw new TRPCError({ code: "BAD_REQUEST", message: "Missing formId from response details!" })
 
-            if (!userResponse.formId) throw new TRPCError({ code: "BAD_REQUEST", message: "Missing formId from response details!" })
-
-            const form = await ctx.prisma.googleForm.findUnique({ where: { formId: userResponse.formId } })
-            if (form?.responses.some(res => res.responseId === userResponse.responseId)) return {
-                userResponse
-            }
-
-            const updatedForm = await ctx.prisma.googleForm.update({
-                where: { formId: userResponse.formId }, data: {
-                    responses: {
-                        push: {
-                            formId: userResponse.formId || "No Data",
-                            responseId: userResponse.responseId || "No Data",
-                            totalScore: userResponse.totalScore?.toFixed(0) || "No Data",
-                            userEmail: userResponse.userEmail || "No Data",
-                            createdAt: userResponse.createdAt || "No Data",
-                        }
-                    }
+                const form = await ctx.prisma.googleForm.findUnique({ where: { formId: userResponse.formId }, include: { evaluationForm: true } })
+                if (form?.responses.some(res => res.responseId === userResponse.responseId)) return {
+                    userResponse
                 }
-            })
 
-            return { userResponse, updatedForm }
+                const updatedForm = await ctx.prisma.googleForm.update({
+                    where: { formId: userResponse.formId }, data: {
+                        responses: {
+                            push: {
+                                formId: userResponse.formId || "No Data",
+                                responseId: userResponse.responseId || "No Data",
+                                totalScore: userResponse.totalScore?.toFixed(0) || "No Data",
+                                userEmail: userResponse.userEmail || "No Data",
+                                createdAt: userResponse.createdAt || "No Data",
+                            }
+                        }
+                    },
+                    include: { evaluationForm: true }
+                })
+
+                return { userResponse, updatedForm }
+            } catch (error) {
+                throw new TRPCError(getTRPCErrorFromUnknown(error))
+            }
         }),
     deleteGoogleAccounts: protectedProcedure
         .input(z.object({
@@ -111,6 +116,8 @@ export const googleAccountsRouter = createTRPCRouter({
 
             // After redirect and receiving the authorization code, exchange it for tokens
             const { tokens } = await oAuth2Client.getToken(code);
+            console.log(tokens);
+
             oAuth2Client.setCredentials(tokens);
 
             const googleClient = await ctx.prisma.googleClient.create({
@@ -129,7 +136,7 @@ export const googleAccountsRouter = createTRPCRouter({
     refreshToken: protectedProcedure
         .input(z.object({ id: z.string() }))
         .mutation(async ({ input: { id } }) => {
-            const googleClient = refreshGoogleToken(id)
+            const googleClient = await refreshGoogleToken(id)
             return { googleClient }
         })
 });

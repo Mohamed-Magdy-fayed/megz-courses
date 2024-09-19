@@ -1,6 +1,6 @@
 import { env } from "@/env.mjs";
 import { validEvalFormTypes } from "@/lib/enumsTypes";
-import { generateCertificateId } from "@/lib/utils";
+import { generateCertificateId, getRating } from "@/lib/utils";
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -13,6 +13,14 @@ export const evaluationFormSubmissionsRouter = createTRPCRouter({
   getEvalFormSubmission: protectedProcedure
     .query(async ({ ctx }) => {
       const submissions = await ctx.prisma.evaluationFormSubmission.findMany()
+
+      return { submissions }
+    }),
+  getUserEvalFormSubmission: protectedProcedure
+    .query(async ({ ctx }) => {
+      const submissions = await ctx.prisma.evaluationFormSubmission.findMany({
+        where: { userId: ctx.session.user.id }
+      })
 
       return { submissions }
     }),
@@ -81,22 +89,6 @@ export const evaluationFormSubmissionsRouter = createTRPCRouter({
 
       if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "no user found!" })
       if (evaluationForm?.questions.length !== answers.length) throw new TRPCError({ code: "BAD_REQUEST", message: "missing some answers!" })
-
-      const getRating = (questions: EvaluationFormQuestion[], answers: SubmissionAnswer[]): number => {
-        let points = 0
-
-        for (let i = 0; i < answers.length; i++) {
-          const answer = answers[i];
-          const question = questions.find(question => question.id === answer?.questionId)
-
-          if (question) {
-            const correctOption = question.options.find(option => option.isCorrect)
-            if (question.type === "multipleChoice" && correctOption?.text === answer?.text) points += question.points
-            if (question.type === "trueFalse" && correctOption?.isTrue === answer?.isTrue) points += question.points
-          }
-        }
-        return points
-      }
 
       if (type === "finalTest") {
         const certificate = await ctx.prisma.certificate.create({

@@ -8,6 +8,7 @@ import LearningFooter from './LearningFooter'
 import { Prisma } from '@prisma/client'
 import useLoadLearningData from '@/hooks/useLoadLearningData'
 import { api } from '@/lib/api'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export type LearningLayoutProps = {
     children: ReactNode;
@@ -92,7 +93,29 @@ const LearningLayout = ({ children }: LearningLayoutProps) => {
 
     useEffect(() => { refetch() }, [])
 
-    if (!course || !user) return null
+    if (!course || !user) return (
+        <div className="flex">
+            <Sheet
+                open={opened}
+                onOpenChange={() => opened ? closeNav() : openNav()}
+            >
+                <SheetContent side="left" className="p-0 w-min">
+                    <Skeleton className='w-40 h-80 rounded-none bg-foreground' />
+                </SheetContent>
+            </Sheet>
+            <div className="hidden lg:block p-0 w-min">
+                <Skeleton className='w-80 h-full rounded-none bg-foreground' />
+            </div>
+            <div className="w-full h-screen flex flex-col">
+                <LearningNavigationMenu />
+                <div className="flex flex-col justify-between flex-grow overflow-auto transition-all scrollbar-thin scrollbar-track-accent scrollbar-thumb-secondary">
+                    <main className="p-4">{children}</main>
+                    <ChatWithUs />
+                </div>
+                <Skeleton className='w-full h-20 rounded-none bg-foreground' />
+            </div>
+        </div>
+    )
 
     return (
         <div className="flex">

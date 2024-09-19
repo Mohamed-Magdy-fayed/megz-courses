@@ -25,6 +25,7 @@ import { ScrollArea } from "../ui/scroll-area"
 import { useNavStore } from "@/zustand/store"
 import Image from "next/image"
 import { getInitials } from "@/lib/getInitials"
+import { UserCog } from "lucide-react"
 
 export const LearningNavigationMenu = ({ siteIdentity }: { siteIdentity?: SiteIdentity }) => {
     const latestCoursesQuery = api.courses.getLatest.useQuery(undefined, {
@@ -210,12 +211,20 @@ const DesktopAuthenticatedProfileMenu = () => {
         <div className="hidden md:flex col-span-3 items-center gap-4 justify-end">
             {/* Authenticated Users (Students) */}
             {session.data?.user.userType === "student" ? (
-                <Link href={`/my_courses`}>
-                    <Button customeColor={"primaryIcon"}>
-                        <Typography className="text-foreground whitespace-nowrap">My courses</Typography>
-                        <BookOpen />
-                    </Button>
-                </Link>
+                <>
+                    <Link href={`/my_courses`}>
+                        <Button customeColor={"primaryIcon"}>
+                            <Typography className="text-foreground whitespace-nowrap">My courses</Typography>
+                            <BookOpen />
+                        </Button>
+                    </Link>
+                    <Link href={`/my_account`}>
+                        <Button customeColor={"primaryIcon"}>
+                            <Typography className="text-foreground whitespace-nowrap">My Account</Typography>
+                            <UserCog />
+                        </Button>
+                    </Link>
+                </>
             ) /* Authenticated Users (non student) */ : (
                 <Link href={`/dashboard`}>
                     <Button customeColor={"primaryIcon"}>

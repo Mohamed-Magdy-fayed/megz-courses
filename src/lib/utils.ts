@@ -1,4 +1,4 @@
-import { Address, Course, CourseLevel, CourseStatus, EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, MaterialItem, Order, User, ZoomGroup, ZoomSession } from "@prisma/client";
+import { Address, Course, CourseLevel, CourseStatus, EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, MaterialItem, Order, SubmissionAnswer, User, ZoomGroup, ZoomSession } from "@prisma/client";
 import { type ClassValue, clsx } from "clsx";
 import { format } from "date-fns";
 import { twMerge } from "tailwind-merge";
@@ -215,4 +215,20 @@ export const isTimeNow = (testTime: number) => {
 
   // Check if the time difference is less than 30 minutes
   return timeDifference < thirtyMinutesInMilliseconds;
+}
+
+export const getRating = (questions: EvaluationFormQuestion[], answers: SubmissionAnswer[]): number => {
+  let points = 0
+
+  for (let i = 0; i < answers.length; i++) {
+    const answer = answers[i];
+    const question = questions.find(question => question.id === answer?.questionId)
+
+    if (question) {
+      const correctOption = question.options.find(option => option.isCorrect)
+      if (question.type === "multipleChoice" && correctOption?.text === answer?.text) points += question.points
+      if (question.type === "trueFalse" && correctOption?.isTrue === answer?.isTrue) points += question.points
+    }
+  }
+  return points
 }

@@ -1,3 +1,5 @@
+import { env } from "@/env.mjs";
+import { generateCertificateId } from "@/lib/utils";
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -7,20 +9,34 @@ import { z } from "zod";
 export const certificatesRouter = createTRPCRouter({
   createCertificate: protectedProcedure
     .input(z.object({
-      studentId: z.string(),
       courseSlug: z.string(),
       levelSlug: z.string(),
-      certificateId: z.string(),
-      completionDate: z.date(),
+      score: z.string(),
     }))
-    .mutation(async ({ ctx, input: { certificateId, completionDate, courseSlug, levelSlug, studentId } }) => {
+    .mutation(async ({ ctx, input: { courseSlug, levelSlug, score } }) => {
       const certificate = await ctx.prisma.certificate.create({
         data: {
-          certificateId,
-          completionDate,
+          certificateId: generateCertificateId(),
+          completionDate: new Date(),
+          user: { connect: { id: ctx.session.user.id } },
           course: { connect: { slug: courseSlug } },
           courseLevel: { connect: { slug: levelSlug } },
-          user: { connect: { id: studentId } },
+        }
+      })
+
+      await ctx.prisma.userNote.create({
+        data: {
+          sla: 0,
+          status: "Closed",
+          title: `Student final test submitted with score ${score}`,
+          type: "Info",
+          messages: [{
+            message: `Final test submitted and user certificate was created ${certificate.certificateId}\nCertificate URL: ${env.NEXTAUTH_URL}certificates/${certificate.certificateId}`,
+            updatedAt: new Date(),
+            updatedBy: "System"
+          }],
+          createdByUser: { connect: { id: ctx.session.user.id } },
+          createdForStudent: { connect: { id: ctx.session.user.id } }
         }
       })
 

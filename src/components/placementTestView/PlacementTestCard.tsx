@@ -4,6 +4,7 @@ import { SystemTestResult } from "@/components/placementTestView/SystemTestResul
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Typography } from "@/components/ui/Typoghraphy"
+import { useEvalformSubmission } from "@/hooks/useEvalFormSubmission"
 import { api } from "@/lib/api"
 import { EvaluationFormSubmission, Prisma } from "@prisma/client"
 import { FC, useEffect, useState } from "react"
@@ -25,41 +26,9 @@ type PlacementTestCardProps = {
     }>
 }
 
-const PlacementTestCard: FC<PlacementTestCardProps> = ({ userId, userEmail, courseName, writtenTest, course }) => {
+const PlacementTestCard: FC<PlacementTestCardProps> = ({ userId, userEmail, courseName, writtenTest }) => {
+    const { googleSubmission, systemSubmission, submittedAlready } = useEvalformSubmission({ userId, userEmail, writtenTest }, [])
     const [answers, setAnswers] = useState<Answer[]>([])
-    const [submission, setSubmission] = useState<EvaluationFormSubmission>()
-    const [submittedAlready, setSubmittedAlready] = useState<boolean>(false)
-    const [googleSubmission, setGoogleSubmission] = useState<{ score: number, isSubmitted: boolean }>({
-        isSubmitted: false,
-        score: 0,
-    })
-
-    const { data: submissionsData } = api.evaluationFormSubmissions.getEvalFormSubmission.useQuery()
-
-    useEffect(() => {
-        if (answers.length !== 0) return
-        setAnswers(writtenTest.questions.map(question => ({
-            id: question.id,
-            answer: ""
-        })))
-    }, [writtenTest])
-
-    useEffect(() => {
-        const userSubmission = submissionsData?.submissions.find(submission => submission.userId === userId && submission.evaluationFormId === writtenTest.id)
-        setSubmittedAlready(!!userSubmission);
-        setSubmission(userSubmission);
-    }, [submissionsData?.submissions])
-
-    useEffect(() => {
-        const submission = writtenTest.googleForm?.responses.find(res => res.userEmail === userEmail)
-        if (!!submission) {
-            setSubmittedAlready(true)
-            setGoogleSubmission({
-                isSubmitted: true,
-                score: Number(submission.totalScore),
-            })
-        }
-    }, [writtenTest.googleForm?.responses])
 
     return (
         <Card className="col-span-12 xl:col-span-8 w-full h-fit">
@@ -75,7 +44,7 @@ const PlacementTestCard: FC<PlacementTestCardProps> = ({ userId, userEmail, cour
                         index={i}
                         setAnswers={setAnswers}
                         answers={answers}
-                        submission={submission}
+                        submission={systemSubmission}
                     />
                 ))}
             </CardContent>
@@ -99,7 +68,7 @@ const PlacementTestCard: FC<PlacementTestCardProps> = ({ userId, userEmail, cour
                             answers={answers}
                             evaluationFormId={writtenTest.id}
                             isSubmitted={submittedAlready}
-                            score={submission?.rating || 0}
+                            score={systemSubmission?.rating || 0}
                             totalPoints={writtenTest.totalPoints}
                         />
                     )}

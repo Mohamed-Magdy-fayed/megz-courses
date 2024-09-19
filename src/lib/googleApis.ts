@@ -4,21 +4,25 @@ import { prisma } from '@/server/db';
 import { TRPCError } from '@trpc/server';
 
 export const getFormResponses = async (url: string, clientId: string) => {
-    const { oauth2Client } = await refreshGoogleToken(clientId)
-    const formsApi = google.forms({ version: 'v1', auth: oauth2Client });
-    const formId = getFormIdFromUrl(url)
+    try {
+        const { oauth2Client } = await refreshGoogleToken(clientId)
+        const formsApi = google.forms({ version: 'v1', auth: oauth2Client });
+        const formId = getFormIdFromUrl(url)
 
-    const responses = (await formsApi.forms.responses.list({ formId })).data.responses?.map(res => {
-        return {
-            responseId: res.responseId,
-            formId,
-            userEmail: res.respondentEmail,
-            totalScore: res.totalScore,
-            createdAt: res.createTime,
-        }
-    })
+        const responses = (await formsApi.forms.responses.list({ formId })).data.responses?.map(res => {
+            return {
+                responseId: res.responseId,
+                formId,
+                userEmail: res.respondentEmail,
+                totalScore: res.totalScore,
+                createdAt: res.createTime,
+            }
+        })
 
-    return responses
+        return responses
+    } catch (error) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: JSON.stringify(error) })
+    }
 }
 
 const getFormIdFromUrl = (url: string) => {

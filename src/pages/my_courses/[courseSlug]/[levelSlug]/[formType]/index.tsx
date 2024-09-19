@@ -18,19 +18,19 @@ import { useSession } from "next-auth/react";
 const AssignmentPage: NextPage = () => {
     const router = useRouter()
     const courseSlug = router.query.courseSlug as string
-    const slug = router.query.slug as string
+    const levelSlug = router.query.levelSlug as string
     const type = router.query.formType as string
 
     const { toastError, toastSuccess, toast } = useToast()
 
     const trpcUtils = api.useContext()
     const courseQuery = api.courses.getBySlug.useQuery({ slug: courseSlug }, { enabled: !!courseSlug })
-    const evalFormQuery = api.evaluationForm.getEvalFormByMaterialItemSlug.useQuery({ slug, type: type === "assignment" ? "assignment" : type === "quiz" ? "quiz" : type === "final_test" ? "finalTest" : undefined }, { enabled: !!type })
+    const evalFormQuery = api.evaluationForm.getFinalTest.useQuery({ courseSlug }, { enabled: !!type })
     const userQuery = api.users.getCurrentUser.useQuery()
 
     const submitMutation = api.evaluationFormSubmissions.createEvalFormSubmission.useMutation({
         onMutate: () => setLoading(true),
-        onSuccess: ({ evaluationFormSubmission }) => evaluationFormSubmission.rating > getEvalutaionFormFullMark(evalFormQuery.data?.evaluationForm?.questions!) / 2
+        onSuccess: ({ evaluationFormSubmission }) => evaluationFormSubmission.rating > getEvalutaionFormFullMark(evalFormQuery.data?.finalTest?.questions!) / 2
             ? toastSuccess(`Thank you, your score is ${evaluationFormSubmission.rating}`)
             : toastError(`Thank you, your score is ${evaluationFormSubmission.rating}`),
         onError: ({ message }) => toastError(message),
@@ -50,7 +50,7 @@ const AssignmentPage: NextPage = () => {
         totalPoints,
         isLoading,
         setSystemAnswers,
-    } = useEvalformSubmission({ userId: session.data?.user.id || "", userEmail: session.data?.user.email || "", writtenTest: evalFormQuery.data?.evaluationForm }, [type])
+    } = useEvalformSubmission({ userId: session.data?.user.id || "", userEmail: session.data?.user.email || "", writtenTest: evalFormQuery.data?.finalTest }, [type])
 
     const [description, setDescription] = useState("")
     const [image, setImage] = useState("")
@@ -60,17 +60,18 @@ const AssignmentPage: NextPage = () => {
 
     const handleSubmit = () => {
         if (!systemAnswers) return toastError("no answers!")
-        if (!evalFormQuery.data?.evaluationForm?.type) return toastError("no form type!")
+        if (!evalFormQuery.data?.finalTest?.type) return toastError("no form type!")
         if (!courseQuery?.data?.course?.id) return toastError("no course!")
 
         submitMutation.mutate({
             answers: systemAnswers,
-            evaluationFormId: evalFormQuery.data.evaluationForm.id,
-            type: evalFormQuery.data.evaluationForm.type,
+            evaluationFormId: evalFormQuery.data.finalTest.id,
+            type: evalFormQuery.data.finalTest.type,
             courseId: courseQuery.data.course.id,
         })
     }
 
+    const generateCertificateMutation = api.certificates.createCertificate.useMutation()
     const checkSubmissionMutation = api.googleAccounts.getGoogleFormResponses.useMutation({
         onMutate: () => {
             setCreateSubmissionToast(
@@ -82,15 +83,23 @@ const AssignmentPage: NextPage = () => {
                 })
             )
         },
-        onSuccess: ({ userResponse }) => createSubmissionToast?.update({
-            id: createSubmissionToast.id,
-            title: "Success",
-            description: <Typography>
-                Thank you, You scored {userResponse.totalScore} of {evalFormQuery.data?.evaluationForm?.totalPoints} points With a percentage of {formatPercentage(userResponse.totalScore! / (evalFormQuery.data?.evaluationForm?.totalPoints || 0) * 100)}
-            </Typography>,
-            duration: 3000,
-            variant: "success",
-        }),
+        onSuccess: ({ userResponse, updatedForm }) => {
+            createSubmissionToast?.update({
+                id: createSubmissionToast.id,
+                title: "Success",
+                description: <Typography>
+                    Thank you, You scored {userResponse.totalScore} of {evalFormQuery.data?.finalTest?.totalPoints} points With a percentage of {formatPercentage(userResponse.totalScore! / (evalFormQuery.data?.finalTest?.totalPoints || 0) * 100)}
+                </Typography>,
+                duration: 3000,
+                variant: "success",
+            })
+            if (!evalFormQuery.data?.finalTest) return toastError("evaluation form not present")
+            generateCertificateMutation.mutate({
+                courseSlug,
+                levelSlug,
+                score: formatPercentage(userResponse.totalScore! / (evalFormQuery.data?.finalTest?.totalPoints || 0) * 100),
+            })
+        },
         onError: ({ message }) => createSubmissionToast?.update({
             id: createSubmissionToast.id,
             title: "Ops!",
@@ -107,14 +116,14 @@ const AssignmentPage: NextPage = () => {
     })
 
     const handleCheckSubmission = () => {
-        if (!evalFormQuery.data?.evaluationForm?.googleFormUrl || !evalFormQuery.data?.evaluationForm?.googleForm?.googleClientId) return toastError("Not a google form!")
+        if (!evalFormQuery.data?.finalTest?.googleFormUrl || !evalFormQuery.data?.finalTest?.googleForm?.googleClientId) return toastError("Not a google form!")
         checkSubmissionMutation.mutate({
-            url: evalFormQuery.data.evaluationForm.googleFormUrl,
-            clientId: evalFormQuery.data.evaluationForm.googleForm.googleClientId,
+            url: evalFormQuery.data.finalTest.googleFormUrl,
+            clientId: evalFormQuery.data.finalTest.googleForm.googleClientId,
         })
     }
 
-    if (evalFormQuery.isLoading || !evalFormQuery.data?.evaluationForm || isLoading) return (
+    if (evalFormQuery.isLoading || !evalFormQuery.data?.finalTest || isLoading) return (
         <LearningLayout>
             <div>
                 <Spinner className="mx-auto" />
@@ -139,14 +148,14 @@ const AssignmentPage: NextPage = () => {
             <div className="space-y-4">
                 <div className="flex items-center justify-between flex-wrap gap-4">
                     <div className="flex items-center gap-4">
-                        <ConceptTitle>{evalFormQuery.data.evaluationForm?.materialItem?.title} {type === "assignment" ? " Assignment" : " Quiz"}</ConceptTitle>
+                        <ConceptTitle>{evalFormQuery.data.finalTest?.materialItem?.title} {type === "assignment" ? " Assignment" : type === "quiz" ? "Quiz" : "Final Test"}</ConceptTitle>
                         {
                             systemSubmission || submittedAlready
                                 ? (
                                     <SeverityPill color="info">
                                         {
                                             getEvalutaionStatus(
-                                                evalFormQuery.data.evaluationForm.materialItem?.zoomSessions.find(session => session.materialItemId === evalFormQuery.data.evaluationForm?.materialItemId)?.sessionDate || new Date(),
+                                                evalFormQuery.data.finalTest.materialItem?.zoomSessions.find(session => session.materialItemId === evalFormQuery.data.finalTest?.materialItemId)?.sessionDate || new Date(),
                                                 (!!systemSubmission || submittedAlready)
                                             )
                                         }
@@ -157,13 +166,12 @@ const AssignmentPage: NextPage = () => {
                                         <SeverityPill color="info">
                                             {
                                                 getEvalutaionStatus(
-                                                    evalFormQuery.data.evaluationForm.materialItem?.zoomSessions.find(session => session.materialItemId === evalFormQuery.data.evaluationForm?.materialItemId)?.sessionDate || new Date(),
+                                                    evalFormQuery.data.finalTest.materialItem?.zoomSessions.find(session => session.materialItemId === evalFormQuery.data.finalTest?.materialItemId)?.sessionDate || new Date(),
                                                     !!systemSubmission
                                                 )
                                             }
                                         </SeverityPill>
                                         <Typography>Total Points: {totalPoints}</Typography>
-
                                     </>
                                 )
                         }
@@ -176,22 +184,22 @@ const AssignmentPage: NextPage = () => {
                             </Button>
                             <Typography> of </Typography>
                             <Button className="pointer-events-none" variant={"icon"} customeColor={"success"}>
-                                {evalFormQuery.data.evaluationForm.totalPoints}
+                                {evalFormQuery.data.finalTest.totalPoints}
                             </Button>
                         </div>
                     )}
                 </div>
-                {!userQuery.data?.user?.zoomGroups.some(group => group.zoomSessions.some(session => session.materialItemId === evalFormQuery.data?.evaluationForm?.materialItemId))
+                {!userQuery.data?.user?.zoomGroups.some(g => g.course?.slug === courseSlug && g.zoomSessions.every(s => s.sessionStatus === "completed"))
                     ? (
                         <div className="w-full text-center p-8">
                             <Typography variant={"secondary"}>
-                                Form is not due yet! please check again later.
+                                Final Test is not available now.
                             </Typography>
                         </div>
                     )
                     : (
                         <div className="p-4 space-y-4">
-                            {evalFormQuery.data.evaluationForm.questions.map((question, index) => (
+                            {evalFormQuery.data.finalTest.questions.map((question, index) => (
                                 <EvaluationFormQuestionCard
                                     key={`${question.questionText}questionCard${index}`}
                                     question={question}
@@ -204,17 +212,17 @@ const AssignmentPage: NextPage = () => {
                                     submission={systemSubmission}
                                     score={systemSubmission?.rating || 0}
                                     totalPoints={totalPoints}
-                                    evaluationForm={evalFormQuery.data.evaluationForm!}
+                                    evaluationForm={evalFormQuery.data.finalTest!}
                                 />
                             ))}
-                            {evalFormQuery.data.evaluationForm.googleForm?.formRespondUrl ? (
+                            {evalFormQuery.data.finalTest.googleForm?.formRespondUrl ? (
                                 <div className="flex flex-col items-start gap-4">
                                     <div className="flex items-center gap-4">
                                         <Button
                                             type="button"
                                             className="relative"
                                             disabled={!!createSubmissionToast || submittedAlready}
-                                            onClick={() => window.open(evalFormQuery.data.evaluationForm?.googleForm?.formRespondUrl!, "_blank")}
+                                            onClick={() => window.open(evalFormQuery.data.finalTest?.googleForm?.formRespondUrl!, "_blank")}
                                             customeColor={"info"}
                                         >
                                             {!!createSubmissionToast && <Spinner className="w-4 h-4 mr-2" />}
@@ -239,12 +247,12 @@ const AssignmentPage: NextPage = () => {
                                         <Typography
                                             variant={"secondary"}
                                             className={cn(
-                                                googleSubmission.score / evalFormQuery.data.evaluationForm.totalPoints * 100 > 50
+                                                googleSubmission.score / evalFormQuery.data.finalTest.totalPoints * 100 > 50
                                                     ? "text-success"
                                                     : "text-destructive"
                                             )}
                                         >
-                                            Score: {formatPercentage(googleSubmission.score / evalFormQuery.data.evaluationForm.totalPoints * 100)}
+                                            Score: {formatPercentage(googleSubmission.score / evalFormQuery.data.finalTest.totalPoints * 100)}
                                         </Typography>
                                     )}
                                 </div>

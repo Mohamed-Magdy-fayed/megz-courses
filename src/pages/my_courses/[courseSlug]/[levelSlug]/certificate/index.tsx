@@ -1,4 +1,5 @@
 import LearningLayout from "@/components/LearningLayout/LearningLayout";
+import Spinner from "@/components/Spinner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
@@ -17,7 +18,7 @@ const CertificatePage: NextPage = () => {
     const router = useRouter()
     const courseSlug = router.query.courseSlug as string
     const levelSlug = router.query.levelSlug as string
-    const { data } = api.certificates.getCertificate.useQuery({ courseSlug, levelSlug }, { enabled: !!courseSlug && !!levelSlug })
+    const { data, isLoading } = api.certificates.getCertificate.useQuery({ courseSlug, levelSlug }, { enabled: !!courseSlug && !!levelSlug })
 
     const printRef = useRef<HTMLDivElement>(null);
 
@@ -26,6 +27,12 @@ const CertificatePage: NextPage = () => {
             window.print();
         }
     };
+
+    if (isLoading) return (
+        <LearningLayout>
+            <Spinner className="mx-auto" />
+        </LearningLayout>
+    )
 
     return (
         <LearningLayout>
@@ -39,7 +46,7 @@ const CertificatePage: NextPage = () => {
             <div className="space-y-4">
                 <div className="flex items-center justify-between flex-wrap gap-4">
                     <div className="flex items-center gap-4">
-                        <ConceptTitle>{data?.certificate?.course?.name} Course Certificate</ConceptTitle>
+                        <ConceptTitle>{data?.certificate?.course?.name} Certificate</ConceptTitle>
                     </div>
                     <Tooltip>
                         <TooltipTrigger asChild>

@@ -18,13 +18,6 @@ export const QuestionAnswersCard = ({ question, setAnswers, submission, isAnswer
 
     useEffect(() => {
         setAnswers(prev => {
-            console.log(prev?.map(questionAnswer => {
-                if (question.id === questionAnswer.questionId) return {
-                    ...questionAnswer,
-                    text: selectedAnswer,
-                }
-                return questionAnswer
-            }));
             return prev?.map(questionAnswer => {
                 if (question.id === questionAnswer.questionId) return {
                     ...questionAnswer,
@@ -33,8 +26,6 @@ export const QuestionAnswersCard = ({ question, setAnswers, submission, isAnswer
                 return questionAnswer
             })
         })
-        console.log(selectedAnswer);
-
     }, [selectedAnswer])
 
     useEffect(() => {

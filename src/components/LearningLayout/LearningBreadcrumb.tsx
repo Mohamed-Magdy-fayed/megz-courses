@@ -45,7 +45,6 @@ export function LearningBreadcrumb({ level, course }: {
 
     const processBreadcrumbData = () => {
         const items = pathSegments.filter((_, i) => i !== 5)
-        console.log(pathSegments);
         
         const data = items.map((segment, index) => {
             const href = index === 0 ? "/" : index === 4 ? undefined : (index === 3 && index === pathSegments.length - 1) ? undefined : pathSegments.slice(0, index + 1).join('/');
@@ -56,7 +55,6 @@ export function LearningBreadcrumb({ level, course }: {
                 href,
             };
         })
-        console.log(data);
 
         setBreadcrumbData(data)
     }
