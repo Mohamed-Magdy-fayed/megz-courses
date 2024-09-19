@@ -1,7 +1,6 @@
-import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowUpDown, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import CoursesActionCell from "./CoursesActionCell";
@@ -9,6 +8,7 @@ import { Typography } from "@/components/ui/Typoghraphy";
 import { CourseLevel, Order, User } from "@prisma/client";
 import { formatPrice } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import Image from "next/image";
 
 export type CourseRow = {
     id: string,
@@ -50,21 +50,31 @@ export const columns: ColumnDef<CourseRow>[] = [
         accessorKey: "name",
         header: "Info",
         cell: ({ row }) => (
-            <Link className="block w-fit" href={`/content/courses/${row.original.slug}`}>
-                <div className="flex items-center gap-2" >
-                    <img alt={row.original.name} src={row.original.image!} className="max-h-12" />
-                    <div className="flex flex-col gap-2">
-                        <Typography
-                            className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
-                        >
-                            {row.original.name}
-                        </Typography>
-                        <Typography variant={"secondary"} className="text-sm font-normal text-slate-500 whitespace-normal truncate max-h-14">
-                            {row.original.description}
-                        </Typography>
+            <div
+                style={{ backgroundImage: `url(${row.original.image})` }}
+                className="group max-w-60 bg-cover bg-center rounded-xl overflow-hidden"
+            >
+                <Link href={`/content/courses/${row.original.slug}`} className="flex items-center gap-2 bg-background/60 p-2 w-full h-full">
+                    <div className="flex flex-col gap-2 w-full" >
+                        <div className="flex gap-2">
+                            <Typography
+                            variant={"secondary"}
+                                className="underline decoration-foreground font-extrabold text-foreground group-hover:text-primary group-hover:decoration-primary"
+                            >
+                                {row.original.name}
+                            </Typography>
+                        </div>
+                        <Tooltip delayDuration={500}>
+                            <TooltipTrigger>
+                                Description
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                {row.original.description}
+                            </TooltipContent>
+                        </Tooltip>
                     </div>
-                </div>
-            </Link>
+                </Link>
+            </div>
         ),
     },
     {
