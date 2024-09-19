@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
 import { Typography } from "../ui/Typoghraphy";
 import Link from "next/link";
 import { SeverityPill, SeverityPillProps } from "../overview/SeverityPill";
@@ -106,7 +105,7 @@ export const columns: ColumnDef<CourseRow>[] = [
       return (
         <div className="flex flex-col gap-2 items-center">
           <Typography>{row.original.oralTestTime}</Typography>
-          <Link href={`/placement_test/${row.original.id}`}>
+          <Link href={`/placement_test/${row.original.slig}`}>
             <Button customeColor={"primary"}>
               Start
             </Button>
