@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"7b1a373dee214126956c9d03d12e21c1","collectionName":"ZoomSession","type":"collection"}
