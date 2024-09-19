@@ -20,12 +20,14 @@ const MyCoursesClient = () => {
         const totalPoints = filteredTest?.writtenTest.totalPoints
         const oralTestSubmission = data.user.courseStatus.find(status => status.courseId === id)
         const isOralTestScheduled = data?.user.placementTests.length !== 0
+        const isGroupCompleted = data.user.zoomGroups.some(g => g.courseId === id && g.groupStatus === "completed")
         const oralTestTime = filteredTest?.oralTestTime || new Date()
         const status = !filteredTest ? "Waiting Placement Test"
             : !isOralTestScheduled ? "Oral Test Not Scheduled"
                 : !oralTestSubmission ? "Awaiting oral test result"
-                    : oralTestSubmission.level?.name ? "Group ongoing"
-                        : !isSubmitted ? "Need Submission" : ""
+                    : isGroupCompleted ? "Group Completed"
+                        : oralTestSubmission.level?.name ? "Group ongoing"
+                            : !isSubmitted ? "Need Submission" : ""
         const user = data.user
 
         return {
