@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
 import { formatPrice, orderCodeGenerator, salesOperationCodeGenerator } from "@/lib/utils";
 import bcrypt from "bcrypt";
 import { TRPCError } from "@trpc/server";
@@ -537,7 +537,7 @@ export const ordersRouter = createTRPCRouter({
 
             return { courseLink, updatedOrder, courseStatus, note }
         }),
-    payOrder: protectedProcedure
+    payOrder: publicProcedure
         .input(
             z.object({
                 transactionId: z.string(),
@@ -601,7 +601,7 @@ export const ordersRouter = createTRPCRouter({
                         updatedAt: new Date(),
                         updatedBy: "System"
                     }],
-                    createdByUser: { connect: { id: ctx.session.user.id } },
+                    createdByUser: { connect: { email: "system@mail.com" } },
                 }
             })
 
