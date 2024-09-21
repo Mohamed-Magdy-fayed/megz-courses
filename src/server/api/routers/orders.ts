@@ -222,16 +222,23 @@ export const ordersRouter = createTRPCRouter({
                 })
         )
         .mutation(async ({ input: { courseDetails, email, name, phone }, ctx }) => {
-            if (ctx.session.user.userType !== "admin" && ctx.session.user.userType !== "salesAgent") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to create orders, Please contact your admin!" })
+            if (
+                ctx.session.user.userType !== "admin"
+                && ctx.session.user.userType !== "salesAgent"
+                && ctx.session.user.userType !== "chatAgent"
+            ) throw new TRPCError({
+                code: "UNAUTHORIZED",
+                message: "You are not authorized to create orders, Please contact your admin!"
+            })
 
             let user: User | null
             let password = ""
             if (!email && !!name) {
-                password = randomUUID().toString().split("-")[0] as string;
+                password = "@P" + randomUUID().toString().split("-")[0] as string;
                 const hashedPassword = await bcrypt.hash(password, 10);
 
                 user = await ctx.prisma.user.create({
-                    data: { name, email: `${name?.replaceAll(" ", "")}${(Math.random() * 10000).toFixed()}@temp.com`, phone, hashedPassword }
+                    data: { name, email: `${name?.replaceAll(" ", "").toLocaleLowerCase()}${(Math.random() * 10000).toFixed()}@temp.com`, phone, hashedPassword, emailVerified: new Date() }
                 })
             } else {
                 user = await ctx.prisma.user.findUnique({
@@ -308,6 +315,37 @@ export const ordersRouter = createTRPCRouter({
                     status: "ongoing",
                 }
             })
+                .then(res => res)
+                .catch(async (e) => {
+                    if (
+                        e.meta.cause.includes("No 'SalesAgent' record")
+                        && (
+                            ctx.session.user.userType === "admin"
+                            || ctx.session.user.userType === "chatAgent"
+                        )
+                    ) {
+                        await ctx.prisma.salesAgent.create({
+                            data: {
+                                salary: "0",
+                                user: {
+                                    connect: {
+                                        id: ctx.session.user.id
+                                    }
+                                }
+                            }
+                        })
+
+                        return await ctx.prisma.salesOperation.create({
+                            data: {
+                                assignee: { connect: { userId: salesAgentId } },
+                                code: salesOperationCodeGenerator(),
+                                status: "ongoing",
+                            }
+                        })
+
+                    }
+                    throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: e.meta.cause })
+                })
             if (!salesOperation) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "create salesOperation failed" })
 
             const order = await ctx.prisma.order.create({
@@ -355,6 +393,7 @@ export const ordersRouter = createTRPCRouter({
             return {
                 order,
                 password,
+                user,
                 paymentLink,
             };
         }),

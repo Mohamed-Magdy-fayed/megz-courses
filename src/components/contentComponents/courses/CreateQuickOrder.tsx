@@ -16,11 +16,23 @@ import { PaperContainer } from "@/components/ui/PaperContainers"
 import { Typography } from "@/components/ui/Typoghraphy"
 import { sendWhatsAppMessage } from "@/lib/whatsApp"
 import MobileNumberInput from "@/components/ui/phone-number-input"
-import { CredentialsEmail } from "@/components/emails/CredintialsEmail"
+import { useRouter } from "next/router"
+import Modal from "@/components/ui/modal"
+import Link from "next/link"
+import { Copy, CopyPlus, Link2 } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { env } from "@/env.mjs"
 
 const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
     const [loading, setLoading] = useState(false)
     const [isPrivate, setIsPrivate] = useState(false)
+    const [quickOrderOpen, setQuickOrderOpen] = useState(false)
+    const [userDetails, setUserDetails] = useState<{
+        email: string,
+        password: string,
+        salesOperationCode: string,
+        writtenTestUrl: string,
+    }>({ email: "", password: "", salesOperationCode: "", writtenTestUrl: "" })
     const [name, setName] = useState<string>("")
     const [phone, setPhone] = useState<string>("")
     const [email, setEmail] = useState<string[]>([])
@@ -31,7 +43,7 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
     const { data: usersData } = api.users.getUsers.useQuery({ userType: "student" })
     const quickOrderMutation = api.orders.quickOrder.useMutation()
     const sendEmailMutation = api.emails.sendZohoEmail.useMutation()
-    const trpcUtils = api.useContext()
+    const router = useRouter()
 
     const handleQuickOrderForExistingUser = () => {
         if (!email[0]) return
@@ -80,23 +92,6 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
             courseDetails: { courseId: courseData.id, isPrivate },
         }, {
             onSuccess: ({ password, order: { id, amount, orderNumber, user, course, createdAt, courseType, salesOperationId, salesOperation }, paymentLink }) => {
-                const message = render(
-                    <Email
-                        logoUrl={siteData?.siteIdentity.logoPrimary || ""}
-                        orderCreatedAt={format(createdAt, "dd MMM yyyy")}
-                        userEmail={user.email}
-                        orderAmount={formatPrice(amount)}
-                        orderNumber={orderNumber}
-                        paymentLink={paymentLink}
-                        customerName={user.name}
-                        course={{
-                            courseName: course.name,
-                            coursePrice: courseType.isPrivate
-                                ? formatPrice(course.privatePrice)
-                                : formatPrice(course.groupPrice)
-                        }}
-                    />, { pretty: true }
-                )
                 setLoading(false)
                 sendWhatsAppMessage({
                     toNumber: "201123862218",
@@ -111,11 +106,6 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
                     \nإجمالي الطلب: *${formatPrice(amount)}*
                     \n\nيمكنك المتابعة إلى الدفع هنا: *${paymentLink}*`
                 })
-                handleSendEmail({
-                    email: user.email,
-                    subject: `Thanks for your order ${orderNumber}`,
-                    message,
-                })
                 toastSuccess(`Order ${orderNumber} has been submitted successfully!`)
                 sendWhatsAppMessage({
                     toNumber: "201123862218",
@@ -128,6 +118,8 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
                     \n*كلمة السر*: *${password}*
                     \nطبعا تقدر تغير اسم المستخدم او كلمة السر في اي وقت تحبة وتقدر تشوف محتويات الكورس من اللينك ده: *${window.location.host}/my_courses/*`
                 })
+                setUserDetails({ email: user.email, password, salesOperationCode: salesOperation.code, writtenTestUrl: `${env.NEXT_PUBLIC_NEXTAUTH_URL}placement_test/${course.slug}` })
+                setQuickOrderOpen(true)
             },
             onError: (error) => {
                 toastError(error.message)
@@ -158,6 +150,78 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
 
     return (
         <div className="grid grid-cols-2 items-center justify-between gap-4">
+            <Modal
+                title="User Details"
+                description="Do you want to process the sales operation?"
+                isOpen={quickOrderOpen}
+                onClose={() => setQuickOrderOpen(false)}
+                children={(
+                    <div className="flex flex-col gap-4 p-2">
+                        <div className="flex items-center justify-between w-full gap-4">
+                            <div className="flex flex-col gap-2">
+                                <Typography>Email</Typography>
+                                <Typography>Password</Typography>
+                            </div>
+                            <div
+                                onDoubleClick={() => {
+                                    navigator.clipboard.writeText(`${userDetails.email}\n${userDetails.password}`);
+                                    toastSuccess("Credentials copied to the clipboard");
+                                }}
+                                className="flex flex-col gap-2 bg-primary/10 border border-primary rounded-lg p-2"
+                            >
+                                <Typography>{userDetails.email}</Typography>
+                                <Typography>{userDetails.password}</Typography>
+                            </div>
+                        </div>
+                        <Typography>You can send the written test link to the student</Typography>
+                        <div className="flex items-center justify-between w-full gap-4">
+                            <div className="flex flex-col gap-2">
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(userDetails.writtenTestUrl);
+                                                toastSuccess("Link copied to the clipboard");
+                                            }}
+                                            customeColor={"infoIcon"}
+                                        >
+                                            <Typography>Click to copy the Link</Typography>
+                                            <CopyPlus className="w-4 h-4" />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <Typography>
+                                            {userDetails.writtenTestUrl}
+                                        </Typography>
+                                    </TooltipContent>
+                                </Tooltip>
+                                <Link href={`/sales_operations/${userDetails.salesOperationCode}`}>
+                                    <Button customeColor={"success"}>
+                                        <Typography>Go to sales operation</Typography>
+                                        <Link2 className="w-4 h-4" />
+                                    </Button>
+                                </Link>
+                            </div>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(`${userDetails.email}\n${userDetails.password}`);
+                                            toastSuccess("Credentials copied to the clipboard");
+                                        }}
+                                        customeColor={"infoIcon"}
+                                    >
+                                        <Copy className="w-4 h-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <Typography>Copy user credentials</Typography>
+                                </TooltipContent>
+                            </Tooltip>
+                        </div>
+                    </div>
+                )}
+            />
             <PaperContainer className="p-4 space-y-4 h-full">
                 <Typography variant={"primary"}>New Student Quick Order</Typography>
                 <div>

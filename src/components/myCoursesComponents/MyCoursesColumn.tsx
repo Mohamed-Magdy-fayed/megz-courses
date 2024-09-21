@@ -92,7 +92,7 @@ export const myCoursesColumns: ColumnDef<MyCoursesRow>[] = [
         <div className="flex flex-col gap-2 items-center">
           <Typography>{format(row.original.oralTestTime, "PPPp")}</Typography>
           {!isTimePassed(row.original.oralTestTime.getTime()) && (
-            <Link href={`/placement_test/${row.original.id}`}>
+            <Link href={`/placement_test/${row.original.slug}`}>
               <Button customeColor={"primary"}>
                 Start
               </Button>

@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import { PlacementTest } from "@prisma/client";
 
 export const placementTestsRouter = createTRPCRouter({
     getUserCoursePlacementTest: protectedProcedure
@@ -15,7 +14,7 @@ export const placementTestsRouter = createTRPCRouter({
                     AND: {
                         courseId,
                         studentUserId: userId,
-                    }
+                    },
                 },
                 include: {
                     course: true,
@@ -32,19 +31,19 @@ export const placementTestsRouter = createTRPCRouter({
             courseId: z.string(),
         }))
         .query(async ({ ctx, input: { courseId } }) => {
-            const tests = await ctx.prisma.placementTest.findMany({
+            const test = await ctx.prisma.evaluationForm.findFirst({
                 where: {
                     courseId,
+                    type: "placementTest",
                 },
                 include: {
-                    course: true,
-                    student: true,
-                    trainer: { include: { user: true } },
-                    writtenTest: { include: { submissions: true } },
+                    googleForm: true,
+                    questions: true,
+                    submissions: true,
                 }
             })
 
-            return { tests }
+            return { test }
         }),
     getUserPlacementTest: protectedProcedure
         .input(z.object({

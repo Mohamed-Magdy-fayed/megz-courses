@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Button } from "../ui/button";
-import { MenuIcon, UserCircle, MessagesSquare } from "lucide-react";
+import { MenuIcon, UserCircle, MessagesSquare, FileCheck, ListChecks, CircleDollarSign } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Typography } from "../ui/Typoghraphy";
@@ -18,6 +18,7 @@ import Image from "next/image";
 import { LogoForeground } from "@/components/layout/Logo";
 import { SiteIdentity } from "@prisma/client";
 import { getInitials } from "@/lib/getInitials";
+import { api } from "@/lib/api";
 
 export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdentity }) {
   const session = useSession();
@@ -26,6 +27,8 @@ export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdenti
   const [isMounted, setisMounted] = useState(false);
   const navStore = useNavStore((state) => state);
   const pathname = usePathname();
+
+  const { data: trainerData } = api.trainers.getCurrentTrainer.useQuery(undefined, { enabled: session.data?.user.userType === "teacher" })
 
   const handlePathnameChange = useCallback(() => {
     if (navStore.opened) {
@@ -89,6 +92,20 @@ export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdenti
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {session.data?.user.userType === "salesAgent" && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href={`/sales_operations`}>
+                  <Button variant="icon" customeColor={"mutedIcon"} >
+                    <CircleDollarSign className="w-4 h-4" />
+                  </Button>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                Sales Operations
+              </TooltipContent>
+            </Tooltip>
+          )}
           {session.data?.user.userType === "chatAgent" && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -100,6 +117,33 @@ export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdenti
               </TooltipTrigger>
               <TooltipContent>
                 My chats
+              </TooltipContent>
+            </Tooltip>
+          )}
+          {session.data?.user.userType === "teacher" && trainerData?.trainer?.role === "teacher" ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href={`/edu_team/my_sessions`}>
+                  <Button variant="icon" customeColor={"mutedIcon"} >
+                    <ListChecks className="w-4 h-4" />
+                  </Button>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                My Sessions
+              </TooltipContent>
+            </Tooltip>
+          ) : session.data?.user.userType === "teacher" && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href={`/edu_team/my_tasks`}>
+                  <Button variant="icon" customeColor={"mutedIcon"} >
+                    <ListChecks className="w-4 h-4" />
+                  </Button>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                My Tasks
               </TooltipContent>
             </Tooltip>
           )}
@@ -129,7 +173,7 @@ export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdenti
                       <AvatarImage
                         alt={session.data?.user.name || "NA"}
                         src={session.data?.user.image || ""} />
-                      <AvatarFallback>{getInitials(session.data?.user.name|| "NA")}</AvatarFallback>
+                      <AvatarFallback>{getInitials(session.data?.user.name || "NA")}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>

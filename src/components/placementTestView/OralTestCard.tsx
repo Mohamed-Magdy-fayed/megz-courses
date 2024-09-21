@@ -5,11 +5,11 @@ import { Typography } from '@/components/ui/Typoghraphy'
 import { getInitials } from '@/lib/getInitials'
 import { Prisma } from '@prisma/client'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { Link } from 'lucide-react'
 import { format } from 'date-fns'
 import { FC } from 'react'
 import { env } from '@/env.mjs'
 import { isTimePassed } from '@/lib/utils'
+import Link from 'next/link'
 
 type OralTestCardProps = {
     courseName: string;
@@ -68,7 +68,7 @@ const OralTestCard: FC<OralTestCardProps> = ({ courseName, placementTest, course
                 </CardContent>
             )}
             <CardFooter>
-                {placementTest?.student.courseStatus.some(({ course }) => course.slug === courseSlug) ? (
+                {placementTest?.student.courseStatus.some(({ course, status }) => course.slug === courseSlug && status !== "orderPaid") ? (
                     <Typography>
                         Oral Test Result: <span className="text-primary">{placementTest?.student.courseStatus.find(({ course }) => course.slug === courseSlug)?.level?.name}</span>
                     </Typography>

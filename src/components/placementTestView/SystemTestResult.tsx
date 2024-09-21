@@ -26,19 +26,20 @@ export const SystemTestResult: FC<SystemTestResult> = ({ isSubmitted, score, tot
         onMutate: () => setCreateSubmissionToast(
             toast({
                 title: "Loading...",
-                description: <Spinner />,
+                description: <Spinner className="w-4 h-4" />,
                 duration: 100000,
                 variant: "info",
             })
         ),
-        onSuccess: ({ evaluationFormSubmission }) => createSubmissionToast?.update({
-            id: createSubmissionToast.id,
-            title: "Success",
-            description: <Typography>
-                Thank you, You scored {score} of {totalPoints} points With a percentage of {formattedScore}
-            </Typography>,
-            duration: 3000,
-            variant: "success",
+        onSuccess: ({ evaluationFormSubmission }) => trpcUtils.invalidate().then(() => {
+            createSubmissionToast?.update({
+                id: createSubmissionToast.id,
+                title: "Success",
+                description: <Typography>
+                    Thank you, You scored {evaluationFormSubmission.rating} of {totalPoints} points With a percentage of {formatPercentage(evaluationFormSubmission.rating / totalPoints * 100)}
+                </Typography>,
+                variant: "success",
+            })
         }),
         onError: ({ message }) => createSubmissionToast?.update({
             id: createSubmissionToast.id,
@@ -48,10 +49,8 @@ export const SystemTestResult: FC<SystemTestResult> = ({ isSubmitted, score, tot
             variant: "destructive",
         }),
         onSettled: () => {
-            trpcUtils.invalidate().then(() => {
-                createSubmissionToast?.dismissAfter()
-                setCreateSubmissionToast(undefined)
-            })
+            createSubmissionToast?.dismissAfter()
+            setCreateSubmissionToast(undefined)
         },
     })
 
@@ -68,7 +67,7 @@ export const SystemTestResult: FC<SystemTestResult> = ({ isSubmitted, score, tot
     }
 
     return isSubmitted ? (
-        <Typography>Submitted Already - {formatPercentage(score / totalPoints * 100)}</Typography>
+        <Typography>Submitted Already - {formattedScore}</Typography>
     ) : (
         <Button
             type="button"

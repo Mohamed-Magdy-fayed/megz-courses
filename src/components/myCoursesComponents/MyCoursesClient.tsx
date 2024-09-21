@@ -13,15 +13,17 @@ const MyCoursesClient = () => {
         id,
         slug,
         name,
+        evaluationForms,
     }) => {
-        const filteredTest = data?.user.placementTests.find((test) => test.courseId === id);
-        const isSubmitted = data?.user.evaluationFormSubmissions.some(sub => sub.evaluationFormId === filteredTest?.evaluationFormId)
-        const studentPoints = data?.user.evaluationFormSubmissions.find(sub => sub.evaluationFormId === filteredTest?.evaluationFormId)?.rating
-        const totalPoints = filteredTest?.writtenTest.totalPoints
+        const filteredTest = evaluationForms.find((form) => form.type === "placementTest");
+        const oralTest = data?.user.placementTests.find((test) => test.courseId === id);
+        const isSubmitted = data?.user.evaluationFormSubmissions.some(sub => sub.evaluationFormId === filteredTest?.id)
+        const studentPoints = data?.user.evaluationFormSubmissions.find(sub => sub.evaluationFormId === filteredTest?.id)?.rating
+        const totalPoints = filteredTest?.totalPoints
         const oralTestSubmission = data.user.courseStatus.find(status => status.courseId === id)
         const isOralTestScheduled = data?.user.placementTests.length !== 0
         const isGroupCompleted = data.user.zoomGroups.some(g => g.courseId === id && g.groupStatus === "completed")
-        const oralTestTime = filteredTest?.oralTestTime || new Date()
+        const oralTestTime = oralTest?.oralTestTime || new Date()
         const status = !filteredTest ? "Waiting Placement Test"
             : !isOralTestScheduled ? "Oral Test Not Scheduled"
                 : !oralTestSubmission ? "Awaiting oral test result"
@@ -34,7 +36,7 @@ const MyCoursesClient = () => {
             id,
             slug,
             name,
-            placementTestLink: `/placement_test/${id}`,
+            placementTestLink: `/placement_test/${slug}`,
             isSubmitted,
             score: isSubmitted ? `Score: ${formatPercentage((studentPoints || 0) / (totalPoints || 0) * 100)}` : "Not Submitted",
             isOralTestScheduled,

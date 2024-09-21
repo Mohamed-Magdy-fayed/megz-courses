@@ -11,10 +11,7 @@ type OptionsComponentProps = {
     index: number
     submission: EvaluationFormSubmission | undefined
     answers: Answer[]
-    setAnswers: Dispatch<SetStateAction<{
-        id: string;
-        answer: string;
-    }[]>>
+    setAnswers: Dispatch<SetStateAction<Answer[]>>
 }
 
 export const OptionsComponent: FC<OptionsComponentProps> = ({ index, option, setAnswers, questionId, answers, submission }) => {
@@ -29,10 +26,14 @@ export const OptionsComponent: FC<OptionsComponentProps> = ({ index, option, set
                 variant={"outline"}
                 customeColor={"primaryOutlined"}
                 className={cn((isSelectedAnswer || (isSubmitted && selectedAnswer === option.text)) && "bg-primary text-primary-foreground")}
-                onClick={() => setAnswers((prev) => (prev.map(question => question.id === questionId ? {
-                    ...question,
-                    answer: option.text || "",
-                } : question)))}
+                onClick={() => setAnswers((prev) => {
+                    console.log(prev);
+
+                    return (prev.map(question => question.id === questionId ? {
+                        ...question,
+                        answer: option.text || "",
+                    } : question))
+                })}
             >
                 {isSelectedAnswer && <CheckSquare className="w-4 h-4 mr-2" />} {option.text}
             </Button>

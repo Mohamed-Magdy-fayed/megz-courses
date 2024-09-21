@@ -15,8 +15,8 @@ type UseEvalformSubmissionProps = {
 }
 
 export const useEvalformSubmission = ({ userEmail, userId, writtenTest }: UseEvalformSubmissionProps, deps: any[]) => {
-    const [systemAnswers, setSystemAnswers] = useState<SubmissionAnswer[] | undefined>()
-    const [googleAnswers, setGoogleAnswers] = useState<Answer[]>([])
+    const [systemAnswers, setSystemAnswers] = useState<SubmissionAnswer[] | undefined>([])
+    const [answers, setAnswers] = useState<Answer[]>([])
     const [systemSubmission, setSystemSubmission] = useState<EvaluationFormSubmission>()
     const [submittedAlready, setSubmittedAlready] = useState<boolean>(false)
     const [totalPoints, setTotalPoints] = useState(0)
@@ -29,25 +29,13 @@ export const useEvalformSubmission = ({ userEmail, userId, writtenTest }: UseEva
 
     useEffect(() => {
         if (!writtenTest) return;
-
-        // Set initial Google answers if not already set
-        if (googleAnswers.length === 0) {
-            setGoogleAnswers(writtenTest.questions.map(({ id }) => ({
-                id,
-                answer: ""
-            })));
-        }
-
-        // Set initial system answers and calculate total points
-        const initialSystemAnswers = writtenTest.questions.map(({ id }) => ({
-            questionId: id,
-            isTrue: null,
-            text: null,
-        }));
-        setSystemAnswers(initialSystemAnswers);
-
         const total = writtenTest.questions.reduce((sum, { points }) => sum + points, 0);
         setTotalPoints(total);
+
+        setAnswers(writtenTest.questions.map(q => ({
+            id: q.id,
+            answer: "",
+        })))
 
         // Handle submissions based on userId and evaluation form
         const userSubmission = submissionsData?.submissions.find(
@@ -68,7 +56,7 @@ export const useEvalformSubmission = ({ userEmail, userId, writtenTest }: UseEva
                 score: Number(googleSubmission.totalScore),
             });
         }
-    }, [writtenTest, submissionsData?.submissions, userId, googleAnswers.length, userEmail, ...deps]);
+    }, [writtenTest, submissionsData?.submissions, userId, answers.length, userEmail, ...deps]);
 
 
     return {
@@ -76,7 +64,8 @@ export const useEvalformSubmission = ({ userEmail, userId, writtenTest }: UseEva
         systemSubmission,
         googleSubmission,
         systemAnswers,
-        googleAnswers,
+        setAnswers,
+        answers,
         setSystemAnswers,
         totalPoints,
         isLoading,

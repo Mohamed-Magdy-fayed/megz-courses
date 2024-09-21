@@ -1,11 +1,8 @@
 import { OptionsComponent } from "@/components/placementTestView/OptionsComponent";
 import { TrueAndFalseComponent } from "@/components/placementTestView/TrueAndFalseComponent";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Typography } from "@/components/ui/Typoghraphy";
-import { cn } from "@/lib/utils";
 import { EvaluationFormQuestion, EvaluationFormSubmission } from "@prisma/client";
-import { CheckSquare } from "lucide-react";
 import { Dispatch, FC, SetStateAction } from "react";
 
 export type Answer = {

@@ -143,7 +143,7 @@ export const coursesRouter = createTRPCRouter({
             in: user.orders.map(order => order.courseId),
           }
         },
-        include: { levels: true },
+        include: { levels: true, evaluationForms: true },
         orderBy: { createdAt: "desc" },
       });
 
