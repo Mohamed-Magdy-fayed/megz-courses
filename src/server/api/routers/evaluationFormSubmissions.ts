@@ -5,7 +5,7 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from "@/server/api/trpc";
-import { EvaluationFormQuestion, SubmissionAnswer } from "@prisma/client";
+import { EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, EvaluationFormTypes, GoogleForm, MaterialItem, SubmissionAnswer } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
@@ -15,6 +15,59 @@ export const evaluationFormSubmissionsRouter = createTRPCRouter({
       const submissions = await ctx.prisma.evaluationFormSubmission.findMany()
 
       return { submissions }
+    }),
+  getUserSubmissionDetails: protectedProcedure
+    .input(z.object({
+      courseSlug: z.string(),
+      levelSlug: z.string().optional(),
+      materialItemSlug: z.string().optional(),
+      isAssignment: z.boolean().optional(),
+    }))
+    .query(async ({ ctx, input: { courseSlug, levelSlug, materialItemSlug, isAssignment } }) => {
+      const userId = ctx.session.user.id
+      const userEmail = ctx.session.user.email
+      const formType: EvaluationFormTypes = isAssignment ? "assignment" : "quiz"
+      const course = await ctx.prisma.course.findUnique({
+        where: { slug: courseSlug },
+        include: { evaluationForms: { include: { googleForm: true, submissions: true, materialItem: true, questions: true } } },
+      })
+      if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "Course was not found!" })
+
+      const userSubmissionDetails = (systemForm: EvaluationForm & {
+        googleForm: GoogleForm | null;
+        materialItem: MaterialItem | null;
+        submissions: EvaluationFormSubmission[];
+        questions: EvaluationFormQuestion[];
+      }) => {
+        const googleForm = systemForm.googleForm
+
+        if (!googleForm) {
+          const systemFormSubmission = systemForm.submissions.find(sub => sub.userId === userId)
+          if (!systemFormSubmission) return { isSubmitted: false, original: { formFullScore: systemForm.totalPoints, systemForm } }
+          return { isSubmitted: true, systemFormSubmission, original: { formFullScore: systemForm.totalPoints, systemForm } }
+        } else {
+          const googleFormSubmission = googleForm.responses.find(res => res.userEmail === userEmail)
+          if (!googleFormSubmission) return { isSubmitted: false, original: { formFullScore: systemForm.totalPoints, googleForm } }
+          return { isSubmitted: true, googleFormSubmission, original: { formFullScore: systemForm.totalPoints, googleForm } }
+        }
+      }
+
+      if (!levelSlug && !materialItemSlug) {
+        const systemForm = course.evaluationForms.find(form => form.type === "placementTest")
+        if (!systemForm) throw new TRPCError({ code: "BAD_REQUEST", message: "No Placement Test Found!" })
+
+        return userSubmissionDetails(systemForm)
+      } else if (!materialItemSlug) {
+        const systemForm = course.evaluationForms.find(form => form.type === "finalTest")
+        if (!systemForm) throw new TRPCError({ code: "BAD_REQUEST", message: "No Final Test Found!" })
+
+        return userSubmissionDetails(systemForm)
+      } else {
+        const systemForm = course.evaluationForms.find(form => form.materialItem?.slug === materialItemSlug && form.type === formType)
+        if (!systemForm) throw new TRPCError({ code: "BAD_REQUEST", message: `No ${formType} found` })
+
+        return userSubmissionDetails(systemForm)
+      }
     }),
   getUserEvalFormSubmission: protectedProcedure
     .query(async ({ ctx }) => {

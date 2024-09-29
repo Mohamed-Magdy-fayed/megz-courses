@@ -13,8 +13,6 @@ import { Button } from "@/components/ui/button";
 import { SaveAll } from "lucide-react";
 import { api } from "@/lib/api";
 import { Textarea } from "@/components/ui/textarea";
-import { LogoAccent, LogoForeground, LogoPrimary } from "@/components/layout/Logo";
-import Image from "next/image";
 
 export const SiteIdentityFormSchema = z.object({
     name1: z.string(),

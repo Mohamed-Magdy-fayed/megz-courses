@@ -1,10 +1,12 @@
+import Spinner from "@/components/Spinner"
 import LandingLayout from "@/components/landingPageComponents/LandingLayout"
 import LoginModal from "@/components/modals/LoginModal"
 import OralTestCard from "@/components/placementTestView/OralTestCard"
 import PlacementTestCard from "@/components/placementTestView/PlacementTestCard"
 import { ConceptTitle } from "@/components/ui/Typoghraphy"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { usePlacementTest } from "@/hooks/usePlacementTest"
 import { api } from "@/lib/api"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/router"
@@ -17,11 +19,9 @@ const CoursePlacementTestPage = () => {
     const session = useSession()
     const userId = session.data?.user.id
 
-    const { data } = api.courses.getBySlug.useQuery({ slug }, { enabled: !!slug && !!userId })
-    const { data: scheduleData, isLoading: isScheduleDataLoading } = api.placementTests.getUserCoursePlacementTest.useQuery({ courseId: data?.course?.id! }, { enabled: !!data?.course?.id && !!userId })
-    const { data: writtenTestData, isLoading: isWrittenTestDataLoading } = api.placementTests.getCoursePlacementTest.useQuery({ courseId: data?.course?.id! }, { enabled: !!data?.course?.id && !!userId });
-
     const [open, setOpen] = useState<boolean>(false)
+
+    const { courseData, isLoading, scheduleData } = usePlacementTest(slug)
 
     useEffect(() => {
         if (session.status === "loading") return
@@ -38,7 +38,7 @@ const CoursePlacementTestPage = () => {
         <LandingLayout>
             <ConceptTitle className="mb-8">Placement Test</ConceptTitle>
             <div className="w-full grid justify-items-center gap-4 grid-cols-12">
-                {isScheduleDataLoading ? (
+                {isLoading ? (
                     <Skeleton className="col-span-12 xl:col-span-4 w-full h-80" />
                 ) : !scheduleData?.placementTest ? (
                     <Card className="col-span-12 xl:col-span-4 w-full h-80">
@@ -52,27 +52,25 @@ const CoursePlacementTestPage = () => {
                     </Card>
                 ) : (
                     <OralTestCard
-                        courseName={data?.course?.name || ""}
-                        courseSlug={data?.course?.slug || ""}
-                        placementTest={scheduleData.placementTest}
+                        courseName={courseData?.course?.name || ""}
+                        courseSlug={courseData?.course?.slug || ""}
+                        placementTest={scheduleData?.placementTest}
                     />
                 )}
-                {isWrittenTestDataLoading ? (
+                {isLoading ? (
                     <Skeleton className="col-span-12 xl:col-span-8 w-full h-80" />
-                ) : !data?.course || !writtenTestData?.test || !session.data ? (
+                ) : !courseData?.course || !session.data ? (
                     <Card className="col-span-12 xl:col-span-4 w-full h-80">
                         <CardHeader>
                             <CardTitle>Placement Test</CardTitle>
                             <CardDescription>This test is not available now, Please try again later!</CardDescription>
                         </CardHeader>
                     </Card>
-                ) : (
+                ) : courseData?.course && (
                     <PlacementTestCard
-                        course={data.course}
-                        courseName={data.course.name}
-                        userEmail={session.data.user.email || ""}
-                        userId={session.data.user.id}
-                        writtenTest={writtenTestData.test}
+                        courseName={courseData.course.name}
+                        courseSlug={slug}
+                        enabled={!!slug}
                     />
                 )}
             </div>

@@ -1,71 +1,59 @@
 import { useState, useEffect } from "react"
 import { Answer } from "@/components/placementTestView/QuestionComponent"
 import { api } from "@/lib/api"
-import { EvaluationFormSubmission, Prisma, SubmissionAnswer } from "@prisma/client"
+import { Course, EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, GoogleForm, MaterialItem, PlacementTest, Prisma, SubmissionAnswer } from "@prisma/client"
 
 type UseEvalformSubmissionProps = {
-    userId: string;
-    userEmail: string;
-    writtenTest?: Prisma.EvaluationFormGetPayload<{
-        include: {
-            googleForm: true,
-            questions: true
-        }
-    }> | null
+    courseSlug: string;
+    levelSlug?: string;
+    materialItemSlug?: string;
+    isAssignment?: boolean;
+    enabled?: boolean;
 }
 
-export const useEvalformSubmission = ({ userEmail, userId, writtenTest }: UseEvalformSubmissionProps, deps: any[]) => {
+type UserSubmissionDetailsType = NonNullable<ReturnType<typeof api.evaluationFormSubmissions.getUserSubmissionDetails.useQuery>["data"]>
+
+export const useEvalformSubmission = ({ courseSlug, isAssignment, levelSlug, materialItemSlug, enabled }: UseEvalformSubmissionProps, deps: any[]) => {
     const [systemAnswers, setSystemAnswers] = useState<SubmissionAnswer[] | undefined>([])
     const [answers, setAnswers] = useState<Answer[]>([])
-    const [systemSubmission, setSystemSubmission] = useState<EvaluationFormSubmission>()
+    const [systemForm, setSystemForm] = useState<UserSubmissionDetailsType["original"]["systemForm"]>()
+    const [systemSubmission, setSystemSubmission] = useState<UserSubmissionDetailsType["systemFormSubmission"]>()
     const [submittedAlready, setSubmittedAlready] = useState<boolean>(false)
     const [totalPoints, setTotalPoints] = useState(0)
-    const [googleSubmission, setGoogleSubmission] = useState<{ score: number, isSubmitted: boolean }>({
+    const [googleSubmission, setGoogleSubmission] = useState<{ score: number, isSubmitted: boolean } | undefined>({
         isSubmitted: false,
         score: 0,
     })
 
-    const { data: submissionsData, isLoading } = api.evaluationFormSubmissions.getUserEvalFormSubmission.useQuery()
+    const { data: userSubmissionData, isLoading } = api.evaluationFormSubmissions.getUserSubmissionDetails.useQuery({
+        courseSlug, isAssignment, levelSlug, materialItemSlug
+    }, { enabled })
 
     useEffect(() => {
-        if (!writtenTest) return;
-        const total = writtenTest.questions.reduce((sum, { points }) => sum + points, 0);
-        setTotalPoints(total);
-
-        setAnswers(writtenTest.questions.map(q => ({
-            id: q.id,
-            answer: "",
-        })))
-
-        // Handle submissions based on userId and evaluation form
-        const userSubmission = submissionsData?.submissions.find(
-            ({ userId: submissionUserId, evaluationFormId }) =>
-                submissionUserId === userId && evaluationFormId === writtenTest.id
-        );
-        setSubmittedAlready(!!userSubmission);
-        setSystemSubmission(userSubmission);
-
-        // Handle Google form submissions
-        const googleSubmission = writtenTest.googleForm?.responses.find(
-            res => res.userEmail === userEmail
-        );
-        if (googleSubmission) {
-            setSubmittedAlready(true);
-            setGoogleSubmission({
-                isSubmitted: true,
-                score: Number(googleSubmission.totalScore),
-            });
-        }
-    }, [writtenTest, submissionsData?.submissions, userId, answers.length, userEmail, ...deps]);
-
+        if (!userSubmissionData) return
+        setSubmittedAlready(userSubmissionData.isSubmitted)
+        setSystemSubmission(userSubmissionData.systemFormSubmission)
+        setSystemAnswers(userSubmissionData.original.systemForm?.questions.map(q => ({
+            isTrue: true,
+            questionId: q.id,
+            text: "",
+        })) || [])
+        setSystemForm(userSubmissionData.original.systemForm)
+        setGoogleSubmission({
+            isSubmitted: true,
+            score: Number(userSubmissionData.googleFormSubmission?.totalScore),
+        })
+        setTotalPoints(userSubmissionData.original.formFullScore)
+    }, [userSubmissionData])
 
     return {
         submittedAlready,
+        systemForm,
         systemSubmission,
         googleSubmission,
-        systemAnswers,
-        setAnswers,
         answers,
+        setAnswers,
+        systemAnswers,
         setSystemAnswers,
         totalPoints,
         isLoading,

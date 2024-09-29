@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"formId":{"$numberInt":"1"}},"name":"GoogleForm_formId_key","unique":true}],"uuid":"794a93630dfe4129b69247f07d9d9049","collectionName":"GoogleForm","type":"collection"}

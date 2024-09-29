@@ -2,25 +2,30 @@ import { DataTable } from "@/components/ui/DataTable";
 import { api } from "@/lib/api";
 import { type QuizRow, columns } from "./QuizzesColumn";
 import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { toastType, useToast } from "@/components/ui/use-toast";
+import { createMutationOptions } from "@/lib/mutationsHelper";
 
 const QuizzesClient = ({ formattedData }: { formattedData: QuizRow[] }) => {
-    const { toastSuccess, toastError } = useToast()
+    const { toast } = useToast()
     const [ids, setIds] = useState<string[]>([])
+    const [loadingToast, setLoadingToast] = useState<toastType | undefined>()
 
     const trpcUtils = api.useContext()
-    const deleteMutation = api.evaluationForm.deleteEvalForm.useMutation({
-        onError: ({ message }) => toastError(message),
-    })
+    const deleteMutation = api.evaluationForm.deleteEvalForm.useMutation(
+        createMutationOptions({
+            trpcUtils,
+            loadingToast,
+            setLoadingToast,
+            toast,
+            successMessageFormatter: ({ deletedEvalForms }) => `${deletedEvalForms.count} forms deleted`,
+            loadingMessage: "Deleting..."
+        })
+    )
 
     const onDelete = (callback?: () => void) => {
         deleteMutation.mutate({ ids }, {
-            onSuccess: (data) => {
-                trpcUtils.evaluationForm.invalidate()
-                    .then(() => {
-                        toastSuccess(`${data.deletedEvalForms.count} forms deleted`)
-                        callback?.()
-                    })
+            onSuccess: () => {
+                callback?.()
             }
         })
     }

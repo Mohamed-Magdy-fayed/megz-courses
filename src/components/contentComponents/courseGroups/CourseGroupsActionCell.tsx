@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Copy, Edit, List, MoreVertical, SearchSlash, Trash } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { toastType, useToast } from "@/components/ui/use-toast";
 import Link from "next/link";
 import { AlertModal } from "@/components/modals/AlertModal";
 import { useState } from "react";
@@ -18,54 +18,50 @@ import ZoomGroupForm from "@/components/zoomGroupsComponents/Form";
 import SelectField from "@/components/salesOperation/SelectField";
 import { upperFirst } from "lodash";
 import { CourseRow } from "@/components/contentComponents/courseGroups/CourseGroupsColumn";
+import { createMutationOptions } from "@/lib/mutationsHelper";
 
 const CourseGroupsActionCell: React.FC<CourseRow> = ({ id, courseId, courseLevel, startDate, groupStatus, studentIds, trainerId }) => {
-    const { toastError, toastSuccess } = useToast();
+    const { toast } = useToast();
 
-    const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
     const [newStatus, setNewStatus] = useState<GroupStatus[]>([groupStatus]);
+    const [loadingToast, setLoadingToast] = useState<toastType | undefined>();
     const [changeStatusOpen, setChangeStatusOpen] = useState(false);
     const [isEditFormOpen, setIsEditFormOpen] = useState(false);
 
     const trpcUtils = api.useContext()
-    const editMutation = api.zoomGroups.editZoomGroup.useMutation({
-        onMutate: () => setLoading(true),
-        onError: ({ message }) => toastError(message),
-        onSettled: () => trpcUtils.zoomGroups.invalidate().then(() => setLoading(false)),
-    })
-    const deleteMutation = api.zoomGroups.deleteZoomGroup.useMutation()
+    const editMutation = api.zoomGroups.editZoomGroup.useMutation(
+        createMutationOptions({
+            trpcUtils,
+            loadingToast,
+            setLoadingToast,
+            toast,
+            successMessageFormatter: ({ updatedZoomGroup }) => {
+                return `status updated successfully ${updatedZoomGroup.groupStatus}`
+            },
+        })
+    )
+    const deleteMutation = api.zoomGroups.deleteZoomGroup.useMutation(
+        createMutationOptions({
+            trpcUtils,
+            loadingToast,
+            setLoadingToast,
+            toast,
+            successMessageFormatter: (data) => {
+                return "Group deleted"
+            },
+            loadingMessage: "Deleting..."
+        })
+    )
     const onChangeStatus = () => {
         editMutation.mutate({
             id,
             groupStatus: newStatus[0],
-        }, {
-            onSuccess: ({ updatedZoomGroup }) => {
-                setChangeStatusOpen(false)
-                toastSuccess(`status updated successfully ${updatedZoomGroup.groupStatus}`)
-            },
         })
     };
 
     const onDelete = (callback?: () => void) => {
-        setLoading(true);
-        deleteMutation.mutate(
-            [id],
-            {
-                onSuccess: () => {
-                    trpcUtils.zoomGroups.invalidate()
-                        .then(() => {
-                            callback?.()
-                            toastSuccess("Group deleted");
-                            setOpen(false);
-                        })
-                },
-                onError: (error) => {
-                    toastError(error.message)
-                },
-                onSettled: () => setLoading(false),
-            }
-        );
+        deleteMutation.mutate([id], { onSuccess: () => callback?.() });
     };
 
     return (
@@ -94,7 +90,7 @@ const CourseGroupsActionCell: React.FC<CourseRow> = ({ id, courseId, courseLevel
                 children={(
                     <div className="flex gap-4 items-center justify-between">
                         <SelectField
-                            disabled={loading}
+                            disabled={!!loadingToast}
                             data={Object.values(GroupStatus).map(groupstatus => ({
                                 active: groupstatus !== status,
                                 label: upperFirst(groupstatus),
@@ -108,7 +104,7 @@ const CourseGroupsActionCell: React.FC<CourseRow> = ({ id, courseId, courseLevel
                         />
                         <div className="flex items-center gap-4">
                             <Button
-                                disabled={loading}
+                                disabled={!!loadingToast}
                                 onClick={() => setChangeStatusOpen(false)}
                                 variant={"outline"}
                                 customeColor={"destructiveOutlined"}
@@ -116,7 +112,7 @@ const CourseGroupsActionCell: React.FC<CourseRow> = ({ id, courseId, courseLevel
                                 Cancel
                             </Button>
                             <Button
-                                disabled={loading}
+                                disabled={!!loadingToast}
                                 onClick={onChangeStatus}
                                 customeColor={"success"}
                             >
@@ -128,7 +124,7 @@ const CourseGroupsActionCell: React.FC<CourseRow> = ({ id, courseId, courseLevel
             />
             <AlertModal
                 isOpen={open}
-                loading={loading}
+                loading={!!loadingToast}
                 onClose={() => setOpen(false)}
                 onConfirm={onDelete}
             />

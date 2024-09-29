@@ -18,6 +18,7 @@ import { api } from "@/lib/api";
 import { AlertModal } from "@/components/modals/AlertModal";
 import { Trash } from "lucide-react";
 import Spinner from "@/components/Spinner";
+import { createMutationOptions } from "@/lib/mutationsHelper";
 
 interface ActionCellProps {
     id: string;
@@ -45,37 +46,17 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, evalForm }) => {
         toastInfo("ID copied to the clipboard");
     };
 
-    const deleteMutation = api.evaluationForm.deleteEvalForm.useMutation({
-        onMutate: () => {
-            setLoadingToast(toast({
-                title: "Loading...",
-                variant: "info",
-                description: (
-                    <Spinner className="h-4 w-4" />
-                ),
-                duration: 3000,
-            }))
-        },
-        onSuccess: ({ deletedEvalForms }) => trpcUtils.courses.invalidate().then(() => {
-            loadingToast?.update({
-                id: loadingToast.id,
-                variant: "success",
-                description: `${deletedEvalForms.count} Form deleted`,
-                title: "Success",
-            })
-            setIsDeleteOpen(false)
-        }),
-        onError: ({ message }) => loadingToast?.update({
-            id: loadingToast.id,
-            variant: "destructive",
-            description: message,
-            title: "Error",
-        }),
-        onSettled: () => {
-            loadingToast?.dismissAfter()
-            setLoadingToast(undefined)
-        },
-    })
+    const deleteMutation = api.evaluationForm.deleteEvalForm.useMutation(
+        createMutationOptions({
+            trpcUtils,
+            loadingToast,
+            setLoadingToast,
+            toast,
+            successMessageFormatter: ({ deletedEvalForms }) => `${deletedEvalForms.count} Form deleted`,
+            loadingMessage: "Deleting..."
+        })
+    )
+
     const onDelete = () => {
         deleteMutation.mutate({ ids: [id] })
     };

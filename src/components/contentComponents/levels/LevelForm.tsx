@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/form";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { Typography } from "@/components/ui/Typoghraphy";
+import { createMutationOptions } from "@/lib/mutationsHelper";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name can't be empty"),
@@ -46,34 +47,16 @@ const LevelForm: React.FC<LevelFormProps> = ({ setIsOpen, initialData, courseSlu
     defaultValues,
   });
 
-  const addLevelMutation = api.levels.createLevel.useMutation({
-    onMutate: () => setLoadingToast(toast({
-      title: "Loading...",
-      duration: 3000,
-      variant: "info",
-    })),
-    onSuccess: ({ level }) => trpcUtils.invalidate()
-      .then(() => {
-        setIsOpen(false);
-        loadingToast?.update({
-          id: loadingToast.id,
-          title: "Success",
-          description: `Level created with name: ${level.name}`,
-          variant: "success",
-        })
-      }),
-    onError: ({ message }) => loadingToast?.update({
-      id: loadingToast.id,
-      title: "Error",
-      description: message,
-      variant: "destructive",
-    }),
-    onSettled: () => {
-            loadingToast?.dismissAfter()
-            setLoadingToast(undefined)
-        }
-  });
   const trpcUtils = api.useContext();
+  const addLevelMutation = api.levels.createLevel.useMutation(
+    createMutationOptions({
+      trpcUtils,
+      loadingToast,
+      setLoadingToast,
+      toast,
+      successMessageFormatter: ({ level }) => `Level created with name: ${level.name}`,
+    })
+  )
 
   const onSubmit = (data: LevelFormValues) => {
     addLevelMutation.mutate({ ...data, courseSlug });

@@ -2,7 +2,8 @@ import { api } from "@/lib/api";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import MaterialsForm, { type MaterialsFormValues } from "./MaterialsForm";
-import { useToast } from "@/components/ui/use-toast";
+import { toastType, useToast } from "@/components/ui/use-toast";
+import { createMutationOptions } from "@/lib/mutationsHelper";
 
 const CreateMaterialsForm = ({
     setIsOpen,
@@ -11,7 +12,7 @@ const CreateMaterialsForm = ({
     setIsOpen: (val: boolean) => void;
     id: string;
 }) => {
-    const [loading, setLoading] = useState(false);
+    const [loadingToast, setLoadingToast] = useState<toastType | undefined>(undefined);
 
     const form = useForm<MaterialsFormValues>({
         defaultValues: {
@@ -27,18 +28,20 @@ const CreateMaterialsForm = ({
         },
     });
 
-    const createMaterialMutation = api.materials.createMaterialItem.useMutation({
-        onMutate: () => setLoading(true),
-        onSuccess: ({ materialItem }) =>
-            trpcUtils.courses.invalidate().then(() => {
-                toastSuccess(`Your new material (${materialItem.title}) is ready!`)
-                setIsOpen(false)
-            }),
-        onError: ({ message }) => toastError(message),
-        onSettled: () => setLoading(false),
-    });
+    const { toast } = useToast();
     const trpcUtils = api.useContext();
-    const { toastError, toastSuccess } = useToast();
+    const createMaterialMutation = api.materials.createMaterialItem.useMutation(
+        createMutationOptions({
+            trpcUtils,
+            loadingToast,
+            setLoadingToast,
+            toast,
+            successMessageFormatter: ({ materialItem }) => {
+                return `Your new material (${materialItem.title}) is ready!`
+            },
+            loadingMessage: "Creating...",
+        })
+    )
 
     const onSubmit = (data: MaterialsFormValues) => {
         createMaterialMutation.mutate({ ...data, courseLevelId: id, slug: "" },);
@@ -47,7 +50,7 @@ const CreateMaterialsForm = ({
     return (
         <MaterialsForm
             form={form}
-            loading={loading}
+            loading={!!loadingToast}
             setIsOpen={setIsOpen}
             onSubmit={onSubmit}
         />

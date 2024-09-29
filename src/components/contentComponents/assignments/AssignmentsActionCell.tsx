@@ -16,6 +16,7 @@ import CustomForm from "@/components/FormsComponents/CustomForm";
 import { api } from "@/lib/api";
 import Spinner from "@/components/Spinner";
 import { AlertModal } from "@/components/modals/AlertModal";
+import { createMutationOptions } from "@/lib/mutationsHelper";
 
 interface ActionCellProps {
     id: string;
@@ -42,36 +43,18 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, evalForm }) => {
     };
 
     const trpcUtils = api.useContext()
-    const deleteMutation = api.evaluationForm.deleteEvalForm.useMutation({
-        onMutate: () => setLoadingToast(toast({
-            title: "Deleting...",
-            description: <Spinner className="w-4 h-4" />,
-            variant: "info",
-            duration: 30000,
-        })),
-        onSuccess: (data) => {
-            trpcUtils.invalidate()
-                .then(() => {
-                    loadingToast?.update({
-                        id: loadingToast.id,
-                        title: "Success",
-                        description: `${data.deletedEvalForms.count} forms deleted`,
-                        variant: "success",
-                    })
-                    loadingToast?.dismissAfter()
-                    setIsOpen(false)
-                    setLoadingToast(undefined)
-                })
-        },
-        onError: ({ message }) => loadingToast?.update({
-            id: loadingToast.id,
-            title: "Error",
-            description: message,
-            variant: "destructive",
-        }),
-        onSettled: () => {
-        },
-    })
+    const deleteMutation = api.evaluationForm.deleteEvalForm.useMutation(
+        createMutationOptions({
+            trpcUtils,
+            loadingToast,
+            setLoadingToast,
+            toast,
+            successMessageFormatter: (data) => {
+                return `${data.deletedEvalForms.count} forms deleted`
+            },
+            loadingMessage: "Deleting..."
+        })
+    )
 
     const onDelete = () => {
         deleteMutation.mutate({ ids: [id] })

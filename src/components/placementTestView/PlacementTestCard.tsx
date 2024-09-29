@@ -5,28 +5,20 @@ import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Typography } from "@/components/ui/Typoghraphy"
 import { useEvalformSubmission } from "@/hooks/useEvalFormSubmission"
-import { Prisma } from "@prisma/client"
 import { FC } from "react"
 
 type PlacementTestCardProps = {
-    userId: string;
-    userEmail: string;
     courseName: string;
-    course: Prisma.CourseGetPayload<{
-        include: {
-            evaluationForms: { include: { questions: true } };
-        }
-    }>;
-    writtenTest: Prisma.EvaluationFormGetPayload<{
-        include: {
-            googleForm: true,
-            questions: true
-        }
-    }>
+    courseSlug: string;
+    enabled: boolean;
 }
 
-const PlacementTestCard: FC<PlacementTestCardProps> = ({ userId, userEmail, courseName, writtenTest }) => {
-    const { googleSubmission, systemSubmission, submittedAlready, answers, setAnswers } = useEvalformSubmission({ userId, userEmail, writtenTest }, [])
+const PlacementTestCard: FC<PlacementTestCardProps> = ({ courseName, courseSlug, enabled }) => {
+    
+    const { googleSubmission, systemSubmission, submittedAlready, answers, setAnswers, systemForm } = useEvalformSubmission({
+        courseSlug,
+        enabled,
+    }, [])
 
     return (
         <Card className="col-span-12 xl:col-span-8 w-full h-fit">
@@ -34,8 +26,8 @@ const PlacementTestCard: FC<PlacementTestCardProps> = ({ userId, userEmail, cour
                 <Typography variant={"secondary"}>{courseName} Placement Test</Typography>
             </CardHeader>
             <CardContent>
-                <Typography variant={"primary"}>{writtenTest?.googleForm?.title}</Typography>
-                {writtenTest?.questions.map((question, i) => (
+                <Typography variant={"primary"}>{systemForm?.googleForm?.title || systemForm?.materialItem?.title}</Typography>
+                {systemForm?.questions.map((question, i) => (
                     <QuestionComponent
                         key={question.id}
                         question={question}
@@ -47,27 +39,27 @@ const PlacementTestCard: FC<PlacementTestCardProps> = ({ userId, userEmail, cour
                 ))}
             </CardContent>
             <CardFooter>
-                {writtenTest.googleForm
-                    ? !writtenTest?.googleForm?.googleClientId || !writtenTest?.googleFormUrl || !writtenTest.googleForm.formRespondUrl
+                {systemForm?.googleForm
+                    ? !systemForm?.googleForm?.googleClientId || !systemForm?.googleFormUrl || !systemForm.googleForm.formRespondUrl
                         ? (
                             <Skeleton className="h-10 w-10" />
                         ) : (
                             <GoogleTestResult
-                                clientId={writtenTest.googleForm.googleClientId}
-                                formUrl={writtenTest.googleFormUrl}
-                                formRespondUrl={writtenTest.googleForm.formRespondUrl}
-                                isSubmitted={googleSubmission.isSubmitted}
-                                score={googleSubmission.score}
-                                totalPoints={writtenTest.totalPoints}
+                                clientId={systemForm.googleForm.googleClientId}
+                                formUrl={systemForm.googleFormUrl}
+                                formRespondUrl={systemForm.googleForm.formRespondUrl}
+                                isSubmitted={!!googleSubmission?.isSubmitted}
+                                score={googleSubmission?.score || 0}
+                                totalPoints={systemForm.totalPoints}
                             />
                         )
-                    : (
+                    : systemForm?.id && (
                         <SystemTestResult
                             answers={answers}
-                            evaluationFormId={writtenTest.id}
+                            evaluationFormId={systemForm.id}
                             isSubmitted={submittedAlready}
                             score={systemSubmission?.rating || 0}
-                            totalPoints={writtenTest.totalPoints}
+                            totalPoints={systemForm.totalPoints}
                         />
                     )}
             </CardFooter>

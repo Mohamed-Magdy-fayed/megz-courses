@@ -18,6 +18,7 @@ import { useRouter } from "next/router";
 import { EvaluationForm, EvaluationFormQuestion, EvaluationFormTypes, GoogleForm, GoogleFormQuestion, MaterialItem } from "@prisma/client";
 import { toastType, useToast } from "../ui/use-toast";
 import SelectField from "@/components/salesOperation/SelectField";
+import NormalSelectField from "@/components/salesOperation/NormalSelectField";
 
 const TestGoogleFormSchema = z.object({
     url: z.string(),
@@ -61,7 +62,7 @@ const CustomTestGoogleForm: FC<{
     const createTestEvalGoogleFormMutation = api.evaluationForm.createTestEvalGoogleForm.useMutation({
         onMutate: () => setLoadingToast(toast({
             title: "Loading...",
-            duration: 3000,
+            duration: 30000,
             variant: "info",
         })),
         onSuccess: () => trpcUtils.invalidate()
@@ -89,7 +90,7 @@ const CustomTestGoogleForm: FC<{
     const editTestEvalFormMutation = api.evaluationForm.editGoogleEvalForm.useMutation({
         onMutate: () => setLoadingToast(toast({
             title: "Loading...",
-            duration: 3000,
+            duration: 30000,
             variant: "info",
         })),
         onSuccess: () => trpcUtils.invalidate()

@@ -4,6 +4,7 @@ import { api } from "@/lib/api";
 import { CourseRow, columns } from "./CoursesColumn";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { createMutationOptions } from "@/lib/mutationsHelper";
 
 const CoursesClient = () => {
     const [loadingToast, setLoadingToast] = useState<ReturnType<typeof toast>>()
@@ -13,32 +14,18 @@ const CoursesClient = () => {
 
     const trpcUtils = api.useContext()
     const { data: coursesData, isLoading } = api.courses.getAll.useQuery();
-    const deleteMutation = api.courses.deleteCourses.useMutation({
-        onMutate: () => {
-            setLoadingToast(toast({
-                title: "Loading...",
-                variant: "info",
-                description: (
-                    <Spinner className="h-4 w-4" />
-                ),
-                duration: 30000,
-            }))
-        },
-        onSuccess: ({ deletedCourses }) => trpcUtils.courses.invalidate().then(() => loadingToast?.update({
-            id: loadingToast.id,
-            variant: "success",
-            description: `${deletedCourses.count} courses deleted`,
-            title: "Success",
-            duration: 2000,
-        })),
-        onError: ({ message }) => loadingToast?.update({
-            id: loadingToast.id,
-            variant: "destructive",
-            description: message,
-            title: "Error",
-            duration: 2000,
-        }),
-    })
+    const deleteMutation = api.courses.deleteCourses.useMutation(
+        createMutationOptions({
+            trpcUtils,
+            loadingToast,
+            setLoadingToast,
+            toast,
+            successMessageFormatter: ({ deletedCourses }) => {
+                return `${deletedCourses.count} courses deleted`
+            },
+            loadingMessage: "Deleting...",
+        })
+    )
 
     const formattedData = coursesData?.courses.map(course => ({
         id: course.id,

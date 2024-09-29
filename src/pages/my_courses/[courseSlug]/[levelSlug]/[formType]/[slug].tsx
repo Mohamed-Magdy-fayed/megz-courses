@@ -40,8 +40,6 @@ const AssignmentPage: NextPage = () => {
         },
     })
 
-    const session = useSession()
-
     const {
         googleSubmission,
         systemSubmission,
@@ -50,7 +48,12 @@ const AssignmentPage: NextPage = () => {
         totalPoints,
         isLoading,
         setSystemAnswers,
-    } = useEvalformSubmission({ userId: session.data?.user.id || "", userEmail: session.data?.user.email || "", writtenTest: evalFormQuery.data?.evaluationForm }, [type])
+    } = useEvalformSubmission({
+        courseSlug,
+        enabled: (!!courseSlug && !!slug && !!type),
+        isAssignment: type === "assignment",
+        materialItemSlug: slug
+    }, [type])
 
     const [description, setDescription] = useState("")
     const [image, setImage] = useState("")
@@ -171,8 +174,8 @@ const AssignmentPage: NextPage = () => {
                     {submittedAlready && (
                         <div className="flex items-center gap-2 flex-nowrap">
                             <Typography>Your score is</Typography>
-                            <Button className="pointer-events-none" variant={"icon"} customeColor={(systemSubmission?.rating || googleSubmission.score) > totalPoints / 2 ? "success" : "destructive"}>
-                                {systemSubmission?.rating || googleSubmission.score}
+                            <Button className="pointer-events-none" variant={"icon"} customeColor={(systemSubmission?.rating || googleSubmission?.score || 0) > totalPoints / 2 ? "success" : "destructive"}>
+                                {systemSubmission?.rating || googleSubmission?.score}
                             </Button>
                             <Typography> of </Typography>
                             <Button className="pointer-events-none" variant={"icon"} customeColor={"success"}>
@@ -235,7 +238,7 @@ const AssignmentPage: NextPage = () => {
                                             </Typography>
                                         </Button>
                                     </div>
-                                    {googleSubmission.isSubmitted && (
+                                    {googleSubmission?.isSubmitted && (
                                         <Typography
                                             variant={"secondary"}
                                             className={cn(

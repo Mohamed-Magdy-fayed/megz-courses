@@ -20,6 +20,7 @@ import Image from "next/image";
 import ImageUploader from "@/components/ui/ImageUploader";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { createMutationOptions } from "@/lib/mutationsHelper";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name can't be empty"),
@@ -59,65 +60,33 @@ const CourseForm = ({ initialData, setIsOpen }: {
         privatePrice: 0,
       }
   });
-  const createCourseMutation = api.courses.createCourse.useMutation({
-    onMutate: () => {
-      setLoadingToast(toast({
-        title: "Loading...",
-        duration: 3000,
-        variant: "info",
-      }))
-      setLoading(true)
-    },
-    onSuccess: ({ course }) => trpcUtils.courses.invalidate()
-      .then(() => {
-        loadingToast?.update({
-          id: loadingToast.id,
-          title: "Success",
-          description: `Course ${course.name} created successfully`,
-          variant: "success",
-        })
-        setIsOpen(false)
-      }),
-    onError: ({ message }) => loadingToast?.update({
-      id: loadingToast.id,
-      title: "Error",
-      description: message,
-      variant: "destructive",
-    }),
-    onSettled: () => setLoading(false)
-  });
 
-  const editCourseMutation = api.courses.editCourse.useMutation({
-    onMutate: () => {
-      setLoadingToast(toast({
-        title: "Loading...",
-        duration: 3000,
-        variant: "info",
-      }))
-      setLoading(true)
-    },
-    onSuccess: ({ updatedCourse }) => trpcUtils.courses.invalidate()
-      .then(() => {
-        loadingToast?.update({
-          id: loadingToast.id,
-          title: "Success",
-          description: `updated ${updatedCourse.name} course successfully`,
-          variant: "success",
-        })
-        setIsOpen(false)
-      }),
-    onError: ({ message }) => loadingToast?.update({
-      id: loadingToast.id,
-      title: "Error",
-      description: message,
-      variant: "destructive",
-    }),
-    onSettled: () => {
-      setLoading(false)
-      setTimeout(() => loadingToast?.dismissAfter(), 1000)
-    },
-  });
   const trpcUtils = api.useContext();
+  const createCourseMutation = api.courses.createCourse.useMutation(
+    createMutationOptions({
+      trpcUtils,
+      loadingToast,
+      setLoadingToast,
+      toast,
+      successMessageFormatter: ({ course }) => {
+        return `Course ${course.name} created successfully`
+      },
+      loadingMessage: "Creating..."
+    })
+  )
+
+  const editCourseMutation = api.courses.editCourse.useMutation(
+    createMutationOptions({
+      trpcUtils,
+      loadingToast,
+      setLoadingToast,
+      toast,
+      successMessageFormatter: ({ updatedCourse }) => {
+        return `updated ${updatedCourse.name} course successfully`
+      },
+      loadingMessage: "Updating...",
+    })
+  )
 
   const onSubmit = ({ name, slug, privatePrice, groupPrice, instructorPrice, description, image }: CoursesFormValues) => {
     initialData

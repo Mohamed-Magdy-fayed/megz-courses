@@ -16,6 +16,7 @@ import { useRouter } from "next/router";
 import Modal from "@/components/ui/modal";
 import { env } from "@/env.mjs";
 import { AlertModal } from "@/components/modals/AlertModal";
+import { createMutationOptions } from "@/lib/mutationsHelper";
 
 interface CellActionProps {
     id: string;
@@ -44,65 +45,32 @@ const CoursesActionCell: React.FC<CellActionProps> = ({ id, slug, description, g
 
     const router = useRouter()
     const trpcUtils = api.useContext()
-    const dublicateMutation = api.courses.dublicateCourse.useMutation({
-        onMutate: () => {
-            setLoadingToast(toast({
-                title: "Loading...",
-                variant: "info",
-                description: (
-                    <Spinner className="h-4 w-4" />
-                ),
-                duration: 3000,
-            }))
-        },
-        onSuccess: ({ course }) => trpcUtils.courses.invalidate().then(() => loadingToast?.update({
-            id: loadingToast.id,
-            variant: "success",
-            description: `${course.name} dublicated successfully`,
-            title: "Success",
-        })),
-        onError: ({ message }) => loadingToast?.update({
-            id: loadingToast.id,
-            variant: "destructive",
-            description: message,
-            title: "Error",
-        }),
-        onSettled: () => {
-            loadingToast?.dismissAfter()
-            setLoadingToast(undefined)
-        },
-    })
-    const deleteMutation = api.courses.deleteCourses.useMutation({
-        onMutate: () => {
-            setLoadingToast(toast({
-                title: "Loading...",
-                variant: "info",
-                description: (
-                    <Spinner className="h-4 w-4" />
-                ),
-                duration: 3000,
-            }))
-        },
-        onSuccess: ({ deletedCourses }) => trpcUtils.courses.invalidate().then(() => {
-            setIsDeleteOpen(false)
-            loadingToast?.update({
-                id: loadingToast.id,
-                variant: "success",
-                description: `${deletedCourses.count} courses deleted`,
-                title: "Success",
-            })
-        }),
-        onError: ({ message }) => loadingToast?.update({
-            id: loadingToast.id,
-            variant: "destructive",
-            description: message,
-            title: "Error",
-        }),
-        onSettled: () => {
-            loadingToast?.dismissAfter()
-            setLoadingToast(undefined)
-        },
-    })
+    const dublicateMutation = api.courses.dublicateCourse.useMutation(
+        createMutationOptions({
+            trpcUtils,
+            loadingToast,
+            setLoadingToast,
+            toast,
+            successMessageFormatter: ({ course }) => {
+                return `${course.name} dublicated successfully`
+            },
+            loadingMessage: "dublicating...",
+        })
+    )
+
+    const deleteMutation = api.courses.deleteCourses.useMutation(
+        createMutationOptions({
+            trpcUtils,
+            loadingToast,
+            setLoadingToast,
+            toast,
+            successMessageFormatter: ({ deletedCourses }) => {
+                return `${deletedCourses.count} courses deleted`
+            },
+            loadingMessage: "Deleting...",
+        })
+    )
+
     const onDelete = () => {
         deleteMutation.mutate([id])
     };

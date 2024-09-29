@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
-export default function Page() {
+export default function NotFoundPage() {
   const session = useSession()
   const router = useRouter()
 

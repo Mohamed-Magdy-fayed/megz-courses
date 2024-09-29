@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { MaterialsRow } from "@/components/contentComponents/materials/MaterialsColumn";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { createMutationOptions } from "@/lib/mutationsHelper";
 
 const formSchema = z.object({
     title: z.string().min(1, "Title can't be empty"),
@@ -29,7 +30,6 @@ const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: Material
 
     const { data: courseLevelsData } = api.levels.getByCourseSlug.useQuery({ courseSlug }, { enabled: !!courseSlug })
 
-    const [loading, setLoading] = useState(false);
     const [loadingToast, setLoadingToast] = useState<toastType>();
 
     const form = useForm<UploadsFormValues>({
@@ -53,98 +53,50 @@ const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: Material
             }
     });
 
-    const checkMaterialMutation = api.materials.checkMaterialItem.useMutation({
-        onMutate: () => setLoadingToast(toast({
-            duration: 30000,
-            variant: "info",
-            title: "Loading...",
-        })),
-        onSuccess: ({ exists }) => {
-            if (exists) {
-                loadingToast?.update({
-                    id: loadingToast.id,
-                    title: "Error",
-                    description: `material item with same slug already exists!`,
-                    variant: "destructive",
-                })
-
-                loadingToast?.dismissAfter()
-                setLoadingToast(undefined)
-                return
-            }
-
-            const { files, levelSlug, title, slug, subTitle } = form.getValues()
-
-            uploadFiles(files, `uploads/content/courses/${courseSlug}/${levelSlug}/${slug}`).then((data) => {
-                uploadMaterialMutation.mutateAsync({ title, subTitle, uploads: data, slug, levelSlug });
-            }) || []
-        },
-        onError: ({ message }) => {
-            loadingToast?.update({
-                id: loadingToast.id,
-                title: "Error",
-                description: message,
-                variant: "destructive",
-            })
-            loadingToast?.dismissAfter()
-            setLoadingToast(undefined)
-        },
-    })
-    const uploadMaterialMutation = api.materials.uploadMaterialItem.useMutation({
-        onSuccess: ({ materialItem }) => trpcUtils.courses.invalidate().then(() => {
-            loadingToast?.update({
-                id: loadingToast.id,
-                title: "Success",
-                description: `Your new material (${materialItem.title}) is ready!`,
-                variant: "success",
-            })
-            setIsOpen(false)
-            loadingToast?.dismissAfter()
-        }),
-        onError: ({ message }) => {
-            loadingToast?.update({
-                id: loadingToast.id,
-                title: "Error",
-                description: message,
-                variant: "destructive",
-            })
-            loadingToast?.dismissAfter()
-        },
-        onSettled: () => {
-            loadingToast?.dismissAfter()
-            setLoadingToast(undefined)
-        }
-    });
-
-    const editUploadMaterialMutation = api.materials.editUploadMaterialItem.useMutation({
-        onMutate: () => setLoadingToast(toast({
-            duration: 30000,
-            variant: "info",
-            title: "Loading...",
-        })),
-        onSuccess: ({ materialItem }) => trpcUtils.courses.invalidate().then(() => {
-            loadingToast?.update({
-                id: loadingToast.id,
-                title: "Success",
-                description: `Your new material (${materialItem.title}) is updated!`,
-                variant: "success",
-            })
-            setIsOpen(false)
-        }),
-        onError: ({ message }) => loadingToast?.update({
-            id: loadingToast.id,
-            title: "Error",
-            description: message,
-            variant: "destructive",
-        }),
-        onSettled: () => {
-            loadingToast?.dismissAfter()
-            setLoadingToast(undefined)
-        }
-    });
-
     const trpcUtils = api.useContext();
     const { toast, toastError } = useToast();
+    const checkMaterialMutation = api.materials.checkMaterialItem.useMutation(
+        createMutationOptions({
+            trpcUtils,
+            loadingToast,
+            setLoadingToast,
+            toast,
+            successMessageFormatter: ({ exists }) => {
+                if (exists) {
+                    return `material item with same slug already exists!`
+                }
+
+                const { files, levelSlug, title, slug, subTitle } = form.getValues()
+
+                uploadFiles(files, `uploads/content/courses/${courseSlug}/${levelSlug}/${slug}`).then((data) => {
+                    uploadMaterialMutation.mutateAsync({ title, subTitle, uploads: data, slug, levelSlug });
+                }) || []
+
+                return ""
+            },
+        })
+    )
+
+    const uploadMaterialMutation = api.materials.uploadMaterialItem.useMutation(
+        createMutationOptions({
+            trpcUtils,
+            loadingToast,
+            setLoadingToast,
+            toast,
+            successMessageFormatter: ({ materialItem }) => `Your new material (${materialItem.title}) is ready!`,
+        })
+    )
+
+    const editUploadMaterialMutation = api.materials.editUploadMaterialItem.useMutation(
+        createMutationOptions({
+            trpcUtils,
+            loadingToast,
+            setLoadingToast,
+            toast,
+            successMessageFormatter: ({ materialItem }) => `Your new material (${materialItem.title}) is updated!`,
+        })
+    )
+
     const { uploadFiles } = useFileUpload();
 
     const handleSubmit = async ({ files, slug, subTitle, title, levelSlug }: UploadsFormValues) => {
@@ -251,7 +203,7 @@ const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: Material
                     />
                 )}
                 <div className="p-4">
-                    <Button disabled={!!loadingToast || loading} type="submit">Submit</Button>
+                    <Button disabled={!!loadingToast} type="submit">Submit</Button>
                 </div>
             </form>
         </Form>

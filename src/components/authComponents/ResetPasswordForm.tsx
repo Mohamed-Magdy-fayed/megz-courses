@@ -12,6 +12,7 @@ import Spinner from "../Spinner";
 import { Input } from "../ui/input";
 import { render } from "@react-email/render";
 import ResetPasswordEmail from "../emails/ResetPasswordEmail";
+import { createMutationOptions } from "@/lib/mutationsHelper";
 
 // Schema for requesting the reset password code
 export const requestResetPasswordSchema = z.object({
@@ -67,76 +68,39 @@ const ResetPasswordForm: FC<ResetPasswordFormProps> = ({ setOpen }) => {
     });
 
     const { data: siteData } = api.siteIdentity.getSiteIdentity.useQuery()
-    const resetPasswordRequestMutation = api.auth.resetPasswordRequest.useMutation({
-        onMutate: () => {
-            setLoadingToast(toast({
-                title: "Loading...",
-                variant: "info",
-                description: (
-                    <Spinner className="h-4 w-4" />
-                ),
-                duration: 3000,
-            }))
-        },
-        onSuccess: ({ tempPassword, user }) => {
-            const message = render(<ResetPasswordEmail logoUrl={siteData?.siteIdentity.logoPrimary || ""} securityCode={tempPassword} username={user.name} />)
-            resetPasswordEmailMutation.mutate({ email: user.email, message })
-            loadingToast?.update({
-                id: loadingToast.id,
-                variant: "success",
-                description: `please check your email ${user.email} for the security code!`,
-                title: "Success",
-            })
-            setPasswordForm(true)
-        },
-        onError: ({ message }) => loadingToast?.update({
-            id: loadingToast.id,
-            variant: "destructive",
-            description: message,
-            title: "Error",
-        }),
-        onSettled: () => {
-            loadingToast?.dismissAfter()
-            setLoadingToast(undefined)
-        }
-    });
-    const resetPasswordEmailMutation = api.auth.resetPasswordEmail.useMutation({
-        onSettled: () => {
-            loadingToast?.dismissAfter()
-            setLoadingToast(undefined)
-        }
-    });
-    const resetPasswordWithCodeMutation = api.auth.resetPasswordWithCode.useMutation({
-        onMutate: () => {
-            setLoadingToast(toast({
-                title: "Loading...",
-                variant: "info",
-                description: (
-                    <Spinner className="h-4 w-4" />
-                ),
-                duration: 3000,
-            }))
-        },
-        onSuccess: ({ updated }) => {
-            loadingToast?.update({
-                id: loadingToast.id,
-                variant: "success",
-                title: "Success",
-                description: `Password for ${updated.email} has been updated successfully!`,
-            })
-            setOpen(false)
-        },
-        onError: ({ message }) => loadingToast?.update({
-            id: loadingToast.id,
-            variant: "destructive",
-            description: message,
-            title: "Error",
-        }),
-        onSettled: () => {
-            loadingToast?.dismissAfter()
-            setLoadingToast(undefined)
-        },
-    });
+    const trpcUtils = api.useContext()
+    const resetPasswordEmailMutation = api.auth.resetPasswordEmail.useMutation(
+        createMutationOptions({
+            trpcUtils,
+            loadingToast,
+            setLoadingToast,
+            toast,
+            successMessageFormatter: () => "",
+        })
+    );
+    const resetPasswordRequestMutation = api.auth.resetPasswordRequest.useMutation(
+        createMutationOptions({
+            trpcUtils,
+            loadingToast,
+            setLoadingToast,
+            toast,
+            successMessageFormatter: ({ user, tempPassword }) => {
+                const message = render(<ResetPasswordEmail logoUrl={siteData?.siteIdentity.logoPrimary || ""} securityCode={tempPassword} username={user.name} />)
+                resetPasswordEmailMutation.mutate({ email: user.email, message })
+                return `please check your email ${user.email} for the security code!`
+            },
+        })
+    )
+
+    const resetPasswordWithCodeMutation = api.auth.resetPasswordWithCode.useMutation(
+        createMutationOptions({
+            trpcUtils,
+            loadingToast,
+            setLoadingToast,
+            toast,
+            successMessageFormatter: ({ updated }) => `Password for ${updated.email} has been updated successfully!`,
+        })
+    )
 
     const handleResetPassword = async (data: FormValues) => {
         if (!passwordForm) {

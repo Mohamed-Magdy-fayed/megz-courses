@@ -666,3 +666,8 @@ model SiteIdentity {
     updatedAt      DateTime @updatedAt
     createdAt      DateTime @default(now())
 }
+
+model license_key {
+    id    String @id @default(auto()) @map("_id") @db.ObjectId
+    key String
+}

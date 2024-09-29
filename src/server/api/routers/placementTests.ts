@@ -5,14 +5,14 @@ import { TRPCError } from "@trpc/server";
 export const placementTestsRouter = createTRPCRouter({
     getUserCoursePlacementTest: protectedProcedure
         .input(z.object({
-            courseId: z.string(),
+            courseSlug: z.string(),
         }))
-        .query(async ({ ctx, input: { courseId } }) => {
+        .query(async ({ ctx, input: { courseSlug } }) => {
             const userId = ctx.session.user.id
             const placementTest = await ctx.prisma.placementTest.findFirst({
                 where: {
                     AND: {
-                        courseId,
+                        course: { slug: courseSlug },
                         studentUserId: userId,
                     },
                 },

@@ -2,12 +2,14 @@ import { api } from "@/lib/api";
 import { useState } from "react";
 import { DataTable } from "@/components/ui/DataTable";
 import { format } from "date-fns";
-import { useToast } from "@/components/ui/use-toast";
+import { toastType, useToast } from "@/components/ui/use-toast";
 import { GoogleAccountColumn, columns } from "@/components/googleAccount/GoogleAccountCol";
+import { createMutationOptions } from "@/lib/mutationsHelper";
 
 const GoogleAccountsClient = () => {
     const { data: accountsData } = api.googleAccounts.getGoogleAccounts.useQuery()
 
+    const [loadingToast, setLoadingToast] = useState<toastType>()
     const [accounts, setAccounts] = useState<GoogleAccountColumn[]>([]);
     const formattedData = accountsData?.googleAccounts ? accountsData?.googleAccounts.map(({ createdAt, id, name }) => ({
         id,
@@ -15,26 +17,20 @@ const GoogleAccountsClient = () => {
         createdAt: format(createdAt, "PPp"),
     })) : [];
 
-    const { toastError, toastSuccess } = useToast();
+    const { toast } = useToast();
     const trpcUtils = api.useContext();
-    const deleteMutation = api.zoomAccounts.deleteZoomAccounts.useMutation();
+    const deleteMutation = api.googleAccounts.deleteGoogleAccounts.useMutation(
+        createMutationOptions({
+            loadingToast,
+            setLoadingToast,
+            toast,
+            trpcUtils,
+            successMessageFormatter: ({ deletedGoogleAccounts }) => `Deleted ${deletedGoogleAccounts.count} accounts`
+        })
+    )
 
     const onDelete = (callback?: () => void) => {
-        deleteMutation.mutate(
-            { ids: accounts.map((account) => account.id) },
-            {
-                onSuccess: () => {
-                    trpcUtils.users.invalidate()
-                        .then(() => {
-                            toastSuccess("Account(s) deleted")
-                            callback?.()
-                        })
-                },
-                onError: ({ message }) => {
-                    toastError(message);
-                },
-            }
-        );
+        deleteMutation.mutate({ ids: accounts.map((account) => account.id) }, { onSuccess: () => callback?.() });
     };
 
     return (

@@ -143,12 +143,6 @@ export const zoomAccountsRouter = createTRPCRouter({
             ids: z.array(z.string()),
         }))
         .mutation(async ({ ctx, input: { ids } }) => {
-            const zoomAccountsWithSessions = await ctx.prisma.zoomClient.findMany({
-                where: {
-                    id: { in: ids },
-                },
-                include: { zoomSessions: true }
-            })
 
             const deletedZoomAccounts = await ctx.prisma.zoomClient.deleteMany({
                 where: { id: { in: ids } }

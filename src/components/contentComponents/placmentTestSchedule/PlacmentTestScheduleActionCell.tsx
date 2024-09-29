@@ -16,6 +16,7 @@ import SelectField from "@/components/salesOperation/SelectField";
 import { sendWhatsAppMessage } from "@/lib/whatsApp";
 import Modal from "@/components/ui/modal";
 import { env } from "@/env.mjs";
+import { createMutationOptions } from "@/lib/mutationsHelper";
 
 interface ActionCellProps {
     id: string;
@@ -28,55 +29,30 @@ interface ActionCellProps {
 
 const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, isLevelSubmitted, testLink, userId }) => {
     const { toastInfo, toast, toastError } = useToast();
-    const [loading, setLoading] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
     const [isSubmitLevelOpen, setIsSubmitLevelOpen] = useState(false)
     const [level, setLevel] = useState<string[]>([])
-    const [addToWaitingListToast, setAddToWaitingListToast] = useState<toastType>()
+    const [loadingToast, setLoadingToast] = useState<toastType | undefined>()
 
     const trpcUtils = api.useContext()
-    const addToWaitingListMutation = api.waitingList.addToWaitingList.useMutation({
-        onMutate: () => {
-            setAddToWaitingListToast(
-                toast({
-                    title: "Loading...",
-                    description: <Spinner className="w-4 h-4" />,
-                    duration: 3000,
-                    variant: "info",
-                })
-            )
-            setLoading(true)
-        },
-        onSuccess: ({ user, course }) => {
-            addToWaitingListToast?.update({
-                id: addToWaitingListToast.id,
-                title: "Success",
-                description: <Typography>
-                    Added student {user.name} to waiting list of course {course.name} at level {courseLevels.find(courseLevel => courseLevel.value === level[0])?.label}
-                </Typography>,
-                variant: "success",
-            })
-            sendWhatsAppMessage({
-                toNumber: "201123862218",
-                textBody: `Hi ${user.name}, congtulations your placement test result for course ${course.name} has been submitted and placed you at level ${level}
+    const addToWaitingListMutation = api.waitingList.addToWaitingList.useMutation(
+        createMutationOptions({
+            trpcUtils,
+            loadingToast,
+            setLoadingToast,
+            toast,
+            successMessageFormatter: ({ course, user }) => {
+                sendWhatsAppMessage({
+                    toNumber: "201123862218",
+                    textBody: `Hi ${user.name}, congtulations your placement test result for course ${course.name} has been submitted and placed you at level ${level}
             \nYou're now just one step away from starting your course.
             \nOur Team.`,
-            })
-        },
-        onError: ({ message }) => addToWaitingListToast?.update({
-            id: addToWaitingListToast.id,
-            title: "Error",
-            description: message,
-            variant: "destructive",
-        }),
-        onSettled: () => {
-            trpcUtils.invalidate().then(() => {
-                setLoading(false)
-                setIsSubmitLevelOpen(false)
-                setAddToWaitingListToast(undefined)
-            })
-        },
-    })
+                })
+
+                return `Added student ${user.name} to waiting list of course ${course.name} at level ${courseLevels.find(courseLevel => courseLevel.value === level[0])?.label}`
+            },
+        })
+    )
 
     const onCopy = () => {
         navigator.clipboard.writeText(`${env.NEXT_PUBLIC_NEXTAUTH_URL}${testLink}`);
@@ -98,7 +74,7 @@ const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, isL
             >
                 <div className="flex items-center justify-between p-2">
                     <SelectField
-                        disabled={loading}
+                        disabled={!!loadingToast}
                         placeholder="Select Level"
                         listTitle="Level"
                         values={level}
@@ -108,7 +84,7 @@ const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, isL
                             ...level
                         }))}
                     />
-                    <Button type="button" onClick={handleSubmitLevel}>Add to waiting list</Button>
+                    <Button disabled={!!loadingToast} type="button" onClick={handleSubmitLevel}>Add to waiting list</Button>
                 </div>
             </Modal>
             <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
