@@ -59,12 +59,14 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, testLink, courseId, courseN
                 duration: 3000,
                 variant: "success",
             })
-            sendWhatsAppMessage({
-                toNumber: "201123862218",
-                textBody: `Hi ${user.name}, congtulations your placement test result for course ${course.name} has been submitted and placed you at level ${levelName}
-                \nYou're now just one step away from starting your course.
-                \nOur Team.`,
-            })
+            if (user.phone) {
+                sendWhatsAppMessage({
+                    toNumber: user.phone,
+                    textBody: `Hi ${user.name}, congtulations your placement test result for course ${course.name} has been submitted and placed you at level ${levelName}
+                    \nYou're now just one step away from starting your course.
+                    \nOur Team.`,
+                })
+            }
         },
         onError: ({ message }) => addToWaitingListToast?.update({
             id: addToWaitingListToast.id,

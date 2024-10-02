@@ -93,16 +93,18 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                             }, {
                                 onSuccess: (data) => {
                                     data.zoomGroup.students.forEach(student => {
-                                        sendWhatsAppMessage({
-                                            toNumber: "201123862218",
-                                            textBody: `Hi ${student.name},
-                                            \n\nCongratulations, you have been added to a group to start your course.
-                                            \nGroup start date: ${format(data.zoomGroup.startDate, "PPPp")}
-                                            \nGroup days: ${format(data.zoomGroup.zoomSessions[0]?.sessionDate!, "iiii")} and ${format(data.zoomGroup.zoomSessions[1]?.sessionDate!, "iiii")}
-                                            \nGroup Time: ${format(data.zoomGroup.startDate, "pp")}
-                                            \nGroup Teacher: ${data.zoomGroup.trainer?.user.name}
-                                            \n\nOur Team.`,
-                                        })
+                                        if (student.phone) {
+                                            sendWhatsAppMessage({
+                                                toNumber: student.phone,
+                                                textBody: `Hi ${student.name},
+                                                \n\nCongratulations, you have been added to a group to start your course.
+                                                \nGroup start date: ${format(data.zoomGroup.startDate, "PPPp")}
+                                                \nGroup days: ${format(data.zoomGroup.zoomSessions[0]?.sessionDate!, "iiii")} and ${format(data.zoomGroup.zoomSessions[1]?.sessionDate!, "iiii")}
+                                                \nGroup Time: ${format(data.zoomGroup.startDate, "pp")}
+                                                \nGroup Teacher: ${data.zoomGroup.trainer?.user.name}
+                                                \n\nOur Team.`,
+                                            })
+                                        }
                                     })
                                     trpcUtils.zoomGroups.invalidate()
                                         .then(() => {

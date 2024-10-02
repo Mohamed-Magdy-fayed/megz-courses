@@ -16,11 +16,11 @@ const useZoomMeeting = () => {
             .then(() => {
                 updatedSession.zoomGroup?.students.forEach(student => {
                     if (updatedSession.sessionStatus === "ongoing") sendWhatsAppMessage({
-                        toNumber: `2${student.phone}` || "201123862218",
+                        toNumber: `${student.phone}`,
                         textBody: `Hi ${student.name}, your session for today has started, Please join from here: ${updatedSession.sessionLink}`,
                     })
                     if (updatedSession.sessionStatus === "completed") sendWhatsAppMessage({
-                        toNumber: `2${student.phone}` || "201123862218",
+                        toNumber: `${student.phone}`,
                         textBody: `Hi ${student.name}, your session for today has been completed, don't forget to submit your assignment here: ${env.NEXT_PUBLIC_NEXTAUTH_URL}/my_courses/${updatedSession.zoomGroup?.course?.slug}/${updatedSession.zoomGroup?.courseLevel?.slug}/assignment/${updatedSession.materialItem?.slug}
                         \nYou can also view the course materials here: ${env.NEXT_PUBLIC_NEXTAUTH_URL}/my_courses/${updatedSession.zoomGroup?.course?.slug}/${updatedSession.zoomGroup?.courseLevel?.slug}/session/${updatedSession.materialItemId}`,
                     })

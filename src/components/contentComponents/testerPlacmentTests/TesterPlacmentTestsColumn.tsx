@@ -193,7 +193,7 @@ export const columns: ColumnDef<Column>[] = [
                             }, {
                                 onSuccess: ({ meetingNumber, meetingPassword, meetingLink }) => {
                                     sendWhatsAppMessage({
-                                        toNumber: "201123862218",
+                                        toNumber: row.original.studentPhone,
                                         textBody: `Hi ${row.original.studentName},
                                         \nyour oral placement test is scheduled at ${format(testTime, "PPPPp")} with Mr. ${row.original.trainersData.find(trainer => trainer.id === trainerId[0])?.name}
                                         \nPlease access it on time through this link: ${meetingLink}`,

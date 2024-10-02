@@ -128,7 +128,7 @@ export const columns: ColumnDef<SessionColumn>[] = [
             })
             updatedSession.zoomGroup?.students.forEach(student => {
               if (updatedSession.sessionStatus === "starting") sendWhatsAppMessage({
-                toNumber: `2${student.phone}` || "201123862218",
+                toNumber: `${student.phone}`,
                 textBody: `Hi ${student.name}, your final test is about to start, be ready!
               \nPlease complete your test here: ${env.NEXT_PUBLIC_NEXTAUTH_URL}/my_courses/${updatedSession.zoomGroup?.course?.slug}/${updatedSession.zoomGroup?.courseLevel?.slug}/quiz/${updatedSession.materialItem?.slug}
               \nAnd join the meeting on time here: ${updatedSession.sessionLink}`,

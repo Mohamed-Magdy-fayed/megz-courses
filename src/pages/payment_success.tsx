@@ -45,14 +45,17 @@ const SuccessfullPaymentPage = () => {
         courseLink: string,
         updatedOrder: (Order & {
             salesOperation: SalesOperation;
+            user: User;
         }),
     }) => {
         if (!updatedOrder) return
-        sendWhatsAppMessage({
-            textBody: `Payment successfull ${updatedOrder.orderNumber} with ${updatedOrder.amount}
-            \nYour can now access the content through this link: ${courseLink}`,
-            toNumber: "201123862218"
-        })
+        if (updatedOrder.user.phone) {
+            sendWhatsAppMessage({
+                textBody: `Payment successfull ${updatedOrder.orderNumber} with ${updatedOrder.amount}
+                \nYour can now access the content through this link: ${courseLink}`,
+                toNumber: updatedOrder.user.phone
+            })
+        }
         sendEmailMutation.mutate({
             email,
             subject,

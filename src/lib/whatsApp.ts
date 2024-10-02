@@ -36,6 +36,7 @@ export const sendWhatsAppMessage = async ({ toNumber, textBody }: Input) => {
             return { success: false, toNumber, textBody }
         }
     } catch (error) {
+        console.log(error);
         console.log("WhatsApp API not active - ", {
             toNumber,
             textBody,

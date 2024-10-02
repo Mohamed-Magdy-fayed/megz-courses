@@ -95,7 +95,7 @@ const OperationPage = () => {
                     }, {
                         onSuccess: ({ meetingNumber, meetingPassword, meetingLink }) => {
                             sendWhatsAppMessage({
-                                toNumber: "201123862218",
+                                toNumber: `${salesOperationData?.salesOperations?.orderDetails?.user.phone}`,
                                 textBody: `Hi ${salesOperationData?.salesOperations?.orderDetails?.user.name},
                                 \nyour oral placement test is scheduled at ${format(testTime, "PPPPp")} with Mr. ${trainersData?.trainers.find(trainer => trainer.id === trainerId[0])?.user.name}
                                 \nPlease access it on time through this link: ${meetingLink}`,

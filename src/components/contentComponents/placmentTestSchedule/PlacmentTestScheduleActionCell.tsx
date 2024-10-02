@@ -43,7 +43,7 @@ const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, isL
             toast,
             successMessageFormatter: ({ course, user }) => {
                 sendWhatsAppMessage({
-                    toNumber: "201123862218",
+                    toNumber: `${user.phone}`,
                     textBody: `Hi ${user.name}, congtulations your placement test result for course ${course.name} has been submitted and placed you at level ${level}
             \nYou're now just one step away from starting your course.
             \nOur Team.`,

@@ -57,11 +57,13 @@ export const PaymentForm = ({
         payOrderManuallyMutation.mutate({ amount: paymentAmount, id, paymentConfirmationImage: paymentConfirmation }, {
             onSuccess: ({ courseLink, updatedOrder }) => {
                 toastSuccess(`order ${updatedOrder.orderNumber} payment status updated!`)
-                sendWhatsAppMessage({
-                    textBody: `Payment successfull ${updatedOrder.orderNumber} with ${formatPrice(updatedOrder.amount)}
-                    \nYour can now access the content through this link: ${courseLink}`,
-                    toNumber: "201123862218"
-                })
+                if (updatedOrder.user.phone) {
+                    sendWhatsAppMessage({
+                        textBody: `Payment successfull ${updatedOrder.orderNumber} with ${formatPrice(updatedOrder.amount)}
+                        \nYour can now access the content through this link: ${courseLink}`,
+                        toNumber: updatedOrder.user.phone
+                    })
+                }
                 onClose()
                 trpcUtils.salesOperations.invalidate().then(() => {
                     setLoading(false)

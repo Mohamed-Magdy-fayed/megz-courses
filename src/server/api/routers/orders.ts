@@ -238,7 +238,13 @@ export const ordersRouter = createTRPCRouter({
                 const hashedPassword = await bcrypt.hash(password, 10);
 
                 user = await ctx.prisma.user.create({
-                    data: { name, email: `${name?.replaceAll(" ", "").toLocaleLowerCase()}${(Math.random() * 10000).toFixed()}@temp.com`, phone, hashedPassword, emailVerified: new Date() }
+                    data: {
+                        name,
+                        email: `${name?.replaceAll(" ", "").toLocaleLowerCase()}${(Math.random() * 10000).toFixed()}@temp.com`,
+                        phone: phone?.replace("+", ""),
+                        hashedPassword,
+                        emailVerified: new Date()
+                    }
                 })
             } else {
                 user = await ctx.prisma.user.findUnique({

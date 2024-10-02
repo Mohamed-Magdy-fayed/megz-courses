@@ -93,8 +93,12 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
         }, {
             onSuccess: ({ password, order: { id, amount, orderNumber, user, course, createdAt, courseType, salesOperationId, salesOperation }, paymentLink }) => {
                 setLoading(false)
+                toastSuccess(`Order ${orderNumber} has been submitted successfully!`)
+                setUserDetails({ email: user.email, password, salesOperationCode: salesOperation.code, writtenTestUrl: `${env.NEXT_PUBLIC_NEXTAUTH_URL}placement_test/${course.slug}` })
+                setQuickOrderOpen(true)
+                if (!user.phone) return toastError("Couldn't send 2 whatsApp messages to the student!")
                 sendWhatsAppMessage({
-                    toNumber: "201123862218",
+                    toNumber: user.phone,
                     textBody: `*Thanks for your order ${orderNumber}*
                     \n\nHello ${user.name}, Your order *${orderNumber}* is pending payment now for *${formatPrice(amount)}*
                     \nOrder Number: *${orderNumber}*
@@ -106,9 +110,8 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
                     \nإجمالي الطلب: *${formatPrice(amount)}*
                     \n\nيمكنك المتابعة إلى الدفع هنا: *${paymentLink}*`
                 })
-                toastSuccess(`Order ${orderNumber} has been submitted successfully!`)
                 sendWhatsAppMessage({
-                    toNumber: "201123862218",
+                    toNumber: user.phone,
                     textBody: `Thank you for choosing us, here are your username and password for accessing the course materials.
                     \n\n*Username*: ${user.email}
                     \n*Password*: *${password}*
@@ -118,8 +121,6 @@ const CreateQuickOrder = ({ courseData }: { courseData: Course }) => {
                     \n*كلمة السر*: *${password}*
                     \nطبعا تقدر تغير اسم المستخدم او كلمة السر في اي وقت تحبة وتقدر تشوف محتويات الكورس من اللينك ده: *${window.location.host}/my_courses/*`
                 })
-                setUserDetails({ email: user.email, password, salesOperationCode: salesOperation.code, writtenTestUrl: `${env.NEXT_PUBLIC_NEXTAUTH_URL}placement_test/${course.slug}` })
-                setQuickOrderOpen(true)
             },
             onError: (error) => {
                 toastError(error.message)
