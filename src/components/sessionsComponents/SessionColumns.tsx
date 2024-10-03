@@ -81,6 +81,12 @@ export const columns: ColumnDef<SessionColumn>[] = [
     cell: ({ row }) => (
       <Typography>{format(row.original.sessionDate, "PPPp")}</Typography>
     ),
+    filterFn: (row, columnId, filterValue) => {
+      const val = row.original.sessionDate
+      const startDate = new Date(filterValue.split("|")[0])
+      const endDate = new Date(filterValue.split("|")[1])
+      return val.getTime() >= startDate.getTime() && val.getTime() <= endDate.getTime()
+    },
   },
   {
     accessorKey: "groupName",

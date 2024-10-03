@@ -1,6 +1,7 @@
 import { env } from "@/env.mjs";
 import { api } from "@/lib/api";
 import { sendWhatsAppMessage } from "@/lib/whatsApp";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 
 const useZoomMeeting = () => {
@@ -8,6 +9,7 @@ const useZoomMeeting = () => {
     const [userId, setUserId] = useState(0)
     const [userName, setUserName] = useState("")
 
+    const session = useSession()
     const trpcUtils = api.useContext()
 
     const attendSessionMutation = api.zoomGroups.attendSession.useMutation()
@@ -68,8 +70,29 @@ const useZoomMeeting = () => {
                                 }
                             })
 
-                            attendSessionMutation.mutate({ sessionId })
+                            attendSessionMutation.mutate({ sessionId }, {
+                                onSettled: () => {
+                                    if (session.data?.user.userType === "teacher") {
+                                        ZoomMtg.record({
+                                            record: true,
+                                            success: (data: any) => {
+                                                console.log("success", data);
+
+                                            },
+                                            error: (error: any) => {
+                                                console.log("error", error);
+
+                                            }
+                                        })
+
+                                        ZoomMtg.inMeetingServiceListener("onUserLeave", () => {
+                                            ZoomMtg.endMeeting({})
+                                        })
+                                    }
+                                }
+                            })
                             editSessionStatusMutation.mutate({ id: sessionId, sessionStatus: "ongoing" })
+
                         },
                         error: (error: any) => {
                             console.log('Error joining meeting', error);
