@@ -9,6 +9,7 @@ import { Dispatch, SetStateAction } from "react";
 import Spinner from "@/components/Spinner";
 import { UseMutationOptions } from "@tanstack/react-query";
 import { TRPCErrorShape } from "@trpc/server/rpc";
+import { Row } from "@tanstack/react-table";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -236,4 +237,11 @@ export const getRating = (questions: EvaluationFormQuestion[], answers: Submissi
     }
   }
   return points
+}
+
+export function filterFn<T>(row: Row<T & { createdAt: Date }>, columnId: string, filterValue: any) {
+  const val = row.original.createdAt
+  const startDate = new Date(filterValue.split("|")[0])
+  const endDate = new Date(filterValue.split("|")[1])
+  return val.getTime() >= startDate.getTime() && val.getTime() <= endDate.getTime()
 }

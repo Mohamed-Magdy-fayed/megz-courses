@@ -1,4 +1,4 @@
-import { CourseStatuses, Devices, EvaluationFormTypes, GroupStatus, MaterialItemType, OrderStatus, SalesOperationStatus, SessionStatus, TrainerRole, UserNoteStatus, UserNoteTypes, UserType } from "@prisma/client";
+import { CourseStatuses, Devices, EvaluationFormTypes, GroupStatus, MaterialItemType, OrderStatus, SalesOperationStatus, SessionStatus, SupportTicketStatus, TrainerRole, UserNoteStatus, UserNoteTypes, UserType } from "@prisma/client";
 
 export const validTrainerRoles = [TrainerRole.teacher, TrainerRole.tester] as const;
 export const validUserTypes = [UserType.admin, UserType.chatAgent, UserType.salesAgent, UserType.student, UserType.teacher] as const;
@@ -13,3 +13,4 @@ export const validNoteTypes = [UserNoteTypes.ComplainLevel1, UserNoteTypes.Compl
 export const validMaterialItemTypes = [MaterialItemType.manual, MaterialItemType.upload] as const;
 export const validNoteStatus = [UserNoteStatus.Closed, UserNoteStatus.Created, UserNoteStatus.Opened] as const;
 export const validTrueOrFalse = ["true", "false"] as const;
+export const validSupportTicketStatus = [SupportTicketStatus.closed, SupportTicketStatus.created, SupportTicketStatus.opened] as const;

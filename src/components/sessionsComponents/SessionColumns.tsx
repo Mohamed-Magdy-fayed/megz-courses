@@ -124,7 +124,7 @@ export const columns: ColumnDef<SessionColumn>[] = [
           description: <Spinner className="w-4 h-4" />,
           variant: "info",
         })),
-        onSuccess: ({ updatedSession }) => trpcUtils.trainers.invalidate()
+        onSuccess: ({ updatedSession }) => trpcUtils.invalidate()
           .then(() => {
             loadingToast?.update({
               id: loadingToast.id,
@@ -133,11 +133,27 @@ export const columns: ColumnDef<SessionColumn>[] = [
               variant: "success",
             })
             updatedSession.zoomGroup?.students.forEach(student => {
-              if (updatedSession.sessionStatus === "starting") sendWhatsAppMessage({
+              if (updatedSession.sessionStatus === "starting" && updatedSession.zoomGroup?.zoomSessions[-1]?.sessionDate === updatedSession.sessionDate) sendWhatsAppMessage({
                 toNumber: `${student.phone}`,
                 textBody: `Hi ${student.name}, your final test is about to start, be ready!
-              \nPlease complete your test here: ${env.NEXT_PUBLIC_NEXTAUTH_URL}/my_courses/${updatedSession.zoomGroup?.course?.slug}/${updatedSession.zoomGroup?.courseLevel?.slug}/quiz/${updatedSession.materialItem?.slug}
+              \nPlease complete your test here: ${env.NEXT_PUBLIC_NEXTAUTH_URL}/my_courses/${updatedSession.zoomGroup?.course?.slug}/${updatedSession.zoomGroup?.courseLevel?.slug}/final_test
               \nAnd join the meeting on time here: ${updatedSession.sessionLink}`,
+              })
+              if (updatedSession.sessionStatus === "starting") sendWhatsAppMessage({
+                toNumber: `${student.phone}`,
+                textBody: `Hi ${student.name}, your session for today is about to start, be ready!
+              \nPlease complete the quiz here: ${env.NEXT_PUBLIC_NEXTAUTH_URL}/my_courses/${updatedSession.zoomGroup?.course?.slug}/${updatedSession.zoomGroup?.courseLevel?.slug}/quiz/${updatedSession.materialItem?.slug}
+              \nAnd join the meeting on time here: ${updatedSession.sessionLink}`,
+              })
+              if (updatedSession.sessionStatus === "ongoing") sendWhatsAppMessage({
+                toNumber: `${student.phone}`,
+                textBody: `Hi ${student.name}, your session for today has started!
+              \nPlease join the meeting on from here: ${updatedSession.sessionLink}`,
+              })
+              if (updatedSession.sessionStatus === "completed") sendWhatsAppMessage({
+                toNumber: `${student.phone}`,
+                textBody: `Hi ${student.name}, your session for today has ended!
+              \nPlease complete the assignment here: ${env.NEXT_PUBLIC_NEXTAUTH_URL}/my_courses/${updatedSession.zoomGroup?.course?.slug}/${updatedSession.zoomGroup?.courseLevel?.slug}/assignment/${updatedSession.materialItem?.slug}`,
               })
             })
           }),

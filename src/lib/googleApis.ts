@@ -20,8 +20,8 @@ export const getFormResponses = async (url: string, clientId: string) => {
         })
 
         return responses
-    } catch (error) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: JSON.stringify(error) })
+    } catch (error: any) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: error.message })
     }
 }
 

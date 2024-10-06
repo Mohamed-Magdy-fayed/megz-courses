@@ -6,6 +6,7 @@ import { cn, formatPercentage } from "@/lib/utils"
 import Spinner from "../Spinner"
 import { Typography } from "./Typoghraphy"
 import { Progress } from "./progress"
+import { LucideIcon, PlusSquare } from "lucide-react"
 
 const buttonVariants = cva(
     "inline-flex items-center space-x-2 active:opacity-75 justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
@@ -107,4 +108,28 @@ const LoadingButton = React.forwardRef<HTMLButtonElement, ButtonProps & { progre
 )
 LoadingButton.displayName = "LoadingButton"
 
-export { Button, LoadingButton, buttonVariants }
+const SpinnerButton = React.forwardRef<HTMLButtonElement, ButtonProps & { loadingText?: string, text: string, isLoading: boolean, icon: LucideIcon }>(
+    ({ className, variant, customeColor, size, asChild = false, children, disabled, text, loadingText, isLoading, icon: Icon, ...props }, ref) => {
+        const Comp = asChild ? Slot : "button"
+        return (
+            <Comp
+                className={cn("!whitespace-nowrap !overflow-hidden !relative !min-w-fit !m-0", buttonVariants({ variant, size, className, customeColor }))}
+                ref={ref}
+                disabled={disabled || isLoading}
+                {...props}
+            >
+                <div className={cn("flex items-center gap-2", isLoading && "opacity-0 transition-all")} >
+                    <Typography>{text}</Typography>
+                    <Icon className="w-4 h-4" />
+                </div>
+                <div className={cn("opacity-0 absolute flex items-center gap-2", isLoading && "opacity-100 transition-all")} >
+                    <Typography>{loadingText || "Loading..."}</Typography>
+                    <Spinner className="w-4 h-4" />
+                </div>
+            </Comp>
+        )
+    }
+)
+SpinnerButton.displayName = "SpinnerButton"
+
+export { Button, LoadingButton, SpinnerButton, buttonVariants }

@@ -88,8 +88,8 @@ export const mainNavLinks = [
     url: "support",
   },
   {
-    label: "Error",
-    url: "404",
+    label: "Tickets",
+    url: "tickets",
   },
 ];
 

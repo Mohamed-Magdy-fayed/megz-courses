@@ -27,6 +27,7 @@ import { levelsRouter } from "@/server/api/routers/levels";
 import { siteIdentityRouter } from "@/server/api/routers/siteIdentity";
 import { metaAccountRouter } from "@/server/api/routers/metaAccount";
 import { setupRouter } from "@/server/api/routers/setup";
+import { ticketsRouter } from "@/server/api/routers/tickets";
 
 /**
  * This is the primary router for your server.
@@ -62,6 +63,7 @@ export const appRouter = createTRPCRouter({
   certificates: certificatesRouter,
   siteIdentity: siteIdentityRouter,
   setup: setupRouter,
+  tickets: ticketsRouter,
 });
 
 // export type definition of API

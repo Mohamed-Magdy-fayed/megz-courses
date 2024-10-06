@@ -93,10 +93,11 @@ export const evaluationFormRouter = createTRPCRouter({
   getFinalTest: protectedProcedure
     .input(z.object({
       courseSlug: z.string(),
+      levelSlug: z.string(),
     }))
-    .query(async ({ ctx, input: { courseSlug } }) => {
+    .query(async ({ ctx, input: { levelSlug, courseSlug } }) => {
       const finalTest = await ctx.prisma.evaluationForm.findFirst({
-        where: { type: "finalTest", course: { slug: courseSlug } },
+        where: { type: "finalTest", course: { slug: courseSlug }, courseLevel: { slug: levelSlug } },
         include: {
           materialItem: {
             include: { zoomSessions: true }
@@ -412,7 +413,7 @@ export const evaluationFormRouter = createTRPCRouter({
           createdBy: ctx.session.user.email,
           courseLevel: levelId ? { connect: { id: levelId } } : undefined
         },
-        include: { materialItem: true, questions: true, submissions: true }
+        include: { materialItem: true, questions: true, submissions: true, googleForm: true }
       })
 
       return {

@@ -14,8 +14,12 @@ import { toastType, useToast } from "@/components/ui/use-toast";
 import { SeverityPill } from "@/components/overview/SeverityPill";
 import { useEvalformSubmission } from "@/hooks/useEvalFormSubmission";
 import { useSession } from "next-auth/react";
+import { render } from "@react-email/render";
+import { CerificateEmail } from "@/components/emails/CertificateEmail";
+import { env } from "@/env.mjs";
+import { format } from "date-fns";
 
-const AssignmentPage: NextPage = () => {
+const FinalTestPage: NextPage = () => {
     const router = useRouter()
     const courseSlug = router.query.courseSlug as string
     const levelSlug = router.query.levelSlug as string
@@ -25,7 +29,7 @@ const AssignmentPage: NextPage = () => {
 
     const trpcUtils = api.useContext()
     const courseQuery = api.courses.getBySlug.useQuery({ slug: courseSlug }, { enabled: !!courseSlug })
-    const evalFormQuery = api.evaluationForm.getFinalTest.useQuery({ courseSlug }, { enabled: !!type })
+    const evalFormQuery = api.evaluationForm.getFinalTest.useQuery({ courseSlug, levelSlug }, { enabled: !!type })
     const userQuery = api.users.getCurrentUser.useQuery()
 
     const submitMutation = api.evaluationFormSubmissions.createEvalFormSubmission.useMutation({
@@ -71,6 +75,7 @@ const AssignmentPage: NextPage = () => {
         })
     }
 
+    const sendEmail = api.emails.sendZohoEmail.useMutation()
     const generateCertificateMutation = api.certificates.createCertificate.useMutation()
     const checkSubmissionMutation = api.googleAccounts.getGoogleFormResponses.useMutation({
         onMutate: () => {
@@ -98,6 +103,24 @@ const AssignmentPage: NextPage = () => {
                 courseSlug,
                 levelSlug,
                 score: formatPercentage(userResponse.totalScore! / (evalFormQuery.data?.finalTest?.totalPoints || 0) * 100),
+            }, {
+                onSuccess: ({ certificate }) => {
+                    const html = render(<CerificateEmail
+                        certId={certificate.certificateId}
+                        certUrl={`${env.NEXT_PUBLIC_NEXTAUTH_URL}my_courses/${courseSlug}/${levelSlug}/certificate`}
+                        courseName={certificate.course.name}
+                        createdAt={format(new Date(), "PPPp")}
+                        logoUrl={'logoUrl'}
+                        studentName={certificate.user.name}
+                        userEmail={certificate.user.email}
+                        totalScore={formatPercentage(userResponse.totalScore! / (evalFormQuery.data?.finalTest?.totalPoints || 0) * 100)}
+                    />)
+                    sendEmail.mutate({
+                        email: certificate.user.email,
+                        subject: "Congratulations, Your certificate is ready!",
+                        html,
+                    })
+                }
             })
         },
         onError: ({ message }) => createSubmissionToast?.update({
@@ -272,4 +295,4 @@ const AssignmentPage: NextPage = () => {
     )
 }
 
-export default AssignmentPage
+export default FinalTestPage

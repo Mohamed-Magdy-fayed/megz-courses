@@ -18,7 +18,13 @@ export function createMutationOptions<TSuccessData>(
     }
 ) {
     return {
-        onMutate: () => setLoadingToast(toast({
+        onMutate: () => loadingToast ? loadingToast.update({
+            id: loadingToast.id,
+            title: loadingMessage ?? "Loading...",
+            description: <Spinner className="w-4 h-4" />,
+            variant: "info",
+            duration: 30000,
+        }) : setLoadingToast(toast({
             title: loadingMessage ?? "Loading...",
             description: <Spinner className="w-4 h-4" />,
             variant: "info",

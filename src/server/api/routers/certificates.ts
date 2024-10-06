@@ -21,7 +21,8 @@ export const certificatesRouter = createTRPCRouter({
           user: { connect: { id: ctx.session.user.id } },
           course: { connect: { slug: courseSlug } },
           courseLevel: { connect: { slug: levelSlug } },
-        }
+        },
+        include: { user: true, course: true }
       })
 
       await ctx.prisma.userNote.create({

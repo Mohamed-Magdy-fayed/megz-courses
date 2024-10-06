@@ -48,6 +48,7 @@ const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, isL
             \nYou're now just one step away from starting your course.
             \nOur Team.`,
                 })
+                setIsSubmitLevelOpen(false)
 
                 return `Added student ${user.name} to waiting list of course ${course.name} at level ${courseLevels.find(courseLevel => courseLevel.value === level[0])?.label}`
             },

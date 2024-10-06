@@ -112,6 +112,7 @@ model User {
     device                    Devices?
     updatedAt                 DateTime                   @updatedAt
     createdAt                 DateTime                   @default(now())
+    SupportTicket             SupportTicket[]
 }
 
 model VerificationToken {
@@ -668,6 +669,31 @@ model SiteIdentity {
 }
 
 model license_key {
-    id    String @id @default(auto()) @map("_id") @db.ObjectId
+    id  String @id @default(auto()) @map("_id") @db.ObjectId
     key String
+}
+
+enum SupportTicketStatus {
+    created
+    opened
+    closed
+}
+
+type SupportTicketMessage {
+    userName    String
+    userEmail   String
+    messageText String
+    messageDate DateTime
+}
+
+model SupportTicket {
+    id              String                 @id @default(auto()) @map("_id") @db.ObjectId
+    subject         String
+    info            String
+    status          SupportTicketStatus
+    messages        SupportTicketMessage[]
+    createdBy       User                   @relation(fields: [createdByUserId], references: [id])
+    createdByUserId String                 @db.ObjectId
+    updatedAt       DateTime               @updatedAt
+    createdAt       DateTime               @default(now())
 }
