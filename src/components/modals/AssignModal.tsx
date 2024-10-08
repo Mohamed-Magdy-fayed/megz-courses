@@ -34,29 +34,31 @@ export const AssignModal = ({
             isOpen={isOpen}
             onClose={onClose}
         >
-            <Select
-                disabled={loading}
-                // @ts-ignore
-                onValueChange={(e) => setAssigneeId(e)}
-            >
-                <SelectTrigger className="pl-8">
-                    <SelectValue
-                        placeholder="Select assignee"
-                    />
-                </SelectTrigger>
-                <SelectContent>
-                    {data?.users.map(user => (
-                        <SelectItem key={user.id} value={user.id}>{user.email}</SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-            <div className="flex w-full items-center justify-end space-x-2 pt-6">
-                <Button disabled={loading} variant="outline" customeColor={"mutedOutlined"} onClick={onClose}>
-                    Cancel
-                </Button>
-                <Button disabled={loading} variant="default" onClick={() => onConfirm(assigneeId)}>
-                    Continue
-                </Button>
+            <div className="p-4">
+                <Select
+                    disabled={loading}
+                    // @ts-ignore
+                    onValueChange={(e) => setAssigneeId(e)}
+                >
+                    <SelectTrigger className="pl-8">
+                        <SelectValue
+                            placeholder="Select assignee"
+                        />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {data?.users.map(user => (
+                            <SelectItem key={user.id} value={user.id}>{user.email}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <div className="flex w-full items-center justify-end space-x-2 pt-6">
+                    <Button disabled={loading} variant="outline" customeColor={"mutedOutlined"} onClick={onClose}>
+                        Cancel
+                    </Button>
+                    <Button disabled={loading} variant="default" onClick={() => onConfirm(assigneeId)}>
+                        Continue
+                    </Button>
+                </div>
             </div>
         </Modal>
     );

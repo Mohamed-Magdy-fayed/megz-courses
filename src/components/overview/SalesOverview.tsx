@@ -5,10 +5,10 @@ import { RefreshCcw } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Typography } from "../ui/Typoghraphy";
 
-const useChartOptions = () => {
+const useChartOptions = (): ApexCharts.ApexOptions => {
   return {
     title: {
-      text: "sales",
+      text: "Sales",
       style: {
         color: "hsl(var(--muted))",
         fontSize: "32px"
@@ -53,8 +53,8 @@ const useChartOptions = () => {
     },
     plotOptions: {
       bar: {
-        columnWidth: "80px",
-        borderRadius: 5,
+        columnWidth: "28px",
+        borderRadius: 2,
       },
     },
     xaxis: {

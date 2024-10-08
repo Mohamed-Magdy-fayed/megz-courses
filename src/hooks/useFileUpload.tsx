@@ -10,7 +10,7 @@ export type UploadStatus = { state: 'Idle' | 'Working', progress: number };
 
 const useFileUpload = () => {
     const [progress, setProgress] = useState(0);
-    const [uploadTracker, setUploadTracker] = useState<NodeJS.Timer | null>(null);
+    const [uploadTracker, setUploadTracker] = useState<NodeJS.Timeout | null>(null);
     const { toastError, toast, toasts, dismiss } = useToast();
 
     const uploadFile = async (file: File, path: string, index: number, length: number) => {

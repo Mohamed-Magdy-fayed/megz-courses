@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react"
 import { Answer } from "@/components/placementTestView/QuestionComponent"
 import { api } from "@/lib/api"
-import { Course, EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, GoogleForm, MaterialItem, PlacementTest, Prisma, SubmissionAnswer } from "@prisma/client"
+import { SubmissionAnswer } from "@prisma/client"
+import { UserSubmissionReturnType } from "@/server/api/routers/evaluationFormSubmissions"
 
 type UseEvalformSubmissionProps = {
     courseSlug: string;
@@ -11,13 +12,11 @@ type UseEvalformSubmissionProps = {
     enabled?: boolean;
 }
 
-type UserSubmissionDetailsType = NonNullable<ReturnType<typeof api.evaluationFormSubmissions.getUserSubmissionDetails.useQuery>["data"]>
-
 export const useEvalformSubmission = ({ courseSlug, isAssignment, levelSlug, materialItemSlug, enabled }: UseEvalformSubmissionProps, deps: any[]) => {
     const [systemAnswers, setSystemAnswers] = useState<SubmissionAnswer[] | undefined>([])
     const [answers, setAnswers] = useState<Answer[]>([])
-    const [systemForm, setSystemForm] = useState<UserSubmissionDetailsType["original"]["systemForm"]>()
-    const [systemSubmission, setSystemSubmission] = useState<UserSubmissionDetailsType["systemFormSubmission"]>()
+    const [systemForm, setSystemForm] = useState<UserSubmissionReturnType["original"]["systemForm"]>()
+    const [systemSubmission, setSystemSubmission] = useState<UserSubmissionReturnType["systemFormSubmission"]>()
     const [submittedAlready, setSubmittedAlready] = useState<boolean>(false)
     const [totalPoints, setTotalPoints] = useState(0)
     const [googleSubmission, setGoogleSubmission] = useState<{ score: number, isSubmitted: boolean } | undefined>({
