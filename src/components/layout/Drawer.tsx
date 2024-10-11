@@ -60,8 +60,8 @@ export const mainNavLinks = [
     url: "content",
   },
   {
-    label: "Database",
-    url: "database",
+    label: "Leads",
+    url: "leads",
   },
   {
     label: "Configurations",

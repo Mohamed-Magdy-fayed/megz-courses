@@ -1,7 +1,6 @@
-import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowUpDown, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { getInitials } from "@/lib/getInitials";
 import { cn } from "@/lib/utils";
 import CellAction from "./cell-action";

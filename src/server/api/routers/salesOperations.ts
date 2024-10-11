@@ -43,7 +43,6 @@ export const salesOperationsRouter = createTRPCRouter({
                 include: {
                     assignee: { include: { user: true } },
                     orderDetails: { include: { user: true, course: true } },
-                    potintialCustomer: true,
                 },
             });
             return { salesOperations };
@@ -73,7 +72,7 @@ export const salesOperationsRouter = createTRPCRouter({
                 salesOperations,
             };
         }),
-    createSalesOperationForPotintialCustomer: protectedProcedure
+    createSalesOperationFormLead: protectedProcedure
         .input(
             z.object({
                 assigneeId: z.string().optional(),
@@ -88,7 +87,6 @@ export const salesOperationsRouter = createTRPCRouter({
                     assignee: { connect: { userId: assigneeId } },
                     code: salesOperationCodeGenerator(),
                     status,
-                    potintialCustomer: { connect: { id: customerId } }
                 },
                 include: {
                     assignee: true,

@@ -1,9 +1,9 @@
-import { columns } from "./DatabaseColumn";
+import { columns } from "./LeadsColumn";
 import { DataTable } from "../ui/DataTable";
 import { api } from "@/lib/api";
 
-const DatabaseClient = () => {
-  const { data, isLoading } = api.potintialCustomers.getCustomers.useQuery();
+const LeadsClient = () => {
+  const { data, isLoading } = api.leads.getCustomers.useQuery();
 
   const formattedData = data?.potintialCustomers.map(({
     userId,
@@ -14,7 +14,7 @@ const DatabaseClient = () => {
     message,
     phone,
     platform,
-    picture,
+    image,
   }) => ({
     id,
     name,
@@ -23,7 +23,7 @@ const DatabaseClient = () => {
     message: message || "",
     phone: phone || "",
     platform,
-    picture: picture || "",
+    image: image || "",
     userId,
   }))
 
@@ -51,4 +51,4 @@ const DatabaseClient = () => {
   );
 };
 
-export default DatabaseClient;
+export default LeadsClient;

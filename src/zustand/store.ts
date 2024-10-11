@@ -15,7 +15,7 @@ export type ActiveLinkType =
   | "sales_operations"
   | "chat_agents"
   | "content"
-  | "database"
+  | "leads"
   | "config"
   | "account"
   | "privacy"

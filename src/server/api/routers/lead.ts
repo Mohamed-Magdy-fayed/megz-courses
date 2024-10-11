@@ -3,10 +3,10 @@ import {
     protectedProcedure,
 } from "@/server/api/trpc";
 
-export const potintialCustomerRouter = createTRPCRouter({
+export const leadsRouter = createTRPCRouter({
     getCustomers: protectedProcedure
         .query(async ({ ctx }) => {
-            const potintialCustomers = await ctx.prisma.potintialCustomer.findMany();
+            const potintialCustomers = await ctx.prisma.lead.findMany();
 
             return { potintialCustomers };
         }),

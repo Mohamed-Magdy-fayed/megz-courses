@@ -1,5 +1,5 @@
 import { getInitials } from "@/lib/getInitials";
-import { Order, PotintialCustomer, SalesAgent, SalesOperation, User } from "@prisma/client";
+import { Order, Lead, SalesAgent, SalesOperation, User } from "@prisma/client";
 import { PaperContainer } from "../ui/PaperContainers";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Typography } from "../ui/Typoghraphy";
@@ -12,7 +12,6 @@ const UserInfoPanel = ({ data }: {
         orderDetails: (Order & {
             user: User;
         }) | null;
-        potintialCustomer: PotintialCustomer | null;
     }
 }) => {
     return (

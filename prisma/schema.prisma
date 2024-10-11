@@ -418,16 +418,14 @@ enum SalesOperationStatus {
 }
 
 model SalesOperation {
-    id                  String               @id @default(auto()) @map("_id") @db.ObjectId
-    code                String
-    status              SalesOperationStatus @default(created)
-    assignee            SalesAgent?          @relation(fields: [salesAgentId], references: [id], onDelete: SetNull)
-    salesAgentId        String?              @db.ObjectId
-    potintialCustomer   PotintialCustomer?   @relation(fields: [potintialCustomerId], references: [id], onDelete: SetNull)
-    potintialCustomerId String?              @db.ObjectId
-    orderDetails        Order?               @relation("OrderToSalesOperation")
-    updatedAt           DateTime             @updatedAt
-    createdAt           DateTime             @default(now())
+    id           String               @id @default(auto()) @map("_id") @db.ObjectId
+    code         String
+    status       SalesOperationStatus @default(created)
+    assignee     SalesAgent?          @relation(fields: [salesAgentId], references: [id], onDelete: SetNull)
+    salesAgentId String?              @db.ObjectId
+    orderDetails Order?               @relation("OrderToSalesOperation")
+    updatedAt    DateTime             @updatedAt
+    createdAt    DateTime             @default(now())
 }
 
 model SalesAgent {
@@ -440,19 +438,30 @@ model SalesAgent {
     createdAt DateTime         @default(now())
 }
 
-model PotintialCustomer {
-    id             String           @id @default(auto()) @map("_id") @db.ObjectId
-    userId         String
-    name           String
-    email          String?
-    phone          String?
-    message        String?
-    picture        String?
-    platform       String
-    formId         String?
-    SalesOperation SalesOperation[]
-    updatedAt      DateTime         @updatedAt
-    createdAt      DateTime         @default(now())
+model Lead {
+    id          String     @id @default(auto()) @map("_id") @db.ObjectId
+    userId      String
+    name        String
+    email       String?
+    phone       String?
+    message     String?
+    image       String?
+    isAutomated Boolean
+    isAssigned  Boolean
+    platform    String
+    formId      String?
+    leadStage   LeadStage? @relation(fields: [leadStageId], references: [id])
+    leadStageId String?    @db.ObjectId
+    updatedAt   DateTime   @updatedAt
+    createdAt   DateTime   @default(now())
+}
+
+model LeadStage {
+    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    name      String
+    leads     Lead[]
+    updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
 }
 
 model Message {

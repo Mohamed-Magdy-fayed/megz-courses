@@ -119,10 +119,10 @@ const ConfigPage: NextPage = () => {
                     <ConceptTitle>Sales Channels</ConceptTitle>
                     <ApiAlert title="webhook callback url (for Facebook - Instagram - WhatsApp)" description={`${env.NEXT_PUBLIC_NEXTAUTH_URL}api/facebook`} />
                     <div className="flex items-center justify-between p-4">
-                        <Typography>once verified successfully your potintial customers will be added to your database</Typography>
-                        <Link href={`/database`}>
+                        <Typography>once verified successfully your leads will be added to your database</Typography>
+                        <Link href={`/leads`}>
                             <Button className="whitespace-nowrap space-x-2" customeColor={"primaryOutlined"} variant={"outline"}>
-                                <Typography variant={"buttonText"}>Go to Database</Typography>
+                                <Typography variant={"buttonText"}>Go to Leads</Typography>
                                 <ArrowRightFromLineIcon></ArrowRightFromLineIcon>
                             </Button>
                         </Link>

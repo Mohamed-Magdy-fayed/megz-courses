@@ -1531,7 +1531,7 @@ const GoogleDocumentationDoc = () => {
             <p className="c0">
                 <span className="c1">
                     You can configure the system to work with Meta social media platforms and
-                    therefore you will get potintionl customers added automatically to your
+                    therefore you will get leads added automatically to your
                     database whenever you receive a new messeage on selected platforms.
                 </span>
             </p>
@@ -1775,7 +1775,7 @@ const GoogleDocumentationDoc = () => {
                 </span>
                 <span className="c5">
                     &nbsp;it means that your configuration is completed and you should start
-                    seeing your potential customers in the database{" "}
+                    seeing your leads in the database{" "}
                 </span>
                 <span
                     style={{

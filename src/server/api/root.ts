@@ -3,7 +3,7 @@ import { createTRPCRouter } from "@/server/api/trpc";
 import { usersRouter } from "./routers/users";
 import { coursesRouter } from "./routers/courses";
 import { materialItemsRouter } from "./routers/materialItems";
-import { potintialCustomerRouter } from "./routers/potintialCustomer";
+import { leadsRouter } from "./routers/lead";
 import { salesOperationsRouter } from "./routers/salesOperations";
 import { salesAgentsRouter } from "./routers/salesAgents";
 import { ordersRouter } from "./routers/orders";
@@ -40,7 +40,7 @@ export const appRouter = createTRPCRouter({
   courses: coursesRouter,
   levels: levelsRouter,
   materials: materialItemsRouter,
-  potintialCustomers: potintialCustomerRouter,
+  leads: leadsRouter,
   salesOperations: salesOperationsRouter,
   salesAgents: salesAgentsRouter,
   orders: ordersRouter,

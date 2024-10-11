@@ -10,7 +10,7 @@ import { CheckCircle, Copy, MoreVertical } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { AssignModal } from "../modals/AssignModal";
-import { Customer } from "./DatabaseColumn";
+import { Customer } from "./LeadsColumn";
 import { useToast } from "@/components/ui/use-toast";
 
 interface CellActionProps {
@@ -22,7 +22,7 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const [open, setOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  const assignMutation = api.salesOperations.createSalesOperationForPotintialCustomer.useMutation()
+  const assignMutation = api.salesOperations.createSalesOperationFormLead.useMutation()
   const { toastError, toastSuccess } = useToast()
 
   const onCopy = (id: string) => {

@@ -228,7 +228,7 @@ const OperationPage = () => {
                         <ConceptTitle>User Details</ConceptTitle>
                         <div className="flex gap-4">
                             <UserInfoPanel data={salesOperationData.salesOperations} />
-                            {!!salesOperationData.salesOperations.potintialCustomer && (
+                            {/* {!!salesOperationData.salesOperations.potintialCustomer && (
                                 <PaperContainer className=" flex-grow">
                                     <Typography variant={"secondary"}>Potintial Customer</Typography>
                                     <div className="flex gap-2 p-4 justify-between">
@@ -248,7 +248,7 @@ const OperationPage = () => {
                                     </div>
                                     {isOpen && <StudentForm setIsOpen={setIsOpen}></StudentForm>}
                                 </PaperContainer>
-                            )}
+                            )} */}
                         </div>
                     </div>
                     <div className="py-4">

@@ -34,18 +34,20 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<any>) => {
                             const userId = senderData.id
                             const name = senderData.name
                             const email = senderData.email
-                            const picture = senderData.picture.data.url
-                            const userExists = await prisma.potintialCustomer.findFirst({ where: { userId } })
+                            const image = senderData.picture.data.url
+                            const userExists = await prisma.lead.findFirst({ where: { userId } })
                             if (userExists) return res.status(200).send('ALREADY_ADDED');
 
-                            await prisma.potintialCustomer.create({
+                            await prisma.lead.create({
                                 data: {
                                     userId,
                                     name,
                                     email,
                                     platform: "Facebook",
-                                    picture,
+                                    image,
                                     message: text,
+                                    isAssigned: false,
+                                    isAutomated: true,
                                 }
                             })
                         } catch (error: any) {
@@ -70,13 +72,15 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<any>) => {
                                 const phone = value.metadata.display_phone_number
                                 const message = value.messages[0]?.text.body || "no messages"
 
-                                await prisma.potintialCustomer.create({
+                                await prisma.lead.create({
                                     data: {
                                         userId,
                                         name,
                                         platform: "WhatsApp",
                                         phone,
                                         message,
+                                        isAssigned: false,
+                                        isAutomated: true,
                                     }
                                 })
                             } catch (error: any) {
@@ -110,17 +114,19 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<any>) => {
                             const userId = userData.id
                             const name = userData.name
                             const email = userData.email
-                            const picture = userData.picture.data.url
-                            const userExists = await prisma.potintialCustomer.findFirst({ where: { userId } })
+                            const image = userData.picture.data.url
+                            const userExists = await prisma.lead.findFirst({ where: { userId } })
                             if (userExists) return res.status(200).send('ALREADY_ADDED');
 
-                            await prisma.potintialCustomer.create({
+                            await prisma.lead.create({
                                 data: {
                                     userId,
                                     name,
                                     email,
                                     platform: "Instagram",
-                                    picture,
+                                    image,
+                                    isAssigned: false,
+                                    isAutomated: true,
                                 }
                             })
                         } catch (error: any) {
