@@ -43,8 +43,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<any>) => {
                                     userId,
                                     name,
                                     email,
-                                    platform: "Facebook",
+                                    source: "Facebook",
                                     image,
+                                    isReminderSet: false,
                                     message: text,
                                     isAssigned: false,
                                     isAutomated: true,
@@ -76,11 +77,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<any>) => {
                                     data: {
                                         userId,
                                         name,
-                                        platform: "WhatsApp",
+                                        source: "WhatsApp",
                                         phone,
                                         message,
                                         isAssigned: false,
                                         isAutomated: true,
+                                        isReminderSet: true,
                                     }
                                 })
                             } catch (error: any) {
@@ -123,10 +125,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<any>) => {
                                     userId,
                                     name,
                                     email,
-                                    platform: "Instagram",
+                                    source: "Instagram",
                                     image,
                                     isAssigned: false,
                                     isAutomated: true,
+                                    isReminderSet: true,
                                 }
                             })
                         } catch (error: any) {

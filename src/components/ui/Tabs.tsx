@@ -4,6 +4,8 @@ import * as React from "react"
 import * as TabsPrimitive from "@radix-ui/react-tabs"
 
 import { cn } from "@/lib/utils"
+import { Scroll } from "lucide-react";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 const Tabs = ({ defaultValue, id, ...props }: React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root>) => {
   const [activeTab, setActiveTab] = React.useState<string | undefined>(undefined);
@@ -27,14 +29,17 @@ const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
 >(({ className, ...props }, ref) => (
-  <TabsPrimitive.List
-    ref={ref}
-    className={cn(
-      "inline-flex h-10 items-center justify-center rounded-md bg-accent/20 p-1 text-muted",
-      className
-    )}
-    {...props}
-  />
+  <ScrollArea className="w-full pb-4">
+    <TabsPrimitive.List
+      ref={ref}
+      className={cn(
+        "inline-flex h-10 items-center justify-center rounded-md bg-accent/20 p-1 text-muted",
+        className
+      )}
+      {...props}
+    />
+    <ScrollBar orientation="horizontal" />
+  </ScrollArea>
 ))
 TabsList.displayName = TabsPrimitive.List.displayName
 

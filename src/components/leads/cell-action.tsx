@@ -3,26 +3,62 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Copy, MoreVertical } from "lucide-react";
+import { CheckCircle, Copy, MoreVertical, Trash } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { AssignModal } from "../modals/AssignModal";
-import { Customer } from "./LeadsColumn";
-import { useToast } from "@/components/ui/use-toast";
+import { Lead } from "./LeadsColumn";
+import { toastType, useToast } from "@/components/ui/use-toast";
+import { AlertModal } from "@/components/modals/AlertModal";
+import { createMutationOptions } from "@/lib/mutationsHelper";
 
 interface CellActionProps {
-  data: Customer;
+  data: Lead;
 }
 
 const CellAction: React.FC<CellActionProps> = ({ data }) => {
-  const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
-  const assignMutation = api.salesOperations.createSalesOperationFormLead.useMutation()
+  const [loadingToast, setLoadingToast] = useState<toastType>();
+  const { toast } = useToast()
+  const trpcUtils = api.useUtils()
+  const assignMutation = api.leads.assignLead.useMutation(
+    createMutationOptions({
+      loadingToast,
+      setLoadingToast,
+      toast,
+      trpcUtils,
+      successMessageFormatter: ({ lead }) => {
+        setOpen(false)
+        return `Lead Assigned to: ${lead.assignee?.user.name}`
+      },
+    })
+  )
+  const moveLeadMutation = api.leads.moveLead.useMutation(
+    createMutationOptions({
+      loadingToast,
+      setLoadingToast,
+      toast,
+      trpcUtils,
+      successMessageFormatter: ({ updatedLead }) => `Lead moved to stage ${updatedLead.leadStage?.name}`
+    })
+  )
+  const deleteMutation = api.leads.deleteLead.useMutation(
+    createMutationOptions({
+      loadingToast,
+      setLoadingToast,
+      toast,
+      trpcUtils,
+      loadingMessage: "Deleting...",
+      successMessageFormatter: ({ deletedLeads }) => `Deleted ${deletedLeads.count} successfully!`
+    })
+  )
   const { toastError, toastSuccess } = useToast()
 
   const onCopy = (id: string) => {
@@ -30,31 +66,35 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
     toastSuccess("User ID copied to the clipboard")
   };
 
-  const onAssign = (assigneeId: string) => {
-    setLoading(true)
-    setOpen(false)
-    assignMutation.mutate(
-      { assigneeId, status: "assigned", customerId: data.id },
-      {
-        onSuccess: (data) => {
-          toastSuccess(`Operation ID: ${data.salesOperations.code}`)
-          setLoading(false)
-        },
-        onError: (error) => {
-          toastError(error.message)
-          setLoading(false)
-        },
-      }
-    )
+  const onAssign = (agentId: string) => {
+    assignMutation.mutate({ agentId, leadId: data.id })
   };
+
+  const handleDelete = () => {
+    deleteMutation.mutate([data.id])
+  }
+
+  const handleMoveLead = (toStageId: string) => {
+    moveLeadMutation.mutate({
+      leadId: data.id,
+      toStageId,
+    })
+  }
 
   return (
     <>
       <AssignModal
         isOpen={open}
-        loading={loading}
+        loading={!!loadingToast}
         onClose={() => setOpen(false)}
         onConfirm={onAssign}
+      />
+      <AlertModal
+        isOpen={isDeleteOpen}
+        loading={!!loadingToast}
+        onClose={() => setIsDeleteOpen(false)}
+        onConfirm={handleDelete}
+        description="The lead data can not be restored after this action, are you sure?"
       />
       <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
         <DropdownMenuTrigger asChild>
@@ -71,6 +111,18 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
           <DropdownMenuItem onClick={() => (setOpen(true), setIsOpen(false))}>
             <CheckCircle className="w-4 h-4 mr-2" />
             Assign
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuLabel>Move To</DropdownMenuLabel>
+          {data.stages?.filter(s => s.name !== data.stageName).map(stage => (
+            <DropdownMenuItem key={stage.id} onClick={() => handleMoveLead(stage.id)}>
+              {stage.name}
+            </DropdownMenuItem>
+          ))}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => (setOpen(true), setIsDeleteOpen(true))}>
+            <Trash className="w-4 h-4 mr-2 text-destructive" />
+            Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

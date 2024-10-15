@@ -23,17 +23,21 @@ import {
 } from "@/components/ui/table";
 import { AlertModal } from "../modals/AlertModal";
 import { Typography } from "./Typoghraphy";
-import { Button } from "./button";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, DownloadCloud, SortAsc, SortDesc, Trash } from "lucide-react";
+import { Button, SpinnerButton } from "./button";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Download, DownloadCloud, SortAsc, SortDesc, Trash, Upload, UploadCloud } from "lucide-react";
 import { TableInput } from "@/components/ui/table-input";
 import TableSelectField from "@/components/ui/TableSelectField";
 import { DateRangePicker } from "@/components/ui/DateRangePicker";
-import { formatPrice } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
 import Spinner from "@/components/Spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import Modal from "@/components/ui/modal";
 import { Prisma } from "@prisma/client";
 import { useSession } from "next-auth/react";
+import { downloadTemplate, exportToExcel, importFromExcel } from "@/lib/xlsx";
+import { useDropFile } from "@/hooks/useDropFile";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/use-toast";
 
 type Cursor = Prisma.UserFindManyArgs["cursor"]
 type OrderBy = Prisma.UserFindManyArgs["orderBy"]
@@ -52,6 +56,16 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   setData: (data: TData[]) => void;
   onDelete?: (callback?: () => void) => void;
+  handleImport?: (data: { [key in Extract<keyof TData, string>]: string }[]) => void;
+  importConfig?: {
+    templateName: string;
+    sheetName: string;
+    reqiredFields: Extract<keyof TData, string>[]
+  },
+  exportConfig?: {
+    fileName: string;
+    sheetName: string;
+  },
   skele?: boolean,
   sum?: {
     key: Extract<keyof TData, string>,
@@ -77,6 +91,9 @@ export function DataTable<TData, TValue>({
   data,
   setData,
   onDelete,
+  handleImport,
+  importConfig,
+  exportConfig,
   skele,
   sum,
   dateRanges,
@@ -86,6 +103,7 @@ export function DataTable<TData, TValue>({
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [isExportOpen, setIsExportOpen] = React.useState<boolean>(false);
+  const [isImportOpen, setIsImportOpen] = React.useState<boolean>(false);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = React.useState({});
 
@@ -118,83 +136,22 @@ export function DataTable<TData, TValue>({
     setData(table.getSelectedRowModel().rows.map((row) => row.original));
   };
 
-  // const handleExportPDF = () => {
-  //   const pdf = new jsPDF({ format: "a4", unit: "pt", orientation: "portrait" });
-
-  //   const dataToExport = table.getSelectedRowModel().rows.length > 0 ? table.getSelectedRowModel().rows
-  //     : table.getFilteredRowModel().rows.length > 0 ? table.getFilteredRowModel().rows
-  //       : table.getCoreRowModel().rows
-
-  //   // Add table headers
-  //   const headers = exportData?.map(({ key }) => key) || []; // Array of header keys
-
-  //   const content = dataToExport.map(row => {
-  //     const rowData: { [key: string]: string } = {};
-
-  //     // Iterate over the headers to ensure all keys are included in rowData
-  //     exportData?.forEach(col => {
-  //       // Assign the corresponding value or an empty string if it's missing
-  //       rowData[col.key] = row.original[col.key] as string ?? ''; // Fallback to empty string
-  //     });
-
-  //     return rowData;
-  //   });
-
-  //   // Convert the header and content arrays into a format jsPDF accepts
-  //   const image = new Image()
-  //   image.src = "/logos/logoPrimary.png"
-  //   image.onload = () => {
-  //     pdf.addImage(image, "", 20, 20, 50, 50)
-
-  //     addAlignedText({
-  //       pdf,
-  //       fontSize: 20,
-  //       text: exportName || "",
-  //       yPosition: 50,
-  //       alignment: "center",
-  //       underline: true,
-  //     })
-
-  //     addAlignedText({
-  //       pdf,
-  //       fontSize: 10,
-  //       text: format(new Date(), "PPPPp"),
-  //       yPosition: 10,
-  //       alignment: "right",
-  //       rightMargin: 20
-  //     })
-
-  //     pdf.table(40, 90, content, headers, { padding: 5 });
-  //     pdf.save(`${exportName}.pdf`);
-  //   };
-  // };
-
   const { data: sessionData } = useSession()
+  const { toast } = useToast()
+  const {
+    isDragActive,
+    handleDragEnter,
+    handleDragLeave,
+    handleDragOver,
+    handleDrop,
+    handleFileChange,
+    setSelectedFile,
+    selectedFile,
+  } = useDropFile();
+  const inputRef = React.useRef<HTMLInputElement>(null)
 
   return (
     <div className="w-full">
-      {/* {table.getCoreRowModel().rows.length !== 0 && (
-        <>
-        <div className="flex items-center gap-2 p-2">
-        <Typography variant={"secondary"}>Export</Typography>
-        <Tooltip>
-        <TooltipTrigger asChild>
-        <Button
-        onClick={handleExportPDF}
-        variant={"icon"}
-        customeColor={"infoIcon"}
-        >
-        <FileUp />
-        </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-        <Typography>Export</Typography>
-        </TooltipContent>
-        </Tooltip>
-        </div>
-        <Separator />
-        </>
-        )} */}
       {onDelete && <AlertModal
         isOpen={open}
         onClose={() => setOpen(false)}
@@ -212,22 +169,98 @@ export function DataTable<TData, TValue>({
         {sessionData?.user.userType !== "student" && (
           <div className="flex items-center gap-8">
             <Typography>Total records {table.getCoreRowModel().rows.length}</Typography>
+            {exportConfig && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant={"icon"} customeColor={"mutedIcon"} onClick={() => exportToExcel(data, exportConfig.fileName, exportConfig.sheetName)}>
+                    <DownloadCloud className="text-primary" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Export
+                </TooltipContent>
+              </Tooltip>
+            )}
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant={"icon"} customeColor={"mutedIcon"} onClick={() => setIsExportOpen(true)}>
-                  <DownloadCloud className="text-primary" />
+                <Button variant={"icon"} customeColor={"mutedIcon"} onClick={() => setIsImportOpen(true)}>
+                  <UploadCloud className="text-primary" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                Export
+                Import
               </TooltipContent>
             </Tooltip>
             <Modal
-              title="Export Data"
-              description="Select what you need to export"
-              isOpen={isExportOpen}
-              onClose={() => setIsExportOpen(false)}
-              children={"Coming soon"}
+              title="Import Data"
+              description="Select a file to import"
+              isOpen={isImportOpen}
+              onClose={() => setIsImportOpen(false)}
+              children={
+                !importConfig ? (
+                  <div className="flex flex-col items-center gap-4 p-8">
+                    <Typography>No import configuration</Typography>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-4 p-4">
+                    <div
+                      onClick={() => inputRef.current?.click()}
+                      onDragEnter={handleDragEnter}
+                      onDragLeave={handleDragLeave}
+                      onDragOver={handleDragOver}
+                      onDrop={handleDrop}
+                      className={cn("border-dashed border-2 border-primary p-8 text-center w-full", isDragActive ? "bg-primary-foreground" : "bg-muted/10")}
+                    >
+                      <Input
+                        ref={inputRef}
+                        type="file"
+                        onChange={handleFileChange}
+                        className="hidden"
+                        id="fileInput"
+                      />
+                      <Typography>
+                        {isDragActive
+                          ? 'Drop your files here...'
+                          : 'Drag and drop files here, or click to select file'}
+                      </Typography>
+
+                      {!!selectedFile && (
+                        <div>
+                          <Typography variant={"secondary"}>Selected File:</Typography>
+                          <Typography>{selectedFile.name}</Typography>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-center gap-4">
+                      <SpinnerButton
+                        customeColor={"info"}
+                        loadingText="Downloading"
+                        icon={Download}
+                        isLoading={false}
+                        onClick={() => downloadTemplate(importConfig)}
+                        text="Download Template"
+                      />
+
+                      <SpinnerButton
+                        loadingText="Importing..."
+                        icon={Upload}
+                        isLoading={false}
+                        onClick={() => {
+                          if (!selectedFile) return toast({ title: "Error", description: "No file selected!", variant: "destructive" })
+                          if (!handleImport) return toast({ title: "Error", description: "No import configured!", variant: "destructive" })
+                          importFromExcel(selectedFile, handleImport)
+                          setSelectedFile(undefined)
+                          if (inputRef.current) {
+                            inputRef.current.value = ""
+                          }
+                          setIsImportOpen(false)
+                        }}
+                        text="Import Data"
+                      />
+                    </div>
+                  </div>
+                )
+              }
             />
           </div>
         )}

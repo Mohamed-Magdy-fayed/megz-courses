@@ -1,13 +1,17 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Check } from "lucide-react";
+import { Check, MenuSquare, MoreVertical } from "lucide-react";
 import { getInitials } from "@/lib/getInitials";
 import { cn } from "@/lib/utils";
 import CellAction from "./cell-action";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Typography } from "../ui/Typoghraphy";
+import { LeadSource, LeadStage, Prisma } from "@prisma/client";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { DropdownMenuLabel } from "@radix-ui/react-dropdown-menu";
 
-export type Customer = {
+export type Lead = {
   userId: string;
   name: string;
   id: string;
@@ -15,11 +19,16 @@ export type Customer = {
   formId?: string;
   message?: string;
   phone?: string;
-  platform: string;
+  source: LeadSource;
+  stage: LeadStage | null;
+  stages: LeadStage[] | undefined;
+  stageName: string;
+  assignee: Prisma.SalesAgentGetPayload<{ include: { user: true } }> | null;
+  assigneeName: string;
   picture?: string;
 }
 
-export const columns: ColumnDef<Customer>[] = [
+export const columns: ColumnDef<Lead>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -42,7 +51,7 @@ export const columns: ColumnDef<Customer>[] = [
             {getInitials(`${row.original.name}` || "")}
           </AvatarFallback>
         </Avatar>
-        {row.getIsSelected() && (<Check className="absolute inset-1/4 text-white" />)}
+        {row.getIsSelected() && (<Check className="absolute inset-1/4 text-background" />)}
       </button >
     ),
     enableSorting: false,
@@ -79,6 +88,58 @@ export const columns: ColumnDef<Customer>[] = [
     ),
   },
   {
+    accessorKey: "phone",
+    header: ({ column }) => {
+      return (
+        <div className="flex items-center justify-between">
+          Phone
+        </div>
+      );
+    },
+    cell: ({ row }) => (
+      <Typography>
+        {row.original.phone}
+      </Typography>
+    ),
+  },
+  {
+    accessorKey: "platform",
+    header: ({ column }) => {
+      return (
+        <div className="flex items-center justify-between">
+          Source
+        </div>
+      );
+    },
+    cell: ({ row }) => (
+      <Typography>
+        {row.original.source}
+      </Typography>
+    ),
+  },
+  {
+    accessorKey: "stageName",
+    header: "Stage",
+    cell: ({ row }) => (
+      <div className="flex items-center justify-between">
+        <Typography>
+          {row.original.stageName}
+        </Typography>
+      </div>
+    ),
+  },
+  {
+    accessorKey: "assigneeName",
+    header: "Agent",
+    cell: ({ row }) => (
+      <div className="flex items-center justify-between">
+        <Typography>
+          {row.original.assigneeName}
+        </Typography>
+      </div>
+    ),
+  },
+  {
     accessorKey: "userId",
     header: ({ column }) => {
       return (
@@ -105,36 +166,6 @@ export const columns: ColumnDef<Customer>[] = [
     cell: ({ row }) => (
       <Typography>
         {row.original.formId}
-      </Typography>
-    ),
-  },
-  {
-    accessorKey: "platform",
-    header: ({ column }) => {
-      return (
-        <div className="flex items-center justify-between">
-          Platform
-        </div>
-      );
-    },
-    cell: ({ row }) => (
-      <Typography>
-        {row.original.platform}
-      </Typography>
-    ),
-  },
-  {
-    accessorKey: "phone",
-    header: ({ column }) => {
-      return (
-        <div className="flex items-center justify-between">
-          Phone
-        </div>
-      );
-    },
-    cell: ({ row }) => (
-      <Typography>
-        {row.original.phone}
       </Typography>
     ),
   },

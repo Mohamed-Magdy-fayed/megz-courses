@@ -1,11 +1,25 @@
-import { columns } from "./LeadsColumn";
+import { columns, Lead } from "./LeadsColumn";
 import { DataTable } from "../ui/DataTable";
+import { FC, useState } from "react";
+import { LeadStage, Prisma } from "@prisma/client";
 import { api } from "@/lib/api";
+import { createMutationOptions } from "@/lib/mutationsHelper";
+import { toastType, useToast } from "@/components/ui/use-toast";
 
-const LeadsClient = () => {
-  const { data, isLoading } = api.leads.getCustomers.useQuery();
+type LeadsClientProps = {
+  stage: Prisma.LeadStageGetPayload<{ include: { leads: { include: { assignee: { include: { user: true } } } } } }>;
+  stagesData: LeadStage[];
+  handleImport: (data: { name: string, email: string, phone: string }[]) => void;
+}
 
-  const formattedData = data?.potintialCustomers.map(({
+const LeadsClient: FC<LeadsClientProps> = ({ stage, stagesData, handleImport }) => {
+  const [data, setData] = useState<Lead[]>([])
+  const [loadingToast, setLoadingToast] = useState<toastType>()
+
+  const { toast } = useToast()
+  const trpcUtils = api.useUtils()
+
+  const formattedData = stage.leads.map(({
     userId,
     name,
     id,
@@ -13,27 +27,58 @@ const LeadsClient = () => {
     formId,
     message,
     phone,
-    platform,
+    source,
     image,
+    assignee,
   }) => ({
     id,
-    name,
+    name: name || "",
     email: email || "",
     formId: formId || "",
     message: message || "",
     phone: phone || "",
-    platform,
+    source,
+    stage,
+    stages: stagesData,
+    stageName: stage.name,
+    assignee,
+    assigneeName: assignee?.user.name || "Not Assigned",
     image: image || "",
-    userId,
+    userId: userId || "",
   }))
+
+  const deleteLeadsMutation = api.leads.deleteLead.useMutation(
+    createMutationOptions({
+      loadingToast,
+      setLoadingToast,
+      toast,
+      trpcUtils,
+      loadingMessage: "Deleting...",
+      successMessageFormatter: ({ deletedLeads }) => `${deletedLeads.count} Leads Deleted!`,
+    })
+  )
+
+  const onDelete = (callback?: () => void) => {
+    deleteLeadsMutation.mutate(data.map(item => item.id), { onSuccess: () => { callback?.() } })
+  }
+
 
   return (
     <DataTable
-      skele={isLoading}
       columns={columns}
       data={formattedData || []}
-      setData={() => { }}
-      onDelete={() => { }}
+      setData={setData}
+      onDelete={onDelete}
+      handleImport={handleImport}
+      importConfig={{
+        reqiredFields: ["name", "email", "phone"],
+        sheetName: "Leads Import",
+        templateName: "Leads Import Template"
+      }}
+      exportConfig={{
+        sheetName: `${stage.name} Stage`,
+        fileName: `${stage.name} Stage Leads`
+      }}
       searches={[
         { key: "name", label: "Name" },
         { key: "email", label: "Email" },
@@ -41,11 +86,25 @@ const LeadsClient = () => {
       ]}
       filters={[
         {
-          key: "platform", filterName: "Platform", values: [...formattedData?.map(d => ({
-            label: d.platform,
-            value: d.platform,
+          key: "source", filterName: "Platform", values: [...formattedData?.map(d => ({
+            label: d.source,
+            value: d.source,
           })) || []]
-        }
+        },
+        {
+          key: "stageName", filterName: "Stage", values: [...stagesData.map(s => ({
+            label: s.name,
+            value: s.name,
+          })) || []]
+        },
+        {
+          key: "assigneeName", filterName: "Agent", values: [...formattedData.map(d => d.assigneeName)
+            .filter((value, index, self) => self.indexOf(value) === index)
+            .map(name => ({
+              label: name,
+              value: name,
+            })) || []]
+        },
       ]}
     />
   );
