@@ -130,7 +130,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<any>) => {
                                     isAssigned: false,
                                     isAutomated: true,
                                     isReminderSet: true,
-                                }
+                                },
                             })
                         } catch (error: any) {
                             console.log(error.message);
