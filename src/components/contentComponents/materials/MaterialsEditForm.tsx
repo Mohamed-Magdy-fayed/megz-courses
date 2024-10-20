@@ -38,7 +38,7 @@ const EditMaterialsForm = ({ materialItem }: { materialItem: MaterialItem }) => 
     },
   });
   const editMaterialMutation = api.materials.editMaterialItem.useMutation();
-  const trpcUtils = api.useContext();
+  const trpcUtils = api.useUtils();
   const router = useRouter();
   const { toastError, toastSuccess } = useToast();
 

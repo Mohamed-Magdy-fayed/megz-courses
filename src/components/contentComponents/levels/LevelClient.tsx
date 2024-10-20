@@ -10,7 +10,7 @@ const LevelClient = ({ formattedData }: { formattedData: LevelRow[] }) => {
   const { toastError, toastSuccess } = useToast();
 
   const deleteMutation = api.levels.deleteLevels.useMutation();
-  const trpcUtils = api.useContext();
+  const trpcUtils = api.useUtils();
 
   const onDelete = (callback?: () => void) => {
     deleteMutation.mutate(

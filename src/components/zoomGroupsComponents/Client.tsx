@@ -9,7 +9,7 @@ import { upperFirst } from "lodash";
 const ZoomGroupsClient = () => {
     const [zoomGroups, setZoomGroups] = useState<ColumnType[]>([]);
 
-    const trpcUtils = api.useContext();
+    const trpcUtils = api.useUtils();
     const { data: groupsData, isLoading: isGroupsLoading } = api.zoomGroups.getzoomGroups.useQuery();
     const deleteMutation = api.zoomGroups.deleteZoomGroup.useMutation();
     const { toastError, toastSuccess } = useToast()

@@ -116,7 +116,7 @@ export const columns: ColumnDef<SessionColumn>[] = [
       const { toast } = useToast()
       const [loadingToast, setLoadingToast] = useState<toastType>()
 
-      const trpcUtils = api.useContext()
+      const trpcUtils = api.useUtils()
       const editSessionStatusMutation = api.zoomGroups.editSessionStatus.useMutation({
         onMutate: () => setLoadingToast(toast({
           title: "Loading...",

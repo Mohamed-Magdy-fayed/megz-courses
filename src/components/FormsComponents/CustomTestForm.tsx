@@ -82,7 +82,7 @@ const CustomTestForm: FC<{
     });
 
     const { toast } = useToast()
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const { data: courseData } = api.courses.getBySlug.useQuery({ slug: courseSlug }, { enabled: !!courseSlug })
     const { data: levelsData } = api.levels.getByCourseSlug.useQuery({ courseSlug }, { enabled: !!courseSlug })
     const createTestEvalFormMutation = api.evaluationForm.createTestEvalForm.useMutation({

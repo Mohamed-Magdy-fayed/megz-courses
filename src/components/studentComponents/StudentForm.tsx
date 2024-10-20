@@ -93,7 +93,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen, initialData }) => 
       setLoadingToast(undefined)
     }
   });
-  const trpcUtils = api.useContext();
+  const trpcUtils = api.useUtils();
 
   const onSubmit = (data: UsersFormValues) => {
     addUserMutation.mutate(data);

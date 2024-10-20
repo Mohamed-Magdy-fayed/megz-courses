@@ -39,7 +39,7 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, evalForm }) => {
     const [isDeleteOpen, setIsDeleteOpen] = useState(false)
     const [loadingToast, setLoadingToast] = useState<toastType>()
 
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
 
     const onCopy = () => {
         navigator.clipboard.writeText(id);

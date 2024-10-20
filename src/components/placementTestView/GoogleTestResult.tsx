@@ -21,7 +21,7 @@ export const GoogleTestResult: FC<GoogleTestSubmittedProps> = ({ score, clientId
     const { toast } = useToast()
     const formattedScore = formatPercentage(score / totalPoints * 100)
 
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const checkSubmissionMutation = api.googleAccounts.getGoogleFormResponses.useMutation({
         onMutate: () => {
             setCreateSubmissionToast(

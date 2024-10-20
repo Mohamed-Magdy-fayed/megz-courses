@@ -7,7 +7,7 @@ import UserInfoPanel from "@/components/salesOperation/UserInfoPanel";
 import OperationStatus from "@/components/salesOperation/OperationStatus";
 import OrderInfoPanel from "@/components/salesOperation/OrderInfoPanel";
 import CreateOrder from "@/components/salesOperation/CreateOrder";
-import { Calendar, CalendarIcon, Loader } from "lucide-react";
+import { Calendar, CalendarIcon, ExternalLink, Loader, User } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useSession } from "next-auth/react";
 import Spinner from "@/components/Spinner";
@@ -24,6 +24,8 @@ import StudentForm from "@/components/studentComponents/StudentForm";
 import { Label } from "@/components/ui/label";
 import { TimePicker } from "@/components/ui/TimePicker";
 import CalenderComp from "@/components/ui/calendar"
+import Link from "next/link";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const OperationPage = () => {
     const router = useRouter()
@@ -44,7 +46,7 @@ const OperationPage = () => {
     const { data: trainersData } = api.trainers.getAvialableTesters.useQuery({ startTime: testTime! }, { enabled: !!testTime })
 
     const session = useSession()
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const createPlacementTestMeetingMutation = api.zoomMeetings.createPlacementTestMeeting.useMutation()
     const updateSalesOperationMutation = api.salesOperations.editSalesOperations.useMutation()
     const createPlacementTestMutation = api.placementTests.startCourses.useMutation()
@@ -226,29 +228,58 @@ const OperationPage = () => {
                     <OperationStatus data={salesOperationData.salesOperations} />
                     <div className="py-4 space-y-4">
                         <ConceptTitle>User Details</ConceptTitle>
-                        <div className="flex gap-4">
+                        <div className="flex gap-4 flex-col md:flex-row">
                             <UserInfoPanel data={salesOperationData.salesOperations} />
-                            {/* {!!salesOperationData.salesOperations.potintialCustomer && (
+                            {!!salesOperationData.salesOperations.lead && (
                                 <PaperContainer className=" flex-grow">
-                                    <Typography variant={"secondary"}>Potintial Customer</Typography>
+                                    <Typography variant={"secondary"}>Lead</Typography>
                                     <div className="flex gap-2 p-4 justify-between">
-                                        {salesOperationData.salesOperations.potintialCustomer.picture && (
+                                        {salesOperationData.salesOperations.lead.image && (
                                             <Avatar>
-                                                <AvatarImage src={salesOperationData.salesOperations.potintialCustomer.picture} />
+                                                <AvatarImage src={salesOperationData.salesOperations.lead.image} />
                                             </Avatar>
                                         )}
                                         <div className="flex flex-col">
-                                            {salesOperationData.salesOperations.potintialCustomer.name && <Typography onDoubleClick={(e) => window.getSelection()?.selectAllChildren(e.target as Node)}>{salesOperationData.salesOperations.potintialCustomer.name}</Typography>}
-                                            {salesOperationData.salesOperations.potintialCustomer.email && <Typography onDoubleClick={(e) => window.getSelection()?.selectAllChildren(e.target as Node)}>{salesOperationData.salesOperations.potintialCustomer.email}</Typography>}
-                                            {salesOperationData.salesOperations.potintialCustomer.phone && <Typography onDoubleClick={(e) => window.getSelection()?.selectAllChildren(e.target as Node)}>{salesOperationData.salesOperations.potintialCustomer.phone}</Typography>}
-                                            {salesOperationData.salesOperations.potintialCustomer.message && <Typography onDoubleClick={(e) => window.getSelection()?.selectAllChildren(e.target as Node)}>{salesOperationData.salesOperations.potintialCustomer.message}</Typography>}
-                                            <Typography>platform: {salesOperationData.salesOperations.potintialCustomer.platform}</Typography>
+                                            {salesOperationData.salesOperations.lead.name && <Typography onDoubleClick={(e) => window.getSelection()?.selectAllChildren(e.target as Node)}>{salesOperationData.salesOperations.lead.name}</Typography>}
+                                            {salesOperationData.salesOperations.lead.email && <Typography onDoubleClick={(e) => window.getSelection()?.selectAllChildren(e.target as Node)}>{salesOperationData.salesOperations.lead.email}</Typography>}
+                                            {salesOperationData.salesOperations.lead.phone && <Typography onDoubleClick={(e) => window.getSelection()?.selectAllChildren(e.target as Node)}>{salesOperationData.salesOperations.lead.phone}</Typography>}
+                                            {salesOperationData.salesOperations.lead.message && <Typography onDoubleClick={(e) => window.getSelection()?.selectAllChildren(e.target as Node)}>{salesOperationData.salesOperations.lead.message}</Typography>}
+                                            <Typography className="mt-4">{salesOperationData.salesOperations.lead.source}</Typography>
                                         </div>
-                                        <Button onClick={() => setIsOpen(!isOpen)}>Create an account</Button>
+                                        {salesOperationData.salesOperations.orderDetails?.user ? (
+                                            <div className="flex flex-col gap-4">
+                                                <Link href={`/leads/${salesOperationData.salesOperations.lead.id}`}>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button variant={"link"} className="w-full flex items-center justify-between gap-4" >
+                                                                <ExternalLink className="w-4 h-4" />
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            Go to Lead
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </Link>
+                                                <Link href={`/account/${salesOperationData.salesOperations.orderDetails.user.id}`}>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button variant={"link"} className="w-full flex items-center justify-between gap-4" >
+                                                                <User className="w-4 h-4" />
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            Go to user account
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </Link>
+                                            </div>
+                                        ) : (
+                                            <Button onClick={() => setIsOpen(!isOpen)}>Create an account</Button>
+                                        )}
                                     </div>
                                     {isOpen && <StudentForm setIsOpen={setIsOpen}></StudentForm>}
                                 </PaperContainer>
-                            )} */}
+                            )}
                         </div>
                     </div>
                     <div className="py-4">

@@ -53,7 +53,7 @@ const GroupPage: NextPage = () => {
 
     const { toastSuccess, toastError } = useToast()
     const { data } = api.zoomGroups.getZoomGroupById.useQuery({ id }, { enabled: !!id })
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const setSessionAttendanceMutation = api.zoomGroups.setSessionAttendance.useMutation()
 
     const groupPrice = useMemo(() => {

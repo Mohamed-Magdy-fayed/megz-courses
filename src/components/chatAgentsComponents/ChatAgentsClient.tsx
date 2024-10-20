@@ -9,7 +9,7 @@ const ChatAgentsClient = () => {
   const [chatAgents, setChatAgents] = useState<ChatAgentColumn[]>([]);
 
   const { toastError, toastSuccess } = useToast();
-  const trpcUtils = api.useContext();
+  const trpcUtils = api.useUtils();
   const { data, isLoading } = api.chatAgents.getChatAgents.useQuery();
   const deleteMutation = api.users.deleteUser.useMutation();
 

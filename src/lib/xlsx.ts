@@ -9,8 +9,17 @@ export const importFromExcel = (file: File, onFileLoad: (data: any[]) => void) =
             const workbook = XLSX.read(data, { type: 'array' });
             const sheetName = workbook.SheetNames[0];
             const sheet = workbook.Sheets[sheetName!];
-            const jsonData = XLSX.utils.sheet_to_json(sheet!);
-            onFileLoad(jsonData);
+            const jsonData: Record<string, any>[] = XLSX.utils.sheet_to_json(sheet!);
+
+            const stringData: Record<string, string>[] = jsonData.map((item) => {
+                const stringifiedItem: Record<string, string> = {};
+                for (const key in item) {
+                    stringifiedItem[key] = String(item[key]);
+                }
+                return stringifiedItem;
+            });
+
+            onFileLoad(stringData);
         };
         reader.readAsArrayBuffer(file);
     }

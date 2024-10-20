@@ -141,7 +141,7 @@ export const NotesForm = ({ setIsOpen, initialData, addMessage }: NotesFormProps
     });
 
     const router = useRouter();
-    const trpcUtils = api.useContext();
+    const trpcUtils = api.useUtils();
     const { toast } = useToast()
 
     const onSubmit = (data: NotesFormValues) => {

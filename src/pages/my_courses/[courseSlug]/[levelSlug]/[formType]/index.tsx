@@ -27,7 +27,7 @@ const FinalTestPage: NextPage = () => {
 
     const { toastError, toastSuccess, toast } = useToast()
 
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const courseQuery = api.courses.getBySlug.useQuery({ slug: courseSlug }, { enabled: !!courseSlug })
     const evalFormQuery = api.evaluationForm.getFinalTest.useQuery({ courseSlug, levelSlug }, { enabled: !!type })
     const userQuery = api.users.getCurrentUser.useQuery()

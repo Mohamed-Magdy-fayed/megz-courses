@@ -53,7 +53,7 @@ const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: Material
             }
     });
 
-    const trpcUtils = api.useContext();
+    const trpcUtils = api.useUtils();
     const { toast, toastError } = useToast();
     const checkMaterialMutation = api.materials.checkMaterialItem.useMutation(
         createMutationOptions({

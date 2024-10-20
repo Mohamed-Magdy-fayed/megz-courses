@@ -9,11 +9,13 @@ interface AssignModalProps {
     onClose: () => void;
     onConfirm: (assigneeId: string) => void;
     loading: boolean;
+    defaultValue?: string;
 }
 
 export const AssignModal = ({
     isOpen,
     loading,
+    defaultValue,
     onClose,
     onConfirm,
 }: AssignModalProps) => {
@@ -36,6 +38,7 @@ export const AssignModal = ({
         >
             <div className="p-4">
                 <Select
+                    defaultValue={defaultValue}
                     disabled={loading}
                     // @ts-ignore
                     onValueChange={(e) => setAssigneeId(e)}

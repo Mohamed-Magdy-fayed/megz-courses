@@ -1,7 +1,7 @@
 import { ButtonHTMLAttributes, Dispatch, FC, ReactNode, SetStateAction, useEffect, useState } from 'react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { Button } from '../ui/button'
-import { Check, ChevronsUpDown } from 'lucide-react'
+import { Check, ChevronsUpDown, XIcon } from 'lucide-react'
 import { Input } from '../ui/input'
 import { cn } from '@/lib/utils'
 import { ScrollArea } from '../ui/scroll-area'
@@ -77,12 +77,22 @@ const SelectField: FC<SelectFieldProps<any>> = ({ placeholder, listTitle, data, 
                             size={10}
                             name="select_search"
                             autoFocus
+                            autoComplete='off'
                         />
                     </div>
                 )}
-                <DropdownMenuLabel>{listTitle}</DropdownMenuLabel>
+                <DropdownMenuLabel className='flex items-center justify-between gap-4'>
+                    {listTitle}
+                    {values.length > 0 && (
+                        <Button onClick={() => setValues([])} variant={'link'} customeColor={"destructive"} className='p-0 text-sm'>
+                            <Typography className='sr-only'>Clear Selection</Typography>
+                            <XIcon className='w-4 h-4 text-destructive' />
+                        </Button>
+                    )}
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <ScrollArea className='h-40'>
+                    {filteredData.length === 0 && <div className='text-center w-full p-4'>No Data</div>}
                     {filteredData.map(item => {
                         return (
                             <DropdownMenuItem

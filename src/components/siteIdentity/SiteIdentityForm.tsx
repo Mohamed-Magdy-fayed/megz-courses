@@ -36,7 +36,7 @@ export const SiteIdentityForm = ({ initialData }: {
     const [uploadingImage, setUploadingImage] = useState<boolean>(false);
 
     const { toast } = useToast()
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const updateSiteIdentityMutation = api.siteIdentity.updateSiteIdentity.useMutation({
         onMutate: () => setLoadingToast(toast({
             title: "Loading...",

@@ -150,7 +150,7 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
     const createMeetingMutation = api.zoomMeetings.createMeeting.useMutation();
     const createZoomGroupMutation = api.zoomGroups.createZoomGroup.useMutation();
     const editZoomGroupMutation = api.zoomGroups.editZoomGroup.useMutation();
-    const trpcUtils = api.useContext();
+    const trpcUtils = api.useUtils();
     const { toastError, toastSuccess } = useToast()
 
     const onCreate = () => {

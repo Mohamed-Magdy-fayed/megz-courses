@@ -9,7 +9,6 @@ import CoursesSelectField from "./CoursesSelectField"
 import Spinner from "@/components/Spinner"
 import { render } from "@react-email/render"
 import Email from "@/components/emails/Email"
-import { sendZohoEmail } from "@/lib/gmailHelpers"
 
 interface CreateOrderProps {
     loading: boolean
@@ -81,7 +80,7 @@ const CreateOrder: FC<CreateOrderProps> = ({
             setOpen(false)
         }
     })
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
 
     const handleAddCourse = () => {
         if (!email[0] || !coursesGroupType[0]) return toastError(`missing some info here!`)

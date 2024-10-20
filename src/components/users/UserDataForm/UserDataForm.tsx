@@ -71,7 +71,7 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
     });
 
     const { toastSuccess, toastError } = useToast()
-    const trpcUrils = api.useContext();
+    const trpcUrils = api.useUtils();
     const sendEmailMutation = api.emails.sendZohoEmail.useMutation()
     const editUser = api.users.editUser.useMutation();
 

@@ -12,7 +12,7 @@ const NotesClient = () => {
     const userId = router.query.id as string | undefined
     const [notes, setNotes] = useState<NotesColumn[]>([])
 
-    const trpcUtils = api.useContext();
+    const trpcUtils = api.useUtils();
     const { data: notesData, isLoading: isNotesLoading, refetch } = userId ? api.notes.getUserNotes.useQuery({ userId }, {
         enabled: false
     }) : api.notes.getAllNotes.useQuery(undefined, {

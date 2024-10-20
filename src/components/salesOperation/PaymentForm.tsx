@@ -48,7 +48,7 @@ export const PaymentForm = ({
     });
 
     const payOrderManuallyMutation = api.orders.payOrderManually.useMutation()
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
 
     const onSubmit = (data: PaymentFormValues) => {
         const { paymentAmount, paymentConfirmation } = data

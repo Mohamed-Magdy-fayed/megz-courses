@@ -61,7 +61,7 @@ const CourseForm = ({ initialData, setIsOpen }: {
       }
   });
 
-  const trpcUtils = api.useContext();
+  const trpcUtils = api.useUtils();
   const createCourseMutation = api.courses.createCourse.useMutation(
     createMutationOptions({
       trpcUtils,

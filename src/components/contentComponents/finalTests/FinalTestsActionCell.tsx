@@ -34,7 +34,7 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, evalForm }) => {
     const [isEditOpen, setIsEditOpen] = useState(false)
     const [isDeleteOpen, setIsDeleteOpen] = useState(false)
 
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const deleteMutation = api.evaluationForm.deleteEvalForm.useMutation()
 
     const onCopy = () => {

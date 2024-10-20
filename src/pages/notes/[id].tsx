@@ -32,7 +32,7 @@ export default function NotePage() {
 
     const { data } = api.notes.getById.useQuery({ id }, { enabled: !!id })
 
-    const trpcUtils = api.useContext();
+    const trpcUtils = api.useUtils();
     const editNoteMutation = api.notes.editNoteStatus.useMutation({
         onMutate: () => setLoadingToast(toast({
             title: "Loading...",

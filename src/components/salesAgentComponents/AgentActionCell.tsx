@@ -30,7 +30,7 @@ const AgentCellAction: React.FC<AgentCellActionProps> = ({ id, agent }) => {
     const [isOpen, setIsOpen] = useState(false);
 
     const deleteMutation = api.salesAgents.deleteSalesAgent.useMutation()
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
 
     const onDelete = () => {
         setLoading(true);

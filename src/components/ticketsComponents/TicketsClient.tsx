@@ -11,7 +11,7 @@ export const TicketsClient = () => {
     const { toast } = useToast()
     const [loadingToast, setLoadingToast] = useState<toastType | undefined>()
 
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const { data, isLoading } = api.tickets.findAll.useQuery()
     const deleteMutation = api.tickets.deleteTickets.useMutation(
         createMutationOptions({

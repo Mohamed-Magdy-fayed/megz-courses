@@ -29,7 +29,7 @@ const GoogleAccountCellAction: React.FC<GoogleAccountCellActionProps> = ({ id })
         toastInfo("ID copied to the clipboard");
     };
 
-    const trpcUtils = api.useContext();
+    const trpcUtils = api.useUtils();
     const deleteMutation = api.googleAccounts.deleteGoogleAccounts.useMutation({
         onMutate: () => setLoadingToast(toast({
             title: "Loading...",

@@ -24,7 +24,7 @@ const AddStudentsForm: FC<AddStudentsFormProps> = ({ setIsOpen, id, courseId, lv
 
     const { data: courseWaitingListData } = api.courses.getWaitingList.useQuery({ id: courseId });
     const addToZoomGroupMutation = api.zoomGroups.addStudentsToZoomGroup.useMutation();
-    const trpcUtils = api.useContext();
+    const trpcUtils = api.useUtils();
     const { toastError, toastSuccess } = useToast()
 
     const onSubmit = () => {

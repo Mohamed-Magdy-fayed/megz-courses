@@ -10,7 +10,7 @@ const QuizzesClient = ({ formattedData }: { formattedData: QuizRow[] }) => {
     const [ids, setIds] = useState<string[]>([])
     const [loadingToast, setLoadingToast] = useState<toastType | undefined>()
 
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const deleteMutation = api.evaluationForm.deleteEvalForm.useMutation(
         createMutationOptions({
             trpcUtils,

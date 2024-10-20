@@ -11,7 +11,7 @@ export default function Page() {
     const state = router.query.state as string
 
     const { toastError } = useToast()
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const createTokenMutation = api.zoomAccounts.createToken.useMutation({
         onSuccess: () => trpcUtils.invalidate().then(() => window.close()),
         onError: ({ message }) => toastError(message),

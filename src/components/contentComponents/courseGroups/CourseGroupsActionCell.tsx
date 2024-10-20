@@ -29,7 +29,7 @@ const CourseGroupsActionCell: React.FC<CourseRow> = ({ id, courseId, courseLevel
     const [changeStatusOpen, setChangeStatusOpen] = useState(false);
     const [isEditFormOpen, setIsEditFormOpen] = useState(false);
 
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const editMutation = api.zoomGroups.editZoomGroup.useMutation(
         createMutationOptions({
             trpcUtils,

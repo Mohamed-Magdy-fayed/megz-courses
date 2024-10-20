@@ -10,7 +10,17 @@ export const leadStagesRouter = createTRPCRouter({
     getLeadStages: protectedProcedure
         .query(async ({ ctx }) => {
             let stages = await ctx.prisma.leadStage.findMany({
-                include: { leads: { include: { assignee: { include: { user: true } } } } },
+                include: {
+                    leads: {
+                        orderBy: { createdAt: "desc" },
+                        include: {
+                            labels: true,
+                            assignee: { include: { user: true } },
+                            notes: true,
+                            salesOperations: true,
+                        }
+                    }
+                },
                 orderBy: { order: "asc" },
             });
 
@@ -20,7 +30,16 @@ export const leadStagesRouter = createTRPCRouter({
                 })
 
                 stages = await ctx.prisma.leadStage.findMany({
-                    include: { leads: { include: { assignee: { include: { user: true } } } } }
+                    include: {
+                        leads: {
+                            include: {
+                                labels: true,
+                                assignee: { include: { user: true } },
+                                notes: true,
+                                salesOperations: true,
+                            }
+                        }
+                    }
                 });
             }
 

@@ -248,7 +248,7 @@ const FacebookForm: React.FC<FacebookFormProps> = ({ initialData }) => {
             setLoadingToast(undefined)
         }
     });
-    const trpcUtils = api.useContext();
+    const trpcUtils = api.useUtils();
 
     const onSubmit = (data: FacebookFormValues) => {
         if (!initialData) return addAccountMutation.mutate(data);

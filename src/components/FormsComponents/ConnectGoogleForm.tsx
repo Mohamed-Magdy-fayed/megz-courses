@@ -59,7 +59,7 @@ const ConnectGoogleForm: FC<{
     });
 
     const { toast } = useToast()
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const { data: googleAccountsData } = api.googleAccounts.getGoogleAccounts.useQuery()
     const { data: levelsData } = api.levels.getByCourseSlug.useQuery({ courseSlug }, { enabled: !!courseSlug })
     const { data: materialsData } = api.materials.getByCourseSlug.useQuery({ slug: courseSlug })

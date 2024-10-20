@@ -52,7 +52,7 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, courseLevel, startDate,
     const [isEditFormOpen, setIsEditFormOpen] = useState(false);
 
     const router = useRouter()
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const editMutation = api.zoomGroups.editZoomGroup.useMutation({
         onMutate: () => setLoadingToast(toast({
             title: "Loading...",

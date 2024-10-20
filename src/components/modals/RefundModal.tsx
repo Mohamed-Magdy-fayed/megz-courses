@@ -19,7 +19,7 @@ export const RefundModal = ({
     const [loadingToast, setLoadingToast] = useState<toastType>()
     const { toast } = useToast();
 
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const refundOrderMutation = api.orders.refundOrder.useMutation({
         onMutate: () => setLoadingToast(toast({
             title: "Loading...",

@@ -1,4 +1,5 @@
-import { SpinnerButton } from "@/components/ui/button"
+import { Lead } from "@/components/leads/LeadsColumn"
+import { Button, SpinnerButton } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import MobileNumberInput from "@/components/ui/phone-number-input"
@@ -6,7 +7,7 @@ import { toastType, useToast } from "@/components/ui/use-toast"
 import { api } from "@/lib/api"
 import { createMutationOptions } from "@/lib/mutationsHelper"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { PlusSquare } from "lucide-react"
+import { Edit, PlusSquare } from "lucide-react"
 import { Dispatch, SetStateAction, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -19,7 +20,7 @@ export const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>
 
-const LeadsForm = ({ setIsOpen }: { setIsOpen: Dispatch<SetStateAction<boolean>> }) => {
+const LeadsForm = ({ setIsOpen, initialData }: { initialData?: Pick<Lead, "id" | "name" | "email" | "phone">, setIsOpen: Dispatch<SetStateAction<boolean>> }) => {
     const { toast } = useToast()
 
     const [loadingToast, setLoadingToast] = useState<toastType>()
@@ -27,9 +28,9 @@ const LeadsForm = ({ setIsOpen }: { setIsOpen: Dispatch<SetStateAction<boolean>>
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: "",
-            email: "",
-            phone: "",
+            name: initialData?.name || "",
+            email: initialData?.email || "",
+            phone: initialData?.phone || "",
         }
     })
 
@@ -48,13 +49,28 @@ const LeadsForm = ({ setIsOpen }: { setIsOpen: Dispatch<SetStateAction<boolean>>
         })
     )
 
-    const handleCreate = (data: FormValues) => {
+    const editLeadMutation = api.leads.editLead.useMutation(
+        createMutationOptions({
+            loadingToast,
+            setLoadingToast,
+            toast,
+            trpcUtils,
+            loadingMessage: "Updating lead...",
+            successMessageFormatter: () => {
+                setIsOpen(false)
+                return `Lead Contact Information Updated!`
+            },
+        })
+    )
+
+    const onSubmit = (data: FormValues) => {
+        if (initialData) return editLeadMutation.mutate({ ...data, id: initialData.id })
         addLeadMutation.mutate(data)
     }
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleCreate)} className="space-y-4 p-2">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-2">
                 <FormField
                     control={form.control}
                     name="name"
@@ -113,8 +129,9 @@ const LeadsForm = ({ setIsOpen }: { setIsOpen: Dispatch<SetStateAction<boolean>>
                         </FormItem>
                     )}
                 />
-                <div className="flex justify-end">
-                    <SpinnerButton icon={PlusSquare} isLoading={!!loadingToast} text="Add Lead" type="submit" />
+                <div className="flex gap-4 justify-end">
+                    <Button type="button" children={"Cancel"} onClick={() => setIsOpen(false)} customeColor={"destructive"} />
+                    <SpinnerButton icon={initialData ? Edit : PlusSquare} isLoading={!!loadingToast} text={initialData ? "Edit Lead" : "Add Lead"} type="submit" />
                 </div>
             </form>
         </Form>

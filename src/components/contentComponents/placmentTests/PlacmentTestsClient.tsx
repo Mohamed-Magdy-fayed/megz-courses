@@ -11,7 +11,7 @@ const PlacmentTestClient = ({ formattedData }: { formattedData: PlacmentTestRow[
     const [data, setData] = useState<PlacmentTestRow[]>([])
     const [loadingToast, setLoadingToast] = useState<toastType>()
 
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const deleteMutation = api.evaluationForm.deleteEvalForm.useMutation(
         createMutationOptions({
             trpcUtils,

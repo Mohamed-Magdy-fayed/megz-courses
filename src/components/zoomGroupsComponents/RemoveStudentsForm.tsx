@@ -24,7 +24,7 @@ const RemoveStudentsForm: FC<RemoveStudentsFormProps> = ({ setIsOpen, id, studen
 
     const { data: courseOngoingListData } = api.zoomGroups.getZoomGroupStudents.useQuery({ id });
     const moveStudentsToWaitingListMutation = api.zoomGroups.moveStudentsToWaitingList.useMutation();
-    const trpcUtils = api.useContext();
+    const trpcUtils = api.useUtils();
     const { toastError, toastSuccess } = useToast()
 
     const onSubmit = () => {

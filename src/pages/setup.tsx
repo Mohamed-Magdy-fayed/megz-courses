@@ -60,7 +60,7 @@ const SetupPage = () => {
   const [loadingToast, setLoadingToast] = useState<toastType>();
   const [uploadingImage, setUploadingImage] = useState<boolean>(false);
 
-  const trpcUtils = api.useContext();
+  const trpcUtils = api.useUtils();
   const setupQuery = api.setup.isSetupAlready.useQuery();
   const setupMutation = api.setup.start.useMutation(
     createMutationOptions({

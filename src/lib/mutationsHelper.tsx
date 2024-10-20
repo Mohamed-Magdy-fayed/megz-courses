@@ -8,15 +8,28 @@ import { Dispatch, SetStateAction } from 'react';
 type ErrorData = TRPCClientErrorLike<AppRouter>;
 
 export function createMutationOptions<TSuccessData>(
-    { setLoadingToast, successMessageFormatter, toast, trpcUtils, loadingToast, loadingMessage }: {
+    { setLoadingToast, successMessageFormatter, toast, trpcUtils, loadingToast, loadingMessage, disableToast }: {
         loadingToast: toastType | undefined,
         setLoadingToast: Dispatch<SetStateAction<toastType | undefined>>,
-        trpcUtils: ReturnType<typeof api.useContext>,
-        toast: ToastFunctionType,
-        successMessageFormatter: (data: TSuccessData) => string
-        loadingMessage?: string
+        trpcUtils: ReturnType<typeof api.useUtils>;
+        toast: ToastFunctionType;
+        successMessageFormatter: (data: TSuccessData) => string;
+        loadingMessage?: string;
+        disableToast?: boolean;
     }
 ) {
+    if (disableToast) return {
+        onSuccess: (data: TSuccessData) => trpcUtils.invalidate(),
+        onError: (error: ErrorData) => toast({
+            title: "Error",
+            description: error.message,
+            variant: "destructive",
+        }),
+        onSettled: () => {
+            loadingToast?.dismissAfter()
+            setLoadingToast(undefined);
+        }
+    }
     return {
         onMutate: () => loadingToast ? loadingToast.update({
             id: loadingToast.id,

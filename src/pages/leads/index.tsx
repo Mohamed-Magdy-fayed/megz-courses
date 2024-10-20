@@ -16,6 +16,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { Accordion, AccordionContent, AccordionItem } from "@/components/ui/accordion";
 import { createMutationOptions } from "@/lib/mutationsHelper";
 import { toastType, useToast } from "@/components/ui/use-toast";
+import SelectField from "@/components/salesOperation/SelectField";
+import { formatPercentage } from "@/lib/utils";
+import { ArrowRight } from "lucide-react";
+import { ArrowRightToLine } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Lead } from "@/components/leads/LeadsColumn";
 
 const LeadsPage: NextPage = () => {
     const [isAddLeadOpen, setIsAddLeadOpen] = useState(false)
@@ -23,12 +29,16 @@ const LeadsPage: NextPage = () => {
     const [isDeleteStageOpen, setIsDeleteStageOpen] = useState(false)
     const [isMoveStageOpen, setIsMoveStageOpen] = useState(false)
     const [isManageOpen, setIsManageOpen] = useState(false)
+    const [resetSelection, setResetSelection] = useState(false)
     const [loadingToast, setLoadingToast] = useState<toastType>()
+    const [values, setValues] = useState<string[]>([])
+    const [selectedLeads, setSelectedLeads] = useState<Lead[]>([])
 
     const { toast } = useToast()
     const trpcUtils = api.useUtils()
 
-    const { data: stagesData, isLoading } = api.leadStages.getLeadStages.useQuery()
+    const { data: stagesData, isLoading, refetch } = api.leadStages.getLeadStages.useQuery()
+    const { data: labelsData } = api.leadLabels.getLeadLabels.useQuery()
     const assignAllMutation = api.leads.assignAll.useMutation(
         createMutationOptions({
             loadingToast,
@@ -50,10 +60,29 @@ const LeadsPage: NextPage = () => {
         })
     )
 
+    const moveLeadsMutation = api.leads.moveLeads.useMutation(
+        createMutationOptions({
+            loadingToast,
+            setLoadingToast,
+            toast,
+            trpcUtils,
+            successMessageFormatter: ({ updatedLeads, salesOperations }) => {
+                setResetSelection(!resetSelection)
+                return `${updatedLeads.count} Leads moved${salesOperations ? `\n${salesOperations.count} Sales Operations created` : ""}`
+            },
+        })
+    )
+
     const onAssignAll = (stageId: string) => {
         assignAllMutation.mutate({
             stageId,
         })
+    }
+
+    const onMoveAll = (toStageId: string) => {
+        const leadIds = selectedLeads.map(lead => lead.id)
+        if (leadIds.length === 0) return toast({ variant: "info", title: "Please select the leads you want to move!" })
+        moveLeadsMutation.mutate({ leadIds, toStageId })
     }
 
     const handleImport = (data: { name: string, email: string, phone: string }[]) => {
@@ -95,6 +124,7 @@ const LeadsPage: NextPage = () => {
                 >
                     <DeleteStageForm setIsOpen={setIsDeleteStageOpen} />
                 </Modal>
+
                 <div className="flex w-full flex-col gap-4">
                     <div className="flex justify-between">
                         <div className="flex flex-col gap-2">
@@ -156,14 +186,67 @@ const LeadsPage: NextPage = () => {
                             </AccordionItem>
                         </Accordion>
                         {stagesData?.stages.map(stage => (
-                            <TabsContent value={stage.name}>
+                            <TabsContent key={stage.id} value={stage.name}>
                                 <PaperContainer>
-                                    <SpinnerButton
-                                        icon={ListChecks}
-                                        text={`Assign All ${stage.name}`}
-                                        isLoading={!!loadingToast} customeColor={"info"} onClick={() => onAssignAll(stage.id)}
+                                    <div className="flex items-end justify-between gap-4 md:justify-start">
+                                        <div className="flex flex-col gap-4 md:flex-row">
+                                            <SpinnerButton
+                                                icon={ListChecks}
+                                                text={`Assign All ${stage.name}`}
+                                                isLoading={!!loadingToast} customeColor={"info"} onClick={() => onAssignAll(stage.id)}
+                                            />
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <SpinnerButton
+                                                        icon={ListChecks}
+                                                        text="Bulk Move"
+                                                        isLoading={!!loadingToast} customeColor={"primary"}
+                                                    />
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent>
+                                                    <DropdownMenuLabel>Move To Stage</DropdownMenuLabel>
+                                                    {stagesData.stages.map(toStage => (
+                                                        <DropdownMenuItem key={toStage.id} disabled={toStage.name === stage.name} onClick={() => onMoveAll(toStage.id)}>
+                                                            {toStage.name}
+                                                        </DropdownMenuItem>
+                                                    ))}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                        <SelectField
+                                            data={[...(labelsData?.leadLabels.map(label => ({
+                                                active: true,
+                                                label: label.value,
+                                                value: label.value,
+                                            })) || []), {
+                                                active: true,
+                                                label: "No Labels",
+                                                value: "No Labels",
+                                            }]}
+                                            listTitle="Labels"
+                                            placeholder="Select Label"
+                                            setValues={setValues}
+                                            values={values}
+                                            multiSelect
+                                        />
+                                    </div>
+                                    <div className="flex items-center gap-4 justify-between p-4 md:justify-start md:gap-8">
+                                        <Typography className="text-info">Intake {stagesData.stages.flatMap(stage => stage.leads).length}</Typography>
+                                        <ArrowRightToLine />
+                                        <Typography className="text-success">Converted {stagesData.stages.filter(stage => stage.defaultStage === "Converted").flatMap(stage => stage.leads).length}</Typography>
+                                        <ArrowRightToLine />
+                                        <Typography className="text-destructive">Concertion Rate {formatPercentage(stagesData.stages.filter(stage => stage.defaultStage === "Converted").flatMap(stage => stage.leads).length / stagesData.stages.flatMap(stage => stage.leads).length * 100)}</Typography>
+                                    </div>
+                                    <LeadsClient
+                                        stage={{
+                                            ...stage,
+                                            leads: values.length > 0 ? stage.leads.filter(lead => lead.labels.some(label => values.some(val => label.value === val))) : stage.leads
+                                        }}
+                                        resetSelection={resetSelection}
+                                        stagesData={stagesData.stages}
+                                        handleImport={handleImport}
+                                        setSelectedLeads={setSelectedLeads}
                                     />
-                                    <LeadsClient stage={stage} stagesData={stagesData.stages} handleImport={handleImport} />
                                 </PaperContainer>
                             </TabsContent>
                         ))}

@@ -1,7 +1,7 @@
 import { api } from "@/lib/api";
 import { getInitials } from "@/lib/getInitials";
 import { cn } from "@/lib/utils";
-import { Course, Order, SalesAgent, SalesOperation, User } from "@prisma/client";
+import { Course, Order, Prisma, SalesAgent, SalesOperation, User } from "@prisma/client";
 import { format } from "date-fns";
 import { useState } from "react";
 import { SeverityPill } from "@/components/overview/SeverityPill";
@@ -15,15 +15,13 @@ import { useSession } from "next-auth/react";
 import Spinner from "../Spinner";
 
 const OperationStatus = ({ data }: {
-    data: (SalesOperation & {
-        assignee: SalesAgent & {
-            user: User
-        } | null;
-        orderDetails: (Order & {
-            user: User;
-            course: Course;
-        }) | null;
-    })
+    data: Prisma.SalesOperationGetPayload<{
+        include: {
+            assignee: { include: { user: true } },
+            lead: true,
+            orderDetails: { include: { user: true, course: true } }
+        }
+    }>
 }) => {
     const statusMap: {
         created: "primary";
@@ -45,7 +43,7 @@ const OperationStatus = ({ data }: {
     const orderStatus = data.status as keyof typeof statusMap;
 
     const editMutation = api.salesOperations.editSalesOperations.useMutation()
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const sesstion = useSession()
     const { toastError, toastSuccess } = useToast()
 

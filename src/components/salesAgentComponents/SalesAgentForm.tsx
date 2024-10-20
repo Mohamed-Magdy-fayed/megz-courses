@@ -109,7 +109,7 @@ const SalesAgentForm: React.FC<SalesAgentFormProps> = ({ setIsOpen, initialData 
       setLoadingToast(undefined)
     },
   });
-  const trpcUtils = api.useContext();
+  const trpcUtils = api.useUtils();
   const { toast } = useToast()
 
   const handleSubmit = ({ email, name, salary, image, password, phone }: SalesAgentFormValues) => {

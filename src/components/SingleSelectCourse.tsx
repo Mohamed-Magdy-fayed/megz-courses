@@ -14,7 +14,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
-import { Dispatch, FC, SetStateAction, useState } from "react"
+import { Dispatch, FC, SetStateAction, useMemo, useState } from "react"
 import { api } from "@/lib/api"
 import { ScrollArea } from "./ui/scroll-area"
 import Spinner from "./Spinner"
@@ -30,6 +30,8 @@ const SingleSelectCourses: FC<SingleSelectProps> = ({ courseId, setCourseId, loa
 
     const [open, setOpen] = useState(false)
 
+    const selectedCourseName = useMemo(() => data?.courses.find(c => c.id === courseId)?.name, [courseId, data?.courses])
+
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
@@ -38,10 +40,10 @@ const SingleSelectCourses: FC<SingleSelectProps> = ({ courseId, setCourseId, loa
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}
-                    className="flex gap-2 justify-between hover:bg-slate-50 hover:text-primary hover:border-primary"
+                    className="flex gap-2 bg-background hover:bg-background justify-between text-inherit hover:text-primary hover:border-primary"
                 >
-                    {courseId
-                        ? `${courseId}`
+                    {selectedCourseName
+                        ? `${selectedCourseName}`
                         : "Select course..."}
                     <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
                 </Button>
@@ -61,8 +63,10 @@ const SingleSelectCourses: FC<SingleSelectProps> = ({ courseId, setCourseId, loa
                             ) : data.courses.map((course) => (
                                 <CommandItem
                                     key={course.id}
+                                    value={course.id}
                                     onSelect={(currentValue) => {
                                         setCourseId(currentValue)
+                                        setOpen(false)
                                     }}
                                 >
                                     <Check

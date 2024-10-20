@@ -23,7 +23,7 @@ const AssignmentPage: NextPage = () => {
 
     const { toastError, toastSuccess, toast } = useToast()
 
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const courseQuery = api.courses.getBySlug.useQuery({ slug: courseSlug }, { enabled: !!courseSlug })
     const evalFormQuery = api.evaluationForm.getEvalFormByMaterialItemSlug.useQuery({ slug, type: type === "assignment" ? "assignment" : type === "quiz" ? "quiz" : type === "final_test" ? "finalTest" : undefined }, { enabled: !!type })
     const userQuery = api.users.getCurrentUser.useQuery()

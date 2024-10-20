@@ -28,7 +28,7 @@ const MaterialActionCell: React.FC<MaterialsRow> = ({ courseSlug, slug, subTitle
         toastInfo("View link copied to the clipboard");
     };
 
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const dublicateMutation = api.materials.dublicateMaterialItem.useMutation(
         createMutationOptions({
             trpcUtils,

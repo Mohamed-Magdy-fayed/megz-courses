@@ -146,7 +146,7 @@ export const columns: ColumnDef<Column>[] = [
 
             const { toastError, toast } = useToast()
 
-            const trpcUtils = api.useContext()
+            const trpcUtils = api.useUtils()
             const createPlacementTestMeetingMutation = api.zoomMeetings.createPlacementTestMeeting.useMutation()
             const editPlacementTestMutation = api.placementTests.editPlacementTest.useMutation()
             const availableZoomClientMutation = api.zoomAccounts.getAvailableZoomClient.useMutation({

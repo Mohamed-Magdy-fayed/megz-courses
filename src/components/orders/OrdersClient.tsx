@@ -12,7 +12,7 @@ const OrdersClient = ({ userId }: { userId?: string }) => {
 
   const { data: sessionData } = useSession()
 
-  const trpcUtils = api.useContext()
+  const trpcUtils = api.useUtils()
   const { data, isLoading } = !userId ? api.orders.getAll.useQuery() : api.orders.getByUserId.useQuery({ userId })
   const deleteMutation = api.orders.deleteOrders.useMutation()
   const { toastError, toastSuccess } = useToast()

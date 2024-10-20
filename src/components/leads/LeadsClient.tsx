@@ -1,18 +1,20 @@
 import { columns, Lead } from "./LeadsColumn";
 import { DataTable } from "../ui/DataTable";
-import { FC, useState } from "react";
+import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
 import { LeadStage, Prisma } from "@prisma/client";
 import { api } from "@/lib/api";
 import { createMutationOptions } from "@/lib/mutationsHelper";
 import { toastType, useToast } from "@/components/ui/use-toast";
 
 type LeadsClientProps = {
-  stage: Prisma.LeadStageGetPayload<{ include: { leads: { include: { assignee: { include: { user: true } } } } } }>;
+  stage: Prisma.LeadStageGetPayload<{ include: { leads: { include: { salesOperations: true, labels: true, assignee: { include: { user: true } } } } } }>;
   stagesData: LeadStage[];
+  resetSelection: boolean;
   handleImport: (data: { name: string, email: string, phone: string }[]) => void;
+  setSelectedLeads: Dispatch<SetStateAction<Lead[]>>;
 }
 
-const LeadsClient: FC<LeadsClientProps> = ({ stage, stagesData, handleImport }) => {
+const LeadsClient: FC<LeadsClientProps> = ({ resetSelection, stage, stagesData, handleImport, setSelectedLeads }) => {
   const [data, setData] = useState<Lead[]>([])
   const [loadingToast, setLoadingToast] = useState<toastType>()
 
@@ -30,6 +32,12 @@ const LeadsClient: FC<LeadsClientProps> = ({ stage, stagesData, handleImport }) 
     source,
     image,
     assignee,
+    labels,
+    isReminderSet,
+    reminders,
+    salesOperations,
+    createdAt,
+    updatedAt,
   }) => ({
     id,
     name: name || "",
@@ -42,9 +50,15 @@ const LeadsClient: FC<LeadsClientProps> = ({ stage, stagesData, handleImport }) 
     stages: stagesData,
     stageName: stage.name,
     assignee,
+    labels,
+    isReminderSet,
+    reminders,
+    salesOperations,
     assigneeName: assignee?.user.name || "Not Assigned",
     image: image || "",
     userId: userId || "",
+    createdAt,
+    updatedAt,
   }))
 
   const deleteLeadsMutation = api.leads.deleteLead.useMutation(
@@ -62,12 +76,15 @@ const LeadsClient: FC<LeadsClientProps> = ({ stage, stagesData, handleImport }) 
     deleteLeadsMutation.mutate(data.map(item => item.id), { onSuccess: () => { callback?.() } })
   }
 
-
   return (
     <DataTable
       columns={columns}
       data={formattedData || []}
-      setData={setData}
+      setData={(data) => {
+        setData(data)
+        setSelectedLeads(data)
+      }}
+      resetSelection={resetSelection}
       onDelete={onDelete}
       handleImport={handleImport}
       importConfig={{
@@ -106,6 +123,7 @@ const LeadsClient: FC<LeadsClientProps> = ({ stage, stagesData, handleImport }) 
             })) || []]
         },
       ]}
+      dateRanges={[{ key: "createdAt", label: "Created At" }]}
     />
   );
 };

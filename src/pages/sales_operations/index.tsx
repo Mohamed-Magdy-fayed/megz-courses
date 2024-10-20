@@ -16,7 +16,7 @@ const SalesAgentsPage = () => {
   const [assignIsOpen, setAssingIsOpen] = useState(false);
 
   const { toastError, toastSuccess } = useToast()
-  const trpcUtils = api.useContext()
+  const trpcUtils = api.useUtils()
   const createOperationMutation = api.salesOperations.createSalesOperation.useMutation()
   const handleCreateOperation = (assigneeId: string) => {
     setLoading(true)

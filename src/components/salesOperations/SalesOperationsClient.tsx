@@ -10,7 +10,7 @@ import { upperFirst } from "lodash";
 const SalesOperationsClient = () => {
   const [salesOperations, setSalesOperations] = useState<SalesOperationColumn[]>([]);
 
-  const trpcUtils = api.useContext();
+  const trpcUtils = api.useUtils();
   const { data, isLoading } = api.salesOperations.getAll.useQuery();
   const deleteMutation = api.salesOperations.deleteSalesOperations.useMutation();
   const { toastError, toastSuccess } = useToast()

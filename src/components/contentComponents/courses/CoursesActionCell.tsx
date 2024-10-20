@@ -44,7 +44,7 @@ const CoursesActionCell: React.FC<CellActionProps> = ({ id, slug, description, g
     const [loadingToast, setLoadingToast] = useState<toastType>()
 
     const router = useRouter()
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const dublicateMutation = api.courses.dublicateCourse.useMutation(
         createMutationOptions({
             trpcUtils,

@@ -42,7 +42,7 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, evalForm }) => {
         toastInfo("ID copied to the clipboard");
     };
 
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const deleteMutation = api.evaluationForm.deleteEvalForm.useMutation(
         createMutationOptions({
             trpcUtils,

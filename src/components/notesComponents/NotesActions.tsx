@@ -25,7 +25,7 @@ const NotesActions: React.FC<NotesActionsProps> = ({ data }) => {
     const [open, setOpen] = useState(false);
     const [isStatusModalOpen, setIsStatusModalOpen] = useState(false)
 
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const deleteMutation = api.notes.deleteNotes.useMutation()
     const { toastSuccess, toastError } = useToast();
 

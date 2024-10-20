@@ -24,7 +24,7 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const [open, setOpen] = useState(false);
   const [isRefundModalOpen, setIsRefundModalOpen] = useState(false)
 
-  const trpcUtils = api.useContext()
+  const trpcUtils = api.useUtils()
   const deleteMutation = api.orders.deleteOrders.useMutation()
   const { toastSuccess, toastError } = useToast();
 

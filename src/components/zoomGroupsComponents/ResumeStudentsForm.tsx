@@ -21,7 +21,7 @@ const ResumeStudentsForm: FC<ResumeStudentsFormProps> = ({ setIsOpen }) => {
 
     const { data: postpondedListData } = api.waitingList.queryFullList.useQuery({ status: "postponded" });
     const resumeStudentsMutation = api.zoomGroups.resumeStudents.useMutation();
-    const trpcUtils = api.useContext();
+    const trpcUtils = api.useUtils();
     const { toastError, toastSuccess } = useToast()
 
     const onSubmit = () => {

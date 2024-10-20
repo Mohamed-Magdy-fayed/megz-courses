@@ -79,7 +79,7 @@ export const columns: ColumnDef<AccountColumn>[] = [
             const [isCheckMeetingsOpen, setIsCheckMeetingsOpen] = useState(false)
             const [meetings, setMeetings] = useState<Meeting[]>([])
 
-            const trpcUtils = api.useContext();
+            const trpcUtils = api.useUtils();
             const checkMeetingsMutation = api.zoomAccounts.checkMeetings.useMutation({
                 onMutate: () => setLoadingToast(toast({
                     title: "Loading...",

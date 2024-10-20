@@ -9,7 +9,7 @@ const FinalTestClient = ({ formattedData }: { formattedData: FinalTestRow[] }) =
 
     const [ids, setIds] = useState<string[]>([])
 
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const deleteMutation = api.evaluationForm.deleteEvalForm.useMutation()
 
     const onDelete = (callback?: () => void) => {

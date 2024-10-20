@@ -30,7 +30,7 @@ const RetintionsClient = () => {
   const { toastError, toastSuccess } = useToast();
 
   const deleteMutation = api.users.deleteUser.useMutation();
-  const trpcUtils = api.useContext();
+  const trpcUtils = api.useUtils();
 
   const onDelete = (callback?: () => void) => {
     deleteMutation.mutate(

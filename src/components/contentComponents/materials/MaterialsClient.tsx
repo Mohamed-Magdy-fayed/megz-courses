@@ -11,7 +11,7 @@ const MaterialsClient = ({ formattedData }: { formattedData: MaterialsRow[] }) =
     const [materialItems, setMaterialItems] = useState<string[]>([])
 
     const { toastError, toastSuccess } = useToast()
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const deleteMutation = api.materials.deleteMaterialItems.useMutation()
     const onDelete = (callback?: () => void) => {
         deleteMutation.mutate(materialItems, {

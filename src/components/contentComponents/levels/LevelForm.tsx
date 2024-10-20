@@ -47,7 +47,7 @@ const LevelForm: React.FC<LevelFormProps> = ({ setIsOpen, initialData, courseSlu
     defaultValues,
   });
 
-  const trpcUtils = api.useContext();
+  const trpcUtils = api.useUtils();
   const addLevelMutation = api.levels.createLevel.useMutation(
     createMutationOptions({
       trpcUtils,

@@ -12,7 +12,7 @@ const TrainersClient = () => {
 
   const { toastError, toastSuccess } = useToast();
 
-  const trpcUtils = api.useContext();
+  const trpcUtils = api.useUtils();
   const { data, isLoading } = api.trainers.getTrainers.useQuery();
   const deleteMutation = api.trainers.deleteTrainer.useMutation();
 

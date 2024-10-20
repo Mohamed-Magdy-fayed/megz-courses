@@ -34,7 +34,7 @@ const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, isL
     const [level, setLevel] = useState<string[]>([])
     const [loadingToast, setLoadingToast] = useState<toastType | undefined>()
 
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const addToWaitingListMutation = api.waitingList.addToWaitingList.useMutation(
         createMutationOptions({
             trpcUtils,

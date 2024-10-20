@@ -21,7 +21,7 @@ export const SystemTestResult: FC<SystemTestResult> = ({ isSubmitted, score, tot
     const { toast } = useToast()
     const formattedScore = formatPercentage(score / totalPoints * 100)
 
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const createSubmissionMutation = api.evaluationFormSubmissions.createEvalFormSubmission.useMutation({
         onMutate: () => setCreateSubmissionToast(
             toast({

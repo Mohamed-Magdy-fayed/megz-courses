@@ -18,7 +18,7 @@ const GoogleAccountsClient = () => {
     })) : [];
 
     const { toast } = useToast();
-    const trpcUtils = api.useContext();
+    const trpcUtils = api.useUtils();
     const deleteMutation = api.googleAccounts.deleteGoogleAccounts.useMutation(
         createMutationOptions({
             loadingToast,

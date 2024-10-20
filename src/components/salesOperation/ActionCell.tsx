@@ -49,7 +49,7 @@ const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId, p
         onError: ({ message }) => toastError(message),
         onSettled: () => trpcUtils.salesOperations.invalidate()
     })
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
 
     const handleResendPaymentLink = () => {
         setIsOpen(false)

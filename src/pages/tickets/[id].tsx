@@ -31,7 +31,7 @@ export default function TicketPage() {
 
     const [loadingToast, setLoadingToast] = useState<toastType | undefined>()
     const { toast } = useToast()
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const updateMutation = api.tickets.editTicketStatus.useMutation(
         createMutationOptions({
             loadingToast,

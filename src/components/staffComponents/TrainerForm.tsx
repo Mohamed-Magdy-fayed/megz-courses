@@ -64,7 +64,7 @@ const TrainerForm: React.FC<TrainerFormProps> = ({ setIsOpen }) => {
   });
 
   const createTrainerMutation = api.trainers.createTrainer.useMutation();
-  const trpcUtils = api.useContext();
+  const trpcUtils = api.useUtils();
   const { toastError, toastSuccess } = useToast()
 
   const onSubmit = (data: UsersFormValues) => {

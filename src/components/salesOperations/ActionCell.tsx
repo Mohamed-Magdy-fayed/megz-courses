@@ -42,7 +42,7 @@ const CellAction: React.FC<CellActionProps> = ({ id, assigneeId, code, status })
     const operationAssignedForCurrentUser = useMemo(() => session.data?.user.id === assigneeId, [session.data?.user.id, assigneeId])
     const { data: salesAgentsData } = api.users.getUsers.useQuery({ userType: "salesAgent" })
     const deleteMutation = api.salesOperations.deleteSalesOperations.useMutation()
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
 
     const onDelete = (callback?: () => void) => {
         setLoading(true);

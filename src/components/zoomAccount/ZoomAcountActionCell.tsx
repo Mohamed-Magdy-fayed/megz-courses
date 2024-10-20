@@ -31,7 +31,7 @@ const CellAction: React.FC<CellActionProps> = ({ id }) => {
         toastInfo("ID copied to the clipboard");
     };
 
-    const trpcUtils = api.useContext();
+    const trpcUtils = api.useUtils();
     const refreshMutation = api.zoomMeetings.refreshToken.useMutation({
         onMutate: () => {
             setLoadingToast(toast({

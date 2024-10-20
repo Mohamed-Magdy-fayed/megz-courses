@@ -12,7 +12,7 @@ const CoursesClient = () => {
 
     const { toast } = useToast()
 
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const { data: coursesData, isLoading } = api.courses.getAll.useQuery();
     const deleteMutation = api.courses.deleteCourses.useMutation(
         createMutationOptions({

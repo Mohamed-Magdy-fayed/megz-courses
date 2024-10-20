@@ -17,7 +17,7 @@ export const Account = ({ user }: { user: UserGetPayload }) => {
   const session = useSession()
   const pathname = useRouter().pathname
   const isOwnAccount = pathname === "/account" || pathname === "/my_account"
-  const trpcUtils = api.useContext();
+  const trpcUtils = api.useUtils();
 
   const editUserImage = api.users.editUserImage.useMutation({
     onSuccess() {

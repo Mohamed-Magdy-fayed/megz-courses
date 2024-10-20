@@ -9,7 +9,7 @@ const SalesAgentClient = () => {
   const [salesAgents, setSalesAgents] = useState<SalesAgentsColumn[]>([]);
 
   const { toastError, toastSuccess } = useToast();
-  const trpcUtils = api.useContext();
+  const trpcUtils = api.useUtils();
   const { data, isLoading } = api.salesAgents.getSalesAgents.useQuery();
   const deleteMutation = api.users.deleteUser.useMutation();
 

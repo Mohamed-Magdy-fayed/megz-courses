@@ -42,7 +42,7 @@ export const TicketsForm: FC<StudentFormProps> = ({ setIsOpen, initialData }) =>
         defaultValues,
     });
 
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const createTicketMutation = api.tickets.createTicket.useMutation(
         createMutationOptions({
             loadingToast,

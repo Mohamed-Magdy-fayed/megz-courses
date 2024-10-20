@@ -29,7 +29,7 @@ const CreateMaterialsForm = ({
     });
 
     const { toast } = useToast();
-    const trpcUtils = api.useContext();
+    const trpcUtils = api.useUtils();
     const createMaterialMutation = api.materials.createMaterialItem.useMutation(
         createMutationOptions({
             trpcUtils,

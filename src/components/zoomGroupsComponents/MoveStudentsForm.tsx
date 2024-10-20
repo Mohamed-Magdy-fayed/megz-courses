@@ -25,7 +25,7 @@ const MoveStudentsForm: FC<MoveStudentsFormProps> = ({ setIsOpen, id, courseId }
     const { data: groupStudentsData } = api.zoomGroups.getZoomGroupStudents.useQuery({ id });
     const { data: courseZoomGroupsdata } = api.zoomGroups.getzoomGroups.useQuery({ courseId });
     const moveStudentsToAnotherGroupMutation = api.zoomGroups.moveStudentsToAnotherGroup.useMutation();
-    const trpcUtils = api.useContext();
+    const trpcUtils = api.useUtils();
     const { toastError, toastSuccess } = useToast()
 
     const onSubmit = () => {

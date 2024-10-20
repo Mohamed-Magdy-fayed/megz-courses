@@ -22,7 +22,7 @@ const PostpondStudentsForm: FC<PostpondStudentsFormProps> = ({ setIsOpen, id }) 
 
     const { data: courseOngoingListData } = api.zoomGroups.getZoomGroupStudents.useQuery({ id });
     const moveStudentToPostpondedListMutation = api.zoomGroups.moveStudentToPostpondedList.useMutation();
-    const trpcUtils = api.useContext();
+    const trpcUtils = api.useUtils();
     const { toastError, toastSuccess } = useToast()
 
     const onSubmit = () => {

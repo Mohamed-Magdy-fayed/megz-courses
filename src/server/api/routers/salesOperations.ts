@@ -42,6 +42,7 @@ export const salesOperationsRouter = createTRPCRouter({
                 where: { code },
                 include: {
                     assignee: { include: { user: true } },
+                    lead: true,
                     orderDetails: { include: { user: true, course: true } },
                 },
             });

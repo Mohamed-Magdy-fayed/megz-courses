@@ -55,7 +55,7 @@ const CustomTestGoogleForm: FC<{
     });
 
     const { toast } = useToast()
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const { data: googleAccountsData } = api.googleAccounts.getGoogleAccounts.useQuery()
     const { data: courseData } = api.courses.getBySlug.useQuery({ slug: courseSlug }, { enabled: !!courseSlug })
     const { data: levelsData } = api.levels.getByCourseSlug.useQuery({ courseSlug }, { enabled: !!courseSlug })

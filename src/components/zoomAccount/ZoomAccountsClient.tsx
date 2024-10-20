@@ -21,7 +21,7 @@ const ZoomAccountsClient = () => {
     })) : [];
 
     const { toastError, toastSuccess } = useToast();
-    const trpcUtils = api.useContext();
+    const trpcUtils = api.useUtils();
     const deleteMutation = api.zoomAccounts.deleteZoomAccounts.useMutation();
 
     const onDelete = (callback?: () => void) => {

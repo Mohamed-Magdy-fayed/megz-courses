@@ -10,7 +10,7 @@ const useZoomMeeting = () => {
     const [userName, setUserName] = useState("")
 
     const session = useSession()
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
 
     const attendSessionMutation = api.zoomGroups.attendSession.useMutation()
     const editSessionStatusMutation = api.zoomGroups.editSessionStatus.useMutation({

@@ -84,6 +84,8 @@ interface DataTableProps<TData, TValue> {
     values: { label: string, value: (Extract<TData[keyof TData], string>) }[]
     key: Extract<keyof TData, string>
   }[];
+  isSuperSimple?: boolean;
+  resetSelection?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -99,10 +101,11 @@ export function DataTable<TData, TValue>({
   dateRanges,
   searches,
   filters,
+  isSuperSimple,
+  resetSelection,
 }: DataTableProps<TData, TValue>) {
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [isExportOpen, setIsExportOpen] = React.useState<boolean>(false);
   const [isImportOpen, setIsImportOpen] = React.useState<boolean>(false);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = React.useState({});
@@ -150,6 +153,12 @@ export function DataTable<TData, TValue>({
   } = useDropFile();
   const inputRef = React.useRef<HTMLInputElement>(null)
 
+  React.useEffect(() => setData(table.getSelectedRowModel().rows.map(row => row.original)), [rowSelection])
+  React.useEffect(() => {
+    setData([])
+    table.setRowSelection({})
+  }, [resetSelection])
+
   return (
     <div className="w-full">
       {onDelete && <AlertModal
@@ -165,8 +174,8 @@ export function DataTable<TData, TValue>({
         }}
         loading={loading}
       />}
-      <div className="flex items-center justify-between gap-4">
-        {sessionData?.user.userType !== "student" && (
+      <div className="flex flex-col py-4 lg:flex-row lg:py-0 items-center justify-between gap-4">
+        {sessionData?.user.userType !== "student" && !isSuperSimple && (
           <div className="flex items-center gap-8">
             <Typography>Total records {table.getCoreRowModel().rows.length}</Typography>
             {exportConfig && (
@@ -181,16 +190,18 @@ export function DataTable<TData, TValue>({
                 </TooltipContent>
               </Tooltip>
             )}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant={"icon"} customeColor={"mutedIcon"} onClick={() => setIsImportOpen(true)}>
-                  <UploadCloud className="text-primary" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                Import
-              </TooltipContent>
-            </Tooltip>
+            {importConfig && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant={"icon"} customeColor={"mutedIcon"} onClick={() => setIsImportOpen(true)}>
+                    <UploadCloud className="text-primary" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Import
+                </TooltipContent>
+              </Tooltip>
+            )}
             <Modal
               title="Import Data"
               description="Select a file to import"

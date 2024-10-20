@@ -45,16 +45,19 @@ const MobileNumberInput: React.FC<MobileNumberInputProps> = ({
       countryOptionsOrder={countryCodes}
       placeholder={placeholder}
       autoComplete="off"
-      value={value}
+      value={!!value ? `+${value}` : value}
       numberInputProps={{
+        value: value,
         className: cn(
           "flex h-10 w-full placeholder:!text-muted/60 rounded-md border border-primary/40 bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
         )
       }}
       onChange={(val) => {
-        setValue(val?.toString() || "")
-        if (val && !!onError) {
-          !parsePhoneNumber(val)?.isValid() ? onError(true) : onError(false)
+        setValue(!val ? "" : val.toString().startsWith("+") ? val.slice(1) : val);
+
+        if (val && onError) {
+          const isInvalid = !parsePhoneNumber(val)?.isValid();
+          onError(isInvalid);
         }
       }} />
   );

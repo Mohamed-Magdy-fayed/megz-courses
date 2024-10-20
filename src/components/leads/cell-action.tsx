@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Copy, MoreVertical, Trash } from "lucide-react";
+import { CheckCircle, Copy, ExternalLink, MoreVertical, PackagePlus, Trash, View } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { AssignModal } from "../modals/AssignModal";
@@ -15,6 +15,9 @@ import { Lead } from "./LeadsColumn";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { AlertModal } from "@/components/modals/AlertModal";
 import { createMutationOptions } from "@/lib/mutationsHelper";
+import { useRouter } from "next/router";
+import Link from "next/link";
+import CreateQuickOrderModal from "@/components/leads/CreateQuickOrderModal";
 
 interface CellActionProps {
   data: Lead;
@@ -24,10 +27,19 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const [open, setOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isCreateOrderOpen, setIsCreateOrderOpen] = useState(false);
+
+  const router = useRouter()
 
   const [loadingToast, setLoadingToast] = useState<toastType>();
-  const { toast } = useToast()
+  const { toast, toastSuccess } = useToast()
   const trpcUtils = api.useUtils()
+
+  const onCopy = (id: string) => {
+    navigator.clipboard.writeText(id);
+    toastSuccess("User ID copied to the clipboard")
+  };
+
   const assignMutation = api.leads.assignLead.useMutation(
     createMutationOptions({
       loadingToast,
@@ -40,13 +52,13 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
       },
     })
   )
-  const moveLeadMutation = api.leads.moveLead.useMutation(
+  const moveLeadMutation = api.leads.moveLeads.useMutation(
     createMutationOptions({
       loadingToast,
       setLoadingToast,
       toast,
       trpcUtils,
-      successMessageFormatter: ({ updatedLead }) => `Lead moved to stage ${updatedLead.leadStage?.name}`
+      successMessageFormatter: ({ updatedLeads, salesOperations }) => `Lead moved ${salesOperations ? "and a sales operation created" : ""}`
     })
   )
   const deleteMutation = api.leads.deleteLead.useMutation(
@@ -59,12 +71,6 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
       successMessageFormatter: ({ deletedLeads }) => `Deleted ${deletedLeads.count} successfully!`
     })
   )
-  const { toastError, toastSuccess } = useToast()
-
-  const onCopy = (id: string) => {
-    navigator.clipboard.writeText(id);
-    toastSuccess("User ID copied to the clipboard")
-  };
 
   const onAssign = (agentId: string) => {
     assignMutation.mutate({ agentId, leadId: data.id })
@@ -76,7 +82,7 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
 
   const handleMoveLead = (toStageId: string) => {
     moveLeadMutation.mutate({
-      leadId: data.id,
+      leadIds: [data.id],
       toStageId,
     })
   }
@@ -96,6 +102,7 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
         onConfirm={handleDelete}
         description="The lead data can not be restored after this action, are you sure?"
       />
+      <CreateQuickOrderModal email={data.email || "No Email"} name={data.name} phone={data.phone || "No Phone"} leadId={data.id} isOpen={isCreateOrderOpen} setIsOpen={setIsCreateOrderOpen} />
       <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" customeColor={"mutedOutlined"} className="h-8 w-8 p-0">
@@ -104,6 +111,12 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem asChild>
+            <Link href={`/leads/${data.id}`}>
+              <View className="w-4 h-4 mr-2" />
+              View
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onCopy(data.userId)}>
             <Copy className="w-4 h-4 mr-2" />
             Copy Id
@@ -112,6 +125,17 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
             <CheckCircle className="w-4 h-4 mr-2" />
             Assign
           </DropdownMenuItem>
+          {data.salesOperations.length > 0 ? (
+            <DropdownMenuItem disabled={!data.salesOperations[0]?.code} onClick={() => (router.push(`/sales_operations/${data.salesOperations[0]?.code}`), setIsOpen(false))}>
+              <ExternalLink className="w-4 h-4 mr-2" />
+              Go to operation
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem disabled={data.stage?.defaultStage !== "Qualified"} onClick={() => (setIsOpen(false), setIsCreateOrderOpen(true))}>
+              <PackagePlus className="w-4 h-4 mr-2" />
+              Create Order
+            </DropdownMenuItem>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuLabel>Move To</DropdownMenuLabel>
           {data.stages?.filter(s => s.name !== data.stageName).map(stage => (
@@ -125,7 +149,7 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
-      </DropdownMenu>
+      </DropdownMenu >
     </>
   );
 };

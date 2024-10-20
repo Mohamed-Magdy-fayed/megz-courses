@@ -59,7 +59,7 @@ const ChatForm: FC<ChatFormProps> = ({ setMessages, channelSubscription, setUnre
     const sendMessageMutation = api.chat.sendMessage.useMutation()
     const deleteMyChatMutation = api.chat.deleteMyChat.useMutation()
     const deleteChatMutation = api.chat.deleteChat.useMutation()
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
 
     const [loading, setLoading] = useState(false);
 

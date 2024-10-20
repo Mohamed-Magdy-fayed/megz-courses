@@ -25,7 +25,7 @@ const AgentCellAction: React.FC<AgentCellActionProps> = ({ id }) => {
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
     const deleteMutation = api.chatAgents.deleteChatAgent.useMutation()
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
 
     const onDelete = () => {
         setLoading(true);

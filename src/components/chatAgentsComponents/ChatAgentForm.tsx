@@ -54,7 +54,7 @@ const ChatAgentForm: React.FC<ChatAgentFormProps> = ({ setIsOpen }) => {
   });
 
   const createSalesAgentMutation = api.chatAgents.createChatAgent.useMutation();
-  const trpcUtils = api.useContext();
+  const trpcUtils = api.useUtils();
   const { toastError, toastSuccess } = useToast()
 
   const onSubmit = (data: ChatAgentsFormValues) => {

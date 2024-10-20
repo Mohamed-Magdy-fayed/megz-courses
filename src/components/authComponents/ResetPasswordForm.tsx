@@ -68,7 +68,7 @@ const ResetPasswordForm: FC<ResetPasswordFormProps> = ({ setOpen }) => {
     });
 
     const { data: siteData } = api.siteIdentity.getSiteIdentity.useQuery()
-    const trpcUtils = api.useContext()
+    const trpcUtils = api.useUtils()
     const resetPasswordEmailMutation = api.auth.resetPasswordEmail.useMutation(
         createMutationOptions({
             trpcUtils,

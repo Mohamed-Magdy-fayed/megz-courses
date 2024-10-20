@@ -29,6 +29,8 @@ import { metaAccountRouter } from "@/server/api/routers/metaAccount";
 import { setupRouter } from "@/server/api/routers/setup";
 import { ticketsRouter } from "@/server/api/routers/tickets";
 import { leadStagesRouter } from "@/server/api/routers/leadStages";
+import { leadLabelsRouter } from "@/server/api/routers/leadLabels";
+import { leadNotesRouter } from "@/server/api/routers/leadNotes";
 
 /**
  * This is the primary router for your server.
@@ -43,6 +45,8 @@ export const appRouter = createTRPCRouter({
   materials: materialItemsRouter,
   leads: leadsRouter,
   leadStages: leadStagesRouter,
+  leadLabels: leadLabelsRouter,
+  leadNotes: leadNotesRouter,
   salesOperations: salesOperationsRouter,
   salesAgents: salesAgentsRouter,
   orders: ordersRouter,
