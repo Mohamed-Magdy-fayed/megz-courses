@@ -62,6 +62,10 @@ const SalesOperationsClient = () => {
           value: status,
         }))]
       }]}
+      exportConfig={{
+        fileName: `Sales Operations`,
+        sheetName: "Sales Operations",
+      }}
     />
   );
 };

@@ -328,6 +328,41 @@ export const coursesRouter = createTRPCRouter({
         course,
       };
     }),
+  importCourses: protectedProcedure
+    .input(
+      z.array(
+        z.object({
+          name: z.string(),
+          slug: z.string(),
+          image: z.string(),
+          description: z.string(),
+          groupPrice: z.number(),
+          privatePrice: z.number(),
+          instructorPrice: z.number(),
+        })
+      )
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+
+      const courses = await ctx.prisma.$transaction([
+        ...input.map(({ description, groupPrice, image, instructorPrice, name, privatePrice, slug }) => ctx.prisma.course.create({
+          data: {
+            description,
+            groupPrice,
+            image,
+            instructorPrice,
+            name,
+            privatePrice,
+            slug,
+          }
+        }))
+      ])
+
+      return {
+        courses,
+      };
+    }),
   editCourse: protectedProcedure
     .input(
       z.object({

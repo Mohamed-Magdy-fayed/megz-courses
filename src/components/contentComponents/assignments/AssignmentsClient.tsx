@@ -55,6 +55,10 @@ const AssignmentsClient = ({ formattedData }: { formattedData: AssignmentRow[] }
                 },
             ]}
             dateRanges={[{ key: "createdAt", label: "Created On" }]}
+            exportConfig={{
+                fileName: `Assignments`,
+                sheetName: "Assignments",
+            }}
         />
     );
 };

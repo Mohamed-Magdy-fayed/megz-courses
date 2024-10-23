@@ -27,6 +27,10 @@ const FullWaitingListClient = ({ formattedData }: { formattedData: FullWaitingLi
             dateRanges={[
                 { key: "orders", label: "Ordered On" },
             ]}
+            exportConfig={{
+                fileName: `${formattedData[0]?.courseName} Waiting List`,
+                sheetName: "Waiting List",
+            }}
         />
     );
 };

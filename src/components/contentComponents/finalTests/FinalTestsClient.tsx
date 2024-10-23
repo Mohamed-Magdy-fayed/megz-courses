@@ -43,6 +43,10 @@ const FinalTestClient = ({ formattedData }: { formattedData: FinalTestRow[] }) =
                     }))
                 },
             ]}
+            exportConfig={{
+                fileName: `Final Tests`,
+                sheetName: "Final Tests",
+            }}
         />
     );
 };

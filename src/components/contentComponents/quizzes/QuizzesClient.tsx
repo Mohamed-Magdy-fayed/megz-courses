@@ -53,6 +53,10 @@ const QuizzesClient = ({ formattedData }: { formattedData: QuizRow[] }) => {
                 },
             ]}
             dateRanges={[{ key: "createdAt", label: "Created On" }]}
+            exportConfig={{
+                fileName: `Quizzes`,
+                sheetName: "Quizzes",
+            }}
         />
     );
 };

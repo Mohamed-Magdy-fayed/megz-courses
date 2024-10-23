@@ -152,6 +152,37 @@ export const levelsRouter = createTRPCRouter({
         level,
       };
     }),
+  importLevels: protectedProcedure
+    .input(
+      z.array(
+        z.object({
+          name: z.string(),
+          slug: z.string(),
+          courseSlug: z.string(),
+        })
+      )
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+
+      const levels = await ctx.prisma.$transaction([
+        ...input.map(({ courseSlug, name, slug }) => ctx.prisma.courseLevel.create({
+          data: {
+            name,
+            slug,
+            course: {
+              connect: {
+                slug: courseSlug,
+              }
+            }
+          },
+        }))
+      ]);
+
+      return {
+        levels,
+      };
+    }),
   editLevel: protectedProcedure
     .input(
       z.object({

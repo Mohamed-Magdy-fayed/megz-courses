@@ -11,6 +11,10 @@ const PlacmentTestSubmissionsClient = ({ formattedData }: { formattedData: Place
                 { key: "studentName", label: "Student Name" },
             ]}
             dateRanges={[{ key: "createdAt", label: "Submitted At" }]}
+            exportConfig={{
+                fileName: `Placement Test Submissions`,
+                sheetName: "Placement Test Submissions",
+            }}
         />
     );
 };

@@ -7,7 +7,7 @@ import {
 import bcrypt from "bcrypt";
 import { TRPCError } from "@trpc/server";
 import { Prisma } from "@prisma/client";
-import { validDeviceTypes, validUserTypes } from "@/lib/enumsTypes";
+import { validDeviceTypes, validTrainerRoles, validUserTypes } from "@/lib/enumsTypes";
 import { env } from "@/env.mjs";
 
 export const usersRouter = createTRPCRouter({
@@ -220,6 +220,63 @@ export const usersRouter = createTRPCRouter({
 
       return {
         user,
+      };
+    }),
+  importUsers: protectedProcedure
+    .input(
+      z.object({
+        usersData: z.array(z.object({
+          name: z.string(),
+          email: z.string().email(),
+          phone: z.string(),
+        })),
+        userType: z.enum(validUserTypes),
+        role: z.enum(validTrainerRoles).optional(),
+        password: z.string(),
+      })
+    )
+    .mutation(async ({ input: { usersData, userType, role, password }, ctx }) => {
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const checkedUsers = await Promise.all(
+        usersData.map(async (user, i) => {
+          const exists = await ctx.prisma.user.findFirst({
+            where: {
+              email: user.email,
+            },
+          });
+          if (!!exists) return { lineNumber: i + 1, exists: true, ...user }
+          return { lineNumber: i + 1, exists: false, ...user }
+        })
+      )
+
+      const errors = checkedUsers.filter(u => u.exists)
+      if (checkedUsers.filter(u => !u.exists).length === 0) return {
+        errors,
+        users: [],
+      }
+
+      const users = await ctx.prisma.$transaction([
+        ...checkedUsers.filter(u => !u.exists).map(user => (
+          ctx.prisma.user.create({
+            data: {
+              email: user.email,
+              phone: user.phone,
+              name: user.name,
+              userType,
+              emailVerified: new Date(),
+              hashedPassword,
+              chatAgent: userType === "chatAgent" ? { create: {} } : undefined,
+              trainer: role && userType === "teacher" ? { create: { role } } : undefined,
+              salesAgent: userType === "salesAgent" ? { create: { salary: "0" } } : undefined,
+            }
+          })
+        )),
+      ])
+
+      return {
+        users,
+        errors,
       };
     }),
   editUserImage: protectedProcedure

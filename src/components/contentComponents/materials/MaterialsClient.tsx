@@ -3,9 +3,7 @@ import { api } from "@/lib/api";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { MaterialsRow, columns } from "@/components/contentComponents/materials/MaterialsColumn";
-import { MaterialItemType } from "@prisma/client";
 import { validMaterialItemTypes } from "@/lib/enumsTypes";
-import { upperFirst } from "lodash";
 
 const MaterialsClient = ({ formattedData }: { formattedData: MaterialsRow[] }) => {
     const [materialItems, setMaterialItems] = useState<string[]>([])
@@ -43,6 +41,10 @@ const MaterialsClient = ({ formattedData }: { formattedData: MaterialsRow[] }) =
                 },
             ]}
             dateRanges={[{ key: "createdAt", label: "Created On" }]}
+            exportConfig={{
+                fileName: `${formattedData[0]?.courseSlug} course materials`,
+                sheetName: "Material Items",
+            }}
         />
     );
 };

@@ -95,6 +95,10 @@ const OrdersClient = ({ userId }: { userId?: string }) => {
             }))]
         }
       ]}
+      exportConfig={{
+        fileName: `Orders`,
+        sheetName: "Orders",
+    }}
     />
   );
 };

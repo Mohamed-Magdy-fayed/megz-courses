@@ -83,6 +83,10 @@ const RetintionsClient = () => {
         { key: "address", label: "address" },
         { key: "phone", label: "phone" },
       ]}
+      exportConfig={{
+        fileName: `Retintions List`,
+        sheetName: "Retintions List",
+      }}
     />
   );
 };

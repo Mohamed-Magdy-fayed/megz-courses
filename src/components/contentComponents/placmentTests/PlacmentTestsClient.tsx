@@ -41,6 +41,10 @@ const PlacmentTestClient = ({ formattedData }: { formattedData: PlacmentTestRow[
                 { key: "createdBy", label: "Created By" },
             ]}
             dateRanges={[{ key: "createdAt", label: "Created At" }]}
+            exportConfig={{
+                fileName: `${formattedData[0]?.evalForm.courseId} Placement Test`,
+                sheetName: "Placement Test",
+            }}
         />
     );
 };

@@ -1,4 +1,3 @@
-import Spinner from "@/components/Spinner";
 import { DataTable } from "@/components/ui/DataTable";
 import { api } from "@/lib/api";
 import { CourseRow, columns } from "./CoursesColumn";
@@ -14,6 +13,18 @@ const CoursesClient = () => {
 
     const trpcUtils = api.useUtils()
     const { data: coursesData, isLoading } = api.courses.getAll.useQuery();
+    const importMutation = api.courses.importCourses.useMutation(
+        createMutationOptions({
+            trpcUtils,
+            loadingToast,
+            setLoadingToast,
+            toast,
+            successMessageFormatter: ({ courses }) => {
+                return `${courses.length} courses created`
+            },
+            loadingMessage: "Importing...",
+        })
+    )
     const deleteMutation = api.courses.deleteCourses.useMutation(
         createMutationOptions({
             trpcUtils,
@@ -63,6 +74,28 @@ const CoursesClient = () => {
                 { key: "privatePrice", label: "Private Price" },
                 { key: "instructorPrice", label: "Instructor Price" },
             ]}
+            exportConfig={{
+                fileName: `Courses`,
+                sheetName: "Courses",
+            }}
+            importConfig={{
+                reqiredFields: ["name", "slug", "image", "description", "privatePrice", "groupPrice", "instructorPrice"],
+                sheetName: "Courses Import Template",
+                templateName: "Courses Import Template",
+            }}
+            handleImport={(data) => {
+                importMutation.mutate(
+                    data.map(course => ({
+                        description: course.description || "",
+                        image: course.image || "",
+                        name: course.name,
+                        slug: course.slug,
+                        privatePrice: Number(course.privatePrice),
+                        instructorPrice: Number(course.instructorPrice),
+                        groupPrice: Number(course.groupPrice),
+                    }))
+                )
+            }}
         />
     );
 };

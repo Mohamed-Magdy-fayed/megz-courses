@@ -14,6 +14,10 @@ const PlacmentTestScheduleClient = ({ formattedData }: { formattedData: Placment
                 { key: "trainerName", label: "Trainer Name" },
             ]}
             dateRanges={[{ key: "oralTestTime", label: "Test Time" }]}
+            exportConfig={{
+                fileName: `Placement Test Schedules`,
+                sheetName: "Placement Test Schedules",
+            }}
         />
     );
 };

@@ -14,6 +14,10 @@ const WaitingListClient = ({ formattedData }: { formattedData: WaitingListRow[] 
                 { key: "levelSlug", filterName: "Level", values: formattedData[0]?.levelSlugs || [] }
             ]}
             dateRanges={[{ key: "orders", label: "Ordered On" }]}
+            exportConfig={{
+                fileName: `${formattedData[0]?.levelName} Waiting List`,
+                sheetName: "Waiting List",
+            }}
         />
     );
 };

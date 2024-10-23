@@ -47,6 +47,10 @@ const TesterPlacmentTestClient = ({ formattedData }: { formattedData: Column[] }
                 },
             ]}
             dateRanges={[{ key: "testTime", label: "Oral Test Time" }]}
+            exportConfig={{
+                fileName: `${formattedData[0]?.trainersData[0]?.name} Placement Tests`,
+                sheetName: "Placement Tests",
+            }}
         />
     );
 };

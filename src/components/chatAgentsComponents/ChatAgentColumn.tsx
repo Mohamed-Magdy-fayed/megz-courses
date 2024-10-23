@@ -12,6 +12,7 @@ export type ChatAgentColumn = {
   id: string
   name: string
   email: string
+  phone: string
   image: string
   chats: number
   createdAt: string

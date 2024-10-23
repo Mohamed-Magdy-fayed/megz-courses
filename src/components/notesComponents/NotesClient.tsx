@@ -84,6 +84,10 @@ const NotesClient = () => {
                     })) || []]
                 },
             ]}
+            exportConfig={{
+                fileName: `System Notes`,
+                sheetName: "System Notes",
+            }}
         />
     );
 };

@@ -21,6 +21,10 @@ const CourseGroupsClient = ({ formattedData }: { formattedData: CourseRow[] }) =
                     })) || []
                 },
             ]}
+            exportConfig={{
+                fileName: `Course Groups`,
+                sheetName: "Course Groups",
+            }}
         />
     );
 };

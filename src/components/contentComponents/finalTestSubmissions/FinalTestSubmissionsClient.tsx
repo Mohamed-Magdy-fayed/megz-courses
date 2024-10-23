@@ -15,6 +15,10 @@ const FinalTestSubmissionsClient = ({ formattedData }: { formattedData: FinalTes
                 { key: "levelSlug", filterName: "Level", values: formattedData[0]?.levelSlugs || [] },
             ]}
             dateRanges={[{ key: "createdAt", label: "Submitted At" }]}
+            exportConfig={{
+                fileName: `Final test submissions`,
+                sheetName: "Final test submissions",
+            }}
         />
     );
 };

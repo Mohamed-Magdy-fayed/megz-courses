@@ -37,7 +37,7 @@ import { useSession } from "next-auth/react";
 import { downloadTemplate, exportToExcel, importFromExcel } from "@/lib/xlsx";
 import { useDropFile } from "@/hooks/useDropFile";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+import { toastType, useToast } from "@/components/ui/use-toast";
 
 type Cursor = Prisma.UserFindManyArgs["cursor"]
 type OrderBy = Prisma.UserFindManyArgs["orderBy"]
@@ -56,11 +56,12 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   setData: (data: TData[]) => void;
   onDelete?: (callback?: () => void) => void;
-  handleImport?: (data: { [key in Extract<keyof TData, string>]: string }[]) => void;
+  handleImport?: (data: TData[]) => void;
   importConfig?: {
     templateName: string;
     sheetName: string;
     reqiredFields: Extract<keyof TData, string>[]
+    extraDetails?: React.ReactNode;
   },
   exportConfig?: {
     fileName: string;
@@ -242,6 +243,7 @@ export function DataTable<TData, TValue>({
                         </div>
                       )}
                     </div>
+                    {!!importConfig.extraDetails && importConfig.extraDetails}
                     <div className="flex items-center justify-center gap-4">
                       <SpinnerButton
                         customeColor={"info"}
