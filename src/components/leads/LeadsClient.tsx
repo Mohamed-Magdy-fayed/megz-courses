@@ -1,6 +1,6 @@
 import { columns, Lead } from "./LeadsColumn";
 import { DataTable } from "../ui/DataTable";
-import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, FC, SetStateAction, useState } from "react";
 import { LeadStage, Prisma } from "@prisma/client";
 import { api } from "@/lib/api";
 import { createMutationOptions } from "@/lib/mutationsHelper";
@@ -86,7 +86,13 @@ const LeadsClient: FC<LeadsClientProps> = ({ resetSelection, stage, stagesData, 
       }}
       resetSelection={resetSelection}
       onDelete={onDelete}
-      handleImport={handleImport}
+      handleImport={(data) => {
+        handleImport(data.map(({ name, email, phone }) => ({
+          name,
+          email: email || "",
+          phone: phone || "",
+        })))
+      }}
       importConfig={{
         reqiredFields: ["name", "email", "phone"],
         sheetName: "Leads Import",

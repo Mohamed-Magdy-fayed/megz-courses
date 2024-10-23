@@ -1,6 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Check, MenuSquare, MoreVertical } from "lucide-react";
+import { Check } from "lucide-react";
 import { getInitials } from "@/lib/getInitials";
 import { cn } from "@/lib/utils";
 import CellAction from "./cell-action";
@@ -104,7 +104,7 @@ export const columns: ColumnDef<Lead>[] = [
     ),
   },
   {
-    accessorKey: "platform",
+    accessorKey: "source",
     header: ({ column }) => {
       return (
         <div className="flex items-center justify-between">
