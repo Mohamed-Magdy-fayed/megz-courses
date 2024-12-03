@@ -6,22 +6,28 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Trash, SearchSlash, MoreVertical } from "lucide-react";
+import { Trash, SearchSlash, MoreVertical, Edit } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { useToast } from "../ui/use-toast";
 import Link from "next/link";
 import Modal from "@/components/ui/modal";
+import ChatAgentForm from "@/components/chatAgentsComponents/ChatAgentForm";
 
 interface AgentCellActionProps {
     id: string;
+    name: string;
+    email: string;
+    phone: string;
+    image: string;
 }
 
-const AgentCellAction: React.FC<AgentCellActionProps> = ({ id }) => {
+const AgentCellAction: React.FC<AgentCellActionProps> = ({ id, ...rest }) => {
     const { toastError, toastSuccess } = useToast();
 
     const [loading, setLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
     const deleteMutation = api.chatAgents.deleteChatAgent.useMutation()
@@ -48,6 +54,15 @@ const AgentCellAction: React.FC<AgentCellActionProps> = ({ id }) => {
 
     return (
         <>
+            <Modal
+                title="Edit"
+                description="Edit the chat agent account!"
+                isOpen={isEditOpen}
+                onClose={() => setIsEditOpen(false)}
+                children={(
+                    <ChatAgentForm setIsOpen={setIsEditOpen} initialData={{ id, ...rest }} />
+                )}
+            />
             <Modal
                 title="Are you sure?"
                 description="This action can't be undone!"
@@ -77,6 +92,13 @@ const AgentCellAction: React.FC<AgentCellActionProps> = ({ id }) => {
                             <SearchSlash className="w-4 h-4 mr-2" />
                             View
                         </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => {
+                        setIsOpen(false)
+                        setIsEditOpen(true)
+                    }}>
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => {
                         setIsOpen(false)

@@ -5,14 +5,19 @@ import { ArrowUpDown } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { Typography } from "@/components/ui/Typoghraphy";
-import { Certificate, EvaluationForm, SubmissionAnswer, User } from "@prisma/client";
-import { formatPercentage } from "@/lib/utils";
+import { Certificate, User } from "@prisma/client";
 import { getInitials } from "@/lib/getInitials";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import ActionCell from "@/components/contentComponents/finalTestSubmissions/FinalTestsSubmissionActionCell";
 
 export type FinalTestSubmissionRow = {
     id: string;
-    answers: SubmissionAnswer[];
+    answers: {
+        questionId: string;
+        selectedAnswers: string[];
+        textAnswer: string | null;
+        isCorrect: boolean;
+    }[];
     student: User;
     levelSlugs: { label: string, value: string }[],
     levelSlug: string,
@@ -21,7 +26,6 @@ export type FinalTestSubmissionRow = {
     courseId: string;
     courseName: string;
     rating: number;
-    evaluationForm: EvaluationForm;
     createdAt: Date;
     updatedAt: Date;
 };
@@ -118,18 +122,6 @@ export const columns: ColumnDef<FinalTestSubmissionRow>[] = [
         }
     },
     {
-        accessorKey: "rating",
-        header: "Score",
-        cell: ({ row }) => {
-            const evalForm = row.original.evaluationForm
-            const totalPoints = evalForm.totalPoints
-
-            return (
-                <>{formatPercentage(row.original.rating / totalPoints * 100)}</>
-            )
-        }
-    },
-    {
         accessorKey: "certificate",
         header: "Certificate",
         cell: ({ row }) => {
@@ -148,4 +140,12 @@ export const columns: ColumnDef<FinalTestSubmissionRow>[] = [
             )
         }
     },
+    {
+        id: "action",
+        header: "Actions",
+        cell: ({ row }) => <ActionCell
+            id={row.original.id}
+            submission={row.original}
+        />,
+    }
 ];

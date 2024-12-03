@@ -1,33 +1,29 @@
 import { SeverityPillProps } from "@/components/overview/SeverityPill";
-import { CourseStatuses, Devices, EvaluationFormTypes, GroupStatus, MaterialItemType, OrderStatus, SalesOperationStatus, SessionStatus, SupportTicketStatus, TrainerRole, UserNoteStatus, UserNoteTypes, UserType } from "@prisma/client";
+import { CourseStatuses, GroupStatus, LeadInteractionType, OrderStatus, SessionStatus, SupportTicketStatus, UserNoteStatus, UserNoteTypes } from "@prisma/client";
 
-export const validOperationStatusColors: (val: SalesOperationStatus) => SeverityPillProps["color"] = (val) => {
+export const validLeadInteractionsColors: (val: LeadInteractionType) => SeverityPillProps["color"] = (val) => {
     switch (val) {
-        case "assigned":
-            return "secondary";
-        case "cancelled":
-            return "destructive";
-        case "completed":
-            return "success";
-        case "created":
+        case "Call":
             return "primary";
-        case "ongoing":
+        case "Chat":
             return "info";
+        case "Meeting":
+            return "success";
         default:
             return "muted";
     }
 };
 export const validDeviceTypesColors: (val: GroupStatus) => SeverityPillProps["color"] = (val) => {
     switch (val) {
-        case "active":
+        case "Active":
             return "info";
-        case "cancelled":
+        case "Cancelled":
             return "destructive";
-        case "completed":
+        case "Completed":
             return "success";
-        case "inactive":
+        case "Inactive":
             return "primary";
-        case "paused":
+        case "Paused":
             return "muted";
         default:
             return "background";
@@ -35,15 +31,15 @@ export const validDeviceTypesColors: (val: GroupStatus) => SeverityPillProps["co
 };
 export const validSessionStatusesColors: (val: SessionStatus) => SeverityPillProps["color"] = (val) => {
     switch (val) {
-        case "ongoing":
+        case "Ongoing":
             return "info";
-        case "cancelled":
+        case "Cancelled":
             return "destructive";
-        case "completed":
+        case "Completed":
             return "success";
-        case "scheduled":
+        case "Scheduled":
             return "primary";
-        case "starting":
+        case "Starting":
             return "info";
         default:
             return "background";
@@ -51,21 +47,21 @@ export const validSessionStatusesColors: (val: SessionStatus) => SeverityPillPro
 };
 export const validCourseStatusesColors: (val: CourseStatuses) => SeverityPillProps["color"] = (val) => {
     switch (val) {
-        case "ongoing":
+        case "Ongoing":
             return "info";
-        case "cancelled":
+        case "Cancelled":
             return "destructive";
-        case "completed":
+        case "Completed":
             return "success";
-        case "orderCreated":
+        case "OrderCreated":
             return "primary";
-        case "orderPaid":
+        case "OrderPaid":
             return "primary";
-        case "postponded":
+        case "Postponded":
             return "muted";
-        case "refunded":
+        case "Refunded":
             return "destructive";
-        case "waiting":
+        case "Waiting":
             return "primary";
         default:
             return "background";
@@ -74,13 +70,13 @@ export const validCourseStatusesColors: (val: CourseStatuses) => SeverityPillPro
 
 export const validOrderStatusesColors: (val: OrderStatus) => SeverityPillProps["color"] = (val) => {
     switch (val) {
-        case "paid":
+        case "Paid":
             return "success";
-        case "cancelled":
+        case "Cancelled":
             return "destructive";
-        case "pending":
+        case "Pending":
             return "info";
-        case "refunded":
+        case "Refunded":
             return "destructive";
         default:
             return "background";
@@ -120,11 +116,11 @@ export const validNoteStatusColors: (val: UserNoteStatus) => SeverityPillProps["
 };
 export const validSupportTicketStatusColors: (val: SupportTicketStatus) => SeverityPillProps["color"] = (val) => {
     switch (val) {
-        case "closed":
+        case "Closed":
             return "success";
-        case "opened":
+        case "Opened":
             return "info";
-        case "created":
+        case "Created":
             return "primary";
         default:
             return "background";

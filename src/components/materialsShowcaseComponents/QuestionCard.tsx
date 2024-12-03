@@ -30,7 +30,7 @@ const QuestionCard = ({ question }: { question: Question }) => {
           <Typography
             className={cn(
               "",
-              submission.completed
+              submission.Completed
                 ? isCorrect
                   ? "text-success"
                   : "text-warning"

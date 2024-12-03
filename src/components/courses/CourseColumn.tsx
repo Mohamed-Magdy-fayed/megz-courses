@@ -101,6 +101,7 @@ export const columns: ColumnDef<CourseRow>[] = [
     header: "Oral Test Time",
     cell: ({ row }) => {
       if (!row.original.isOralTestScheduled) return <Typography>Not yet Scheduled</Typography>
+      if (row.original.isSubmitted) return <Typography>{row.original.oralTestTime}</Typography>
 
       return (
         <div className="flex flex-col gap-2 items-center">

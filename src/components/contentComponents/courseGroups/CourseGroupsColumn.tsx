@@ -21,7 +21,7 @@ export type CourseRow = {
     levelSlug: string,
     levelName: string,
     studentIds: string[];
-    trainerId: string;
+    teacherId: string;
     courseId: string,
     courseLevel: {
         id: string;
@@ -114,10 +114,10 @@ export const columns: ColumnDef<CourseRow>[] = [
         cell: ({ row }) => {
             const status = row.original.groupStatus
             const color: SeverityPillProps["color"] =
-                status === "active" ? "success"
-                    : status === "cancelled" ? "destructive"
-                        : status === "inactive" ? "secondary"
-                            : status === "paused" ? "muted" : "primary"
+                status === "Active" ? "success"
+                    : status === "Cancelled" ? "destructive"
+                        : status === "Inactive" ? "secondary"
+                            : status === "Paused" ? "muted" : "primary"
 
             return <SeverityPill color={color}>{status}</SeverityPill>
         },

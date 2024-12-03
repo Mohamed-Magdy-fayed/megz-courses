@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { validCourseStatuses } from "@/lib/enumsTypes";
+import { hasPermission } from "@/server/permissions";
 
 export const coursesRouter = createTRPCRouter({
   getUsersWithStatus: protectedProcedure
@@ -48,7 +49,7 @@ export const coursesRouter = createTRPCRouter({
         }
       })
 
-      const watingUsers = users.filter(u => u.courseStatus.some(({ courseId, status, courseLevelId }) => courseId === course?.id && u.courseStatus.some(s => courseLevelId === s.courseLevelId) && status === "waiting"))
+      const watingUsers = users.filter(u => u.courseStatus.some(({ courseId, status, courseLevelId }) => courseId === course?.id && u.courseStatus.some(s => courseLevelId === s.courseLevelId) && status === "Waiting"))
 
       return { watingUsers };
     }),
@@ -66,7 +67,7 @@ export const coursesRouter = createTRPCRouter({
           include: { courseStatus: true }
         })
 
-        const watingUsers = users.filter(user => user.courseStatus.some(({ courseId, status }) => courseId === course?.id && status === "waiting"))
+        const watingUsers = users.filter(user => user.courseStatus.some(({ courseId, status }) => courseId === course?.id && status === "Waiting"))
         return {
           courseId: course.id,
           waitingList: watingUsers.length,
@@ -82,7 +83,7 @@ export const coursesRouter = createTRPCRouter({
         orderBy: {
           createdAt: "desc",
         },
-        take: 10,
+        take: 7,
         include: { orders: true, levels: true }
       });
 
@@ -113,7 +114,7 @@ export const coursesRouter = createTRPCRouter({
             }
           }
         },
-        evaluationForms: true,
+        systemForms: true,
         levels: true,
         courseStatus: true,
       },
@@ -128,8 +129,8 @@ export const coursesRouter = createTRPCRouter({
         where: { id: ctx.session.user.id },
         include: {
           orders: true,
-          placementTests: { include: { trainer: true, writtenTest: true } },
-          evaluationFormSubmissions: true,
+          placementTests: { include: { tester: true, writtenTest: true } },
+          systemFormSubmissions: true,
           zoomGroups: { include: { zoomSessions: { include: { materialItem: true } } } },
           courseStatus: { include: { level: true } },
         },
@@ -143,7 +144,7 @@ export const coursesRouter = createTRPCRouter({
             in: user.orders.map(order => order.courseId),
           }
         },
-        include: { levels: true, evaluationForms: true },
+        include: { levels: true, systemForms: true },
         orderBy: { createdAt: "desc" },
       });
 
@@ -159,18 +160,17 @@ export const coursesRouter = createTRPCRouter({
       const course = await ctx.prisma.course.findUnique({
         where: { id },
         include: {
-          evaluationForms: { include: { questions: true } },
           zoomGroups: true,
           orders: { include: { user: true } },
           placementTests: {
             include: {
               student: true,
-              trainer: { include: { user: true } },
-              writtenTest: { include: { questions: true, submissions: true } },
+              tester: { include: { user: true } },
+              writtenTest: { include: { items: true, submissions: true } },
               course: true,
             }
           },
-          levels: { include: { materialItems: { include: { evaluationForms: true, zoomSessions: true } } } },
+          levels: { include: { materialItems: { include: { systemForms: true, zoomSessions: true } } } },
         },
       });
       return { course };
@@ -190,22 +190,22 @@ export const coursesRouter = createTRPCRouter({
               materialItems: {
                 include: {
                   courseLevel: true,
-                  evaluationForms: { include: { googleForm: { include: { GoogleClient: true, googleFormQuestions: true } }, materialItem: { include: { courseLevel: true } }, questions: true, submissions: true } }
+                  systemForms: { include: { googleClient: true, items: { include: { questions: { include: { options: true } } } }, materialItem: { include: { courseLevel: true } }, submissions: { include: { student: { include: { certificates: true } } } } } }
                 }
               },
-              evaluationForms: { include: { materialItem: true, questions: true, submissions: true, courseLevel: true } },
+              systemForms: { include: { materialItem: true, items: { include: { questions: { include: { options: true } } } }, submissions: { include: { student: { include: { certificates: true } } } }, courseLevel: true } },
               course: true,
               zoomGroups: true,
             },
           },
-          evaluationForms: {
+          systemForms: {
             include: {
-              googleForm: { include: { GoogleClient: true, googleFormQuestions: true } },
-              questions: true,
+              googleClient: true,
+              items: { include: { questions: { include: { options: true } } } },
               submissions: {
                 include: {
                   student: { include: { certificates: true } },
-                  evaluationForm: { include: { materialItem: { include: { courseLevel: true } }, courseLevel: true } }
+                  systemForm: { include: { materialItem: { include: { courseLevel: true } }, courseLevel: true } }
                 }
               },
               materialItem: true,
@@ -217,8 +217,8 @@ export const coursesRouter = createTRPCRouter({
           placementTests: {
             include: {
               student: { include: { courseStatus: { include: { level: true } } } },
-              trainer: { include: { user: true } },
-              writtenTest: { include: { questions: true, submissions: true } },
+              tester: { include: { user: true } },
+              writtenTest: { include: { items: true, submissions: { include: { student: { include: { certificates: true } } } } } },
               course: { include: { levels: true } },
             }
           },
@@ -249,8 +249,8 @@ export const coursesRouter = createTRPCRouter({
           slug: levelSlug,
         },
         include: {
-          evaluationForms: true,
-          materialItems: { include: { evaluationForms: true } }
+          systemForms: true,
+          materialItems: { include: { systemForms: true } }
         }
       })
       if (!course || !level) throw new TRPCError({ code: "BAD_REQUEST", message: "no course or level found" })
@@ -278,7 +278,7 @@ export const coursesRouter = createTRPCRouter({
       privatePrice,
       instructorPrice,
     }, ctx }) => {
-      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+      if (!hasPermission(ctx.session.user, "courses", "create")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
 
       const course = await ctx.prisma.course.create({
         data: {
@@ -303,7 +303,7 @@ export const coursesRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input: { id }, ctx }) => {
-      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+      if (!hasPermission(ctx.session.user, "courses", "create")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
 
       const existingCourse = await ctx.prisma.course.findUnique({ where: { id }, include: { levels: true } })
       if (!existingCourse) throw new TRPCError({ code: "BAD_REQUEST", message: "can't find course" })
@@ -343,7 +343,7 @@ export const coursesRouter = createTRPCRouter({
       )
     )
     .mutation(async ({ input, ctx }) => {
-      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+      if (!hasPermission(ctx.session.user, "courses", "create")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
 
       const courses = await ctx.prisma.$transaction([
         ...input.map(({ description, groupPrice, image, instructorPrice, name, privatePrice, slug }) => ctx.prisma.course.create({
@@ -377,7 +377,7 @@ export const coursesRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input: { name, slug, id, description, groupPrice, image, instructorPrice, privatePrice } }) => {
-      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+      if (!hasPermission(ctx.session.user, "courses", "update")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
 
       const updatedCourse = await ctx.prisma.course.update({
         where: {
@@ -399,7 +399,7 @@ export const coursesRouter = createTRPCRouter({
   deleteCourses: protectedProcedure
     .input(z.array(z.string()))
     .mutation(async ({ input, ctx }) => {
-      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+      if (!hasPermission(ctx.session.user, "courses", "delete")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
       const deletedCourses = await ctx.prisma.course.deleteMany({
         where: {
           id: {

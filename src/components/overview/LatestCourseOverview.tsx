@@ -1,5 +1,5 @@
 import { formatDistanceToNow } from "date-fns";
-import { Card, CardFooter, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import Spinner from "../Spinner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 
 export const LatestCourseOverview = () => {
-  const { data, refetch } = api.courses.getLatest.useQuery(undefined, { enabled: false })
+  const { data, refetch, isLoading } = api.courses.getLatest.useQuery(undefined, { enabled: false })
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -31,7 +31,9 @@ export const LatestCourseOverview = () => {
         <Typography variant={"secondary"}>Latest courses</Typography>
       </CardHeader>
       <div className="flex flex-col">
-        {!data?.courses ? <Spinner className="animate-spin w-full" /> : data.courses.slice(0, 7).map((course, index) => {
+        {isLoading ? <Spinner className="animate-spin w-full" /> : data?.courses.length === 0 ? (
+          <Typography className="self-center">No Courses added yet.</Typography>
+        ) : data?.courses.map((course, index) => {
           const hasDivider = index < data.courses.length - 1;
           const ago = formatDistanceToNow(course.updatedAt);
 

@@ -5,11 +5,13 @@ import { LatestCourseOverview } from "./LatestCourseOverview";
 import { LatestOrdersOverview } from "./LatestOrdersOverview";
 import { api } from "@/lib/api";
 import { useEffect, useState } from "react";
+import { formatPercentage } from "@/lib/utils";
 
 export default function Dashboard() {
   const [monthlyTotalsThisYear, setMonthlyTotalsThisYear] = useState<number[]>([]);
   const [monthlyTotalsLastYear, setMonthlyTotalsLastYear] = useState<number[]>([]);
   const [mobilePercentage, setMobilePercentage] = useState(0);
+  const [tabletPercentage, setTabletPercentage] = useState(0);
   const [desktopPercentage, setDesktopPercentage] = useState(100);
 
   const refetchSales = api.orders.getAll.useQuery(undefined, { enabled: false }).refetch()
@@ -44,12 +46,14 @@ export default function Dashboard() {
       setMonthlyTotalsThisYear(monthlyTotalsThisYear);
       setMonthlyTotalsLastYear(monthlyTotalsLastYear);
 
-      const totalUsers = analyticsData.data?.data.length;
-      const desktopUsers = analyticsData.data?.data.filter((item) => item.device === "desktop").length;
-      const mobileUsers = totalUsers - desktopUsers;
+      const totalUsers = analyticsData.data?.data.filter((item) => item.device !== null).length;
+      const desktopUsers = analyticsData.data?.data.filter((item) => item.device === "Desktop").length;
+      const mobileUsers = analyticsData.data?.data.filter((item) => item.device === "Mobile").length;
+      const tabletUsers = analyticsData.data?.data.filter((item) => item.device === "Tablet").length;
 
-      setMobilePercentage(Number(((mobileUsers / totalUsers) * 100).toFixed()));
-      setDesktopPercentage(Number(((desktopUsers / totalUsers) * 100).toFixed()));
+      setMobilePercentage(mobileUsers / totalUsers * 100);
+      setTabletPercentage(tabletUsers / totalUsers * 100);
+      setDesktopPercentage(desktopUsers / totalUsers * 100);
     } catch (error) {
       console.error("Error fetching data: ", error);
     }
@@ -77,8 +81,8 @@ export default function Dashboard() {
           ]}
         />
         <TrafficOverview
-          chartSeries={[desktopPercentage, mobilePercentage]}
-          labels={["Desktop", "Phone"]}
+          chartSeries={[desktopPercentage, tabletPercentage, mobilePercentage]}
+          labels={["Desktop", "Tablet", "Phone"]}
         />
         <LatestCourseOverview />
         <LatestOrdersOverview />

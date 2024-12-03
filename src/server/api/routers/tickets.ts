@@ -5,12 +5,13 @@ import {
 } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { validSupportTicketStatus } from "@/lib/enumsTypes";
+import { hasPermission } from "@/server/permissions";
 
 export const ticketsRouter = createTRPCRouter({
     findOne: protectedProcedure
         .input(z.object({ id: z.string() }))
         .query(async ({ ctx, input: { id } }) => {
-            if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+            if (!hasPermission(ctx.session.user, "supportTickets", "view")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
             const ticket = await ctx.prisma.supportTicket.findUnique({
                 where: { id }
             });
@@ -19,7 +20,7 @@ export const ticketsRouter = createTRPCRouter({
         }),
     findAll: protectedProcedure
         .query(async ({ ctx }) => {
-            if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+            if (!hasPermission(ctx.session.user, "supportTickets", "view")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
             const tickets = await ctx.prisma.supportTicket.findMany({ include: { createdBy: true } });
 
             return { tickets };
@@ -35,7 +36,7 @@ export const ticketsRouter = createTRPCRouter({
             const ticket = await ctx.prisma.supportTicket.create({
                 data: {
                     info,
-                    status: "created",
+                    status: "Created",
                     subject,
                     createdBy: {
                         connect: {
@@ -72,7 +73,7 @@ export const ticketsRouter = createTRPCRouter({
                             userName: ctx.session.user.name || "No Name",
                         }
                     },
-                    status: old?.status === "closed" ? "opened" : undefined
+                    status: old?.status === "Closed" ? "Opened" : undefined
                 },
             });
 
@@ -107,7 +108,7 @@ export const ticketsRouter = createTRPCRouter({
     deleteTickets: protectedProcedure
         .input(z.array(z.string()))
         .mutation(async ({ input, ctx }) => {
-            if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+            if (!hasPermission(ctx.session.user, "supportTickets", "delete")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
             const deletedTickets = await ctx.prisma.supportTicket.deleteMany({
                 where: {
                     id: {

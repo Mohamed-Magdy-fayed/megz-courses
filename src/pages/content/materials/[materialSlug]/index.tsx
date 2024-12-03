@@ -131,7 +131,7 @@ const EditMaterialPage = () => {
 
   if (!data?.materialItem) return <Spinner className="mx-auto" />
 
-  if (data.materialItem.type === "upload") return (
+  if (data.materialItem.type === "Upload") return (
     <AppLayout>
       <div className="flex items-center gap-2">
         <Button variant={"icon"} customeColor={"infoIcon"} onClick={() => router.push(`/content/courses/${data.materialItem?.courseLevel?.course.slug}`)}>

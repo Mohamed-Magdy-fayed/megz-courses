@@ -9,6 +9,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "./scroll-area";
+import { DialogContentProps } from "@radix-ui/react-dialog";
+import { cn } from "@/lib/utils";
 
 interface ModalProps {
   title: string;
@@ -16,6 +18,7 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children?: ReactNode;
+  className?: DialogContentProps["className"];
 }
 
 export default function Modal({
@@ -24,6 +27,7 @@ export default function Modal({
   onClose,
   title,
   children,
+  className,
 }: ModalProps) {
   const onChange = (open: boolean) => {
     if (!open) {
@@ -32,7 +36,7 @@ export default function Modal({
   };
   return (
     <Dialog open={isOpen} onOpenChange={onChange}>
-      <DialogContent className="!w-fit !min-w-[30rem]">
+      <DialogContent className={cn("!w-fit !min-w-[30rem]", className)}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>

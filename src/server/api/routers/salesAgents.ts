@@ -6,17 +6,30 @@ import {
 } from "@/server/api/trpc";
 import bcrypt from "bcrypt";
 import { TRPCError } from "@trpc/server";
+import { hasPermission } from "@/server/permissions";
+import { validUserRoles } from "@/lib/enumsTypes";
 
 export const salesAgentsRouter = createTRPCRouter({
+    getBudget: protectedProcedure
+        .query(async ({ ctx }) => {
+            const zoomGroups = await ctx.prisma.zoomGroup.findMany({ include: { course: true } });
+
+            return {
+                zoomGroups: zoomGroups.map(group => ({
+                    ...group,
+                    groupCost: group.course?.instructorPrice,
+                }))
+            };
+        }),
     getSalesAgents: protectedProcedure
         .query(async ({ ctx }) => {
             const salesAgents = await ctx.prisma.salesAgent.findMany({
                 where: {
-                    user: { userType: "salesAgent" }
+                    user: { AND: [{ userRoles: { hasSome: ["SalesAgent", "OperationAgent"] } }, { NOT: { userRoles: { has: "Admin" } } }] }
                 },
                 include: {
                     user: true,
-                    tasks: true,
+                    leads: true,
                 },
             });
 
@@ -29,11 +42,11 @@ export const salesAgentsRouter = createTRPCRouter({
             })
         )
         .query(async ({ ctx, input: { id } }) => {
-            const salesAgent = await ctx.prisma.salesAgent.findUnique({
+            const SalesAgent = await ctx.prisma.salesAgent.findUnique({
                 where: { id },
-                include: { tasks: true },
+                include: { leads: true },
             });
-            return { salesAgent };
+            return { SalesAgent };
         }),
     getSalesAgentByEmail: publicProcedure
         .input(
@@ -46,7 +59,7 @@ export const salesAgentsRouter = createTRPCRouter({
                 where: {
                     email
                 },
-                include: { salesAgent: true },
+                include: { SalesAgent: true },
             });
 
             return { user };
@@ -57,13 +70,13 @@ export const salesAgentsRouter = createTRPCRouter({
                 name: z.string(),
                 email: z.string().email(),
                 password: z.string(),
-                phone: z.string().optional(),
+                phone: z.string(),
                 image: z.string().optional(),
-                salary: z.string(),
+                agentType: z.enum([validUserRoles[2], validUserRoles[6]]),
             })
         )
         .mutation(async ({ input, ctx }) => {
-            if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+            if (!hasPermission(ctx.session.user, "users", "create")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
             const hashedPassword = await bcrypt.hash(input.password, 10);
 
             // check if email is taken
@@ -82,11 +95,11 @@ export const salesAgentsRouter = createTRPCRouter({
                     hashedPassword,
                     phone: input.phone,
                     image: input.image,
-                    salesAgent: { create: { salary: input.salary } },
-                    userType: "salesAgent",
+                    SalesAgent: { create: {} },
+                    userRoles: [input.agentType],
                 },
                 include: {
-                    salesAgent: true,
+                    SalesAgent: true,
                 },
             });
 
@@ -102,15 +115,15 @@ export const salesAgentsRouter = createTRPCRouter({
                 image: z.string().optional(),
                 email: z.string().email(),
                 phone: z.string().optional(),
-                salary: z.string()
+                agentType: z.enum([validUserRoles[2], validUserRoles[6]]),
             })
         )
         .mutation(
             async ({
                 ctx,
-                input: { id, name, image, email, phone, salary },
+                input: { id, name, image, email, phone, agentType },
             }) => {
-                if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+                if (!hasPermission(ctx.session.user, "users", "delete", { id })) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
                 const updatedUser = await ctx.prisma.user.update({
                     where: {
                         id: id,
@@ -120,10 +133,10 @@ export const salesAgentsRouter = createTRPCRouter({
                         email,
                         image,
                         phone,
-                        salesAgent: { update: { salary } }
+                        userRoles: [agentType]
                     },
                     include: {
-                        salesAgent: true,
+                        SalesAgent: true,
                     },
                 });
 
@@ -133,7 +146,7 @@ export const salesAgentsRouter = createTRPCRouter({
     deleteSalesAgent: protectedProcedure
         .input(z.array(z.string()))
         .mutation(async ({ input, ctx }) => {
-            if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+            if (!hasPermission(ctx.session.user, "users", "delete")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
             const deletedSalesAgents = await ctx.prisma.user.deleteMany({
                 where: {
                     id: {

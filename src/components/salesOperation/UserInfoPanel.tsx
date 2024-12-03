@@ -1,18 +1,16 @@
 import { getInitials } from "@/lib/getInitials";
-import { Order, Lead, SalesAgent, SalesOperation, User } from "@prisma/client";
 import { PaperContainer } from "../ui/PaperContainers";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Typography } from "../ui/Typoghraphy";
+import { Prisma } from "@prisma/client";
 
 const UserInfoPanel = ({ data }: {
-    data: SalesOperation & {
-        assignee: (SalesAgent & {
-            user: User;
-        }) | null;
-        orderDetails: (Order & {
-            user: User;
-        }) | null;
-    }
+    data: Prisma.LeadGetPayload<{
+        include: {
+            assignee: { include: { user: true } },
+            orderDetails: { include: { user: true, course: true } },
+        }
+    }>
 }) => {
     return (
         <PaperContainer className="mt-4 p-4 flex-grow">

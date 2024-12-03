@@ -12,7 +12,7 @@ export type ActiveLinkType =
   | "students"
   | "edu_team"
   | "ops_team"
-  | "sales_operations"
+  | "leads"
   | "chat_agents"
   | "content"
   | "leads"
@@ -26,7 +26,7 @@ export type ActiveLinkType =
   | null;
 
 interface SideNavState {
-  opened: boolean;
+  Opened: boolean;
   activeLink: ActiveLinkType;
   setActiveLink: (link: ActiveLinkType) => void;
   openNav: () => void;
@@ -34,12 +34,12 @@ interface SideNavState {
 }
 
 export const useNavStore = create<SideNavState>()((set) => ({
-  opened: false,
+  Opened: false,
   activeLink: null,
   setActiveLink: (link) =>
-    set(() => ({ opened: false, activeLink: link })),
-  openNav: () => set(() => ({ opened: true })),
-  closeNav: () => set(() => ({ opened: false })),
+    set(() => ({ Opened: false, activeLink: link })),
+  openNav: () => set(() => ({ Opened: true })),
+  closeNav: () => set(() => ({ Opened: false })),
 }));
 
 export interface AnswerCard {
@@ -59,7 +59,7 @@ export interface DraggingState {
   cards: AnswerCard[];
   areas: AnswerArea[];
   submission: {
-    completed: boolean;
+    Completed: boolean;
     correctAreas: AnswerArea[];
     attempts: number;
     highestScore: number;
@@ -84,7 +84,7 @@ export const useDraggingStore = create<DraggingState>()(
         areas: [],
         submission: {
           attempts: 0,
-          completed: false,
+          Completed: false,
           correctAreas: [],
           highestScore: 0,
         },
@@ -145,7 +145,7 @@ export const useDraggingStore = create<DraggingState>()(
             return {
               submission: {
                 attempts: state.submission.attempts + 1,
-                completed: true,
+                Completed: true,
                 correctAreas: correctAreas,
                 highestScore: (correctAreas.length / state.areas.length) * 100,
               },
@@ -184,7 +184,7 @@ export interface ControlledPracticeQuestion {
 export interface ControlledPracticeMultichoiceState {
   questions: Question[];
   submission: {
-    completed: boolean;
+    Completed: boolean;
     correctAnswers: Question[];
     attempts: number;
     highestScore: number;
@@ -203,7 +203,7 @@ export const useControlledPracticeMultichoiceStore =
         return {
           questions: [],
           submission: {
-            completed: false,
+            Completed: false,
             correctAnswers: [],
             attempts: 0,
             highestScore: 0,
@@ -241,7 +241,7 @@ export const useControlledPracticeMultichoiceStore =
 
               console.log({
                 submission: {
-                  completed: true,
+                  Completed: true,
                   attempts: state.submission.attempts + 1,
                   correctAnswers: correctAnswers,
                   highestScore:
@@ -251,7 +251,7 @@ export const useControlledPracticeMultichoiceStore =
 
               return {
                 submission: {
-                  completed: true,
+                  Completed: true,
                   attempts: state.submission.attempts + 1,
                   correctAnswers: correctAnswers,
                   highestScore:

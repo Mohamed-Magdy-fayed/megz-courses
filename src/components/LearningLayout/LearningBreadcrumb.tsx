@@ -35,8 +35,8 @@ export function LearningBreadcrumb({ level, course }: {
         if (segment === "my_courses") return "My Courses"
         if (index === 2) return course.name
         if (index === 3) return level.name
-        if (index === 4 && pathSegments[4] === "quiz") return `Session ${level.materialItems.findIndex(({ evaluationForms }) => evaluationForms.find(({ id }) => id === pathSegments[pathSegments.length - 1])?.id) + 1} Quiz`
-        if (index === 4 && pathSegments[4] === "assignment") return `Session ${level.materialItems.findIndex(({ evaluationForms }) => evaluationForms.find(({ id }) => id === pathSegments[pathSegments.length - 1])?.id) + 1} Assignment`
+        if (index === 4 && pathSegments[4] === "Quiz") return `Session ${level.materialItems.findIndex(({ systemForms }) => systemForms.find(({ id }) => id === pathSegments[pathSegments.length - 1])?.id) + 1} Quiz`
+        if (index === 4 && pathSegments[4] === "Assignment") return `Session ${level.materialItems.findIndex(({ systemForms }) => systemForms.find(({ id }) => id === pathSegments[pathSegments.length - 1])?.id) + 1} Assignment`
         if (index === 4 && pathSegments[4] === "session") return `Session: ${level.materialItems.find(({ slug }) => slug === pathSegments[pathSegments.length - 1])?.title || "no title"}`
         if (index === 4 && pathSegments[4] === "final_test") return `Final Test`
         if (index === 4 && pathSegments[4] === "certificate") return `Certificate`

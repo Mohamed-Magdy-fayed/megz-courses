@@ -5,11 +5,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Input } from "../ui/input";
-import MaterialImageUpload from "../ui/MaterialImageUpload";
 import { api } from "@/lib/api";
 import { useToast } from "../ui/use-toast";
-import { sendWhatsAppMessage } from "@/lib/whatsApp";
-import { formatPrice } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import ImageUploader from "@/components/ui/ImageUploader";
 
@@ -57,15 +54,8 @@ export const PaymentForm = ({
         payOrderManuallyMutation.mutate({ amount: paymentAmount, id, paymentConfirmationImage: paymentConfirmation }, {
             onSuccess: ({ courseLink, updatedOrder }) => {
                 toastSuccess(`order ${updatedOrder.orderNumber} payment status updated!`)
-                if (updatedOrder.user.phone) {
-                    sendWhatsAppMessage({
-                        textBody: `Payment successfull ${updatedOrder.orderNumber} with ${formatPrice(updatedOrder.amount)}
-                        \nYour can now access the content through this link: ${courseLink}`,
-                        toNumber: updatedOrder.user.phone
-                    })
-                }
                 onClose()
-                trpcUtils.salesOperations.invalidate().then(() => {
+                trpcUtils.leads.invalidate().then(() => {
                     setLoading(false)
                 })
             },

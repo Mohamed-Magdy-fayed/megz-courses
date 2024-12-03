@@ -38,6 +38,7 @@ import { downloadTemplate, exportToExcel, importFromExcel } from "@/lib/xlsx";
 import { useDropFile } from "@/hooks/useDropFile";
 import { Input } from "@/components/ui/input";
 import { toastType, useToast } from "@/components/ui/use-toast";
+import { hasPermission } from "@/server/permissions";
 
 type Cursor = Prisma.UserFindManyArgs["cursor"]
 type OrderBy = Prisma.UserFindManyArgs["orderBy"]
@@ -176,7 +177,7 @@ export function DataTable<TData, TValue>({
         loading={loading}
       />}
       <div className="flex flex-col py-4 lg:flex-row lg:py-0 items-center justify-between gap-4">
-        {sessionData?.user.userType !== "student" && !isSuperSimple && (
+        {sessionData?.user && hasPermission(sessionData?.user, "adminLayout", "view") && !isSuperSimple && (
           <div className="flex items-center gap-8">
             <Typography>Total records {table.getCoreRowModel().rows.length}</Typography>
             {exportConfig && (
@@ -388,7 +389,7 @@ export function DataTable<TData, TValue>({
                           <div className="flex items-center gap-4">
                             <TableSelectField
                               data={filters.find(f => f.key === header.id)?.values.map(val => ({
-                                active: true,
+                                Active: true,
                                 label: val.label,
                                 value: val.value,
                                 customLabel: (

@@ -19,14 +19,17 @@ import { CardContent, CardFooter } from "../ui/card";
 import ImageUploader from "../ui/ImageUploader";
 import Spinner from "@/components/Spinner";
 import { SalesAgentsColumn } from "@/components/salesAgentComponents/SalesAgentColumn";
+import MobileNumberInput from "@/components/ui/phone-number-input";
+import { validUserRoles } from "@/lib/enumsTypes";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name can't be empty"),
   email: z.string().email(),
-  password: z.string().optional(),
+  password: z.string(),
   image: z.string().optional(),
-  phone: z.string().optional(),
-  salary: z.string(),
+  phone: z.string(),
+  agentType: z.enum([validUserRoles[6], validUserRoles[2]]),
 });
 
 type SalesAgentFormValues = z.infer<typeof formSchema>;
@@ -48,7 +51,7 @@ const SalesAgentForm: React.FC<SalesAgentFormProps> = ({ setIsOpen, initialData 
     password: "",
     image: initialData?.image || "",
     phone: initialData?.phone || "",
-    salary: initialData?.salary || "",
+    agentType: initialData?.agentType[0] ? initialData.agentType[0] === "OperationAgent" ? "OperationAgent" : initialData.agentType[0] === "SalesAgent" ? "SalesAgent" : "SalesAgent" : "SalesAgent",
   };
 
   const form = useForm<SalesAgentFormValues>({
@@ -66,7 +69,7 @@ const SalesAgentForm: React.FC<SalesAgentFormProps> = ({ setIsOpen, initialData 
       loadingToast?.update({
         id: loadingToast.id,
         title: "Success",
-        description: `Sales Agent account created with email: ${user.email}`,
+        description: `Sales Agent account Created with email: ${user.email}`,
         variant: "success",
       })
       setIsOpen(false)
@@ -112,13 +115,12 @@ const SalesAgentForm: React.FC<SalesAgentFormProps> = ({ setIsOpen, initialData 
   const trpcUtils = api.useUtils();
   const { toast } = useToast()
 
-  const handleSubmit = ({ email, name, salary, image, password, phone }: SalesAgentFormValues) => {
-    if (!!password) return createSalesAgentMutation.mutate({
-      email, name, password, salary, image, phone
-    });
+  const handleSubmit = (data: SalesAgentFormValues) => {
     if (initialData) return editSalesAgentMutation.mutate({
-      id: initialData.id, email, name, salary, phone, image,
+      id: initialData.id, ...data
     })
+    if (!data.password) return toast({ title: "Error", description: "Please enter a password!", variant: "destructive" })
+    createSalesAgentMutation.mutate({ ...data, password: data.password });
   };
 
   return (
@@ -146,24 +148,6 @@ const SalesAgentForm: React.FC<SalesAgentFormProps> = ({ setIsOpen, initialData 
                   />
                 </FormControl>
                 <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="salary"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Salary</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    disabled={!!loadingToast}
-                    placeholder="$12000"
-                    {...field}
-
-                  />
-                </FormControl>
               </FormItem>
             )}
           />
@@ -232,13 +216,50 @@ const SalesAgentForm: React.FC<SalesAgentFormProps> = ({ setIsOpen, initialData 
               <FormItem>
                 <FormLabel>Phone</FormLabel>
                 <FormControl>
-                  <Input
-                    type="tel"
+                  <MobileNumberInput
+                    setValue={(val) => field.onChange(val)}
                     disabled={!!loadingToast}
-                    placeholder="01234567899"
+                    placeholder="01X XXXXXXXX"
+                    onError={(isError) => {
+                      form.clearErrors("phone")
+                      if (isError) {
+                        form.setError("phone", { message: "Not a valid number!" })
+                        return
+                      }
+                    }}
                     {...field}
                   />
                 </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="agentType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Agent Role</FormLabel>
+                <Select
+                  disabled={!!loadingToast}
+                  // @ts-ignore
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger className="pl-8">
+                      <SelectValue
+                        defaultValue={field.value}
+                        placeholder="Select agent role"
+                      />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="SalesAgent">Sales Agent</SelectItem>
+                    <SelectItem value="OperationAgent">Operation Agent</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
               </FormItem>
             )}
           />

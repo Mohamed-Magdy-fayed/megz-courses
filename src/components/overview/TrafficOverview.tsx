@@ -1,5 +1,5 @@
 import { Chart } from "@/components/overview/Chart";
-import { Laptop, Smartphone } from 'lucide-react'
+import { Laptop, Smartphone, TabletIcon } from 'lucide-react'
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Typography } from "@/components/ui/Typoghraphy";
 
@@ -21,7 +21,7 @@ const useChartOptions = (labels: string[]) => {
       },
     },
     states: {
-      active: {
+      Active: {
         filter: {
           type: "none",
         },
@@ -46,6 +46,9 @@ const useChartOptions = (labels: string[]) => {
 const iconMap = {
   Desktop: (
     <Laptop />
+  ),
+  Tablet: (
+    <TabletIcon />
   ),
   Phone: (
     <Smartphone />
@@ -77,7 +80,7 @@ export const TrafficOverview = ({
           width="100%"
         />
         <div
-          className="items-center flex justify-center gap-2 mt-2"
+          className="items-center flex justify-center gap-4 mt-2"
         >
           {chartSeries.map((item, index) => {
             const label = labels[index] as keyof typeof iconMap;
@@ -93,7 +96,7 @@ export const TrafficOverview = ({
                   {label}
                 </Typography>
                 <Typography variant="bodyText">
-                  {item}%
+                  {item || 0}%
                 </Typography>
               </div>
             );

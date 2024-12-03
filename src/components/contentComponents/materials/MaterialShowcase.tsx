@@ -10,7 +10,7 @@ import { storage } from "@/config/firebase";
 import useFileDownload from "@/hooks/useFileDownload";
 import { cn } from "@/lib/utils";
 import { useDraggingStore } from "@/zustand/store";
-import { Course, CourseLevel, EvaluationForm, MaterialItem, ZoomSession } from "@prisma/client";
+import { Course, CourseLevel, MaterialItem, SystemForm, ZoomSession } from "@prisma/client";
 import { getDownloadURL, listAll, ListResult, ref } from "firebase/storage";
 import { Download, Copy, Trash } from "lucide-react";
 import Image from "next/image";
@@ -25,7 +25,7 @@ type MaterialShowcaseProps = {
     };
     materialItem: MaterialItem & {
         zoomSessions: ZoomSession[];
-        evaluationForms: EvaluationForm[];
+        systemForms: SystemForm[];
     }
 }
 
@@ -87,7 +87,7 @@ const MaterialShowcase: FC<MaterialShowcaseProps> = ({ materialItem, course }) =
         }
     }, [pathQuery])
 
-    if (materialItem.type === "upload") return (
+    if (materialItem.type === "Upload") return (
         <div className="flex flex-col gap-2 p-2">
             <Typography variant={"secondary"}>{materialItem.title} Downloadables</Typography>
             {loading ? (
@@ -159,7 +159,7 @@ const MaterialShowcase: FC<MaterialShowcaseProps> = ({ materialItem, course }) =
                         {materialItem.subTitle}
                     </Typography>
                 </div>
-                {submission.completed && (
+                {submission.Completed && (
                     <div className="flex flex-col gap-2 whitespace-nowrap p-4 [&>*]:text-sm">
                         <Typography
                             className={cn(

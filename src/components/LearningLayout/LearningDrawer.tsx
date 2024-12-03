@@ -56,9 +56,9 @@ export default function LearningDrawer({ level, course, user, siteIdentity }: {
         <>
           <Typography variant={"secondary"}>{level.name}</Typography>
           {level.materialItems.length === 0 && <Typography>No materials available yet!</Typography>}
-          <ScrollArea className="w-min h-screen">
+          <ScrollArea className="w-min h-[50vh]">
             <div className="flex flex-col items-center gap-2">
-              {user.courseStatus.some(s => s.courseId === course.id && s.status === "waiting") ? (
+              {user.courseStatus.some(s => s.courseId === course.id && s.status === "Waiting") ? (
                 <Typography className="whitespace-nowrap">
                   Group not started yet
                 </Typography>
@@ -84,9 +84,9 @@ export default function LearningDrawer({ level, course, user, siteIdentity }: {
                             <Link
                               className={cn(
                                 "flex items-center justify-between gap-2 whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-primary hover:text-primary-foreground",
-                                zoomSession?.sessionStatus === "scheduled" && "pointer-events-none text-muted",
+                                zoomSession?.sessionStatus === "Scheduled" && "pointer-events-none text-muted",
                               )}
-                              href={`/my_courses/${course.slug}/${level.slug}/quiz/${item.slug}`}
+                              href={`/my_courses/${course.slug}/${level.slug}/Quiz/${item.slug}`}
                               onClick={() => {
                                 navStore.closeNav();
                               }}
@@ -99,7 +99,7 @@ export default function LearningDrawer({ level, course, user, siteIdentity }: {
                             <Link
                               className={cn(
                                 "flex items-center justify-between gap-2 whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-primary hover:text-primary-foreground",
-                                (zoomSession?.sessionStatus && ["starting", "scheduled"].includes(zoomSession.sessionStatus)) && "pointer-events-none text-muted",
+                                (zoomSession?.sessionStatus && ["Starting", "Scheduled"].includes(zoomSession.sessionStatus)) && "pointer-events-none text-muted",
                               )}
                               href={`/my_courses/${course.slug}/${level.slug}/session/${item.slug}`}
                               onClick={() => {
@@ -114,15 +114,15 @@ export default function LearningDrawer({ level, course, user, siteIdentity }: {
                             <Link
                               className={cn(
                                 "flex items-center justify-between gap-2 whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-primary hover:text-primary-foreground",
-                                zoomSession?.sessionStatus !== "completed" && "pointer-events-none text-muted",
+                                zoomSession?.sessionStatus !== "Completed" && "pointer-events-none text-muted",
                               )}
-                              href={`/my_courses/${course.slug}/${level.slug}/assignment/${item.slug}`}
+                              href={`/my_courses/${course.slug}/${level.slug}/Assignment/${item.slug}`}
                               onClick={() => {
                                 navStore.closeNav();
                               }}
                             >
                               <Typography>
-                                {`Session ${i + 1} assignment`}
+                                {`Session ${i + 1} Assignment`}
                               </Typography>
                               <BookOpenCheck className="w-4 h-4" />
                             </Link>
@@ -142,7 +142,7 @@ export default function LearningDrawer({ level, course, user, siteIdentity }: {
                         <Link
                           className={cn(
                             "flex items-center justify-between gap-2 whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-primary hover:text-primary-foreground",
-                            !user.zoomGroups.some(group => group.courseId === course.id && group.zoomSessions.every(session => session.sessionStatus === "completed")) && "pointer-events-none text-muted"
+                            !user.zoomGroups.some(group => group.courseId === course.id && group.zoomSessions.every(session => session.sessionStatus === "Completed")) && "pointer-events-none text-muted"
                           )}
                           onClick={() => {
                             navStore.closeNav();

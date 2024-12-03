@@ -21,21 +21,21 @@ export type LearningLayoutCourseType = Prisma.CourseGetPayload<{
                 materialItems: {
                     include: {
                         courseLevel: true,
-                        evaluationForms: { include: { materialItem: { include: { courseLevel: true } }, questions: true, submissions: true } }
+                        systemForms: { include: { materialItem: { include: { courseLevel: true } }, items: { include: { questions: { include: { options: true } } } }, submissions: true } }
                     }
                 },
-                evaluationForms: { include: { materialItem: true, questions: true, submissions: true, courseLevel: true } },
+                systemForms: { include: { materialItem: true, items: { include: { questions: { include: { options: true } } } }, submissions: true, courseLevel: true } },
                 course: true,
                 zoomGroups: true,
             },
         },
-        evaluationForms: {
+        systemForms: {
             include: {
-                questions: true,
+                items: { include: { questions: { include: { options: true } } } },
                 submissions: {
                     include: {
                         student: { include: { certificates: true } },
-                        evaluationForm: { include: { materialItem: { include: { courseLevel: true } } } }
+                        systemForm: { include: { materialItem: { include: { courseLevel: true } } } }
                     }
                 },
                 materialItem: true
@@ -46,12 +46,12 @@ export type LearningLayoutCourseType = Prisma.CourseGetPayload<{
         placementTests: {
             include: {
                 student: { include: { courseStatus: { include: { level: true } } } },
-                trainer: { include: { user: true } },
-                writtenTest: { include: { questions: true, submissions: true } },
+                tester: { include: { user: true } },
+                writtenTest: { include: { items: { include: { questions: { include: { options: true } } } }, submissions: true } },
                 course: { include: { levels: true } },
             }
         },
-        courseStatus: { include: { user: { include: { orders: true } }, level: true } }
+        courseStatus: { include: { user: { include: { orders: true } }, level: true } },
     },
 }>
 
@@ -61,19 +61,19 @@ export type LearningLayoutLevelType = Prisma.CourseLevelGetPayload<{
         certificates: true,
         course: true,
         courseStatus: true,
-        evaluationForms: { include: { questions: true, submissions: true } },
-        materialItems: { include: { evaluationForms: true } },
+        systemForms: { include: { items: { include: { questions: { include: { options: true } } } }, submissions: true } },
+        materialItems: { include: { systemForms: { include: { items: { include: { questions: { include: { options: true } } } } } } } },
     },
 }>
 
 export type LearningLayoutUserType = Prisma.UserGetPayload<{
     include: {
         orders: { include: { course: { include: { levels: true, orders: { include: { user: true } } } } } },
-        evaluationFormSubmissions: true,
-        zoomGroups: { include: { zoomSessions: true, trainer: { include: { user: true } }, course: true, students: true, courseLevel: true }, },
+        systemFormSubmissions: true,
+        zoomGroups: { include: { zoomSessions: true, teacher: { include: { user: true } }, course: true, students: true, courseLevel: true }, },
         placementTests: {
             include: {
-                trainer: { include: { user: true } },
+                tester: { include: { user: true } },
                 course: { include: { levels: true } },
                 student: { include: { courseStatus: { include: { level: true } } } },
                 writtenTest: { include: { submissions: true } }
@@ -86,7 +86,7 @@ export type LearningLayoutUserType = Prisma.UserGetPayload<{
 }>
 
 const LearningLayout = ({ children }: LearningLayoutProps) => {
-    const { opened, openNav, closeNav } = useNavStore();
+    const { Opened, openNav, closeNav } = useNavStore();
 
     const { course, level, user } = useLoadLearningData()
     const { data, refetch } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: false })
@@ -96,8 +96,8 @@ const LearningLayout = ({ children }: LearningLayoutProps) => {
     if (!course || !user) return (
         <div className="flex">
             <Sheet
-                open={opened}
-                onOpenChange={() => opened ? closeNav() : openNav()}
+                open={Opened}
+                onOpenChange={() => Opened ? closeNav() : openNav()}
             >
                 <SheetContent side="left" className="p-0 w-min">
                     <Skeleton className='w-40 h-80 rounded-none bg-foreground' />
@@ -120,8 +120,8 @@ const LearningLayout = ({ children }: LearningLayoutProps) => {
     return (
         <div className="flex">
             <Sheet
-                open={opened}
-                onOpenChange={() => opened ? closeNav() : openNav()}
+                open={Opened}
+                onOpenChange={() => Opened ? closeNav() : openNav()}
             >
                 <SheetContent side="left" className="p-0 w-min">
                     <LearningDrawer user={user} course={course} level={!level ? undefined : level} />

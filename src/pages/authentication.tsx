@@ -13,6 +13,10 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { Lock } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Spinner from "@/components/Spinner";
+import { hasPermission } from "@/server/permissions";
+import Link from "next/link";
+import Image from "next/image";
+import authImage from '../../public/authImage.jpg'
 
 const AuthenticationPage = () => {
   const defaultVariant = useRouter().query.variant as "login" | "register"
@@ -24,7 +28,7 @@ const AuthenticationPage = () => {
 
   useEffect(() => {
     setLoading(true)
-    if (session.status === "authenticated") session.data.user.userType === "student" ? router.push("/") : router.push("/dashboard");
+    if (session.status === "authenticated") !hasPermission(session.data.user, "adminLayout", "view") ? router.push("/") : router.push("/dashboard");
     if (session.status !== "loading" && session.status !== "authenticated") setLoading(false)
   }, [session.status]);
 
@@ -134,14 +138,19 @@ const AuthenticationPage = () => {
                 </Typography>
               </Button>
             </div>
+            <div>
+              <Link href="/">
+                <Button variant="link">
+                  Continue to home page
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </ScrollArea>
-      <Skeleton className="w-full h-full lg:grid place-content-center hidden" >
-        <ImageIcon size={200}></ImageIcon>
-      </Skeleton>
+      <Image className="object-contain lg:grid place-content-center h-[80vh] w-full hidden" src={authImage} alt="Image" width={500} height={500}></Image>
       <div className="lg:col-span-2">
-        <div className="grid place-content-center border-t border-t-slate-700 pt-8">
+        <div className="grid place-content-center border-t border-t-muted pt-8">
           <Copyright />
         </div>
       </div>

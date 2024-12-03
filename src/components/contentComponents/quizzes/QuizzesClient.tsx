@@ -11,19 +11,19 @@ const QuizzesClient = ({ formattedData }: { formattedData: QuizRow[] }) => {
     const [loadingToast, setLoadingToast] = useState<toastType | undefined>()
 
     const trpcUtils = api.useUtils()
-    const deleteMutation = api.evaluationForm.deleteEvalForm.useMutation(
+    const deleteMutation = api.systemForms.deleteSystemForms.useMutation(
         createMutationOptions({
             trpcUtils,
             loadingToast,
             setLoadingToast,
             toast,
-            successMessageFormatter: ({ deletedEvalForms }) => `${deletedEvalForms.count} forms deleted`,
+            successMessageFormatter: ({ deletedSystemForms }) => `${deletedSystemForms.count} forms deleted`,
             loadingMessage: "Deleting..."
         })
     )
 
     const onDelete = (callback?: () => void) => {
-        deleteMutation.mutate({ ids }, {
+        deleteMutation.mutate(ids, {
             onSuccess: () => {
                 callback?.()
             }
@@ -46,10 +46,13 @@ const QuizzesClient = ({ formattedData }: { formattedData: QuizRow[] }) => {
                         .map(title => ({ label: title, value: title }))
                 },
                 {
-                    key: "createdBy", filterName: "Created By", values: [...formattedData.map(d => ({
-                        label: d.createdBy,
-                        value: d.createdBy,
-                    }))]
+                    key: "createdBy", filterName: "Created By", values: [...formattedData
+                        .map(d => d.createdBy)
+                        .filter((value, index, self) => self.indexOf(value) === index)
+                        .map(val => ({
+                            label: val,
+                            value: val,
+                        }))]
                 },
             ]}
             dateRanges={[{ key: "createdAt", label: "Created On" }]}

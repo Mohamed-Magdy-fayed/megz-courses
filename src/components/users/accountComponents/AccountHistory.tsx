@@ -1,14 +1,16 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Typography } from '@/components/ui/Typoghraphy'
 import AccountPaymentClient from '@/components/users/accountComponents/AccountPaymentClient'
-import { Order, User } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import { Separator } from '@radix-ui/react-select'
 import React from 'react'
 
 const AccountHistory = ({ user }: {
-    user: (User & {
-        orders: Order[];
-    });
+    user: Prisma.UserGetPayload<{
+        include: {
+            orders: true,
+        }
+    }>
 }) => {
     return (
         <Card>

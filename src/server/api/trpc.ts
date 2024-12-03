@@ -3,7 +3,7 @@
  * 1. You want to modify request context (see Part 1).
  * 2. You want to create a new middleware or type of procedure (see Part 3).
  *
- * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
+ * TL;DR - This is where all the tRPC server stuff is Created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
 
@@ -14,6 +14,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 import { getServerAuthSession } from "@/server/auth";
 import { prisma } from "@/server/db";
+import { Devices } from "@prisma/client";
 
 /**
  * 1. CONTEXT
@@ -37,7 +38,7 @@ type CreateContextOptions = {
  *
  * @see https://create.t3.gg/en/usage/trpc#-serverapitrpcts
  */
-const createInnerTRPCContext = (opts: CreateContextOptions) => {
+export const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
     session: opts.session,
     prisma,
@@ -56,10 +57,29 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   // Get the session from the server using the getServerSession wrapper function
   const session = await getServerAuthSession({ req, res });
 
+  const userAgent = req.headers["user-agent"] || '';
+  const device = getDeviceType(userAgent);
+
+  session?.user && await prisma.user.update({
+    where: { id: session.user.id },
+    data: { device },
+  })
+
   return createInnerTRPCContext({
     session,
   });
 };
+
+// Function to determine the device type based on the user-agent
+function getDeviceType(userAgent: string): Devices {
+  if (/Mobile|iPhone|Android/.test(userAgent)) {
+    return "Mobile";
+  } else if (/Tablet|iPad/.test(userAgent)) {
+    return "Tablet";
+  } else {
+    return "Desktop";
+  }
+}
 
 /**
  * 2. INITIALIZATION
@@ -123,7 +143,7 @@ const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
   });
 });
 const enforceUserIsAdmin = t.middleware(({ ctx, next }) => {
-  if (!ctx.session || !ctx.session.user || ctx.session.user.userType !== "admin") {
+  if (!ctx.session || !ctx.session.user || !ctx.session.user.userRoles.includes("Admin")) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
   return next({

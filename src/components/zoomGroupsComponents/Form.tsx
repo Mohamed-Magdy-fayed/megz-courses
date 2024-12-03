@@ -4,15 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Typography } from "../ui/Typoghraphy";
 import { toastType, useToast } from "../ui/use-toast";
-import SelectField from "../salesOperation/SelectField";
+import SelectField from "../ui/SelectField";
 import Spinner from "../Spinner";
 import { DatePicker } from "../ui/DatePicker";
 import { CourseType, getLevelWaitingList, getWaitingList } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
-import { sendWhatsAppMessage } from "@/lib/whatsApp";
-import { format } from "date-fns";
+import { createMutationOptions } from "@/lib/mutationsHelper";
+import SingleSelectField from "@/components/SingleSelectField";
 
 interface ZoomGroupFormProps {
     setIsOpen: (val: boolean) => void;
@@ -26,136 +26,52 @@ interface ZoomGroupFormProps {
         },
         startDate: Date,
         studentIds: string[],
-        trainerId: string,
+        teacherId: string,
     };
 }
 const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
     const [loading, setLoading] = useState(false);
     const [course, setCourse] = useState<CourseType>();
-    const [courseId, setCourseId] = useState<string[]>(initialData ? [initialData.courseId] : []);
-    const [courseLevelId, setCourseLevelId] = useState<string[]>(initialData ? [initialData.courseLevel.id] : []);
-    const [userIds, setUserIds] = useState<string[]>(initialData ? initialData.studentIds : []);
-    const [trainerId, setTrainerId] = useState<string[]>(initialData ? [initialData.trainerId] : []);
+    const [teacherId, setTeacherId] = useState(initialData?.teacherId);
+    const [courseId, setCourseId] = useState(initialData?.courseId);
+    const [courseLevelId, setCourseLevelId] = useState(initialData?.courseLevel.id);
+    const [studentIds, setStudentIds] = useState<string[]>(initialData ? initialData.studentIds : []);
     const [date, setDate] = useState<Date | undefined>(initialData ? initialData.startDate : new Date());
     const [loadingToast, setLoadingToast] = useState<toastType>()
     const { toast } = useToast()
 
     const action = initialData ? "Edit" : "Create";
 
-    const { data: trainersData } = api.trainers.getTrainers.useQuery();
+    const { data: teachersData } = api.trainers.getTeachers.useQuery();
     const { data: coursesData } = api.courses.getAll.useQuery();
-    const availableZoomClientMutation = api.zoomAccounts.getAvailableZoomClient.useMutation({
-        onMutate: () => {
-            setLoading(true)
-            setLoadingToast(toast({
-                title: "Loading...",
-                variant: "info",
-                description: (
-                    <Spinner className="h-4 w-4" />
-                ),
-                duration: 30000,
-            }))
-        },
-        onSuccess: ({ zoomClient }) => {
-            if (!zoomClient?.id) {
-                loadingToast?.update({
-                    id: loadingToast.id,
-                    title: "Error",
-                    description: "No available Zoom Accounts at the selected time!",
-                    variant: "destructive",
-                })
-                setLoading(false)
-                loadingToast?.dismissAfter()
-                setLoadingToast(undefined)
-                return
-            }
-            refreshTokenMutation.mutate({ zoomClientId: zoomClient.id }, {
-                onSuccess: ({ updatedZoomClient }) => {
-                    createMeetingMutation.mutate({
-                        courseId: courseId[0]!,
-                        trainerId: trainerId[0]!,
-                        startDate: date!,
-                        courseLevelId: courseLevelId[0]!,
-                        zoomClientId: updatedZoomClient.id!,
-                    }, {
-                        onSuccess: ({ meetingNumber, meetingPassword, groupNumber, meetingLink }) => {
-                            createZoomGroupMutation.mutate({
-                                groupNumber,
-                                meetingNumber,
-                                meetingPassword,
-                                meetingLink,
-                                zoomClientId: updatedZoomClient.id!,
-                                courseId: courseId[0]!,
-                                trainerId: trainerId[0]!,
-                                courseLevelId: courseLevelId[0]!,
-                                startDate: date!,
-                                studentIds: userIds,
-                            }, {
-                                onSuccess: (data) => {
-                                    data.zoomGroup.students.forEach(student => {
-                                        if (student.phone) {
-                                            sendWhatsAppMessage({
-                                                toNumber: student.phone,
-                                                textBody: `Hi ${student.name},
-                                                \n\nCongratulations, you have been added to a group to start your course.
-                                                \nGroup start date: ${format(data.zoomGroup.startDate, "PPPp")}
-                                                \nGroup days: ${format(data.zoomGroup.zoomSessions[0]?.sessionDate!, "iiii")} and ${format(data.zoomGroup.zoomSessions[1]?.sessionDate!, "iiii")}
-                                                \nGroup Time: ${format(data.zoomGroup.startDate, "pp")}
-                                                \nGroup Teacher: ${data.zoomGroup.trainer?.user.name}
-                                                \n\nOur Team.`,
-                                            })
-                                        }
-                                    })
-                                    trpcUtils.zoomGroups.invalidate()
-                                        .then(() => {
-                                            loadingToast?.update({
-                                                id: loadingToast.id,
-                                                title: "Success",
-                                                description: `Group ${data.zoomGroup.groupNumber} created successfully!`,
-                                                variant: "success",
-                                                duration: 2000,
-                                            })
-                                            setIsOpen(false);
-                                            setLoading(false);
-                                        })
-                                },
-                                onError: ({ message }) => {
-                                    loadingToast?.update({
-                                        id: loadingToast.id,
-                                        title: "Error",
-                                        description: message,
-                                        duration: 2000,
-                                        variant: "destructive",
-                                    })
-                                    setLoading(false);
-                                },
-                            })
-                        },
-                        onError: ({ message }) => {
-                            loadingToast?.update({
-                                id: loadingToast.id,
-                                title: "Error",
-                                description: message,
-                                duration: 2000,
-                                variant: "destructive",
-                            })
-                            setLoading(false)
-                        },
-                    })
-                },
-            })
-        },
-    });
-    const refreshTokenMutation = api.zoomMeetings.refreshToken.useMutation();
-    const createMeetingMutation = api.zoomMeetings.createMeeting.useMutation();
-    const createZoomGroupMutation = api.zoomGroups.createZoomGroup.useMutation();
-    const editZoomGroupMutation = api.zoomGroups.editZoomGroup.useMutation();
     const trpcUtils = api.useUtils();
+    const createZoomGroupMutation = api.zoomGroups.createZoomGroup.useMutation(
+        createMutationOptions({
+            toast,
+            loadingToast,
+            setLoadingToast,
+            trpcUtils,
+            successMessageFormatter: ({ zoomGroup }) => {
+                setIsOpen(false)
+                return `${zoomGroup.groupNumber} Group Created`
+            },
+        })
+    );
+    const editZoomGroupMutation = api.zoomGroups.editZoomGroup.useMutation();
     const { toastError, toastSuccess } = useToast()
 
     const onCreate = () => {
         if (!date) return toastError("Please select the start date!")
-        availableZoomClientMutation.mutate({ startDate: date })
+        if (!teacherId) return toastError("Please select the trainer!")
+        if (!courseId) return toastError("Please select the course!")
+        if (!courseLevelId) return toastError("Please select the courseLevel!")
+        createZoomGroupMutation.mutate({
+            startDate: date,
+            courseId,
+            teacherId,
+            courseLevelId,
+            studentIds,
+        })
     };
 
     const onEdit = () => {
@@ -163,7 +79,7 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
         editZoomGroupMutation.mutate({
             id: initialData?.id!,
             startDate: date!,
-            trainerId: trainerId[0]!,
+            teacherId,
         }, {
             onSuccess: (data) => {
                 trpcUtils.zoomGroups.invalidate()
@@ -184,7 +100,7 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
         () => coursesData?.courses.map(course => {
             const userIds = new Set();
             course.courseStatus.forEach(stat => {
-                (stat.courseId === course.id && stat.status === "waiting") && userIds.add(stat.userId);
+                (stat.courseId === course.id && stat.status === "Waiting") && userIds.add(stat.userId);
             })
             return userIds.size;
         }).reduce((a, b) => a + b, 0),
@@ -192,65 +108,68 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
     )
 
     useEffect(() => {
-        setCourse(coursesData?.courses.find(course => course.id === courseId[0]))
+        setCourse(coursesData?.courses.find(course => course.id === courseId))
     }, [courseId])
 
     return (
         <div>
-            {!trainersData || !coursesData ? <Spinner className="w-fit mx-auto" /> : (
+            {!teachersData || !coursesData ? <Spinner className="w-fit mx-auto" /> : (
                 <div className="flex flex-col p-4 items-start gap-4 h-full">
-                    <SelectField
-                        values={trainerId}
-                        setValues={setTrainerId}
-                        placeholder="Select Trainer..."
-                        listTitle="Trainers"
-                        data={trainersData.trainers.map(trainer => ({ active: trainer.groups.length < 10, label: trainer.user.email, value: trainer.id }))}
+                    <SingleSelectField
+                        selected={teacherId}
+                        placeholder="Select a trainer"
+                        setSelected={setTeacherId}
+                        isLoading={!!loadingToast}
+                        title="Trainers"
+                        data={teachersData.teachers.map(Teacher => ({ Active: true, label: Teacher.user.email, value: Teacher.id }))}
                     />
                     {initialData ? (
                         <Typography>{coursesData.courses.find(({ id }) => id === initialData.courseId)?.name} - {initialData.courseLevel.name}</Typography>
                     ) : (
                         <div className="flex items-center justify-between w-full">
-                            <SelectField
-                                values={courseId}
-                                setValues={setCourseId}
-                                placeholder="Select Course..."
-                                listTitle={(
+                            <SingleSelectField
+                                isLoading={!!loadingToast}
+                                placeholder="Select a course"
+                                selected={courseId}
+                                setSelected={setCourseId}
+                                title={(
                                     <div className="flex items-center justify-between w-full">
                                         <Typography>Courses</Typography>
-                                        <Typography className="text-xs text-muted">Total waiting: {totalWaitingUsers}</Typography>
+                                        <Typography className="text-xs">Total Waiting: {totalWaitingUsers}</Typography>
                                     </div>
                                 )}
                                 data={coursesData.courses.map(course => ({
-                                    active: getWaitingList(course) >= 1,
+                                    Active: getWaitingList(course) >= 1,
                                     label: course.name,
                                     value: course.id,
                                     customLabel: (
                                         <div className="flex items-center justify-between w-full gap-4">
                                             <Typography>{course.name}</Typography>
-                                            <Typography className="text-xs text-muted">Waiting: {getWaitingList(course)}</Typography>
+                                            <Typography className="text-xs">Waiting: {getWaitingList(course)}</Typography>
                                         </div>
                                     )
                                 }))}
                             />
                             {course && (
-                                <SelectField
-                                    values={courseLevelId}
-                                    setValues={setCourseLevelId}
+                                <SingleSelectField
+                                    isLoading={!!loadingToast}
+                                    selected={courseLevelId}
+                                    setSelected={setCourseLevelId}
                                     placeholder="Select Level..."
-                                    listTitle={(
+                                    title={(
                                         <div className="flex items-center justify-between w-full gap-4">
                                             <Typography>Levels</Typography>
-                                            <Typography className="text-xs text-muted">Total waiting for course: {getWaitingList(course)}</Typography>
+                                            <Typography className="text-xs">Total Waiting for course: {getWaitingList(course)}</Typography>
                                         </div>
                                     )}
                                     data={course.levels.map(level => ({
-                                        active: getLevelWaitingList(course, level.id) >= 1,
+                                        Active: getLevelWaitingList(course, level.id) >= 1,
                                         label: level.name,
                                         value: level.id,
                                         customLabel: (
                                             <div className="flex items-center justify-between w-full space-x-4">
                                                 <Typography>{level.name}</Typography>
-                                                <Typography className="text-xs text-muted">Waiting: {getLevelWaitingList(course, level.id)}</Typography>
+                                                <Typography className="text-xs">Waiting: {getLevelWaitingList(course, level.id)}</Typography>
                                             </div>
                                         )
                                     }))}
@@ -293,19 +212,19 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                         <SelectField
                             className="col-span-2"
                             multiSelect
-                            values={userIds}
-                            setValues={setUserIds}
+                            values={studentIds}
+                            setValues={setStudentIds}
                             placeholder="Select Users..."
                             listTitle="Users"
                             data={course?.courseStatus
-                                .filter(stat => stat.courseLevelId === courseLevelId[0])
+                                .filter(stat => stat.courseLevelId === courseLevelId)
                                 .filter((stat, index, self) => index === self.findIndex(({ userId }) => stat.userId === userId))
                                 .map((stat, i) => {
                                     const order = course?.orders.find(or => or.userId === stat.userId && or.courseId === stat.courseId)
                                     const isPrivate = order?.courseType.isPrivate
 
                                     return ({
-                                        active: stat.status === "waiting",
+                                        Active: stat.status === "Waiting",
                                         label: order?.user.name || `${i}`,
                                         value: order?.user.id || `${i}`,
                                         customLabel: (
@@ -360,7 +279,7 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                 >
                     <Typography variant={"buttonText"}>Reset</Typography>
                 </Button>
-                <Button disabled={loading} onClick={initialData ? onEdit : onCreate}>
+                <Button disabled={loading || !!loadingToast} onClick={initialData ? onEdit : onCreate}>
                     <Typography variant={"buttonText"}>{action}</Typography>
                 </Button>
             </div>

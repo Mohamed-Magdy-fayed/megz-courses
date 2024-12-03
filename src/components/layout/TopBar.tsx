@@ -4,9 +4,9 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Button } from "../ui/button";
-import { MenuIcon, UserCircle, MessagesSquare, FileCheck, ListChecks, CircleDollarSign } from "lucide-react";
+import { MenuIcon, UserCircle, MessagesSquare, ListChecks, CircleDollarSign, InfoIcon, BellRing, BellIcon, EyeOffIcon, EyeIcon, ScreenShareIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Typography } from "../ui/Typoghraphy";
 import { Separator } from "../ui/separator";
 import { useCallback, useEffect, useState } from "react";
@@ -16,25 +16,37 @@ import { DarkModeToggle } from "../dark-mode-toggle";
 import Link from "next/link";
 import Image from "next/image";
 import { LogoForeground } from "@/components/layout/Logo";
-import { SiteIdentity } from "@prisma/client";
+import { SiteIdentity, UserNoteStatus } from "@prisma/client";
 import { getInitials } from "@/lib/getInitials";
 import { api } from "@/lib/api";
+import WrapWithTooltip from "@/components/ui/wrap-with-tooltip";
+import { SeverityPill } from "@/components/overview/SeverityPill";
+import { format } from "date-fns";
+import { useRouter } from "next/router";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdentity }) {
   const session = useSession();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isMounted, setisMounted] = useState(false);
   const navStore = useNavStore((state) => state);
   const pathname = usePathname();
 
-  const { data: trainerData } = api.trainers.getCurrentTrainer.useQuery(undefined, { enabled: session.data?.user.userType === "teacher" })
+  const trpcUtils = api.useUtils()
+  const { data } = api.notes.getActiveUserNotes.useQuery(undefined, { enabled: session.status === "authenticated" })
+  const editNoteQuery = api.notes.editNoteStatus.useMutation({ onSettled: () => trpcUtils.notes.invalidate() })
+
+  const changeStatus = (id: string, status: UserNoteStatus) => {
+    editNoteQuery.mutate({ id, status })
+  }
 
   const handlePathnameChange = useCallback(() => {
-    if (navStore.opened) {
+    if (navStore.Opened) {
       navStore.closeNav();
     }
-  }, [navStore.opened]);
+  }, [navStore.Opened]);
 
   const handleLogout = () => {
     setLoading(true)
@@ -92,60 +104,127 @@ export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdenti
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {session.data?.user.userType === "salesAgent" && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link href={`/sales_operations`}>
-                  <Button variant="icon" customeColor={"mutedIcon"} >
-                    <CircleDollarSign className="w-4 h-4" />
-                  </Button>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent>
-                Sales Operations
-              </TooltipContent>
-            </Tooltip>
-          )}
-          {session.data?.user.userType === "chatAgent" && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link href={`/chats`}>
-                  <Button variant="icon" customeColor={"mutedIcon"} >
-                    <MessagesSquare className="w-4 h-4"></MessagesSquare>
-                  </Button>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent>
-                My chats
-              </TooltipContent>
-            </Tooltip>
-          )}
-          {session.data?.user.userType === "teacher" && trainerData?.trainer?.role === "teacher" ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link href={`/edu_team/my_sessions`}>
+          {session.data?.user.userRoles.includes("SalesAgent")
+            && session.data.user.userRoles.includes("Admin") ? (
+            <WrapWithTooltip
+              text="Leads"
+              children={(
+                <Link href={`/leads`}>
                   <Button variant="icon" customeColor={"mutedIcon"} >
                     <ListChecks className="w-4 h-4" />
                   </Button>
                 </Link>
-              </TooltipTrigger>
-              <TooltipContent>
-                My Sessions
-              </TooltipContent>
-            </Tooltip>
-          ) : session.data?.user.userType === "teacher" && (
-            <Tooltip>
-              <TooltipTrigger asChild>
+              )}
+            />
+          ) : (
+            <WrapWithTooltip
+              text="My leads"
+              children={(
+                <Link href={`/leads/my_leads`}>
+                  <Button variant="icon" customeColor={"mutedIcon"} >
+                    <ListChecks className="w-4 h-4" />
+                  </Button>
+                </Link>
+              )}
+            />
+          )}
+          {session.data?.user.userRoles.includes("ChatAgent")
+            && session.data.user.userRoles.includes("Admin") ? (
+            <WrapWithTooltip text="Chats">
+              <Link href={`/chats`}>
+                <Button variant="icon" customeColor={"mutedIcon"} >
+                  <MessagesSquare className="w-4 h-4" />
+                </Button>
+              </Link>
+            </WrapWithTooltip>
+          ) : (
+            <WrapWithTooltip text="My chats">
+              <Link href={`/chats`}>
+                <Button variant="icon" customeColor={"mutedIcon"} >
+                  <MessagesSquare className="w-4 h-4" />
+                </Button>
+              </Link>
+            </WrapWithTooltip>
+          )}
+          {session.data?.user.userRoles.includes("Admin")
+            ? (
+              <WrapWithTooltip text="Sessions">
+                <Link href={`/edu_team/sessions`}>
+                  <Button variant="icon" customeColor={"mutedIcon"} >
+                    <ScreenShareIcon className="w-4 h-4" />
+                  </Button>
+                </Link>
+              </WrapWithTooltip>
+            )
+            : session.data?.user.userRoles.includes("Teacher") ? (
+              <WrapWithTooltip text="My Sessions">
+                <Link href={`/edu_team/my_sessions`}>
+                  <Button variant="icon" customeColor={"mutedIcon"} >
+                    <ScreenShareIcon className="w-4 h-4" />
+                  </Button>
+                </Link>
+              </WrapWithTooltip>
+            ) : session.data?.user.userRoles.includes("Tester") && (
+              <WrapWithTooltip text="My Tasks">
                 <Link href={`/edu_team/my_tasks`}>
                   <Button variant="icon" customeColor={"mutedIcon"} >
                     <ListChecks className="w-4 h-4" />
                   </Button>
                 </Link>
-              </TooltipTrigger>
-              <TooltipContent>
-                My Tasks
-              </TooltipContent>
-            </Tooltip>
+              </WrapWithTooltip>
+            )}
+          {data?.notes && (
+            <DropdownMenu>
+              <WrapWithTooltip text="Notes that need your attention">
+                <DropdownMenuTrigger className="relative mx-4">
+                  {data.notes.filter(n => n.status !== "Closed").length > 0 && <InfoIcon className="absolute rounded-full text-destructive-foreground bg-destructive -top-2.5 -right-2.5 size-3" />}
+                  {data.notes.filter(n => n.status !== "Closed").length > 0 ? <BellRing className="size-4" /> : <BellIcon className="size-4" />}
+                </DropdownMenuTrigger>
+              </WrapWithTooltip>
+              <DropdownMenuContent>
+                <DropdownMenuLabel>
+                  Notes {data.notes.filter(n => n.status !== "Closed").length > 0 && <SeverityPill color="destructive" className="aspect-square inline-flex">{data?.notes.filter(n => n.status !== "Closed").length}</SeverityPill>}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <ScrollArea className="max-h-96">
+                    {data.notes.map(note => (
+                      <DropdownMenuItem
+                        key={note.id}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          note.status !== "Closed" && changeStatus(note.id, "Closed")
+                          router.push(`/notes/${note.id}`)
+                        }}
+                        className={cn("flex items-center justify-between w-full gap-4 hover:!bg-muted/10 hover:!text-foreground focus-visible:bg-muted/10 focus-visible:text-foreground", note.status !== "Closed" && "bg-muted/10 text-foreground hover:!bg-muted/20")}
+                      >
+                        <div className="grid gap-4 max-w-md">
+                          <Typography variant="secondary">
+                            {note.title}
+                          </Typography>
+                          <Typography className="whitespace-pre-wrap truncate">
+                            {note.messages[0]?.message}
+                          </Typography>
+                          <Typography className="text-xs text-info">
+                            {format(note.updatedAt, "PPp")}
+                          </Typography>
+                        </div>
+                        <WrapWithTooltip text={note.status !== "Closed" ? "Mark as seen!" : "Mark as not seen!"}>
+                          <Button onClick={(e) => {
+                            e.stopPropagation()
+                            changeStatus(note.id, note.status !== "Closed" ? "Closed" : "Opened")
+                          }} className="cursor-pointer pointer-events-auto" variant="icon" customeColor="success">
+                            {note.status !== "Closed"
+                              ? (<EyeOffIcon className="size-4" />)
+                              : (<EyeIcon className="size-4" />)}
+                          </Button>
+                        </WrapWithTooltip>
+                      </DropdownMenuItem>
+                    ))}
+                  </ScrollArea>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
           <Tooltip>
             <TooltipTrigger asChild>

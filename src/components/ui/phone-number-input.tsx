@@ -1,8 +1,8 @@
-import { Typography } from "@/components/ui/Typoghraphy";
 import * as React from "react";
 import PhoneInput, { parsePhoneNumber, type Country } from "react-phone-number-input";
 import 'react-phone-number-input/style.css'
 import { cn } from "@/lib/utils";
+import { InputProps } from "@/components/ui/input";
 
 const countryOptions = [
   { code: "EG", label: "Egypt", flagUrl: "/flags/eg.png" },
@@ -26,6 +26,7 @@ const countryOptions = [
 export interface MobileNumberInputProps {
   value: string;
   placeholder: string;
+  inputProps?: InputProps;
   setValue: (val: string) => void;
   onError?: (isError: boolean) => void;
 }
@@ -33,6 +34,7 @@ export interface MobileNumberInputProps {
 const MobileNumberInput: React.FC<MobileNumberInputProps> = ({
   value,
   placeholder,
+  inputProps,
   setValue,
   onError,
 }) => {
@@ -42,11 +44,15 @@ const MobileNumberInput: React.FC<MobileNumberInputProps> = ({
       addInternationalOption={false}
       focusInputOnCountrySelection={true}
       limitMaxLength={true}
+      containerComponentProps={{
+        className: cn("flex items-center w-full", inputProps?.className)
+      }}
       countryOptionsOrder={countryCodes}
       placeholder={placeholder}
       autoComplete="off"
       value={!!value ? `+${value}` : value}
       numberInputProps={{
+        ...inputProps,
         value: value,
         className: cn(
           "flex h-10 w-full placeholder:!text-muted/60 rounded-md border border-primary/40 bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",

@@ -6,24 +6,26 @@ import { cn } from "@/lib/utils";
 import CellAction from "./cell-action";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Typography } from "../ui/Typoghraphy";
-import { LeadLabel, LeadSource, LeadStage, Prisma, Reminder, SalesOperation } from "@prisma/client";
+import { LeadLabel, LeadSource, LeadStage, Order, Prisma, Reminder } from "@prisma/client";
 import { format } from "date-fns";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { SeverityPill, SeverityPillProps } from "@/components/overview/SeverityPill";
+import WrapWithTooltip from "@/components/ui/wrap-with-tooltip";
 
 export type Lead = {
   userId: string;
   name: string;
+  code: string;
   id: string;
   email?: string;
   formId?: string;
   message?: string;
   phone?: string;
   source: LeadSource;
+  orderDetails: Order | null;
   isReminderSet: boolean;
   reminders: Reminder[];
-  salesOperations: SalesOperation[];
   stage: LeadStage | null;
   stages: LeadStage[] | undefined;
   stageName: string;
@@ -64,14 +66,16 @@ export const columns: ColumnDef<Lead>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "name",
+    accessorKey: "code",
+    header: "Code",
     cell: ({ row }) => (
-      <Link href={`/leads/${row.original.id}`}>
-        <Button variant={"link"} className="text-primary">
-          {row.original.name}
-        </Button>
-      </Link>
-    ),
+      <WrapWithTooltip text="Process operation">
+        <Link className="in-table-link" href={`/leads/${row.original.code}`}>{row.original.code}</Link>
+      </WrapWithTooltip>
+    )
+  },
+  {
+    accessorKey: "name",
   },
   {
     accessorKey: "email",

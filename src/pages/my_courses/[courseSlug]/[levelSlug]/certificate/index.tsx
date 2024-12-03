@@ -66,7 +66,7 @@ const CertificatePage: NextPage = () => {
                             completionDate={format(data.certificate.completionDate || new Date(), "PP")}
                             courseName={data.certificate.course?.name || ""}
                             studentName={data.certificate.user?.name || ""}
-                            trainerName={data.certificate.user.zoomGroups.find(g => g.courseId === data.certificate?.course?.id && g.courseLevelId === data.certificate?.courseLevelId)?.trainer?.user.name || ""}
+                            trainerName={data.certificate.user.zoomGroups.find(g => g.courseId === data.certificate?.course?.id && g.courseLevelId === data.certificate?.courseLevelId)?.teacher?.user.name || ""}
                         />
                     </div>
                 ) : (
@@ -93,7 +93,7 @@ const Certificate = ({ studentName, courseName, trainerName, completionDate, cer
     return (
         <div className="items-center flex flex-col">
             <Card
-                className="printable border-2 relative border-foreground p-8 mx-auto my-10 text-center bg-no-repeat bg-[url(/certificate.jpg)] bg-cover"
+                className="printable border-2 w-[850px] h-[600px] relative border-foreground mx-auto my-10 text-center bg-no-repeat bg-[url(/certificate.jpg)] bg-cover"
             >
                 <Image src={`/certificate.jpg`} width={1000} height={1000} className="opacity-0 w-4/5" alt="background" />
                 <Avatar className="absolute w-24 h-24 top-10 left-10">
@@ -107,14 +107,14 @@ const Certificate = ({ studentName, courseName, trainerName, completionDate, cer
                     </CardHeader>
                     <CardContent>
                         <h2 className="text-xl font-semibold my-2">{studentName}</h2>
-                        <p>has successfully completed the course</p>
+                        <p>has successfully Completed the course</p>
                         <h3 className="text-lg font-semibold my-2">{courseName}</h3>
                         <p>on</p>
                         <h4 className="text-md font-medium my-2">{completionDate}</h4>
                         <p>Certificate ID: {certificateId}</p>
                     </CardContent>
                 </div>
-                <CardFooter className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-full">
+                <CardFooter className="absolute bottom-20 left-1/2 transform -translate-x-1/2 w-full">
                     <div className="flex justify-between items-center w-full px-8">
                         <div className="text-center">
                             <Typography variant="secondary" className="border-t border-foreground pt-2">

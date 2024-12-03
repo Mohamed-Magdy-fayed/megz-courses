@@ -13,25 +13,26 @@ import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { validUserTypes } from "@/lib/enumsTypes";
+import { validUserRoles } from "@/lib/enumsTypes";
 import MobileNumberInput from "@/components/ui/phone-number-input";
 import { render } from "@react-email/components";
 import EmailConfirmation from "@/components/emails/EmailConfirmation";
-import { sendZohoEmail } from "@/lib/gmailHelpers";
+import { hasPermission } from "@/server/permissions";
+import SelectField from "@/components/ui/SelectField";
+import { upperFirst } from "lodash";
 
 const userDataFormSchema = z.object({
     id: z.string().min(1),
     name: z.string().min(1, "Name can't be empty"),
     email: z.string().email(),
-    password: z.string().optional(),
+    password: z.string(),
     image: z.string().optional().nullable(),
     phone: z.string().optional(),
     state: z.string().optional(),
     street: z.string().optional(),
     city: z.string().optional(),
     country: z.string().optional(),
-    userType: z.enum(validUserTypes),
+    userRoles: z.array(z.enum(validUserRoles)),
 });
 
 export type UserDataFormValues = z.infer<typeof userDataFormSchema>;
@@ -49,7 +50,7 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
     const session = useSession()
 
     const [loading, setLoading] = useState(false)
-    const { id, email, name, password, userType, city, country, image, phone, state, street } = initialData
+    const { id, email, name, password, userRoles, city, country, image, phone, state, street } = initialData
 
     const defaultValues: z.infer<typeof userDataFormSchema> = {
         id,
@@ -62,7 +63,7 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
         street,
         city,
         country,
-        userType,
+        userRoles,
     };
 
     const form = useForm<UserDataFormValues>({
@@ -99,7 +100,7 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
                 },
                 onError: ({ message }) => toastError(message),
                 onSettled() {
-                    trpcUrils.users.invalidate()
+                    trpcUrils.invalidate()
                         .then(() => setLoading(false));
                 },
             }
@@ -118,11 +119,10 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
             <Separator></Separator>
             <Form {...form}>
                 <form
-
                     onSubmit={form.handleSubmit(onSubmit)}
                     className="flex w-full flex-col justify-between p-0"
                 >
-                    <fieldset disabled={!isOwnAccount && session.data?.user.userType !== "admin"}>
+                    <fieldset disabled={session.data?.user && !hasPermission(session.data.user, "users", "update", initialData)}>
                         <CardContent className="scrollbar-thumb-rounded-lg grid grid-cols-12 gap-4 overflow-auto p-4 transition-all scrollbar-thin scrollbar-track-transparent scrollbar-thumb-primary/50">
                             <Typography className="col-span-12" variant={'secondary'}>Account</Typography>
                             <div className="flex-col flex gap-2 col-span-12 md:col-span-6">
@@ -211,36 +211,27 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
                                     />
                                 )}
                             </div>
-                            {!isOwnAccount && session.data?.user.userType === "admin" && (
+                            {session.data?.user && hasPermission(session.data.user, "users", "update", initialData) && (
                                 <div className="col-span-12">
                                     <Separator />
-                                    <Typography className="my-2" variant={'secondary'}>User Type</Typography>
+                                    <Typography className="my-2" variant={'secondary'}>User Roles</Typography>
                                     <FormField
                                         control={form.control}
-                                        name="userType"
+                                        name="userRoles"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <Select
-                                                    disabled={loading}
-                                                    // @ts-ignore
-                                                    onValueChange={field.onChange}
-                                                    value={field.value}
-                                                    defaultValue={field.value}
-                                                >
-                                                    <FormControl>
-                                                        <SelectTrigger className="pl-8 bg-white">
-                                                            <SelectValue
-                                                                defaultValue={field.value}
-                                                                placeholder="Select user type"
-                                                            />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        <SelectItem value="student">Student</SelectItem>
-                                                        <SelectItem value="teacher">Teacher</SelectItem>
-                                                        <SelectItem value="salesAgent">Sales Agent</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
+                                                <SelectField
+                                                    multiSelect
+                                                    data={validUserRoles.filter(r => r !== "Admin").map(role => ({
+                                                        Active: true,
+                                                        label: upperFirst(role),
+                                                        value: role,
+                                                    }))}
+                                                    listTitle="User Roles"
+                                                    placeholder="Select User Roles"
+                                                    setValues={(roles) => field.onChange(roles)}
+                                                    values={field.value}
+                                                />
                                                 <FormMessage />
                                             </FormItem>
                                         )}

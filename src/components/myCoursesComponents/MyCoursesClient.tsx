@@ -13,23 +13,26 @@ const MyCoursesClient = () => {
         id,
         slug,
         name,
-        evaluationForms,
+        systemForms,
     }) => {
-        const filteredTest = evaluationForms.find((form) => form.type === "placementTest");
+        const filteredTest = systemForms.find((form) => form.type === "PlacementTest");
         const oralTest = data?.user.placementTests.find((test) => test.courseId === id);
-        const isSubmitted = data?.user.evaluationFormSubmissions.some(sub => sub.evaluationFormId === filteredTest?.id)
-        const studentPoints = data?.user.evaluationFormSubmissions.find(sub => sub.evaluationFormId === filteredTest?.id)?.rating
-        const totalPoints = filteredTest?.totalPoints
+        const isSubmitted = data?.user.systemFormSubmissions.some(sub => sub.systemFormId === filteredTest?.id)
+        const studentPoints = data?.user.systemFormSubmissions.find(sub => sub.systemFormId === filteredTest?.id)?.totalScore
+        const totalPoints = filteredTest?.totalScore
         const oralTestSubmission = data.user.courseStatus.find(status => status.courseId === id)
         const isOralTestScheduled = data?.user.placementTests.length !== 0
-        const isGroupCompleted = data.user.zoomGroups.some(g => g.courseId === id && g.groupStatus === "completed")
+        const isGroupCompleted = data.user.zoomGroups.some(g => g.courseId === id && g.groupStatus === "Completed")
+        const isWaiting = data.user.courseStatus.some(s => s.courseId === id)
         const oralTestTime = oralTest?.oralTestTime || new Date()
+        const levelName = oralTestSubmission?.level?.name
         const status = !filteredTest ? "Waiting Placement Test"
             : !isOralTestScheduled ? "Oral Test Not Scheduled"
                 : !oralTestSubmission ? "Awaiting oral test result"
                     : isGroupCompleted ? "Group Completed"
-                        : oralTestSubmission.level?.name ? "Group ongoing"
-                            : !isSubmitted ? "Need Submission" : ""
+                        : isWaiting ? "Waiting List"
+                            : oralTestSubmission.level?.name ? "Group Ongoing"
+                                : !isSubmitted ? "Need Submission" : ""
         const user = data.user
 
         return {
@@ -41,6 +44,7 @@ const MyCoursesClient = () => {
             score: isSubmitted ? `Score: ${formatPercentage((studentPoints || 0) / (totalPoints || 0) * 100)}` : "Not Submitted",
             isOralTestScheduled,
             oralTestTime,
+            levelName,
             status,
             group: user.zoomGroups.filter(group => group.courseId === id).map(group => ({
                 userName: user.name,
@@ -48,10 +52,10 @@ const MyCoursesClient = () => {
                 groupNumber: group.groupNumber,
                 meetingNumber: group.meetingNumber,
                 meetingPassword: group.meetingPassword,
-                isSessionOngoing: group.zoomSessions.some(session => session.sessionStatus === "ongoing"),
+                isSessionOngoing: group.zoomSessions.some(session => session.sessionStatus === "Ongoing"),
                 ongoingSession: {
-                    materialItemTitle: group.zoomSessions.find(session => session.sessionStatus === "ongoing")?.materialItem?.title || "",
-                    id: group.zoomSessions.find(session => session.sessionStatus === "ongoing")?.id || ""
+                    materialItemTitle: group.zoomSessions.find(session => session.sessionStatus === "Ongoing")?.materialItem?.title || "",
+                    id: group.zoomSessions.find(session => session.sessionStatus === "Ongoing")?.id || ""
                 },
             }))[0]
         }

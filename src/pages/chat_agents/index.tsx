@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
 import ChatAgentForm from "@/components/chatAgentsComponents/ChatAgentForm";
 import ChatAgentsClient from "@/components/chatAgentsComponents/ChatAgentsClient";
+import Modal from "@/components/ui/modal";
 
 const ChatAgentsPage = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -23,10 +24,15 @@ const ChatAgentsPage = () => {
               <Typography variant={"buttonText"}>Add</Typography>
             </Button>
           </div>
-          {isOpen && (
-            <ChatAgentForm setIsOpen={setIsOpen}></ChatAgentForm>
-          )}
-
+          <Modal
+            title="Chat Agent"
+            description="create chat agent user"
+            isOpen={isOpen}
+            onClose={() => setIsOpen(false)}
+            children={(
+              <ChatAgentForm setIsOpen={setIsOpen}></ChatAgentForm>
+            )}
+          />
           <PaperContainer>
             <ChatAgentsClient />
           </PaperContainer>

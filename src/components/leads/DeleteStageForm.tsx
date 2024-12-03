@@ -1,4 +1,4 @@
-import SelectField from "@/components/salesOperation/SelectField"
+import SelectField from "@/components/ui/SelectField"
 import { SpinnerButton } from "@/components/ui/button"
 import { toastType, useToast } from "@/components/ui/use-toast"
 import { api } from "@/lib/api"
@@ -38,7 +38,7 @@ const DeleteStageForm = ({ setIsOpen }: { setIsOpen: Dispatch<SetStateAction<boo
             <SelectField
                 multiSelect
                 data={data?.stages.map(s => ({
-                    active: !s.defaultStage,
+                    Active: !s.defaultStage,
                     label: s.name,
                     value: s.id,
                 })) || []}

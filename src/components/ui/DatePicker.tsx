@@ -34,8 +34,9 @@ export const DatePicker: FC<DatePickerProps> = ({ date, setDate, className, ...p
                 </Button>
             </PopoverTrigger>
             <PopoverContent
-                align="start"
-                alignOffset={20}
+                align="center"
+                alignOffset={40}
+                sideOffset={-80}
                 className="flex w-auto flex-col space-y-2 p-2 bg-background translate-y-0"
             >
                 <div className="rounded-md border">

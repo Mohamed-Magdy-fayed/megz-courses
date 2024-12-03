@@ -17,7 +17,7 @@ const RetintionsPage = () => {
           <div className="flex justify-between">
             <div className="flex flex-col gap-2">
               <ConceptTitle>Retintions List</ConceptTitle>
-              <Typography variant={"secondary"}>Students who completed one or more courses</Typography>
+              <Typography variant={"secondary"}>Students who Completed one or more courses</Typography>
             </div>
           </div>
           <PaperContainer>

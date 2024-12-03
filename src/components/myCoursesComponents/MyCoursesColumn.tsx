@@ -1,11 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
 import { Typography } from "../ui/Typoghraphy";
 import Link from "next/link";
 import { SeverityPill, SeverityPillProps } from "../overview/SeverityPill";
 import { env } from "@/env.mjs";
-import { isTimeNow, isTimePassed } from "@/lib/utils";
+import { isTimePassed } from "@/lib/utils";
 import { format } from "date-fns";
 
 export type MyCoursesRow = {
@@ -13,6 +12,7 @@ export type MyCoursesRow = {
   name: string;
   slug: string;
   placementTestLink: string;
+  levelName?: string;
   isSubmitted: boolean;
   score: string;
   isOralTestScheduled: boolean;
@@ -87,6 +87,7 @@ export const myCoursesColumns: ColumnDef<MyCoursesRow>[] = [
     header: "Oral Test Time",
     cell: ({ row }) => {
       if (!row.original.isOralTestScheduled) return <Typography>Not yet Scheduled</Typography>
+      if (row.original.isSubmitted) return <Typography>Completed: {row.original.levelName}</Typography>
 
       return (
         <div className="flex flex-col gap-2 items-center">

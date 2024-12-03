@@ -6,6 +6,7 @@ import { useState } from "react";
 import { validOrderStatuses } from "@/lib/enumsTypes";
 import { upperFirst } from "lodash";
 import { useSession } from "next-auth/react";
+import { hasPermission } from "@/server/permissions";
 
 const OrdersClient = ({ userId }: { userId?: string }) => {
   const [orders, setOrders] = useState<OrderRow[]>([])
@@ -23,25 +24,27 @@ const OrdersClient = ({ userId }: { userId?: string }) => {
     id,
     orderNumber,
     paymentId,
-    salesOperation,
+    lead,
     status,
     user,
+    paymentConfirmationImage,
     refundRequester,
     updatedAt,
   }) => ({
-    isStudentView: sessionData?.user.userType === "student",
+    isStudentView: !!(sessionData?.user && !hasPermission(sessionData.user, "adminLayout", "view")),
     id,
     amount,
     orderNumber,
     paymentId: paymentId || "",
-    salesOperationId: salesOperation.id,
-    salesOperationCode: salesOperation.code,
+    leadId: lead.id,
+    leadCode: lead.code,
     status,
     userId: user.id,
     userName: user.name,
     userEmail: user.email,
     userImage: user.image || "",
     refundRequester,
+    paymentConfirmationImage,
     course,
     courseId: course.id,
     updatedAt,
@@ -77,7 +80,7 @@ const OrdersClient = ({ userId }: { userId?: string }) => {
       searches={[
         { key: "orderNumber", label: "Order Number" },
         { key: "userName", label: "User Name" },
-        { key: "salesOperationCode", label: "Operation Code" },
+        { key: "leadCode", label: "Lead Code" },
       ]}
       filters={[
         {
@@ -98,7 +101,7 @@ const OrdersClient = ({ userId }: { userId?: string }) => {
       exportConfig={{
         fileName: `Orders`,
         sheetName: "Orders",
-    }}
+      }}
     />
   );
 };

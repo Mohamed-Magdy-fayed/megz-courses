@@ -1,10 +1,19 @@
 import { z } from "zod";
 import {
+  adminProcedure,
   createTRPCRouter,
   publicProcedure,
 } from "@/server/api/trpc";
 import bcrypt from "bcrypt";
 import { TRPCError } from "@trpc/server";
+import { setupDefaultMessageTemplates } from "@/lib/whatsApp";
+import { validDefaultStages, validUserRoles } from "@/lib/enumsTypes";
+import { subscriptionTiers } from "@/lib/system";
+import { env } from "@/env.mjs";
+import { sendZohoEmail } from "@/lib/emailHelpers";
+import { getTotalSize } from "@/lib/firebaseStorage";
+import { formatSizeInGB } from "@/lib/utils";
+import { PrismaClient } from "@prisma/client";
 
 export const setupRouter = createTRPCRouter({
   start: publicProcedure
@@ -32,9 +41,10 @@ export const setupRouter = createTRPCRouter({
           email,
           image,
           hashedPassword,
-          userType: "admin",
+          userRoles: [...validUserRoles],
           emailVerified: new Date(),
           phone,
+          SalesAgent: { create: {} },
         },
       });
 
@@ -42,23 +52,114 @@ export const setupRouter = createTRPCRouter({
         data: {
           name: "System",
           email: "system@mail.com",
-          userType: "admin",
+          phone: "201111111111",
+          userRoles: [...validUserRoles],
         },
       });
+
+      const createdTemplates = await setupDefaultMessageTemplates(ctx.prisma)
+
+      const leadStages = await ctx.prisma.leadStage.createMany({
+        data: validDefaultStages.map((s, i) => ({ name: s, defaultStage: s, order: i + 1 })),
+      })
 
       return {
         adminUser,
         systemUser,
+        createdTemplates,
+        leadStages,
       }
     }),
-  isSetupAlready: publicProcedure
-    .query(async ({ ctx }) => {
+  reset: adminProcedure
+    .mutation(async ({ ctx }) => {
+      const models: Array<keyof PrismaClient> = [
+        "account",
+        "session",
+        "courseStatus",
+        "user",
+        "verificationToken",
+        "placementTest",
+        "teacher",
+        "tester",
+        "courseLevel",
+        "course",
+        "materialItem",
+        "order",
+        "salesAgent",
+        "leadLabel",
+        "leadNote",
+        "leadInteraction",
+        "lead",
+        "leadStage",
+        "message",
+        "supportChat",
+        "chatAgent",
+        "zoomSession",
+        "zoomGroup",
+        "zoomClient",
+        "googleClient",
+        "metaClient",
+        "userNote",
+        "certificate",
+        "siteIdentity",
+        "supportTicket",
+        "messageTemplate",
+        "parameters",
+        "systemForm",
+        "systemFormItem",
+        "itemQuestionOption",
+        "itemQuestion",
+        "systemFormSubmission",
+      ]
+
+      const resettedModels = await ctx.prisma.$transaction(
+        models.map(model => (
+          (ctx.prisma[model] as any).deleteMany()
+        ))
+      )
+
+      return { resettedModels }
+    }),
+  update: publicProcedure
+    .input(
+      z.object({
+        requestedTier: z.string(),
+      })
+    )
+    .mutation(async ({ input: { requestedTier } }) => {
+      await sendZohoEmail({ email: "info@megz.pro", html: `Customer ${env.NEXT_PUBLIC_EMAIL} wants a new Tier: ${requestedTier}`, subject: "Tier update request!" })
+
       return {
-        isSetupAlready: !!(await ctx.prisma.user.findFirst({
-          where: {
-            userType: "admin",
-          }
-        }))
+        success: true,
+      }
+    }),
+  getCurrentSetup: publicProcedure
+    .query(async ({ ctx }) => {
+      const tier = subscriptionTiers[env.TIER as keyof typeof subscriptionTiers]
+      const Admin = await ctx.prisma.user.findFirst({ where: { userRoles: { has: "Admin" } }, orderBy: { createdAt: "asc" } })
+
+      const studentsCount = (await ctx.prisma.user.findMany({ where: { userRoles: { has: "Student" } } })).length
+      const adminsCount = (await ctx.prisma.user.findMany({ where: { userRoles: { has: "OperationAgent" } } })).length
+      const instructorsCount = (await ctx.prisma.user.findMany({ where: { userRoles: { hasSome: ["Teacher", "Tester"] } } })).length
+      const coursesCount = (await ctx.prisma.course.findMany()).length
+      const storageUsage = await getTotalSize("uploads/")
+
+      return {
+        tier,
+        Admin,
+        studentsCount,
+        adminsCount,
+        instructorsCount,
+        coursesCount,
+        storageUsage,
+      }
+    }),
+  getCurrentTier: publicProcedure
+    .query(async ({ ctx }) => {
+      const tier = subscriptionTiers[env.TIER as keyof typeof subscriptionTiers]
+
+      return {
+        tier,
       }
     })
 });

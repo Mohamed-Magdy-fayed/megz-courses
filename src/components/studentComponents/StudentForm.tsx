@@ -22,9 +22,9 @@ import MobileNumberInput from "@/components/ui/phone-number-input";
 const formSchema = z.object({
   name: z.string().min(1, "Name can't be empty"),
   email: z.string().email(),
-  password: z.string().min(4),
+  password: z.string(),
+  phone: z.string(),
   image: z.string().optional(),
-  phone: z.string().optional(),
   state: z.string().optional(),
   street: z.string().optional(),
   city: z.string().optional(),
@@ -75,7 +75,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ setIsOpen, initialData }) => 
           loadingToast?.update({
             id: loadingToast.id,
             title: "Success",
-            description: `User created with email: ${user.email}`,
+            description: `User Created with email: ${user.email}`,
             duration: 2000,
             variant: "success",
           })

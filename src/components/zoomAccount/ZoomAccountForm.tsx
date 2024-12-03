@@ -35,7 +35,7 @@ const ZoomAccountForm = ({ setIsOpen }: { setIsOpen: Dispatch<SetStateAction<boo
         onSuccess: ({ zoomAuthUrl }) => {
             toast({
                 title: "Please authorize your zoom account in the new tab!",
-                description: "once the authorization is completed check this page again to see your added account!"
+                description: "once the authorization is Completed check this page again to see your added account!"
             })
             window.open(zoomAuthUrl, '_blank')
         },

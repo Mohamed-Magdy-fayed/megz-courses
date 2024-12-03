@@ -2,6 +2,7 @@ import ContactSection from '@/components/landingPageComponents/ContactSection';
 import LandingLayout from '@/components/landingPageComponents/LandingLayout';
 import { ToggleSection } from '@/components/ui/ToggleSection';
 import { ConceptTitle, Typography } from '@/components/ui/Typoghraphy';
+import { env } from '@/env.mjs';
 import Head from 'next/head';
 import Link from 'next/link';
 
@@ -38,7 +39,7 @@ const SupportPage = () => {
                         </ToggleSection>
                         <ToggleSection title="How much it will cost my business to access the system?" primaryColor defaultIsOpen>
                             <Typography>
-                                Costs may vary depending on your organization’s size and needs please contact our team at <Link target='_blank' href="mailto:info@megz.pro">info@megz.pro</Link> to have an officil price proposal
+                                Costs may vary depending on your organization’s size and needs please contact our team at <Link target='_blank' href={`mailto:${env.NEXT_PUBLIC_EMAIL}`}>{env.NEXT_PUBLIC_EMAIL}</Link> to have an officil price proposal
                             </Typography>
                         </ToggleSection>
                         <ToggleSection title="Is this the final status of the system?" primaryColor defaultIsOpen>

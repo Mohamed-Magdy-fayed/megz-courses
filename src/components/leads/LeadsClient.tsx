@@ -7,7 +7,7 @@ import { createMutationOptions } from "@/lib/mutationsHelper";
 import { toastType, useToast } from "@/components/ui/use-toast";
 
 type LeadsClientProps = {
-  stage: Prisma.LeadStageGetPayload<{ include: { leads: { include: { salesOperations: true, labels: true, assignee: { include: { user: true } } } } } }>;
+  stage: Prisma.LeadStageGetPayload<{ include: { leads: { include: { orderDetails: true, labels: true, assignee: { include: { user: true } } } } } }>;
   stagesData: LeadStage[];
   resetSelection: boolean;
   handleImport: (data: { name: string, email: string, phone: string }[]) => void;
@@ -24,6 +24,7 @@ const LeadsClient: FC<LeadsClientProps> = ({ resetSelection, stage, stagesData, 
   const formattedData = stage.leads.map(({
     userId,
     name,
+    code,
     id,
     email,
     formId,
@@ -35,12 +36,13 @@ const LeadsClient: FC<LeadsClientProps> = ({ resetSelection, stage, stagesData, 
     labels,
     isReminderSet,
     reminders,
-    salesOperations,
+    orderDetails,
     createdAt,
     updatedAt,
   }) => ({
     id,
     name: name || "",
+    code: code || "",
     email: email || "",
     formId: formId || "",
     message: message || "",
@@ -53,7 +55,7 @@ const LeadsClient: FC<LeadsClientProps> = ({ resetSelection, stage, stagesData, 
     labels,
     isReminderSet,
     reminders,
-    salesOperations,
+    orderDetails,
     assigneeName: assignee?.user.name || "Not Assigned",
     image: image || "",
     userId: userId || "",
@@ -61,6 +63,7 @@ const LeadsClient: FC<LeadsClientProps> = ({ resetSelection, stage, stagesData, 
     updatedAt,
   }))
 
+  const [callback, setCallback] = useState<() => void>()
   const deleteLeadsMutation = api.leads.deleteLead.useMutation(
     createMutationOptions({
       loadingToast,
@@ -68,12 +71,16 @@ const LeadsClient: FC<LeadsClientProps> = ({ resetSelection, stage, stagesData, 
       toast,
       trpcUtils,
       loadingMessage: "Deleting...",
-      successMessageFormatter: ({ deletedLeads }) => `${deletedLeads.count} Leads Deleted!`,
+      successMessageFormatter: ({ deletedLeads }) => {
+        callback?.()
+        return `${deletedLeads.count} Leads Deleted!`
+      },
     })
   )
 
   const onDelete = (callback?: () => void) => {
-    deleteLeadsMutation.mutate(data.map(item => item.id), { onSuccess: () => { callback?.() } })
+    setCallback(callback)
+    deleteLeadsMutation.mutate(data.map(item => item.id))
   }
 
   return (
@@ -103,22 +110,29 @@ const LeadsClient: FC<LeadsClientProps> = ({ resetSelection, stage, stagesData, 
         fileName: `${stage.name} Stage Leads`
       }}
       searches={[
+        { key: "code", label: "Code" },
         { key: "name", label: "Name" },
         { key: "email", label: "Email" },
         { key: "phone", label: "Phone" },
       ]}
       filters={[
         {
-          key: "source", filterName: "Platform", values: [...formattedData?.map(d => ({
-            label: d.source,
-            value: d.source,
-          })) || []]
+          key: "source", filterName: "Source", values: [...formattedData?.map(d => d.source)
+            .filter((value, index, self) => self.indexOf(value) === index)
+            .map(name => ({
+              label: name,
+              value: name,
+            })) || []
+          ]
         },
         {
-          key: "stageName", filterName: "Stage", values: [...stagesData.map(s => ({
-            label: s.name,
-            value: s.name,
-          })) || []]
+          key: "stageName", filterName: "Stage", values: [...formattedData.map(d => d.stageName)
+            .filter((value, index, self) => self.indexOf(value) === index)
+            .map(name => ({
+              label: name,
+              value: name,
+            })) || []
+          ]
         },
         {
           key: "assigneeName", filterName: "Agent", values: [...formattedData.map(d => d.assigneeName)

@@ -7,8 +7,8 @@ import { api } from "@/lib/api";
 import { format } from "date-fns";
 
 const MyTasksPage: NextPage = () => {
-    const { data: trainerPlacementTestsData } = api.evaluationForm.getTrainerPlacementTest.useQuery()
-    const { data: trainersData } = api.trainers.getTrainers.useQuery()
+    const { data: trainerPlacementTestsData } = api.trainers.getTrainerPlacementTest.useQuery()
+    const { data: testersData } = api.trainers.getTesters.useQuery()
 
     return (
         <AppLayout>
@@ -21,7 +21,7 @@ const MyTasksPage: NextPage = () => {
                     </div>
                     <PaperContainer>
                         <TesterPlacmentTestClient
-                            formattedData={trainerPlacementTestsData?.placementTests ? trainerPlacementTestsData.placementTests.map(test => ({
+                            formattedData={trainerPlacementTestsData?.tests ? trainerPlacementTestsData.tests.map(test => ({
                                 id: test.id,
                                 isLevelSubmittedString: test.student.courseStatus.some(status => status.courseId === test.courseId && !!status.courseLevelId) ? "Completed" : "Waiting",
                                 isLevelSubmitted: test.student.courseStatus.some(status => status.courseId === test.courseId && !!status.courseLevelId),
@@ -29,9 +29,9 @@ const MyTasksPage: NextPage = () => {
                                 courseLevels: test.course.levels,
                                 courseId: test.courseId,
                                 courseName: test.course.name,
-                                trainersData: trainersData?.trainers.map(trainer => ({
-                                    id: trainer.id,
-                                    name: trainer.user.name,
+                                testersData: testersData?.testers.map(tester => ({
+                                    id: tester.id,
+                                    name: tester.user.name,
                                 })) || [],
                                 studentUserId: test.student.id,
                                 studentName: test.student.name,
@@ -42,19 +42,15 @@ const MyTasksPage: NextPage = () => {
                                 testTime: test.oralTestTime,
                                 isWrittenTestDone:
                                     (
-                                        test.writtenTest.googleForm?.responses
-                                            .some(sub => sub.userEmail === test.student.email)
-                                        || test.writtenTest.submissions
-                                            .some(sub => sub.userId === test.studentUserId)
+                                        test.writtenTest.submissions
+                                            .some(sub => sub.studentId === test.studentUserId)
                                     ) ? "true" : "false",
                                 writtenTestResult:
                                     Number(
-                                        test.writtenTest.googleForm?.responses
-                                            .find(sub => sub.userEmail === test.student.email)?.totalScore
-                                    )
-                                    || test.writtenTest.submissions
-                                        .find(sub => sub.userId === test.studentUserId)?.rating,
-                                writtenTestTotalPoints: test.writtenTest.totalPoints,
+                                        test.writtenTest.submissions
+                                            .find(sub => sub.studentId === test.studentUserId)?.totalScore
+                                    ),
+                                writtenTestTotalPoints: test.writtenTest.totalScore,
                                 oralTestMeeting: test.oralTestMeeting,
                                 createdBy: test.createdBy?.name || "Null",
                                 createdAt: format(test.createdAt, "PPPp"),

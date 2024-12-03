@@ -1,7 +1,5 @@
-import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowUpDown } from "lucide-react";
 import Link from "next/link";
 import { getInitials } from "@/lib/getInitials";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -94,7 +92,13 @@ export const columns: ColumnDef<ChatAgentColumn>[] = [
     header: "Actions",
     cell: ({ row }) => {
       return (
-        <AgentCellAction id={row.original.id} />
+        <AgentCellAction
+          id={row.original.id}
+          name={row.original.name}
+          email={row.original.email}
+          phone={row.original.phone}
+          image={row.original.image}
+        />
       )
     }
   }

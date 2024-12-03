@@ -30,41 +30,29 @@ const Counter: React.FC<CounterProps> = ({ target, label, percentage, currency, 
         return () => clearInterval(timer);
     }, [target]);
 
-    const formatNumber = (number: number, maxDecimalDigits: number) => {
+    const formatOutput = (number: number) => {
         if (percentage) {
             return new Intl.NumberFormat('en-US', {
                 style: 'percent',
-                maximumFractionDigits: maxDecimalDigits,
+                maximumFractionDigits: 2,
             }).format(number);
         } else if (currency) {
             return new Intl.NumberFormat('en-US', {
                 style: 'currency',
                 currency,
+                notation: 'compact',
             }).format(number);
         } else {
-            return number.toLocaleString('en-US', {
-                maximumFractionDigits: maxDecimalDigits,
-            });
-        };
-    };
-
-    const formatOutput = (number: number) => {
-        if (number >= 1000000) {
-            return `${formatNumber(number / 1000000, 2)}m`;
-        } else if (number >= 1000) {
-            return `${formatNumber(number / 1000, 2)}k`;
-        } else if (label) {
-            return `${formatNumber(number, 0)} ${label}`;
-        } else if (percentage) {
-            return formatNumber(number, 2);
-        } else {
-            return formatNumber(number, 2)
+            return new Intl.NumberFormat('en-US', {
+                notation: 'compact',
+                compactDisplay: 'short',
+            }).format(number);
         }
     };
 
     return (
         <Typography variant="bodyText" className={cn("!text-3xl font-bold", color)}>
-            {formatOutput(count)}
+            {label ? `${formatOutput(count)} ${label}` : formatOutput(count)}
         </Typography>
     );
 };

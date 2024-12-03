@@ -1,6 +1,4 @@
-import { env } from "@/env.mjs";
 import { api } from "@/lib/api";
-import { sendWhatsAppMessage } from "@/lib/whatsApp";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 
@@ -15,19 +13,6 @@ const useZoomMeeting = () => {
     const attendSessionMutation = api.zoomGroups.attendSession.useMutation()
     const editSessionStatusMutation = api.zoomGroups.editSessionStatus.useMutation({
         onSuccess: ({ updatedSession }) => trpcUtils.zoomGroups.invalidate()
-            .then(() => {
-                updatedSession.zoomGroup?.students.forEach(student => {
-                    if (updatedSession.sessionStatus === "ongoing") sendWhatsAppMessage({
-                        toNumber: `${student.phone}`,
-                        textBody: `Hi ${student.name}, your session for today has started, Please join from here: ${updatedSession.sessionLink}`,
-                    })
-                    if (updatedSession.sessionStatus === "completed") sendWhatsAppMessage({
-                        toNumber: `${student.phone}`,
-                        textBody: `Hi ${student.name}, your session for today has been completed, don't forget to submit your assignment here: ${env.NEXT_PUBLIC_NEXTAUTH_URL}/my_courses/${updatedSession.zoomGroup?.course?.slug}/${updatedSession.zoomGroup?.courseLevel?.slug}/assignment/${updatedSession.materialItem?.slug}
-                        \nYou can also view the course materials here: ${env.NEXT_PUBLIC_NEXTAUTH_URL}/my_courses/${updatedSession.zoomGroup?.course?.slug}/${updatedSession.zoomGroup?.courseLevel?.slug}/session/${updatedSession.materialItemId}`,
-                    })
-                })
-            }),
     })
 
     const createClient = (meetingConfig: {
@@ -72,7 +57,7 @@ const useZoomMeeting = () => {
 
                             attendSessionMutation.mutate({ sessionId }, {
                                 onSettled: () => {
-                                    if (session.data?.user.userType === "teacher") {
+                                    if (session.data?.user.userRoles.includes("Teacher")) {
                                         ZoomMtg.record({
                                             record: true,
                                             success: (data: any) => {
@@ -91,7 +76,9 @@ const useZoomMeeting = () => {
                                     }
                                 }
                             })
-                            editSessionStatusMutation.mutate({ id: sessionId, sessionStatus: "ongoing" })
+                            if (session.data?.user.userRoles.includes("Teacher")) {
+                                editSessionStatusMutation.mutate({ id: sessionId, sessionStatus: "Ongoing" })
+                            }
 
                         },
                         error: (error: any) => {

@@ -14,7 +14,7 @@ import { upperFirst } from "lodash";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 
 const WaitingListPage = () => {
-    const [status, setStatus] = useState<CourseStatuses>("waiting")
+    const [status, setStatus] = useState<CourseStatuses>("Waiting")
     const [isResumeFormOpen, setIsResumeFormOpen] = useState(false);
 
     const { data: waitingList } = api.waitingList.queryFullList.useQuery({ status });
@@ -23,7 +23,7 @@ const WaitingListPage = () => {
         <AppLayout>
             <main>
                 <div className="flex flex-col gap-2">
-                    <Tabs defaultValue="waiting">
+                    <Tabs defaultValue="Waiting">
                         <TabsList className="flex">
                             {validCourseStatuses.map(st => (
                                 <TabsTrigger key={st} value={st} onClick={() => setStatus(st)}>{upperFirst(st)}</TabsTrigger>
@@ -35,11 +35,11 @@ const WaitingListPage = () => {
                                     <div className="flex flex-col gap-2">
                                         <ConceptTitle>{upperFirst(status)} List</ConceptTitle>
                                     </div>
-                                    {status === "postponded" && (
+                                    {status === "Postponded" && (
                                         <div className="flex flex-col gap-2">
                                             <Modal
                                                 title="Resume studnets"
-                                                description="move studnets to back to waiting list"
+                                                description="move studnets to back to Waiting list"
                                                 isOpen={isResumeFormOpen}
                                                 onClose={() => setIsResumeFormOpen(false)}
                                                 children={(

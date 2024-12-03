@@ -1,4 +1,4 @@
-import { orderCodeGenerator, salesOperationCodeGenerator } from "@/lib/utils";
+import { leadsCodeGenerator, orderCodeGenerator } from "@/lib/utils";
 import {
     createTRPCRouter,
     protectedProcedure,
@@ -7,9 +7,16 @@ import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
 import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
 import { z } from "zod";
-import { createPaymentIntent, formatAmountForPaymob } from "@/lib/paymobHelpers";
+import { createPaymentIntent } from "@/lib/paymobHelpers";
 import { env } from "@/env.mjs";
-import axios from "axios";
+import { EmailsWrapper } from "@/components/emails/EmailsWrapper";
+import { CredentialsEmail } from "@/components/emails/CredintialsEmail";
+import { sendZohoEmail } from "@/lib/emailHelpers";
+import { sendWhatsAppMessage } from "@/lib/whatsApp";
+import { hasPermission } from "@/server/permissions";
+import { createUser, getUserById } from "@/server/api/services/users";
+import { getCourseById } from "@/server/api/services/courses";
+import { getLeadStage } from "@/server/api/services/leadStages";
 
 export const leadsRouter = createTRPCRouter({
     createLead: protectedProcedure
@@ -29,6 +36,7 @@ export const leadsRouter = createTRPCRouter({
                     email,
                     name,
                     phone,
+                    code: leadsCodeGenerator(),
                     isAssigned: false,
                     isAutomated: false,
                     isReminderSet: false,
@@ -56,6 +64,8 @@ export const leadsRouter = createTRPCRouter({
             const leads = await ctx.prisma.lead.createMany({
                 data: input.map(item => ({
                     ...item,
+                    code: leadsCodeGenerator(),
+                    status: "Created",
                     isAssigned: false,
                     isAutomated: false,
                     isReminderSet: false,
@@ -78,6 +88,21 @@ export const leadsRouter = createTRPCRouter({
 
             return { leads };
         }),
+    getMyLeads: protectedProcedure
+        .query(async ({ ctx }) => {
+            const assigneeId = ctx.session.user.id
+            const leads = await ctx.prisma.lead.findMany({
+                where: { assigneeId },
+                include: {
+                    labels: true,
+                    assignee: { include: { user: true } },
+                    notes: true,
+                    leadStage: true,
+                }
+            });
+
+            return { leads };
+        }),
     getById: protectedProcedure
         .input(z.object({
             id: z.string(),
@@ -90,6 +115,38 @@ export const leadsRouter = createTRPCRouter({
                     assignee: { include: { user: true } },
                     labels: true,
                     notes: true,
+                }
+            });
+
+            return { lead };
+        }),
+    getByCode: protectedProcedure
+        .input(z.object({
+            code: z.string(),
+        }))
+        .query(async ({ ctx, input: { code } }) => {
+            const lead = await ctx.prisma.lead.findFirst({
+                where: { code },
+                include: {
+                    leadStage: true,
+                    assignee: { include: { user: true } },
+                    labels: true,
+                    notes: true,
+                    interactions: { include: { customer: true, salesAgent: { include: { user: true } } } },
+                    user: true,
+                    orderDetails: {
+                        include: {
+                            user: {
+                                include: {
+                                    placementTests: {
+                                        where: {
+                                            course: { placementTests: { some: { course: { orders: { some: { lead: { code } } } } } } }
+                                        }
+                                    }
+                                }
+                            }, course: true
+                        }
+                    },
                 }
             });
 
@@ -114,12 +171,12 @@ export const leadsRouter = createTRPCRouter({
         }),
     assignAll: protectedProcedure
         .input(z.object({
-            stageId: z.string(),
+            stageId: z.string().optional(),
         }))
         .mutation(async ({ ctx, input: { stageId } }) => {
             try {
                 const agents = await ctx.prisma.salesAgent.findMany({
-                    where: { user: { userType: "salesAgent" } },
+                    where: { user: { userRoles: { has: "SalesAgent" } } },
                     include: { leads: { include: { leadStage: true } } },
                 })
 
@@ -128,16 +185,26 @@ export const leadsRouter = createTRPCRouter({
                     leadsCount: agent.leads.length
                 })).sort((a, b) => a.leadsCount - b.leadsCount)
 
-                const leads = await ctx.prisma.lead.findMany({
-                    where: {
-                        AND: {
-                            leadStageId: stageId,
-                            isAssigned: false,
-                            assignee: null,
+                const leads = !stageId
+                    ? await ctx.prisma.lead.findMany({
+                        where: {
+                            AND: {
+                                isAssigned: false,
+                                assignee: null,
+                            },
                         },
-                    },
-                    include: { assignee: { include: { user: true } } },
-                });
+                        include: { assignee: { include: { user: true } } },
+                    })
+                    : await ctx.prisma.lead.findMany({
+                        where: {
+                            AND: {
+                                leadStageId: stageId,
+                                isAssigned: false,
+                                assignee: null,
+                            },
+                        },
+                        include: { assignee: { include: { user: true } } },
+                    });
 
                 let leadAssignments: { agentId: string; leadId: string }[] = [];
                 leads.forEach((lead, index) => {
@@ -168,33 +235,22 @@ export const leadsRouter = createTRPCRouter({
             toStageId: z.string(),
         }))
         .mutation(async ({ ctx, input: { leadIds, toStageId } }) => {
-            if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action!" })
+            const leadsToMove = await ctx.prisma.lead.findMany({ where: { id: { in: leadIds } }, include: { leadStage: true, assignee: { include: { user: true } } } })
 
-            const leadsToMove = await ctx.prisma.lead.findMany({ where: { id: { in: leadIds } }, include: { leadStage: true } })
+            if (!hasPermission(ctx.session.user, "leads", "update")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action!" })
+
             const toStage = await ctx.prisma.leadStage.findUnique({ where: { id: toStageId } })
             const isConverted = toStage?.defaultStage === "Converted"
 
             if (isConverted) {
-                const [updatedLeads, salesOperations] = await ctx.prisma.$transaction([
+                const [updatedLeads] = await ctx.prisma.$transaction([
                     ctx.prisma.lead.updateMany({
                         where: { id: { in: leadIds } },
                         data: { leadStageId: toStageId },
                     }),
-                    ctx.prisma.salesOperation.createMany({
-                        data: leadsToMove.map(({ id, assigneeId }) => {
-                            if (!assigneeId) throw new TRPCError({ code: "BAD_REQUEST", message: "Some leads are not assigned!" })
-                            return ({
-                                code: salesOperationCodeGenerator(),
-                                salesAgentId: assigneeId,
-                                leadId: id,
-                                status: "assigned",
-                            })
-                        })
-                    })
                 ])
 
                 return {
-                    salesOperations,
                     updatedLeads,
                 }
             } else {
@@ -238,95 +294,31 @@ export const leadsRouter = createTRPCRouter({
             isPrivate: z.boolean(),
         }))
         .mutation(async ({ ctx, input: { leadId, email, name, phone, courseId, isPrivate } }) => {
-            if (
-                ctx.session.user.userType !== "admin"
-                && ctx.session.user.userType !== "salesAgent"
-                && ctx.session.user.userType !== "chatAgent"
-            ) throw new TRPCError({
+            if (!hasPermission(ctx.session.user, "leads", "update")) throw new TRPCError({
                 code: "UNAUTHORIZED",
-                message: "You are not authorized to create orders, Please contact your admin!"
+                message: "You are not authorized to create orders, Please contact your Admin!"
             })
+
+            const salesAgentUser = await getUserById(ctx.prisma, ctx.session.user.id, { SalesAgent: true })
+            if (!salesAgentUser) throw new TRPCError({ code: "BAD_REQUEST", message: "No salesagent user found!" })
+
+            const course = await getCourseById(ctx.prisma, courseId)
+            if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "Course not found!" })
 
             const password = "@P" + randomUUID().toString().split("-")[0] as string;
-            const hashedPassword = await bcrypt.hash(password, 10);
 
-            const salesAgentUser = await ctx.prisma.user.findUnique({
-                where: {
-                    id: ctx.session.user.id,
-                },
-                include: { salesAgent: true }
-            })
-            if (!salesAgentUser) throw new TRPCError({ code: "BAD_REQUEST", message: "No salesagent user found!" })
-            const salesAgentId = salesAgentUser.id
-
-            const course = await ctx.prisma.course.findUnique({
-                where: {
-                    id: courseId
-                }
-            })
-            if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "Course not found!" })
+            const user = await createUser(ctx.prisma, { name, email, phone, password, emailVerified: true })
+            if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to create user" })
 
             const totalPrice = isPrivate ? course.privatePrice : course.groupPrice
             const orderNumber = orderCodeGenerator()
-
-            const user = await ctx.prisma.user.create({
-                data: {
-                    name,
-                    email,
-                    phone: phone.replace("+", ""),
-                    hashedPassword,
-                    emailVerified: new Date()
-                }
-            })
-            if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to create user" })
 
             const intentResponse = await createPaymentIntent(totalPrice, course, user, orderNumber)
             if (!intentResponse.client_secret) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "intent failed" })
 
             const paymentLink = `${env.PAYMOB_BASE_URL}/unifiedcheckout/?publicKey=${env.PAYMOB_PUBLIC_KEY}&clientSecret=${intentResponse.client_secret}`
 
-            const salesOperation = await ctx.prisma.salesOperation.create({
-                data: {
-                    assignee: { connect: { userId: salesAgentId } },
-                    code: salesOperationCodeGenerator(),
-                    status: "ongoing",
-                    lead: { connect: { id: leadId } },
-                }
-            })
-                .then(res => res)
-                .catch(async (e) => {
-                    if (
-                        e.meta.cause.includes("No 'SalesAgent' record")
-                        && (
-                            ctx.session.user.userType === "admin"
-                            || ctx.session.user.userType === "chatAgent"
-                        )
-                    ) {
-                        await ctx.prisma.salesAgent.create({
-                            data: {
-                                salary: "0",
-                                user: {
-                                    connect: {
-                                        id: ctx.session.user.id
-                                    }
-                                }
-                            }
-                        })
-
-                        return await ctx.prisma.salesOperation.create({
-                            data: {
-                                assignee: { connect: { userId: salesAgentId } },
-                                code: salesOperationCodeGenerator(),
-                                status: "ongoing",
-                            }
-                        })
-
-                    }
-                    throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: e.meta.cause })
-                })
-            if (!salesOperation) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "create salesOperation failed" })
-
-            const convertedStage = await ctx.prisma.leadStage.findFirst({ where: { defaultStage: "Converted" } })
+            const convertedStage = await getLeadStage(ctx.prisma, { defaultStage: "Converted" })
             if (!convertedStage) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Default Stage Missing!" })
 
             const [order] = await ctx.prisma.$transaction([
@@ -336,15 +328,15 @@ export const leadsRouter = createTRPCRouter({
                         orderNumber,
                         paymentId: intentResponse.id,
                         paymentLink,
+                        lead: { connect: { id: leadId } },
                         course: { connect: { id: courseId } },
-                        salesOperation: { connect: { id: salesOperation.id } },
                         user: { connect: { id: user.id } },
-                        courseType: { id: courseId, isPrivate: isPrivate }
+                        courseType: { id: courseId, isPrivate }
                     },
                     include: {
                         course: true,
                         user: true,
-                        salesOperation: { include: { assignee: true } }
+                        lead: { include: { assignee: { include: { user: true } } } }
                     },
                 }),
                 ctx.prisma.lead.update({
@@ -355,7 +347,7 @@ export const leadsRouter = createTRPCRouter({
                 }),
                 ctx.prisma.courseStatus.create({
                     data: {
-                        status: "orderCreated",
+                        status: "OrderCreated",
                         course: { connect: { id: courseId } },
                         user: { connect: { id: user.id } },
                     }
@@ -368,7 +360,7 @@ export const leadsRouter = createTRPCRouter({
                         type: "Info",
                         createdForStudent: { connect: { id: user.id } },
                         messages: [{
-                            message: `An order was placed by ${salesAgentUser.name} for student ${user.name} regarding course ${course.name} for a ${isPrivate ? "private" : "group"} purchase the order is now awaiting payment\nPayment Link: ${paymentLink}`,
+                            message: `An order was placed by ${salesAgentUser.name} for Student ${user.name} regarding course ${course.name} for a ${isPrivate ? "private" : "group"} purchase the order is now awaiting payment\nPayment Link: ${paymentLink}`,
                             updatedAt: new Date(),
                             updatedBy: "System"
                         }],
@@ -376,6 +368,28 @@ export const leadsRouter = createTRPCRouter({
                     }
                 })
             ])
+
+            const courseLink = `${env.NEXT_PUBLIC_NEXTAUTH_URL}my_courses`
+            const html = await EmailsWrapper({
+                EmailComp: CredentialsEmail,
+                prisma: ctx.prisma,
+                props: {
+                    courseLink,
+                    customerName: name,
+                    password,
+                    userEmail: email,
+                }
+            })
+
+            await sendZohoEmail({ email, html, subject: `Your credentials for accessing the course materials` })
+            await sendWhatsAppMessage({
+                prisma: ctx.prisma, toNumber: phone, type: "CredentialsEmail", variables: {
+                    name,
+                    email,
+                    password,
+                    coursesLink: courseLink
+                }
+            })
 
             return {
                 order,
@@ -387,13 +401,14 @@ export const leadsRouter = createTRPCRouter({
     editLead: protectedProcedure
         .input(z.object({
             id: z.string(),
-            name: z.string(),
-            email: z.string(),
-            phone: z.string(),
+            name: z.string().optional(),
+            email: z.string().optional(),
+            phone: z.string().optional(),
         }))
         .mutation(async ({ input: { email, id, name, phone }, ctx }) => {
             const lead = await ctx.prisma.lead.findUnique({ where: { id } })
-            if (ctx.session.user.userType !== "admin" && lead?.assigneeId !== ctx.session.user.id) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+            if (!lead) throw new TRPCError({ code: "BAD_REQUEST", message: "No lead with this ID!" })
+            if (!hasPermission(ctx.session.user, "leads", "update", lead)) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
 
             const updatedLead = await ctx.prisma.lead.update({
                 where: { id },
@@ -414,7 +429,8 @@ export const leadsRouter = createTRPCRouter({
         }))
         .mutation(async ({ input: { id, title, time }, ctx }) => {
             const lead = await ctx.prisma.lead.findUnique({ where: { id } })
-            if (ctx.session.user.userType !== "admin" && lead?.assigneeId !== ctx.session.user.id) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+            if (!lead) throw new TRPCError({ code: "BAD_REQUEST", message: "No lead with this ID!" })
+            if (!hasPermission(ctx.session.user, "leads", "update", lead)) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
 
             const updatedLead = await ctx.prisma.lead.update({
                 where: { id },
@@ -432,7 +448,8 @@ export const leadsRouter = createTRPCRouter({
         }))
         .mutation(async ({ input: { id }, ctx }) => {
             const lead = await ctx.prisma.lead.findUnique({ where: { id } })
-            if (ctx.session.user.userType !== "admin" && lead?.assigneeId !== ctx.session.user.id) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+            if (!lead) throw new TRPCError({ code: "BAD_REQUEST", message: "No lead with this ID!" })
+            if (!hasPermission(ctx.session.user, "leads", "update", lead)) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
 
             const updatedLead = await ctx.prisma.lead.update({
                 where: { id },
@@ -446,7 +463,8 @@ export const leadsRouter = createTRPCRouter({
     deleteLead: protectedProcedure
         .input(z.array(z.string()))
         .mutation(async ({ input, ctx }) => {
-            if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+            if (!hasPermission(ctx.session.user, "leads", "update")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
+
             const deletedLeads = await ctx.prisma.lead.deleteMany({
                 where: {
                     id: {

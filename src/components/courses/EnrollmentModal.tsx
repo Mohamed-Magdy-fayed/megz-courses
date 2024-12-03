@@ -15,9 +15,9 @@ import ChatWithUs from '../landingPageComponents/ChatWithUs'
 import { useRouter } from 'next/router'
 import { useToast } from '../ui/use-toast'
 import LoginModal from '../modals/LoginModal'
-import { render } from '@react-email/render'
-import Email from '@/components/emails/Email'
 import MobileNumberInput from '@/components/ui/phone-number-input'
+import { env } from '@/env.mjs'
+import { subscriptionTiers } from '@/lib/system'
 
 interface EnrollmentModalProps {
     setOpen: Dispatch<SetStateAction<boolean>>
@@ -34,15 +34,16 @@ const EnrollmentModal: FC<EnrollmentModalProps> = ({
     setLoading,
     setOpen,
 }) => {
-    const sendEmailMutation = api.emails.sendZohoEmail.useMutation()
     const enrollCourseMutation = api.selfServe.enrollCourse.useMutation()
-    const { toastError } = useToast()
+    const { toastError, toastSuccess } = useToast()
     const router = useRouter()
     const session = useSession()
     const [loginModalOpen, setLoginModalOpen] = useState(false)
     const [checkedAgreement, setcheckedAgreement] = useState(false)
     const [isPrivate, setIsPrivate] = useState(false)
     const [phone, setPhone] = useState("")
+
+    const { data: setupData } = api.setup.getCurrentTier.useQuery()
 
     const onEnroll = () => {
         if (!session.data?.user.email || !session.data?.user.name) return setLoginModalOpen(true)
@@ -56,19 +57,29 @@ const EnrollmentModal: FC<EnrollmentModalProps> = ({
             isPrivate,
         }, {
             onSuccess: (data) => {
-                const html = render(
-                    <Email
-                        {...data.emailProps}
-                    />, { pretty: true }
-                )
-
-                sendEmailMutation.mutate({
-                    email: data.emailProps.userEmail,
-                    subject: `Thanks for your order ${data.emailProps.orderNumber}`,
-                    html,
-                })
-
                 router.push(data.paymentLink)
+            },
+            onError: (e) => toastError(e.message),
+            onSettled: () => {
+                setLoading(false)
+                setOpen(false)
+            },
+        })
+    }
+
+    function onSubmitOrder() {
+        if (!session.data?.user.email || !session.data?.user.name) return setLoginModalOpen(true)
+        if (!session.data.user.phone && !phone) return toastError("Please add your phone number!")
+        setLoading(true)
+        enrollCourseMutation.mutate({
+            courseId: course.id,
+            phone,
+            customerName: session.data.user.name,
+            email: session.data.user.email,
+            isPrivate,
+        }, {
+            onSuccess: (data) => {
+                toastSuccess(`Order Number: ${data.order.orderNumber} created successfully, we will contact you soon!`)
             },
             onError: (e) => toastError(e.message),
             onSettled: () => {
@@ -115,7 +126,7 @@ const EnrollmentModal: FC<EnrollmentModalProps> = ({
                             <Typography >{session.data?.user.email}</Typography>
                         </div>
                     </div>
-                    {!session.data?.user.phone && (
+                    {session.data?.user.phone && (
                         <div className="flex flex-col items-center justify-between p-4">
                             <div className="self-start">
                                 <Typography variant={"secondary"}>Please add your phone number:</Typography>
@@ -126,30 +137,45 @@ const EnrollmentModal: FC<EnrollmentModalProps> = ({
                         </div>
                     )}
                     <Separator />
-                    <div className="flex items-center gap-2">
-                        <Checkbox
-                            id="checkedAgreement"
-                            className="border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
-                            checked={checkedAgreement}
-                            onClick={() => setcheckedAgreement((prev) => !prev)}
-                        />
-                        <Label htmlFor="checkedAgreement">
-                            <Typography className="leading-5">
-                                By clicking continue payment online you authorize our website to send you an email with the payment link
-                            </Typography>
-                        </Label>
-                    </div>
+                    {setupData?.tier.onlinePayment ? (
+                        <div className="flex items-center gap-2">
+                            <Checkbox
+                                id="checkedAgreement"
+                                className="border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                                checked={checkedAgreement}
+                                onClick={() => setcheckedAgreement((prev) => !prev)}
+                            />
+                            <Label htmlFor="checkedAgreement">
+                                <Typography className="leading-5">
+                                    By clicking continue payment online you authorize our website to send you an email with the payment link
+                                </Typography>
+                            </Label>
+                        </div>
+                    ) : null}
                     <div className="flex flex-col items-center justify-between p-4">
-                        <Button
-                            disabled={!checkedAgreement || loading}
-                            onClick={onEnroll}
-                        >
-                            <Typography className={cn("", loading && "opacity-0")}>
-                                Continue payment online
-                            </Typography>
-                            <CreditCard className={cn("", loading && "opacity-0")} />
-                            {loading && <Spinner className="w-4 h-4 absolute" />}
-                        </Button>
+                        {!setupData?.tier.onlinePayment ? (
+                            <Button
+                                disabled={!checkedAgreement || loading}
+                                onClick={onEnroll}
+                            >
+                                <Typography className={cn("", loading && "opacity-0")}>
+                                    Continue payment online
+                                </Typography>
+                                <CreditCard className={cn("", loading && "opacity-0")} />
+                                {loading && <Spinner className="w-4 h-4 absolute" />}
+                            </Button>
+                        ) : (
+                            <Button
+                                disabled={loading}
+                                onClick={onSubmitOrder}
+                            >
+                                <Typography className={cn("", loading && "opacity-0")}>
+                                    Submit Order
+                                </Typography>
+                                <CreditCard className={cn("", loading && "opacity-0")} />
+                                {loading && <Spinner className="w-4 h-4 absolute" />}
+                            </Button>
+                        )}
                         <Separator className='my-4' />
                         <ChatWithUs />
                     </div>

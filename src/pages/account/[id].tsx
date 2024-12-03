@@ -14,10 +14,10 @@ export type UserGetPayload = Prisma.UserGetPayload<{
   include: {
     orders: { include: { course: { include: { levels: true, orders: { include: { user: true } } } } } },
     evaluationFormSubmissions: true,
-    zoomGroups: { include: { zoomSessions: true, trainer: { include: { user: true } }, course: true, students: true, courseLevel: true }, },
+    zoomGroups: { include: { zoomSessions: true, Teacher: { include: { user: true } }, course: true, students: true, courseLevel: true }, },
     placementTests: {
       include: {
-        trainer: { include: { user: true } },
+        tester: { include: { user: true } },
         course: { include: { levels: true } },
         student: { include: { courseStatus: { include: { level: true } } } },
         writtenTest: { include: { submissions: true } }

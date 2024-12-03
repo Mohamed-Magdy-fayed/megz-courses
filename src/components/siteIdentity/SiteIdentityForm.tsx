@@ -37,6 +37,7 @@ export const SiteIdentityForm = ({ initialData }: {
 
     const { toast } = useToast()
     const trpcUtils = api.useUtils()
+    const { data: currentTier } = api.params.getCurrentTier.useQuery()
     const updateSiteIdentityMutation = api.siteIdentity.updateSiteIdentity.useMutation({
         onMutate: () => setLoadingToast(toast({
             title: "Loading...",
@@ -85,7 +86,7 @@ export const SiteIdentityForm = ({ initialData }: {
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="p-4">
-                <div className="grid gap-4">
+                <fieldset disabled={!currentTier?.removeBranding} className="grid gap-4">
                     <Typography variant={"secondary"}>Site Name</Typography>
                     <Separator />
                     <div className="flex items-center gap-4 justify-between flex-wrap [&>*]:flex-grow">
@@ -289,7 +290,7 @@ export const SiteIdentityForm = ({ initialData }: {
                             <Typography>Submit</Typography>
                         </Button>
                     </div>
-                </div>
+                </fieldset>
             </form>
         </Form>
     )

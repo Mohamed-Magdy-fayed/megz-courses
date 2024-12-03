@@ -26,11 +26,6 @@ const CellAction: React.FC<CellActionProps> = ({ id }) => {
     const [isOpen, setIsOpen] = useState(false)
     const [isDeleteOpen, setIsDeleteOpen] = useState(false)
 
-    const onCopy = () => {
-        navigator.clipboard.writeText(id);
-        toastInfo("ID copied to the clipboard");
-    };
-
     const trpcUtils = api.useUtils();
     const refreshMutation = api.zoomMeetings.refreshToken.useMutation({
         onMutate: () => {
@@ -114,10 +109,6 @@ const CellAction: React.FC<CellActionProps> = ({ id }) => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={onCopy}>
-                        <Copy className="w-4 h-4 mr-2" />
-                        Copy ID
-                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={onRefreshAceessToken}>
                         <RefreshCcw className="w-4 h-4 mr-2" />
                         Refresh Acess Token

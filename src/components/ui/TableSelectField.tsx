@@ -10,7 +10,7 @@ type DataType = {
     label: string
     customLabel?: ReactNode
     value: string
-    active: boolean
+    Active: boolean
 }
 
 interface TableSelectFieldProps<T> extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -59,7 +59,7 @@ const TableSelectField: FC<TableSelectFieldProps<any>> = ({ placeholder, listTit
                         return (
                             <DropdownMenuItem
                                 key={item.value}
-                                disabled={!item.active}
+                                disabled={!item.Active}
                                 onClick={() => {
                                     handleChange(item.value)
                                     setValue(item.label === value ? "" : item.label)

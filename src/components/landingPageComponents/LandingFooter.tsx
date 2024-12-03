@@ -5,6 +5,7 @@ import Copyright from '@/components/Copyright'
 import Image from 'next/image'
 import { LogoPrimary } from '@/components/layout/Logo'
 import { SiteIdentity } from '@prisma/client'
+import { Typography } from '@/components/ui/Typoghraphy'
 
 const landingNavLinks = [
     {

@@ -52,9 +52,9 @@ const SalesAgentClient = () => {
     email: agent.user.email || "no email",
     image: agent.user.image || "no image",
     phone: agent.user.phone || "no phone",
-    tasks: agent?.tasks.length || 0,
-    salary: agent?.salary || "no salary",
+    tasks: agent?.leads.length || 0,
     agent,
+    agentType: agent.user.userRoles,
     createdAt: format(agent.user.createdAt, "MMMM do, yyyy"),
   })) || [];
 
@@ -88,7 +88,6 @@ const SalesAgentClient = () => {
         dateRanges={[{ key: "createdAt", label: "Created At" }]}
         searches={[
           { key: "email", label: "Email" },
-          { key: "salary", label: "Salary" },
           { key: "phone", label: "Phone" },
           { key: "tasks", label: "Tasks" },
         ]}
@@ -120,7 +119,7 @@ const SalesAgentClient = () => {
         }}
         handleImport={(data) => {
           console.log(data);
-          
+
           if (
             password.length > 5
             && /[a-z]/.test(password)
@@ -135,7 +134,7 @@ const SalesAgentClient = () => {
                 phone,
               })),
               password,
-              userType: "salesAgent",
+              userRole: "SalesAgent",
             })
           }
           toastError("Password doesn't match criteria!")

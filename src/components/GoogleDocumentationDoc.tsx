@@ -46,7 +46,7 @@ const GoogleDocumentationDoc = () => {
                 <span className="c10 c32">Update the Site Identity</span>
             </h2>
             <p className="c0">
-                <span className="c1">Using the admin account.</span>
+                <span className="c1">Using the Admin account.</span>
             </p>
             <p className="c0">
                 <span className="c5">In the navigation menu select Configurations </span>
@@ -296,7 +296,7 @@ const GoogleDocumentationDoc = () => {
                 </span>
             </p>
             <p className="c0">
-                <span className="c1">Using the admin account.</span>
+                <span className="c1">Using the Admin account.</span>
             </p>
             <p className="c0">
                 <span className="c5">In the navigation menu select (</span>
@@ -925,7 +925,7 @@ const GoogleDocumentationDoc = () => {
             <p className="c0">
                 <span className="c13 c15 c5">
                     Note: The next 2 tabs are informative tabs where you can view information
-                    about the course's waiting list and Zoom groups
+                    about the course's Waiting list and Zoom groups
                 </span>
             </p>
             <p className="c0">
@@ -1314,7 +1314,7 @@ const GoogleDocumentationDoc = () => {
                 <span className="c13 c15 c5">
                     Note: this account will get used now whenever you try and schedule a
                     meeting from within the system and it will also take in consideration if
-                    you have scheduled meetings from elsewhere
+                    you have Scheduled meetings from elsewhere
                 </span>
             </p>
             <hr />
@@ -1774,7 +1774,7 @@ const GoogleDocumentationDoc = () => {
                     />
                 </span>
                 <span className="c5">
-                    &nbsp;it means that your configuration is completed and you should start
+                    &nbsp;it means that your configuration is Completed and you should start
                     seeing your leads in the database{" "}
                 </span>
                 <span
@@ -2127,7 +2127,7 @@ const GoogleDocumentationDoc = () => {
             <p className="c0">
                 <span>
                     Once the payment is confirmed you will be able to schedule a placement
-                    test for the student with one of the testers in the educational team check{" "}
+                    test for the Student with one of the testers in the educational team check{" "}
                 </span>
                 <span className="c9">
                     <a className="c22" href="#h.heo89cs06kpi">
@@ -2167,7 +2167,7 @@ const GoogleDocumentationDoc = () => {
             </p>
             <p className="c0">
                 <span>
-                    Select the oral test time and the tester from the list then click Schedule{" "}
+                    Select the oral test time and the Tester from the list then click Schedule{" "}
                 </span>
                 <span
                     style={{
@@ -2226,7 +2226,7 @@ const GoogleDocumentationDoc = () => {
             </p>
             <p className="c0">
                 <span className="c11">
-                    Note: the student now finished the journey with the sales team and is with
+                    Note: the Student now finished the journey with the sales team and is with
                     the educational team to determine the level at which to start the course
                 </span>
             </p>
@@ -2249,7 +2249,7 @@ const GoogleDocumentationDoc = () => {
             </p>
             <p className="c0">
                 <span className="c4">
-                    You can create an order for a new student (not already added on the
+                    You can create an order for a new Student (not already added on the
                     system) or select a user already on the system
                 </span>
             </p>
@@ -2311,7 +2311,7 @@ const GoogleDocumentationDoc = () => {
             <p className="c0">
                 <span className="c11">
                     Note: After you fill in the needed details and click Quick Order you will
-                    see an unassigned Sales operation created on the Sales Operations page
+                    see an unassigned Sales operation Created on the Sales Operations page
                     from there you can continue like the normal sales operation flow.
                 </span>
             </p>
@@ -2323,7 +2323,7 @@ const GoogleDocumentationDoc = () => {
                 <span className="c2">Placement Tests process</span>
             </h2>
             <p className="c0">
-                <span>As a tester, you mainly work from the Educational Team page </span>
+                <span>As a Tester, you mainly work from the Educational Team page </span>
                 <span
                     style={{
                         overflow: "hidden",
@@ -2382,8 +2382,8 @@ const GoogleDocumentationDoc = () => {
             </p>
             <p className="c0">
                 <span className="c4">
-                    From here you can filter the completed written tests and see all the
-                    details you need and even join the zoom meeting created for this oral test{" "}
+                    From here you can filter the Completed written tests and see all the
+                    details you need and even join the zoom meeting Created for this oral test{" "}
                 </span>
             </p>
             <p className="c0">
@@ -2422,8 +2422,8 @@ const GoogleDocumentationDoc = () => {
             </p>
             <p className="c0">
                 <span>
-                    Select the correct level for the student from the dropdown and click Add
-                    to waiting list&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    Select the correct level for the Student from the dropdown and click Add
+                    to Waiting list&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 </span>
                 <span
                     style={{
@@ -2483,9 +2483,9 @@ const GoogleDocumentationDoc = () => {
             </p>
             <p className="c0">
                 <span className="c11">
-                    Note: this user is now on the waiting list for the course and the
+                    Note: this user is now on the Waiting list for the course and the
                     operations team will be able to add him to a batch to start a group or
-                    create a private group for the student if needed.
+                    create a private group for the Student if needed.
                 </span>
             </p>
             <hr />
@@ -2588,8 +2588,8 @@ const GoogleDocumentationDoc = () => {
             </p>
             <p className="c0">
                 <span className="c11">
-                    Note: Now the goup is created it will need to be operated by the teacher
-                    selected and once the group completed successfully all the students within
+                    Note: Now the goup is Created it will need to be operated by the Teacher
+                    selected and once the group Completed successfully all the students within
                     will be added to your Retintions list to allow the sales team to follow up
                     on them.
                 </span>
@@ -2602,7 +2602,7 @@ const GoogleDocumentationDoc = () => {
                 <span className="c2">Teacher workflow</span>
             </h2>
             <p className="c0">
-                <span>As a teacher, you mainly work from the Educational Team page </span>
+                <span>As a Teacher, you mainly work from the Educational Team page </span>
                 <span
                     style={{
                         overflow: "hidden",
@@ -2773,8 +2773,8 @@ const GoogleDocumentationDoc = () => {
             </p>
             <p className="c0">
                 <span className="c4">
-                    Once all sessions in a group is completed the entire group is marked as
-                    completed and the final test is unlocked for the students{" "}
+                    Once all sessions in a group is Completed the entire group is marked as
+                    Completed and the final test is unlocked for the students{" "}
                 </span>
             </p>
             <p className="c0">
@@ -2808,7 +2808,7 @@ const GoogleDocumentationDoc = () => {
             <p className="c0">
                 <span className="c11">
                     Note: Now all the students are added to the retentions list and once the
-                    student submits the final test and passes his Certificate will be
+                    Student submits the final test and passes his Certificate will be
                     generated automatically and added to his account.
                 </span>
             </p>
@@ -2856,7 +2856,7 @@ const GoogleDocumentationDoc = () => {
             </p>
             <p className="c0">
                 <span className="c4">
-                    You will only be able to see notes sent to you unless you have admin
+                    You will only be able to see notes sent to you unless you have Admin
                     access then you see all notes.
                 </span>
             </p>

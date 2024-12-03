@@ -40,7 +40,7 @@ const AnswerCard: FC<AnswerCardProps> = ({ card, isInArea, isSelected }) => {
           : "cursor-pointer rounded bg-slate-100 hover:bg-blue-200",
         isSelected ? "bg-blue-200" : "",
         isUsed ? "cursor-not-allowed text-primary hover:bg-slate-100" : "",
-        submission.completed
+        submission.Completed
           ? !isInArea
             ? isCorrect
               ? "outline outline-1 outline-success"

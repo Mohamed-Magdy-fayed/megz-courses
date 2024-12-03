@@ -4,7 +4,6 @@ import * as React from "react"
 import * as TabsPrimitive from "@radix-ui/react-tabs"
 
 import { cn } from "@/lib/utils"
-import { Scroll } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 const Tabs = ({ defaultValue, id, ...props }: React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root>) => {

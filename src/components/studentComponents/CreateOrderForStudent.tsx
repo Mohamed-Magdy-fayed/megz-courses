@@ -3,13 +3,10 @@ import { Course, CourseStatus, User } from "@prisma/client"
 import { Button } from "../ui/button"
 import { api } from "@/lib/api"
 import { useToast } from "../ui/use-toast"
-import CoursesSelectField from "../salesOperation/CoursesSelectField"
+import CoursesSelectField from "../ui/CoursesSelectField"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { Typography } from "../ui/Typoghraphy"
 import Modal from "@/components/ui/modal"
-import { render } from "@react-email/render"
-import Email from "@/components/emails/Email"
-import { sendZohoEmail } from "@/lib/gmailHelpers"
 
 interface CreateOrderForStudentProps {
     loading: boolean
@@ -28,53 +25,24 @@ const CreateOrderForStudent: FC<CreateOrderForStudentProps> = ({
     loading,
     setLoading,
 }) => {
-    const [assigneeId, setAssigneeId] = useState("");
     const [coursesList, setCoursesList] = useState<{
         label: string
         value: string
-        active: boolean
+        Active: boolean
     }[]>([])
     const [coursesGroupType, setCoursesGroupType] = useState<{ courseId: string, isPrivate: boolean }[]>([])
 
-    const { toastError, toastSuccess } = useToast()
+    const { toastError } = useToast()
 
-    const { data: siteData, refetch } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: false })
-
-    useEffect(() => { refetch() }, [])
-    const { data: salesAgentsData } = api.users.getUsers.useQuery({ userType: "salesAgent" })
-    const sendEmailMutation = api.emails.sendZohoEmail.useMutation()
-    const createSalesOperationMutation = api.salesOperations.createSalesOperation.useMutation({
-        onMutate: () => setLoading(true),
-        onSuccess: ({ salesOperations }) => {
-            createOrderMutation.mutate({
-                courseDetails: coursesGroupType[0]!,
-                email: userData.email,
-                salesOperationId: salesOperations.id
-            })
-        },
-        onError: ({ message }) => toastError(message),
-        onSettled: () => { },
-    })
-    const createOrderMutation = api.orders.createOrder.useMutation({
-        onSuccess: ({ emailProps, orderNumber }) => {
-            const html = render(
-                <Email
-                    {...emailProps}
-                />, { pretty: true }
-            )
-
-            sendEmailMutation.mutate({ email: emailProps.userEmail, subject: `Thanks for your order ${orderNumber}`, html })
-            toastSuccess(`Order ${orderNumber} has been submitted successfully!`)
-        },
-        onError: (error) => {
-            toastError(error.message)
-        },
-    })
-
+    const { data: salesAgentsData } = api.users.getUsers.useQuery({ userRole: "SalesAgent" })
+    const createOrderWithLeadMutation = api.orders.createOrderWithLead.useMutation({})
     const handleAddCourses = () => {
         if (!coursesGroupType[0]) return toastError(`missing some info here!`)
 
-        createSalesOperationMutation.mutate({ status: "ongoing", assigneeId: assigneeId })
+        createOrderWithLeadMutation.mutate({
+            email: userData.email,
+            courseDetails: coursesGroupType[0],
+        })
     }
 
     useEffect(() => {
@@ -82,7 +50,7 @@ const CreateOrderForStudent: FC<CreateOrderForStudentProps> = ({
         const newList = coursesData.map(item => ({
             label: item.name,
             value: item.id,
-            active: !userData.courseStatus.some(status => status.courseId === item.id)
+            Active: !userData.courseStatus.some(status => status.courseId === item.id)
         }))
         setCoursesList(newList)
     }, [userData])

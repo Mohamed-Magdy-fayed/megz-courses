@@ -6,12 +6,12 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu"
-import { Course, Order, SiteIdentity } from "@prisma/client"
+import { Course, Order, SiteIdentity, UserNoteStatus } from "@prisma/client"
 import Spinner from "@/components/Spinner"
 import { Button } from "@/components/ui/button"
 import { Typography } from "@/components/ui/Typoghraphy"
-import { BookOpen, LayoutDashboard, LogIn, Menu, UserCog, UserPlus } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { BellDot, BellRing, BookOpen, DotIcon, EyeIcon, EyeOffIcon, InfoIcon, LayoutDashboard, LogIn, Menu, StickyNote, UserCog, UserPlus } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useEffect, useState } from "react"
 import { LogoForeground } from "../layout/Logo"
 import { signOut, useSession } from "next-auth/react"
@@ -24,13 +24,26 @@ import { api } from "@/lib/api"
 import { ScrollArea } from "../ui/scroll-area"
 import Image from "next/image"
 import { getInitials } from "@/lib/getInitials"
+import { SeverityPill } from "@/components/overview/SeverityPill"
+import { BellIcon } from "lucide-react"
+import { useRouter } from "next/router"
+import { format } from "date-fns"
+import { hasPermission } from "@/server/permissions"
 
 export const LandingNavigationMenu = ({ siteIdentity }: { siteIdentity?: SiteIdentity }) => {
+  const session = useSession()
+  const router = useRouter()
   const latestCoursesQuery = api.courses.getLatest.useQuery(undefined, {
     enabled: false,
   })
+  const trpcUtils = api.useUtils()
+  const { data } = api.notes.getActiveUserNotes.useQuery(undefined, { enabled: session.status === "authenticated" })
+  const editNoteQuery = api.notes.editNoteStatus.useMutation({ onSettled: () => trpcUtils.notes.invalidate() })
   const editUserQuery = api.users.editUser.useMutation()
-  const session = useSession()
+
+  const changeStatus = (id: string, status: UserNoteStatus) => {
+    editNoteQuery.mutate({ id, status })
+  }
 
   useEffect(() => {
     latestCoursesQuery.refetch()
@@ -40,7 +53,7 @@ export const LandingNavigationMenu = ({ siteIdentity }: { siteIdentity?: SiteIde
     if (!session.data?.user) return
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
     const isTablet = /Tablet|iPad/i.test(navigator.userAgent);
-    const getDevice = () => isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop'
+    const getDevice = () => isMobile ? 'Mobile' : isTablet ? 'Tablet' : 'Desktop'
 
     if (session.data.user.device === (getDevice()) || !session.data.user.emailVerified) return
     editUserQuery.mutate({
@@ -71,17 +84,76 @@ export const LandingNavigationMenu = ({ siteIdentity }: { siteIdentity?: SiteIde
             </Typography>
           </Link>
         </div>
-        {!session.data?.user && session.status !== "authenticated" ? (
-          <>
-            <MobileUnauthenticatedProfileMenu />
-            <DesktopUnauthenticatedProfileMenu />
-          </>
-        ) : (
-          <>
-            <MobileAuthenticatedProfileMenu />
-            <DesktopAuthenticatedProfileMenu />
-          </>
-        )}
+
+        <div className="flex col-span-3 items-center gap-4 justify-end">
+          {data?.notes && (
+            <DropdownMenu>
+              <DropdownMenuTrigger className="relative mx-4">
+                {data.notes.filter(n => n.status !== "Closed").length > 0 && <InfoIcon className="absolute rounded-full text-destructive-foreground bg-destructive -top-2.5 -right-2.5 size-3" />}
+                {data.notes.filter(n => n.status !== "Closed").length > 0 ? <BellRing className="size-4" /> : <BellIcon className="size-4" />}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuLabel>
+                  Notes {data.notes.filter(n => n.status !== "Closed").length > 0 && <SeverityPill color="destructive" className="aspect-square inline-flex">{data?.notes.filter(n => n.status !== "Closed").length}</SeverityPill>}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <ScrollArea className="max-h-96">
+                    {data.notes.map(note => (
+                      <DropdownMenuItem
+                        key={note.id}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          note.status !== "Closed" && changeStatus(note.id, "Closed")
+                        }}
+                        className={cn("flex items-center justify-between w-full gap-4 hover:!bg-muted/10 hover:!text-foreground focus-visible:bg-muted/10 focus-visible:text-foreground", note.status !== "Closed" && "bg-primary/10 text-foreground hover:!bg-primary/20")}
+                      >
+                        <div className="grid gap-4 max-w-md">
+                          <Typography variant="secondary">
+                            {note.title}
+                          </Typography>
+                          <Typography className="whitespace-pre-wrap truncate">
+                            {note.messages[0]?.message}
+                          </Typography>
+                          <Typography className="text-xs text-info">
+                            {format(note.updatedAt, "PPp")}
+                          </Typography>
+                        </div>
+                        {note.status !== "Closed" ? (
+                          <Button onClick={(e) => {
+                            e.stopPropagation()
+                            changeStatus(note.id, "Closed")
+                          }} className="cursor-pointer pointer-events-auto" variant="icon" customeColor="success">
+                            <EyeOffIcon className="size-4" />
+                          </Button>
+                        ) : (
+                          <Button onClick={(e) => {
+                            e.stopPropagation()
+                            changeStatus(note.id, "Opened")
+                          }} className="cursor-pointer pointer-events-auto" variant="icon" customeColor="success">
+                            <EyeIcon className="size-4" />
+                          </Button>
+                        )}
+                      </DropdownMenuItem>
+                    ))}
+                  </ScrollArea>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+
+          {!session.data?.user && session.status !== "authenticated" ? (
+            <>
+              <MobileUnauthenticatedProfileMenu />
+              <DesktopUnauthenticatedProfileMenu />
+            </>
+          ) : (
+            <>
+              <MobileAuthenticatedProfileMenu />
+              <DesktopAuthenticatedProfileMenu />
+            </>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -190,7 +262,7 @@ const DesktopAuthenticatedProfileMenu = () => {
   return (
     <div className="hidden lg:flex col-span-3 items-center gap-4 justify-end">
       {/* Authenticated Users (Students) */}
-      {session.data?.user.userType === "student" ? (
+      {session.data?.user && !hasPermission(session.data.user, "adminLayout", "view") ? (
         <>
           <Link href={`/my_courses`}>
             <Button customeColor={"primaryIcon"}>
@@ -205,7 +277,7 @@ const DesktopAuthenticatedProfileMenu = () => {
             </Button>
           </Link>
         </>
-      ) /* Authenticated Users (non student) */ : (
+      ) /* Authenticated Users (non Student) */ : (
         <Link href={`/dashboard`}>
           <Button customeColor={"primaryIcon"}>
             <Typography className="text-foreground whitespace-nowrap">Dashboard</Typography>
@@ -308,7 +380,7 @@ const MobileAuthenticatedProfileMenu = () => {
           </div>
           <Separator></Separator>
           <div className="flex flex-col gap-2">
-            {session.data?.user.userType === "student" ? (
+            {session.data?.user && !hasPermission(session.data.user, "adminLayout", "view") ? (
               <>
                 <Link href={`/my_courses`}>
                   <Button customeColor={"primaryIcon"} className="w-full">
@@ -333,7 +405,6 @@ const MobileAuthenticatedProfileMenu = () => {
             )}
           </div>
           <DropdownMenuSeparator className="md:hidden" />
-          <Separator></Separator>
           <Button customeColor={"primaryIcon"} disabled={loading} onClick={handleLogout} className="m-2 min-w-[10rem] relative">
             {loading && <Spinner className="w-6 h-6 absolute" />}
             <Typography className={cn(loading && "opacity-0")} variant={"buttonText"}>Sign out</Typography>

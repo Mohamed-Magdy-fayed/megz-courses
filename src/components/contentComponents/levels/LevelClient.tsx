@@ -4,12 +4,16 @@ import { DataTable } from "@/components/ui/DataTable";
 import { LevelRow, columns } from "./LevelColumn";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { createMutationOptions } from "@/lib/mutationsHelper";
+import { useRouter } from "next/router";
 
 const LevelClient = ({ formattedData }: { formattedData: LevelRow[] }) => {
   const [users, setUsers] = useState<LevelRow[]>([]);
   const [loadingToast, setLoadingToast] = useState<toastType>()
 
   const { toastError, toastSuccess, toast } = useToast();
+
+  const router = useRouter()
+  const courseSlug = router.query.courseSlug as string
 
   const trpcUtils = api.useUtils();
   const deleteMutation = api.levels.deleteLevels.useMutation();
@@ -20,7 +24,7 @@ const LevelClient = ({ formattedData }: { formattedData: LevelRow[] }) => {
       setLoadingToast,
       toast,
       successMessageFormatter: ({ levels }) => {
-        return `${levels.length} levels created`
+        return `${levels.length} levels Created`
       },
       loadingMessage: "Importing...",
     })
@@ -31,9 +35,9 @@ const LevelClient = ({ formattedData }: { formattedData: LevelRow[] }) => {
       users.map((user) => user.id),
       {
         onSuccess: () => {
-          trpcUtils.users.invalidate()
+          trpcUtils.courses.invalidate()
             .then(() => {
-              toastSuccess("User(s) deleted")
+              toastSuccess("Level(s) deleted")
               callback?.()
             })
         },
@@ -65,7 +69,6 @@ const LevelClient = ({ formattedData }: { formattedData: LevelRow[] }) => {
         templateName: "Levels Import Template",
       }}
       handleImport={(data) => {
-        const courseSlug = formattedData[0]?.courseSlug
         if (!courseSlug) return toastError("No course slug")
         importMutation.mutate(data.map(lvl => ({
           courseSlug,

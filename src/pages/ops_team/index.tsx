@@ -1,9 +1,7 @@
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
-import { api } from "@/lib/api";
 import { useState } from "react";
 import { PlusIcon } from "lucide-react";
 import { PaperContainer } from "@/components/ui/PaperContainers";
-import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
 import SalesAgentsClient from "@/components/salesAgentComponents/SalesAgentsClient";

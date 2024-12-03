@@ -58,7 +58,7 @@ const CertificatePage: NextPage = () => {
                             completionDate={format(data.certificate.completionDate || new Date(), "PP")}
                             courseName={data.certificate.course?.name || ""}
                             studentName={data.certificate.user?.name || ""}
-                            trainerName={data.certificate.user.zoomGroups.find(g => g.courseId === data.certificate?.course?.id && g.courseLevelId === data.certificate?.courseLevelId)?.trainer?.user.name || ""}
+                            trainerName={data.certificate.user.zoomGroups.find(g => g.courseId === data.certificate?.course?.id && g.courseLevelId === data.certificate?.courseLevelId)?.teacher?.user.name || ""}
                         />
                     </div>
                 ) : (
@@ -99,7 +99,7 @@ const Certificate = ({ studentName, courseName, trainerName, completionDate, cer
                     </CardHeader>
                     <CardContent>
                         <h2 className="text-xl font-semibold my-2">{studentName}</h2>
-                        <p>has successfully completed the course</p>
+                        <p>has successfully Completed the course</p>
                         <h3 className="text-lg font-semibold my-2">{courseName}</h3>
                         <p>on</p>
                         <h4 className="text-md font-medium my-2">{completionDate}</h4>

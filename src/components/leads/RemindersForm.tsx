@@ -51,7 +51,7 @@ const RemindersForm = ({ leadId, initialData, setIsOpen }: { leadId: string, ini
             loadingMessage: "Adding...",
             successMessageFormatter: ({ updatedLead }) => {
                 setIsOpen(false)
-                return `Reminder set to ${format(updatedLead.reminders[-1]?.time!, "PPPp")}`
+                return `Reminder set to ${format(updatedLead.reminders[updatedLead.reminders.length - 1]?.time!, "PPPp")}`
             }
         })
     )

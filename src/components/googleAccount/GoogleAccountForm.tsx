@@ -32,7 +32,7 @@ const GoogleAccountForm = ({ setIsOpen }: { setIsOpen: React.Dispatch<React.SetS
         onSuccess: ({ googleAuthUrl }) => {
             toast({
                 title: "Please authorize your Google account in the new tab!",
-                description: "Once the authorization is completed, check this page again to see your added account!",
+                description: "Once the authorization is Completed, check this page again to see your added account!",
             });
             window.open(googleAuthUrl, "_blank");
         },

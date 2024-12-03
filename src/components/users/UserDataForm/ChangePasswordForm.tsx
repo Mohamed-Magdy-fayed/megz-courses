@@ -10,13 +10,13 @@ import { useEffect, useState } from "react";
 import { Card, CardFooter, CardHeader } from "@/components/ui/card";
 import Spinner from "@/components/Spinner";
 import { api } from "@/lib/api";
-import { useSession, getProviders, getSession, getCsrfToken } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/router";
 
 const passwordFormSchema = z.object({
     oldPassword: z.string().optional(),
-    newPassword: z.string().min(1, "Please add a new password"),
+    newPassword: z.string(),
     newPasswordConfirmation: z.string().min(1, "Please confirm the new password"),
 }).superRefine(({ oldPassword, newPassword, newPasswordConfirmation }, ctx) => {
     if (newPassword !== newPasswordConfirmation) ctx.addIssue({

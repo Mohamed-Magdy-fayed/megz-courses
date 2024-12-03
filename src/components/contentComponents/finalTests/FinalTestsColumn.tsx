@@ -4,8 +4,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowUpDown } from "lucide-react";
 import { Typography } from "@/components/ui/Typoghraphy";
 import ActionCell from "./FinalTestsActionCell";
-import { CourseLevel, EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, GoogleForm, GoogleFormQuestion, MaterialItem } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { format } from "date-fns";
+import Link from "next/link";
 
 export type FinalTestRow = {
     id: string,
@@ -13,15 +14,16 @@ export type FinalTestRow = {
     submissions: number,
     totalPoints: number,
     levelName: string,
-    evalForm: EvaluationForm & {
-        materialItem: MaterialItem | null;
-        submissions: EvaluationFormSubmission[];
-        questions: EvaluationFormQuestion[];
-        courseLevel: CourseLevel | null;
-        googleForm?: GoogleForm & {
-            googleFormQuestions: GoogleFormQuestion[]
-        } | null;
-    },
+    levelSlug: string,
+    courseSlug: string,
+    systemForm: Prisma.SystemFormGetPayload<{
+        include: {
+            materialItem: true,
+            courseLevel: true,
+            items: { include: { questions: { include: { options: true } } } },
+            submissions: true,
+        }
+    }>,
     createdBy: string,
     createdAt: Date,
     updatedAt: Date,
@@ -64,15 +66,23 @@ export const columns: ColumnDef<FinalTestRow>[] = [
         },
     },
     {
+        accessorKey: "systemForm",
+        cell: ({ row }) => (
+            <Link href={`/my_courses/${row.original.courseSlug}/${row.original.levelSlug}/final_test`}>
+                {row.original.systemForm.googleFormUrl ? "Google Form" : "System Form"}
+            </Link>
+        )
+    },
+    {
         accessorKey: "questions",
         cell: ({ row }) => (
-            <Typography>{row.original.evalForm.googleForm ? row.original.evalForm.googleForm.googleFormQuestions.length : row.original.evalForm.questions.length}</Typography>
+            <Typography>{row.original.systemForm.items.length}</Typography>
         )
     },
     {
         accessorKey: "submissions",
         cell: ({ row }) => (
-            <Typography>{row.original.evalForm.googleForm ? row.original.evalForm.googleForm.responses.length : row.original.evalForm.submissions.length}</Typography>
+            <Typography>{row.original.systemForm.submissions.length}</Typography>
         )
     },
     {
@@ -82,7 +92,7 @@ export const columns: ColumnDef<FinalTestRow>[] = [
         accessorKey: "levelName",
         header: "Level",
         cell: ({ row }) => {
-            return (<Typography>{row.original.evalForm.courseLevel?.name}</Typography>)
+            return (<Typography>{row.original.systemForm?.courseLevel?.name}</Typography>)
         }
     },
     {
@@ -117,7 +127,8 @@ export const columns: ColumnDef<FinalTestRow>[] = [
         ),
         cell: ({ row }) => <ActionCell
             id={row.original.id}
-            evalForm={row.original.evalForm}
+            systemForm={row.original.systemForm}
+            levelSlug={row.original.levelSlug}
         />,
     },
 ];

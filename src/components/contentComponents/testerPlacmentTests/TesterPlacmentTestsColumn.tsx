@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowUpDown } from "lucide-react";
 import { Typography } from "@/components/ui/Typoghraphy";
 import ActionCell from "./TesterPlacmentTestsActionCell";
 import Link from "next/link";
@@ -13,13 +12,12 @@ import { CourseLevel, Meeting } from "@prisma/client";
 import { format } from "date-fns";
 import { useState } from "react";
 import Modal from "@/components/ui/modal";
-import SelectField from "@/components/salesOperation/SelectField";
+import SelectField from "@/components/ui/SelectField";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { Calendar } from "lucide-react";
 import { api } from "@/lib/api";
 import { toastType, useToast } from "@/components/ui/use-toast";
-import Spinner from "@/components/Spinner";
-import { sendWhatsAppMessage } from "@/lib/whatsApp";
+import { createMutationOptions } from "@/lib/mutationsHelper";
 import { env } from "@/env.mjs";
 
 export type Column = {
@@ -31,7 +29,7 @@ export type Column = {
     courseName: string,
     courseLevels: CourseLevel[],
     testLink: string,
-    trainersData: {
+    testersData: {
         id: string;
         name: string;
     }[],
@@ -113,7 +111,7 @@ export const columns: ColumnDef<Column>[] = [
             const testResultPercentage = row.original.writtenTestResult && row.original.writtenTestTotalPoints && formatPercentage(row.original.writtenTestResult / row.original.writtenTestTotalPoints * 100)
             return (
                 <SeverityPill color={color}>
-                    {row.original.isWrittenTestDone === "true" ? `Done ${testResultPercentage}` : "Not completed"}
+                    {row.original.isWrittenTestDone === "true" ? `Done ${testResultPercentage}` : "Not Completed"}
                 </SeverityPill>
             )
         }
@@ -125,7 +123,7 @@ export const columns: ColumnDef<Column>[] = [
             const testResult = row.original.level
             return (
                 <SeverityPill color={color}>
-                    {row.original.isLevelSubmittedString === "Completed" ? `${testResult}` : "Not completed"}
+                    {row.original.isLevelSubmittedString === "Completed" ? `${testResult}` : "Not Completed"}
                 </SeverityPill>
             )
         }
@@ -147,104 +145,27 @@ export const columns: ColumnDef<Column>[] = [
             const { toastError, toast } = useToast()
 
             const trpcUtils = api.useUtils()
-            const createPlacementTestMeetingMutation = api.zoomMeetings.createPlacementTestMeeting.useMutation()
-            const editPlacementTestMutation = api.placementTests.editPlacementTest.useMutation()
-            const availableZoomClientMutation = api.zoomAccounts.getAvailableZoomClient.useMutation({
-                onMutate: () => {
-                    setLoadingToast(toast({
-                        title: "Loading...",
-                        variant: "info",
-                        description: (
-                            <Spinner className="h-4 w-4" />
-                        ),
-                        duration: 30000,
-                    }))
-                },
-                onSuccess: ({ zoomClient }) => {
-                    if (!zoomClient?.id) {
-                        loadingToast?.dismissAfter()
-                        loadingToast?.update({
-                            id: loadingToast.id,
-                            title: "Error",
-                            description: "No available Zoom Accounts at the selected time!",
-                            variant: "destructive",
-                        })
-                        setLoadingToast(undefined)
-                        return
+            const createPlacementTestMeetingMutation = api.placementTests.schedulePlacementTestWithNoLead.useMutation(
+                createMutationOptions({
+                    trpcUtils,
+                    toast,
+                    loadingToast,
+                    setLoadingToast,
+                    successMessageFormatter: ({ oldTest }) => {
+                        setIsOpen(false)
+                        return oldTest ? "Placement Test Rescheduled Successfully" : "Placement Test Created Successfully"
                     }
-                    refreshTokenMutation.mutate({ zoomClientId: zoomClient.id }, {
-                        onSuccess: ({ updatedZoomClient }) => {
-                            if (!trainerId[0] || !testTime) {
-                                loadingToast?.update({
-                                    id: loadingToast.id,
-                                    title: "Error",
-                                    description: "Missing some information here!",
-                                    variant: "destructive",
-                                })
-                                loadingToast?.dismissAfter()
-                                setLoadingToast(undefined)
-                                return
-                            }
-                            createPlacementTestMeetingMutation.mutate({
-                                zoomClientId: updatedZoomClient.id,
-                                courseId: row.original.courseId,
-                                testTime,
-                                trainerId: trainerId[0],
-                            }, {
-                                onSuccess: ({ meetingNumber, meetingPassword, meetingLink }) => {
-                                    sendWhatsAppMessage({
-                                        toNumber: row.original.studentPhone,
-                                        textBody: `Hi ${row.original.studentName},
-                                        \nyour oral placement test is scheduled at ${format(testTime, "PPPPp")} with Mr. ${row.original.trainersData.find(trainer => trainer.id === trainerId[0])?.name}
-                                        \nPlease access it on time through this link: ${meetingLink}`,
-                                    })
-                                    editPlacementTestMutation.mutate({
-                                        testId: row.original.id,
-                                        testTime,
-                                        trainerId: trainerId[0]!,
-                                        meetingNumber,
-                                        meetingPassword,
-                                    }, {
-                                        onSuccess: () => {
-                                            trpcUtils.invalidate()
-                                                .then(() => {
-                                                    setIsOpen(false)
-                                                    loadingToast?.update({
-                                                        id: loadingToast.id,
-                                                        title: "Success",
-                                                        description: "New time scheduled successfully",
-                                                        variant: "success",
-                                                    })
-                                                })
-                                        },
-                                        onError: ({ message }) => {
-                                            loadingToast?.update({
-                                                id: loadingToast.id,
-                                                title: "Error",
-                                                description: message,
-                                                variant: "destructive",
-                                            })
-                                        },
-                                    })
-                                },
-                                onError: ({ message }) => {
-                                    loadingToast?.update({
-                                        id: loadingToast.id,
-                                        title: "Error",
-                                        description: message,
-                                        variant: "destructive",
-                                    })
-                                },
-                            })
-                        },
-                    })
-                },
-            });
-            const refreshTokenMutation = api.zoomMeetings.refreshToken.useMutation();
+                })
+            )
 
             const handleSchedulePlacementTest = () => {
                 if (!trainerId[0] || !testTime) return toastError("Missing some information here!")
-                availableZoomClientMutation.mutate({ startDate: testTime })
+                createPlacementTestMeetingMutation.mutate({
+                    testTime,
+                    courseId: row.original.courseId,
+                    userId: row.original.studentUserId,
+                    testerId: trainerId[0],
+                })
             }
 
             return (
@@ -258,8 +179,8 @@ export const columns: ColumnDef<Column>[] = [
                             <div className="space-y-4">
                                 <SelectField
                                     data={
-                                        row.original.trainersData.map(({ id, name }) => ({
-                                            active: true,
+                                        row.original.testersData.map(({ id, name }) => ({
+                                            Active: true,
                                             label: name,
                                             value: id,
                                         }))

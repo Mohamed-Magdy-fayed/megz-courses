@@ -2,10 +2,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Typography } from "@/components/ui/Typoghraphy";
 import ActionCell from "./QuizzesActionCell";
-import { EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, GoogleForm, GoogleFormQuestion, MaterialItem } from "@prisma/client";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { ExternalLink } from "lucide-react";
+import { Prisma } from "@prisma/client";
 import { format } from "date-fns";
 
 export type QuizRow = {
@@ -18,14 +15,7 @@ export type QuizRow = {
     submissions: number;
     totalPoints: number;
     googleFormTitle: string;
-    evalForm: EvaluationForm & {
-        materialItem: MaterialItem | null;
-        submissions: EvaluationFormSubmission[];
-        questions: EvaluationFormQuestion[];
-        googleForm?: GoogleForm & {
-            googleFormQuestions: GoogleFormQuestion[]
-        } | null;
-    },
+    systemForm: Prisma.SystemFormGetPayload<{ include: { materialItem: true, submissions: { include: { student: true } }, items: { include: { questions: { include: { options: true } } } } } }>,
     createdBy: string;
     createdAt: Date;
     updatedAt: Date;
@@ -54,18 +44,6 @@ export const columns: ColumnDef<QuizRow>[] = [
     {
         accessorKey: "materialItemTitle",
         header: "Material Item Title"
-    },
-    {
-        accessorKey: "googleFormTitle",
-        header: "Form Type",
-        cell: ({ row }) => !!row.original.evalForm.googleForm?.formRespondUrl ? (
-            <Link href={row.original.evalForm.googleForm?.formRespondUrl} target="_blank">
-                <Button customeColor={"infoIcon"}>
-                    <ExternalLink className="w-4 h-4" />
-                    <Typography>{row.original.googleFormTitle}</Typography>
-                </Button>
-            </Link>
-        ) : "System Form"
     },
     {
         accessorKey: "questions",

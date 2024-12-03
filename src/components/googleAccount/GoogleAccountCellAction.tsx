@@ -24,11 +24,6 @@ const GoogleAccountCellAction: React.FC<GoogleAccountCellActionProps> = ({ id })
     const [isOpen, setIsOpen] = useState(false)
     const [isDeleteOpen, setIsDeleteOpen] = useState(false)
 
-    const onCopy = () => {
-        navigator.clipboard.writeText(id);
-        toastInfo("ID copied to the clipboard");
-    };
-
     const trpcUtils = api.useUtils();
     const deleteMutation = api.googleAccounts.deleteGoogleAccounts.useMutation({
         onMutate: () => setLoadingToast(toast({
@@ -111,10 +106,6 @@ const GoogleAccountCellAction: React.FC<GoogleAccountCellActionProps> = ({ id })
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={onCopy}>
-                        <Copy className="w-4 h-4 mr-2" />
-                        Copy ID
-                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={onRefresh}>
                         <RefreshCcwIcon className="w-4 h-4 mr-2" />
                         Refresh Token

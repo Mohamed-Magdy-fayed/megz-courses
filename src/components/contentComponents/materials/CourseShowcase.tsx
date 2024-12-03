@@ -31,7 +31,7 @@ const CourseShowcase: FC<CourseShowcaseProps> = ({ course }) => {
                                 <div key={item.id} className="grid gap-2 border-primary border rounded-xl mt-2 p-2">
                                     <Typography>{item.title}</Typography>
                                     <Typography>{item.subTitle}</Typography>
-                                    <Typography>{item.type === "manual" ? "Interactive Session" : "Downloadable Content"}</Typography>
+                                    <Typography>{item.type === "Manual" ? "Interactive Session" : "Downloadable Content"}</Typography>
                                     <div className="grid">
                                         {item.uploads.map(url => {
                                             const itemName = url.split(`${item.slug}%2F`)[1]?.split("?alt=")[0]

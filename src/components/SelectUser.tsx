@@ -26,7 +26,7 @@ interface SelectUserProps {
 }
 
 const SelectUser: FC<SelectUserProps> = ({ userEmail, setUserEmail, loading }) => {
-    const { data, isLoading, isError } = api.users.getUsers.useQuery({ userType: "student" })
+    const { data, isLoading, isError } = api.users.getUsers.useQuery({ userRole: "Student" })
 
     const [open, setOpen] = useState(false)
 

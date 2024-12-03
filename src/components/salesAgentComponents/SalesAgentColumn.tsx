@@ -5,7 +5,7 @@ import { getInitials } from "@/lib/getInitials";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Typography } from "../ui/Typoghraphy";
 import AgentCellAction from "./AgentActionCell";
-import { SalesAgent } from "@prisma/client";
+import { SalesAgent, UserRoles } from "@prisma/client";
 
 export type SalesAgentsColumn = {
   id: string
@@ -13,9 +13,9 @@ export type SalesAgentsColumn = {
   email: string
   image: string
   phone: string
-  salary: string
   tasks: number
   agent: SalesAgent
+  agentType: UserRoles[]
   createdAt: string
 }
 
@@ -72,27 +72,11 @@ export const columns: ColumnDef<SalesAgentsColumn>[] = [
     ),
   },
   {
-    accessorKey: "salary",
-    header: "Salary",
-    cell: ({ row }) => (
-      <div>
-        {row.original.salary === "no salary" ? "no salary" : `$${row.original.salary}`}
-      </div>
-    ),
-  },
-  {
     accessorKey: "phone",
     header: "Phone",
   },
   {
     accessorKey: "tasks",
-    header: ({ column }) => {
-      return (
-        <div className="flex items-center justify-between">
-          Tasks
-        </div>
-      );
-    },
     cell: ({ row }) => (
       <div>
         {row.original.tasks} Tasks

@@ -4,7 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowUpDown } from "lucide-react";
 import { Typography } from "@/components/ui/Typoghraphy";
 import ActionCell from "./PlacmentTestsActionCell";
-import { EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, GoogleForm, GoogleFormQuestion, MaterialItem } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { format } from "date-fns";
 
 export type PlacmentTestRow = {
@@ -12,14 +12,7 @@ export type PlacmentTestRow = {
     questions: number,
     submissions: number,
     totalPoints: number,
-    evalForm: EvaluationForm & {
-        materialItem: MaterialItem | null;
-        submissions: EvaluationFormSubmission[];
-        questions: EvaluationFormQuestion[];
-        googleForm?: GoogleForm & {
-            googleFormQuestions: GoogleFormQuestion[]
-        } | null;
-    },
+    systemForm: Prisma.SystemFormGetPayload<{ include: { materialItem: true, submissions: { include: { student: true } }, items: { include: { questions: { include: { options: true } } } } } }>,
     createdBy: string,
     createdAt: Date,
     updatedAt: Date,
@@ -62,18 +55,6 @@ export const columns: ColumnDef<PlacmentTestRow>[] = [
         },
     },
     {
-        accessorKey: "questions",
-        cell: ({ row }) => (
-            <Typography>{row.original.evalForm.googleForm ? row.original.evalForm.googleForm.googleFormQuestions.length : row.original.evalForm.questions.length}</Typography>
-        )
-    },
-    {
-        accessorKey: "submissions",
-        cell: ({ row }) => (
-            <Typography>{row.original.evalForm.googleForm ? row.original.evalForm.googleForm.responses.length : row.original.evalForm.submissions.length}</Typography>
-        )
-    },
-    {
         accessorKey: "totalPoints",
     },
     {
@@ -108,7 +89,7 @@ export const columns: ColumnDef<PlacmentTestRow>[] = [
         ),
         cell: ({ row }) => <ActionCell
             id={row.original.id}
-            evalForm={row.original.evalForm}
+            systemForm={row.original.systemForm}
         />,
     },
 ];

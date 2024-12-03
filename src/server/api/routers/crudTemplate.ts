@@ -5,10 +5,12 @@
 // } from "@/server/api/trpc";
 // import { TRPCError } from "@trpc/server";
 
+// import { hasPermission } from "@/server/permissions";
+
 // export const refundReasonsRouter = createTRPCRouter({
 //     getRefundReasons: protectedProcedure
 //         .query(async ({ ctx }) => {
-//             if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+// if (hasPermission(ctx.session.user,"","")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
 //             const refundReasons = await ctx.prisma.refundReasons.findMany();
 
 //             return { refundReasons };
@@ -57,7 +59,7 @@
 //     deleteRefundReasons: protectedProcedure
 //         .input(z.array(z.string()))
 //         .mutation(async ({ input, ctx }) => {
-//             if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+//             if (hasPermission(ctx.session.user, "", "delete")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
 //             const deletedRefundReasons = await ctx.prisma.refundReasons.deleteMany({
 //                 where: {
 //                     id: {

@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { validCourseStatuses } from "@/lib/enumsTypes";
+import { hasPermission } from "@/server/permissions";
 
 export const waitingListRouter = createTRPCRouter({
     queryFullList: protectedProcedure
@@ -30,7 +31,7 @@ export const waitingListRouter = createTRPCRouter({
         .query(async ({ ctx }) => {
             const fullList = await ctx.prisma.courseStatus.findMany({
                 where: {
-                    status: "waiting",
+                    status: "Waiting",
                 },
                 include: {
                     course: { include: { levels: true, orders: true } },
@@ -48,18 +49,10 @@ export const waitingListRouter = createTRPCRouter({
             levelId: z.string(),
         }))
         .mutation(async ({ input: { userId, levelId, courseId }, ctx }) => {
-            const currentUser = await ctx.prisma.user.findUnique({
-                where: { id: ctx.session.user.id },
-                include: { trainer: true }
-            })
-            const isAssignedTester = (await ctx.prisma.placementTest.findFirst({
+            const PlacementTest = await ctx.prisma.placementTest.findFirst({
                 where: { courseId, studentUserId: userId },
-                include: { trainer: true }
-            }))?.trainer.userId === ctx.session.user.id
-
-            if (!currentUser) throw new TRPCError({ code: "UNAUTHORIZED", message: "not logged in" })
-            if (currentUser.userType !== "teacher" && currentUser.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You can't take that action!" })
-            if (!isAssignedTester && currentUser.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You can't take that action!" })
+            })
+            if (PlacementTest && !hasPermission(ctx.session.user, "placementTests", "update", PlacementTest)) throw new TRPCError({ code: "UNAUTHORIZED", message: "You can't take that action!" })
 
             const user = await ctx.prisma.user.findUnique({ where: { id: userId }, include: { courseStatus: { include: { level: true } } } })
             if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "user not found!" })
@@ -83,7 +76,7 @@ export const waitingListRouter = createTRPCRouter({
                     id: status[0].id,
                 },
                 data: {
-                    status: "waiting",
+                    status: "Waiting",
                     level: {
                         connect: {
                             id: levelId,
@@ -96,11 +89,11 @@ export const waitingListRouter = createTRPCRouter({
                 data: {
                     sla: 0,
                     status: "Closed",
-                    title: `Student added to waiting list by ${ctx.session.user.name}`,
+                    title: `Student added to Waiting list by ${ctx.session.user.name}`,
                     type: "Info",
                     createdForStudent: { connect: { id: user.id } },
                     messages: [{
-                        message: `User was added to waiting list of course ${course.name} at level ${user.courseStatus.find((s) => courseId === s.courseId)?.level?.name}`,
+                        message: `User was added to Waiting list of course ${course.name} at level ${user.courseStatus.find((s) => courseId === s.courseId)?.level?.name}`,
                         updatedAt: new Date(),
                         updatedBy: "System"
                     }],

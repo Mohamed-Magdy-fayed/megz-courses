@@ -25,8 +25,8 @@ const ZoomGroupsClient = () => {
         startDate: zoomGroup.startDate,
         students: zoomGroup.students,
         studentsCount: zoomGroup.students.length,
-        trainerName: zoomGroup.trainer?.user.name || "",
-        trainer: zoomGroup.trainer!,
+        teacherName: zoomGroup.teacher?.user.name || "",
+        teacher: zoomGroup.teacher!,
     })) || []
 
     const onDelete = (callback?: () => void) => {
@@ -58,7 +58,7 @@ const ZoomGroupsClient = () => {
             dateRanges={[{ key: "startDate", label: "Start Date" }]}
             searches={[
                 { key: "groupNumber", label: "Group Number" },
-                { key: "trainerName", label: "Trainer" },
+                { key: "teacherName", label: "Trainer" },
                 { key: "studentsCount", label: "Students Count" },
             ]}
             filters={[{

@@ -10,9 +10,10 @@ import ChangePassword from "../UserDataForm/ChangePasswordForm";
 import { useToast } from "@/components/ui/use-toast";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { UserGetPayload } from "@/pages/account/[id]";
+import { hasPermission } from "@/server/permissions";
+import { Prisma } from "@prisma/client";
 
-export const Account = ({ user }: { user: UserGetPayload }) => {
+export const Account = ({ user }: { user: Prisma.UserGetPayload<{}> }) => {
   const { toastError, toastSuccess } = useToast()
   const session = useSession()
   const pathname = useRouter().pathname
@@ -65,7 +66,7 @@ export const Account = ({ user }: { user: UserGetPayload }) => {
             {user?.address?.country}
           </Typography>
         </CardContent>
-        {(session.data?.user.userType === "admin" || isOwnAccount) && (
+        {session.data?.user && hasPermission(session.data?.user, "users", "update", user) && (
           <>
             <Separator />
             <CardFooter className="flex items-center justify-center p-4">

@@ -4,7 +4,7 @@ import React, { ReactNode } from 'react'
 const WrapWithTooltip = ({ children, text }: { children: ReactNode, text: string }) => {
     return (
         <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger asChild>
                 {children}
             </TooltipTrigger>
             <TooltipContent>

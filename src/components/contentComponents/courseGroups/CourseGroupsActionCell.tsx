@@ -6,7 +6,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Copy, Edit, List, MoreVertical, SearchSlash, Trash } from "lucide-react";
+import { Edit, List, MoreVertical, SearchSlash, Trash } from "lucide-react";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import Link from "next/link";
 import { AlertModal } from "@/components/modals/AlertModal";
@@ -15,12 +15,12 @@ import { api } from "@/lib/api";
 import { GroupStatus } from "@prisma/client";
 import Modal from "@/components/ui/modal";
 import ZoomGroupForm from "@/components/zoomGroupsComponents/Form";
-import SelectField from "@/components/salesOperation/SelectField";
 import { upperFirst } from "lodash";
 import { CourseRow } from "@/components/contentComponents/courseGroups/CourseGroupsColumn";
 import { createMutationOptions } from "@/lib/mutationsHelper";
+import SelectField from "@/components/ui/SelectField";
 
-const CourseGroupsActionCell: React.FC<CourseRow> = ({ id, courseId, courseLevel, startDate, groupStatus, studentIds, trainerId }) => {
+const CourseGroupsActionCell: React.FC<CourseRow> = ({ id, courseId, courseLevel, startDate, groupStatus, studentIds, teacherId }) => {
     const { toast } = useToast();
 
     const [open, setOpen] = useState(false);
@@ -78,7 +78,7 @@ const CourseGroupsActionCell: React.FC<CourseRow> = ({ id, courseId, courseLevel
                         courseLevel,
                         startDate,
                         studentIds,
-                        trainerId,
+                        teacherId,
                     }} />
                 )}
             />
@@ -92,7 +92,7 @@ const CourseGroupsActionCell: React.FC<CourseRow> = ({ id, courseId, courseLevel
                         <SelectField
                             disabled={!!loadingToast}
                             data={Object.values(GroupStatus).map(groupstatus => ({
-                                active: groupstatus !== status,
+                                Active: groupstatus !== status,
                                 label: upperFirst(groupstatus),
                                 value: groupstatus,
                             }))}

@@ -10,14 +10,15 @@ const FinalTestClient = ({ formattedData }: { formattedData: FinalTestRow[] }) =
     const [ids, setIds] = useState<string[]>([])
 
     const trpcUtils = api.useUtils()
-    const deleteMutation = api.evaluationForm.deleteEvalForm.useMutation()
+    const deleteMutation = api.systemForms.deleteSystemForms.useMutation()
 
     const onDelete = (callback?: () => void) => {
-        deleteMutation.mutate({ ids }, {
-            onSuccess: (data) => {
+
+        deleteMutation.mutate(ids, {
+            onSuccess: ({ deletedSystemForms }) => {
                 trpcUtils.courses.invalidate()
                     .then(() => {
-                        toastSuccess(`${data.deletedEvalForms.count} forms deleted`)
+                        toastSuccess(`${deletedSystemForms.count} forms deleted`)
                         callback?.()
                     })
             },
@@ -31,9 +32,6 @@ const FinalTestClient = ({ formattedData }: { formattedData: FinalTestRow[] }) =
             data={formattedData}
             setData={(data) => setIds(data.map(item => item.id))}
             onDelete={onDelete}
-            searches={[
-                { key: "createdBy", label: "Created By" },
-            ]}
             dateRanges={[{ key: "createdAt", label: "Created At" }]}
             filters={[
                 {

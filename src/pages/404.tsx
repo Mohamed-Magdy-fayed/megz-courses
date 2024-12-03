@@ -1,5 +1,6 @@
 import { Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
+import { hasPermission } from "@/server/permissions";
 import { ArrowLeftToLine, Home } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
@@ -34,7 +35,7 @@ export default function NotFoundPage() {
               <ArrowLeftToLine />
               <Typography>Go back</Typography>
             </Button>
-            <Link href={session.data?.user.userType === "student" ? "/" : "/dashboard"}>
+            <Link href={session.data?.user && hasPermission(session.data.user, "adminLayout", "view") ? "/dashboard" : "/"}>
               <Button className="flex gap-2">
                 <Home />
                 <Typography>Go to dashboard</Typography>

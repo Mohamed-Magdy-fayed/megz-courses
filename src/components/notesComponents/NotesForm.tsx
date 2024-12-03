@@ -1,5 +1,5 @@
 import { NotesColumn } from "@/components/notesComponents/NotesColumn";
-import SelectField from "@/components/salesOperation/SelectField";
+import SelectField from "@/components/ui/SelectField";
 import { Button } from "@/components/ui/button";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, Form, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -69,7 +69,7 @@ export const NotesForm = ({ setIsOpen, initialData, addMessage }: NotesFormProps
                 loadingToast?.update({
                     id: loadingToast.id,
                     title: "Success",
-                    description: `${note.type} Note created`,
+                    description: `${note.type} Note Created`,
                     variant: "success",
                 })
             }),
@@ -272,7 +272,7 @@ export const NotesForm = ({ setIsOpen, initialData, addMessage }: NotesFormProps
                                             <SelectField
                                                 disabled={!!loadingToast}
                                                 data={[...validNoteStatus].map(type => ({
-                                                    active: true,
+                                                    Active: true,
                                                     label: type,
                                                     value: type,
                                                 }))}
@@ -297,7 +297,7 @@ export const NotesForm = ({ setIsOpen, initialData, addMessage }: NotesFormProps
                                         <SelectField
                                             disabled={!!loadingToast}
                                             data={[...validNoteTypes].map(type => ({
-                                                active: true,
+                                                Active: true,
                                                 label: type,
                                                 value: type,
                                             }))}

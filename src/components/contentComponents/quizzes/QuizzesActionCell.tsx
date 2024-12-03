@@ -6,37 +6,56 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Copy, Edit, MoreVertical } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { Edit, MoreVertical } from "lucide-react";
 import { useState } from "react";
-import Modal from "@/components/ui/modal";
-import ConnectGoogleForm from "@/components/FormsComponents/ConnectGoogleForm";
-import CustomForm from "@/components/FormsComponents/CustomForm";
 import { QuizRow } from "@/components/contentComponents/quizzes/QuizzesColumn";
+import { CustomFormModal } from "@/components/systemForms/CustomFormModal";
+import { toastType, useToast } from "@/components/ui/use-toast";
+import { createMutationOptions } from "@/lib/mutationsHelper";
+import { api } from "@/lib/api";
+import { AlertModal } from "@/components/modals/AlertModal";
+import { useRouter } from "next/router";
+import Link from "next/link";
+import { EyeIcon } from "lucide-react";
 
 const ActionCell = (rowData: QuizRow) => {
-    const { toastInfo } = useToast();
+    const router = useRouter()
+    const courseSlug = router.query.courseSlug as string
+
     const [isOpen, setIsOpen] = useState(false)
     const [isEditOpen, setIsEditOpen] = useState(false)
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+    const [loadingToast, setLoadingToast] = useState<toastType>()
 
-    const onCopy = () => {
-        navigator.clipboard.writeText(rowData.id);
-        toastInfo("ID copied to the clipboard");
-    };
+    const { toast } = useToast()
+    const trpcUtils = api.useUtils()
+    const deleteMutation = api.systemForms.deleteSystemForms.useMutation(
+        createMutationOptions({
+            trpcUtils,
+            loadingToast,
+            setLoadingToast,
+            toast,
+            successMessageFormatter: () => {
+                setIsDeleteOpen(false)
+                return `Quiz Deleted`
+            },
+            loadingMessage: "Deleting..."
+        })
+    )
+
+    const onDelete = () => {
+        deleteMutation.mutate([rowData.id])
+    }
 
     return (
         <>
-            <Modal
-                title="Edit"
-                description="edit evaluation form"
-                isOpen={isEditOpen}
-                onClose={() => setIsEditOpen(false)}
-                children={(
-                    <div>
-                        {rowData.evalForm.googleForm ? <ConnectGoogleForm setIsOpen={setIsEditOpen} initialData={rowData.evalForm} /> : <CustomForm initialData={rowData.evalForm} />}
-                    </div>
-                )}
+            <AlertModal
+                isOpen={isDeleteOpen}
+                onClose={() => setIsDeleteOpen(false)}
+                loading={!!loadingToast}
+                onConfirm={onDelete}
             />
+            <CustomFormModal isOpen={isEditOpen} setIsOpen={setIsEditOpen} systemForm={rowData.systemForm} />
             <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
                 <DropdownMenuTrigger asChild>
                     <Button customeColor="mutedIcon" variant={"icon"} >
@@ -45,9 +64,11 @@ const ActionCell = (rowData: QuizRow) => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={onCopy}>
-                        <Copy className="w-4 h-4 mr-2" />
-                        Copy ID
+                    <DropdownMenuItem asChild>
+                        <Link href={`/my_courses/${courseSlug}/${rowData.levelSlug}/Quiz/${rowData.systemForm.materialItem?.slug}`}>
+                            <EyeIcon className="w-4 h-4 mr-2" />
+                            View
+                        </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => {
                         setIsEditOpen(true)

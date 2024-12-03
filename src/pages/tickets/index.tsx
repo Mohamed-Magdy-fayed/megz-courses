@@ -2,14 +2,21 @@ import AppLayout from "@/components/layout/AppLayout";
 import { TicketsClient } from "@/components/ticketsComponents/TicketsClient";
 import { TicketsForm } from "@/components/ticketsComponents/TicketsForm";
 import { Button } from "@/components/ui/button";
+import CommingSoon from "@/components/ui/CommingSoon";
 import Modal from "@/components/ui/modal";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
-//Template
+
 export default function TicketsPage() {
     const [isOpen, setIsOpen] = useState(false);
+
+    return (
+        <AppLayout>
+            <CommingSoon />
+        </AppLayout>
+    )
 
     return (
         <AppLayout>

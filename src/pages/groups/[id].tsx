@@ -4,7 +4,7 @@ import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import Modal from "@/components/ui/modal";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { ArrowLeftToLineIcon, BookMarked, CalendarDays, ExternalLink, LinkIcon, MessageSquare, Users, VoteIcon } from "lucide-react";
+import { ArrowLeftToLineIcon, BookMarked, CalendarDays, EditIcon, ExternalLink, LinkIcon, MessageSquare, Users, VoteIcon } from "lucide-react";
 import type { NextPage } from "next";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/router";
@@ -20,25 +20,26 @@ import Image from "next/image";
 import { Progress } from "@/components/ui/progress";
 import ActionCell from "@/components/zoomGroupsComponents/ActionCell";
 import { Separator } from "@/components/ui/separator";
-import SelectField from "@/components/salesOperation/SelectField";
+import SelectField from "@/components/ui/SelectField";
 import { useToast } from "@/components/ui/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/ui/DataTable";
 import { env } from "@/env.mjs";
+import EditSessionForm from "@/components/zoomGroupsComponents/EditSessionForm";
 
 const statusMap: {
-    scheduled: "primary";
-    ongoing: "info";
-    starting: "secondary";
-    completed: "success";
-    cancelled: "destructive";
+    Scheduled: "primary";
+    Ongoing: "info";
+    Starting: "secondary";
+    Completed: "success";
+    Cancelled: "destructive";
 } = {
-    scheduled: "primary",
-    ongoing: "info",
-    starting: "secondary",
-    completed: "success",
-    cancelled: "destructive"
+    Scheduled: "primary",
+    Ongoing: "info",
+    Starting: "secondary",
+    Completed: "success",
+    Cancelled: "destructive"
 };
 
 const GroupPage: NextPage = () => {
@@ -47,6 +48,7 @@ const GroupPage: NextPage = () => {
     const [isAttendanceOpen, setIsAttendanceOpen] = useState(false);
     const [isAssignmentsOpen, setIsAssignmentsOpen] = useState(false);
     const [isQuizzesOpen, setIsQuizzesOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
     const [studentIds, setStudentIds] = useState<string[]>([]);
     const router = useRouter()
     const id = router.query.id as string
@@ -121,7 +123,7 @@ const GroupPage: NextPage = () => {
                                     startDate={data.zoomGroup.startDate}
                                     status={data.zoomGroup.groupStatus}
                                     studentIds={data.zoomGroup.studentIds}
-                                    trainerId={data.zoomGroup.trainerId!}
+                                    teacherId={data.zoomGroup.teacherId!}
                                 />
                             </div>
                         </div>
@@ -133,21 +135,21 @@ const GroupPage: NextPage = () => {
                                         <Separator className="mb-4" />
                                         <div className="self-start flex items-center justify-between w-full">
                                             <Avatar className="w-24 h-24">
-                                                <AvatarImage alt={getInitials(data.zoomGroup.trainer?.user.name) || ""} src={data.zoomGroup.trainer?.user.image || ""} />
-                                                <AvatarFallback>{getInitials(data.zoomGroup.trainer?.user.name) || ""}</AvatarFallback>
+                                                <AvatarImage alt={getInitials(data.zoomGroup.teacher?.user.name) || ""} src={data.zoomGroup.teacher?.user.image || ""} />
+                                                <AvatarFallback>{getInitials(data.zoomGroup.teacher?.user.name) || ""}</AvatarFallback>
                                             </Avatar>
                                             <div className="flex flex-col gap-2">
-                                                <Typography variant={"secondary"}>{data.zoomGroup.trainer?.user.name || ""}</Typography>
-                                                <Link href={`/account/${data.zoomGroup.trainer?.user.id}`}>
+                                                <Typography variant={"secondary"}>{data.zoomGroup.teacher?.user.name || ""}</Typography>
+                                                <Link href={`/account/${data.zoomGroup.teacher?.user.id}`}>
                                                     <Button variant={"link"}>
-                                                        <Typography variant={"bodyText"}>{data.zoomGroup.trainer?.user.email || ""}</Typography>
+                                                        <Typography variant={"bodyText"}>{data.zoomGroup.teacher?.user.email || ""}</Typography>
                                                     </Button>
                                                 </Link>
                                             </div>
                                         </div>
                                         <div className="flex justify-between items-center">
-                                            <Typography>Phone: {data.zoomGroup.trainer?.user.phone || ""}</Typography>
-                                            <Link href={`https://wa.me/${data.zoomGroup.trainer?.user.phone}`} target="_blank">
+                                            <Typography>Phone: {data.zoomGroup.teacher?.user.phone || ""}</Typography>
+                                            <Link href={`https://wa.me/${data.zoomGroup.teacher?.user.phone}`} target="_blank">
                                                 <Button variant={"icon"} customeColor={"successIcon"}>
                                                     <MessageSquare></MessageSquare>
                                                 </Button>
@@ -200,7 +202,7 @@ const GroupPage: NextPage = () => {
                                                     disabled={isLoading}
                                                     multiSelect
                                                     data={data.zoomGroup.students.map(student => ({
-                                                        active: student.courseStatus.some(({ courseId, status }) => courseId === data.zoomGroup?.courseId && status === "ongoing"),
+                                                        Active: student.courseStatus.some(({ courseId, status }) => courseId === data.zoomGroup?.courseId && status === "Ongoing"),
                                                         label: student.email,
                                                         value: student.id,
                                                     }))}
@@ -243,7 +245,7 @@ const GroupPage: NextPage = () => {
                                     />
                                     <Modal
                                         title="Quizzes"
-                                        description="View each student quiz result"
+                                        description="View each Student Quiz result"
                                         isOpen={isQuizzesOpen}
                                         onClose={() => setIsQuizzesOpen(false)}
                                         children={(
@@ -256,9 +258,9 @@ const GroupPage: NextPage = () => {
                                                             cell: ({ row }) => <>{row.original.student.email}</>
                                                         },
                                                         {
-                                                            accessorKey: "rating",
+                                                            accessorKey: "totalScore",
                                                             header: "Rating",
-                                                            cell: ({ row }) => <>{formatPercentage(row.original.rating)}</>
+                                                            cell: ({ row }) => <>{formatPercentage(row.original.totalScore / row.original.systemForm.totalScore * 100)}</>
                                                         },
                                                     ]}
                                                     onDelete={() => { }}
@@ -270,7 +272,7 @@ const GroupPage: NextPage = () => {
                                     />
                                     <Modal
                                         title="View Assignments"
-                                        description="View each student assignment rating"
+                                        description="View each Student Assignment rating"
                                         isOpen={isAssignmentsOpen}
                                         onClose={() => setIsAssignmentsOpen(false)}
                                         children={(
@@ -285,7 +287,7 @@ const GroupPage: NextPage = () => {
                                                         {
                                                             accessorKey: "rating",
                                                             header: "Rating",
-                                                            cell: ({ row }) => <>{formatPercentage(row.original.rating)}</>
+                                                            cell: ({ row }) => <>{formatPercentage(row.original.totalScore / row.original.systemForm.totalScore * 100)}</>
                                                         },
                                                     ]}
                                                     onDelete={() => { }}
@@ -295,6 +297,15 @@ const GroupPage: NextPage = () => {
                                             </div>
                                         )}
                                     />
+                                    <Modal
+                                        title="Edit Session"
+                                        description=""
+                                        isOpen={isEditOpen}
+                                        onClose={() => setIsEditOpen(false)}
+                                        children={(
+                                            <EditSessionForm setIsOpen={setIsEditOpen} initialData={data.zoomGroup.zoomSessions.find(({ id }) => id === sessionId)} />
+                                        )}
+                                    />
                                     <div className="flex flex-col gap-1">
                                         {data.zoomGroup.zoomSessions.map((session, i) => (
                                             <div key={session.id}>
@@ -302,6 +313,24 @@ const GroupPage: NextPage = () => {
                                                     <Typography className="text-primary">{i + 1}</Typography>
                                                     <Typography className="mr-auto" >{format(session.sessionDate, "PPp")}</Typography>
                                                     <SeverityPill color={statusMap[session.sessionStatus]}>{session.sessionStatus}</SeverityPill>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button
+                                                                onClick={() => {
+                                                                    setIsEditOpen(true)
+                                                                    setSessionId(session.id)
+                                                                }}
+                                                                variant={"icon"}
+                                                                customeColor={"foregroundIcon"}
+                                                                className="relative"
+                                                            >
+                                                                <EditIcon className="w-4 h-4" />
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            Edit Session
+                                                        </TooltipContent>
+                                                    </Tooltip>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
                                                             <Button
@@ -341,7 +370,7 @@ const GroupPage: NextPage = () => {
                                                             </Button>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
-                                                            View assignment
+                                                            View Assignment
                                                         </TooltipContent>
                                                     </Tooltip>
                                                     <Tooltip>
@@ -452,12 +481,12 @@ const GroupPage: NextPage = () => {
                         <PaperContainer className="flex items-center gap-4">
                             <Typography className="whitespace-nowrap">
                                 {formatPercentage(data.zoomGroup.zoomSessions.filter(session => {
-                                    return session.sessionStatus === "completed"
+                                    return session.sessionStatus === "Completed"
                                 }).length / data.zoomGroup.zoomSessions.length * 100)} Completed
                             </Typography>
                             <Progress
                                 value={data.zoomGroup.zoomSessions.filter(session => {
-                                    return session.sessionStatus === "completed"
+                                    return session.sessionStatus === "Completed"
                                 }).length / data.zoomGroup.zoomSessions.length * 100}
                             />
                         </PaperContainer>

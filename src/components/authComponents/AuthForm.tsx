@@ -4,32 +4,32 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dispatch, FC, SetStateAction, useState } from "react";
-import { useToast } from "../ui/use-toast";
+import { toastType, useToast } from "../ui/use-toast";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
 import { Button } from "../ui/button";
 import Spinner from "../Spinner";
 import { signIn } from "next-auth/react";
 import { CardContent, CardFooter } from "../ui/card";
 import { Input } from "../ui/input";
-import { useRouter } from "next/router";
 import MobileNumberInput from "@/components/ui/phone-number-input";
-import { render } from "@react-email/render";
-import EmailConfirmation from "@/components/emails/EmailConfirmation";
+import { createMutationOptions } from "@/lib/mutationsHelper";
+
+export const passwordSchema = z.string().min(6, "Password must be at least 6 characters long")
+    .refine(
+        (value) =>
+            /[a-z]/.test(value) &&   // At least one lowercase letter
+            /[A-Z]/.test(value) &&   // At least one uppercase letter
+            /[0-9]/.test(value) &&   // At least one number
+            /[!@#$%^&*(),.?":{}|<>]/.test(value),  // At least one special character
+        {
+            message: "Password must include uppercase, lowercase, number, and special character",
+        }
+    )
 
 export const authFormSchema = z.object({
     name: z.string().optional(),
     email: z.string().email("Not a valid Email").min(5, "Please add your email"),
-    password: z.string().min(6, "Password must be at least 6 characters long")
-        .refine(
-            (value) =>
-                /[a-z]/.test(value) &&   // At least one lowercase letter
-                /[A-Z]/.test(value) &&   // At least one uppercase letter
-                /[0-9]/.test(value) &&   // At least one number
-                /[!@#$%^&*(),.?":{}|<>]/.test(value),  // At least one special character
-            {
-                message: "Password must include uppercase, lowercase, number, and special character",
-            }
-        ),
+    password: passwordSchema,
     phone: z.string().optional(),
 });
 
@@ -42,8 +42,8 @@ interface AuthFormProps {
 
 const AuthForm: FC<AuthFormProps> = ({ authType, setOpen }) => {
     const [loading, setLoading] = useState(false);
-    const { toastError, toastSuccess } = useToast()
-    const router = useRouter()
+    const [loadingToast, setLoadingToast] = useState<toastType>();
+    const { toastError, toastSuccess, toast } = useToast()
 
     const defaultValues: AuthFormValues = {
         name: "",
@@ -57,61 +57,45 @@ const AuthForm: FC<AuthFormProps> = ({ authType, setOpen }) => {
         defaultValues,
     });
 
-    const registerMutation = api.auth.register.useMutation();
-    const sendEmailMutation = api.emails.sendZohoEmail.useMutation()
+    const trpcUtils = api.useUtils()
+    const registerMutation = api.auth.register.useMutation(
+        createMutationOptions({
+            trpcUtils,
+            loadingToast,
+            setLoadingToast,
+            toast,
+            successMessageFormatter: ({ user }, { password }) => {
+                if (setOpen) {
+                    signIn("credentials", {
+                        email: user.email,
+                        password,
+                        redirect: false,
+                    }).then(() => {
+                        setOpen(false)
+                    })
+
+                    return `Welcome ${user.name.split(" ")[0]}, happy to have you on board`
+                } else {
+                    signIn("credentials", {
+                        email: user.email,
+                        password,
+                        redirect: false,
+                    })
+
+                    return `Welcome ${user.name.split(" ")[0]}, happy to have you on board`
+                }
+            }
+        })
+    );
 
     const handleResgiter = ({ email, password, name, phone }: AuthFormValues) => {
-        if (!name || !email || !password || !phone) {
-            return toastError("Missing some of your info!");
-        }
+        if (!name || !email || !password || !phone) return toastError("Missing some of your info!")
 
-        setLoading(true);
-        registerMutation.mutate(
-            { name, email, password, phone },
-            {
-                onSuccess(data) {
-                    if (setOpen) {
-                        if (data.user)
-                            toastSuccess(`Welcome ${data.user.name.split(" ")[0]}, happy to have you on board`);
-                        signIn("credentials", {
-                            email,
-                            password,
-                            redirect: false,
-                        }).then(() => {
-                            setOpen(false)
-                        })
-                    } else {
-                        if (data.user) {
-                            const html = render(
-                                <EmailConfirmation
-                                    {...data.emailConfirmationProps}
-                                />, { pretty: true }
-                            )
-
-                            sendEmailMutation.mutate({
-                                email: data.user.email,
-                                subject: `Confirm your email ${data.user.email}`,
-                                html,
-                            })
-
-                            toastSuccess(`user (${data.user.name}) created successfully`);
-                            router.push('/authentication?variant=login')
-                        }
-                    }
-                },
-                onError(error) {
-                    toastError(error.message)
-                    setLoading(false);
-                },
-                onSettled() {
-                    setLoading(false);
-                },
-            }
-        );
+        registerMutation.mutate({ name, email, password, phone });
     };
 
     const handleLogin = ({ email, password }: AuthFormValues) => {
-        setLoading(true);
+        setLoading(true)
         signIn("credentials", {
             email,
             password,
@@ -122,12 +106,14 @@ const AuthForm: FC<AuthFormProps> = ({ authType, setOpen }) => {
                     setOpen(false)
                 } else {
                     if (res?.error) {
-                        toastError(res.error);
-                        setLoading(false);
+                        toastError(res.error)
+                        setLoadingToast(undefined)
+                        setLoading(false)
                     }
 
                     if (res?.ok && !res?.error) {
-                        toastSuccess("loggedin");
+                        toastSuccess("Welcome")
+                        setLoading(false)
                     }
                 }
             })
@@ -150,7 +136,7 @@ const AuthForm: FC<AuthFormProps> = ({ authType, setOpen }) => {
                                         <FormLabel>Name</FormLabel>
                                         <FormControl>
                                             <Input
-                                                disabled={loading}
+                                                disabled={!!loadingToast}
                                                 placeholder="Jon Doe"
                                                 {...field}
                                                 className="pl-8"
@@ -170,7 +156,7 @@ const AuthForm: FC<AuthFormProps> = ({ authType, setOpen }) => {
                                     <FormControl>
                                         <Input
                                             type="text"
-                                            disabled={loading}
+                                            disabled={!!loadingToast}
                                             placeholder="Example@mail.com"
                                             {...field}
                                             className="pl-8"
@@ -215,7 +201,7 @@ const AuthForm: FC<AuthFormProps> = ({ authType, setOpen }) => {
                                     <FormControl>
                                         <Input
                                             type="password"
-                                            disabled={loading}
+                                            disabled={!!loadingToast}
                                             placeholder="Password"
                                             {...field}
                                             className="pl-8"
@@ -229,14 +215,14 @@ const AuthForm: FC<AuthFormProps> = ({ authType, setOpen }) => {
                 </CardContent>
                 <CardFooter className="grid place-content-center p-4">
                     <Button
-                        disabled={loading}
+                        disabled={!!loadingToast || loading}
                         type="submit"
                         className="relative"
                     >
-                        {loading && (
+                        {(loadingToast || loading) && (
                             <Spinner className="w-6 h-6 absolute" />
                         )}
-                        <Typography className={loading ? "opacity-0" : ""}>
+                        <Typography className={loadingToast || loading ? "opacity-0" : ""}>
                             {authType === "login" ? "Sign In" : "Sign Up"}
                         </Typography>
                     </Button>

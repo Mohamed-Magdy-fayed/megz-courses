@@ -4,7 +4,7 @@ import type { NextPage } from "next";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import LeadsClient from "@/components/leads/LeadsClient";
 import { Button, SpinnerButton } from "@/components/ui/button";
-import { Edit, ListChecks, MoreVertical, PlusSquare, Trash } from "lucide-react";
+import { Edit, LinkIcon, ListChecks, MoreVertical, PlusSquare, Trash } from "lucide-react";
 import { useState } from "react";
 import Modal from "@/components/ui/modal";
 import LeadsForm from "@/components/leads/LeadsForm";
@@ -16,12 +16,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { Accordion, AccordionContent, AccordionItem } from "@/components/ui/accordion";
 import { createMutationOptions } from "@/lib/mutationsHelper";
 import { toastType, useToast } from "@/components/ui/use-toast";
-import SelectField from "@/components/salesOperation/SelectField";
+import SelectField from "@/components/ui/SelectField";
 import { formatPercentage } from "@/lib/utils";
-import { ArrowRight } from "lucide-react";
 import { ArrowRightToLine } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Lead } from "@/components/leads/LeadsColumn";
+import Link from "next/link";
+import { SeverityPill } from "@/components/overview/SeverityPill";
+import GoBackButton from "@/components/ui/go-back";
+import AllLeadsClient from "@/components/leads/AllLeadsClient";
 
 const LeadsPage: NextPage = () => {
     const [isAddLeadOpen, setIsAddLeadOpen] = useState(false)
@@ -66,14 +69,14 @@ const LeadsPage: NextPage = () => {
             setLoadingToast,
             toast,
             trpcUtils,
-            successMessageFormatter: ({ updatedLeads, salesOperations }) => {
+            successMessageFormatter: ({ updatedLeads }) => {
                 setResetSelection(!resetSelection)
-                return `${updatedLeads.count} Leads moved${salesOperations ? `\n${salesOperations.count} Sales Operations created` : ""}`
+                return `${updatedLeads.count} Leads moved`
             },
         })
     )
 
-    const onAssignAll = (stageId: string) => {
+    const onAssignAll = (stageId?: string) => {
         assignAllMutation.mutate({
             stageId,
         })
@@ -128,10 +131,19 @@ const LeadsPage: NextPage = () => {
                 <div className="flex w-full flex-col gap-4">
                     <div className="flex justify-between">
                         <div className="flex flex-col gap-2">
+                            <GoBackButton />
                             <ConceptTitle>Leads</ConceptTitle>
-                            <Typography>Explore all your sales leads</Typography>
+                            <Typography>Explore all sales leads</Typography>
                         </div>
-                        <div className="flex gap-2 items-stretch">
+                        <div className="flex gap-4 items-center">
+                            <Link href={`/leads/my_leads`}>
+                                <Button variant={"link"}>
+                                    <LinkIcon className="w-4 h-4 mr-2" />
+                                    <Typography>
+                                        My Leads
+                                    </Typography>
+                                </Button>
+                            </Link>
                             <Button onClick={() => setIsAddLeadOpen(true)}>
                                 <PlusSquare className="w-4 h-4" />
                                 <Typography>
@@ -143,6 +155,7 @@ const LeadsPage: NextPage = () => {
                     <Tabs className="w-full" defaultValue="Intake" id="leads">
                         {isLoading ? (
                             <TabsList className="animate-pulse w-full">
+                                <TabsTrigger value="0">All</TabsTrigger>
                                 <TabsTrigger value="1">Intake</TabsTrigger>
                                 <TabsTrigger value="2">Qualified</TabsTrigger>
                                 <TabsTrigger value="3">Converted</TabsTrigger>
@@ -151,8 +164,19 @@ const LeadsPage: NextPage = () => {
                             </TabsList>
                         ) : (
                             <TabsList className="w-full">
+                                <TabsTrigger value="all" className="flex items-center gap-2">
+                                    <Typography>All</Typography>
+                                    <SeverityPill color="info" className="aspect-square">
+                                        {stagesData?.stages.flatMap(s => s.leads).length}
+                                    </SeverityPill>
+                                </TabsTrigger>
                                 {stagesData?.stages.map(stage => (
-                                    <TabsTrigger key={`${stage.id}trigger`} value={stage.name}>{stage.name}</TabsTrigger>
+                                    <TabsTrigger key={`${stage.id}trigger`} className="flex items-center gap-2" value={stage.name}>
+                                        <Typography>{stage.name}</Typography>
+                                        <SeverityPill color="info" className="aspect-square">
+                                            {stage.leads.length}
+                                        </SeverityPill>
+                                    </TabsTrigger>
                                 ))}
                                 <Button customeColor={"mutedIcon"} onClick={() => setIsManageOpen(!isManageOpen)}>
                                     Manage Stages <MoreVertical className="w-4 h-4" />
@@ -185,6 +209,51 @@ const LeadsPage: NextPage = () => {
                                 </AccordionContent>
                             </AccordionItem>
                         </Accordion>
+                        {stagesData?.stages && (
+                            <TabsContent value="all">
+                                <PaperContainer>
+                                    <div className="flex items-end justify-between gap-4 md:justify-start">
+                                        <div className="flex flex-col gap-4 md:flex-row">
+                                            <SpinnerButton
+                                                icon={ListChecks}
+                                                text={`Assign All`}
+                                                isLoading={!!loadingToast} customeColor={"info"} onClick={() => onAssignAll()}
+                                            />
+                                        </div>
+                                        <SelectField
+                                            data={[...(labelsData?.leadLabels.map(label => ({
+                                                Active: true,
+                                                label: label.value,
+                                                value: label.value,
+                                            })) || []), {
+                                                Active: true,
+                                                label: "No Labels",
+                                                value: "No Labels",
+                                            }]}
+                                            listTitle="Labels"
+                                            placeholder="Select Label"
+                                            setValues={setValues}
+                                            values={values}
+                                            multiSelect
+                                        />
+                                    </div>
+                                    <div className="flex items-center gap-4 justify-between p-4 md:justify-start md:gap-8">
+                                        <Typography className="text-info">Intake {stagesData.stages.flatMap(stage => stage.leads).length}</Typography>
+                                        <ArrowRightToLine />
+                                        <Typography className="text-success">Converted {stagesData.stages.filter(stage => stage.defaultStage === "Converted").flatMap(stage => stage.leads).length}</Typography>
+                                        <ArrowRightToLine />
+                                        <Typography className="text-destructive">Concertion Rate {formatPercentage(stagesData.stages.filter(stage => stage.defaultStage === "Converted").flatMap(stage => stage.leads).length / stagesData.stages.flatMap(stage => stage.leads).length * 100)}</Typography>
+                                    </div>
+                                    <AllLeadsClient
+                                        leads={values.length > 0 ? stagesData.stages.flatMap(s => s.leads).filter(lead => lead.labels.some(label => values.some(val => label.value === val))) : stagesData.stages.flatMap(s => s.leads)}
+                                        resetSelection={resetSelection}
+                                        stagesData={stagesData.stages}
+                                        handleImport={handleImport}
+                                        setSelectedLeads={setSelectedLeads}
+                                    />
+                                </PaperContainer>
+                            </TabsContent>
+                        )}
                         {stagesData?.stages.map(stage => (
                             <TabsContent key={stage.id} value={stage.name}>
                                 <PaperContainer>
@@ -215,11 +284,11 @@ const LeadsPage: NextPage = () => {
                                         </div>
                                         <SelectField
                                             data={[...(labelsData?.leadLabels.map(label => ({
-                                                active: true,
+                                                Active: true,
                                                 label: label.value,
                                                 value: label.value,
                                             })) || []), {
-                                                active: true,
+                                                Active: true,
                                                 label: "No Labels",
                                                 value: "No Labels",
                                             }]}

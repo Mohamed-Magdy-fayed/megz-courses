@@ -32,7 +32,7 @@ export const RefundModal = ({
                 id: loadingToast.id,
                 title: "Success",
                 variant: "success",
-                description: success ? "refunded successfully" : "Unable to refund"
+                description: success ? "Refunded successfully" : "Unable to refund"
             })
             onClose()
         }),
@@ -61,7 +61,7 @@ export const RefundModal = ({
             isOpen={isOpen}
             onClose={() => onClose()}
             children={(
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 p-2">
                     <Button
                         disabled={!!loadingToast}
                         onClick={() => onClose()}

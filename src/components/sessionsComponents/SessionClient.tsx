@@ -5,20 +5,20 @@ import { SessionColumn, columns } from "./SessionColumns";
 import { validSessionStatuses } from "@/lib/enumsTypes";
 import { uniqBy, upperFirst } from "lodash";
 
-const SessionsClient = () => {
-  const { data } = api.trainers.getCurrentTrainerSessions.useQuery()
+const SessionsClient = ({ isAdmin }: { isAdmin?: boolean }) => {
+  const { data } = isAdmin ? api.trainers.getAllSessions.useQuery() : api.trainers.getCurrentTrainerSessions.useQuery()
 
   const formattedData: SessionColumn[] = data?.sessions.map(session => ({
     id: session.id,
     title: session.materialItem?.title || "",
-    userName: session.zoomGroup?.trainer?.user.name || "",
-    userEmail: session.zoomGroup?.trainer?.user.email || "",
+    userName: session.zoomGroup?.teacher?.user.name || "",
+    userEmail: session.zoomGroup?.teacher?.user.email || "",
     groupId: session.zoomGroup?.id || "",
     groupName: session.zoomGroup?.groupNumber || "",
     status: session.sessionStatus || "",
     meetingNumber: session.zoomGroup?.meetingNumber || "",
     meetingPassword: session.zoomGroup?.meetingPassword || "",
-    isSessionOngoing: session.sessionStatus === "ongoing",
+    isSessionOngoing: session.sessionStatus === "Ongoing",
     sessionName: session.materialItem?.title || "",
     sessionDate: session.sessionDate,
     createdAt: format(session.createdAt, "PPP"),

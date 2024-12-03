@@ -97,24 +97,9 @@ export const notesColumns: ColumnDef<NotesColumn>[] = [
         header: ({ table }) => table.getCoreRowModel().rows.some(row => row.original.createdForStudent) ? "Student" : "",
         cell: ({ row }) => row.original.createdForStudent ? (
             <Link className="block w-fit" href={`/account/${row.original.createdForStudent.id}`}>
-                <div className="flex items-center gap-2" >
-                    <Avatar>
-                        <AvatarImage src={`${row.original.createdForStudent.image}`} />
-                        <AvatarFallback>
-                            {getInitials(`${row.original.createdForStudent.name}`)}
-                        </AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col gap-2">
-                        <Typography
-                            className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
-                        >
-                            {row.original.createdForStudent.name}
-                        </Typography>
-                        <Typography variant={"secondary"} className="text-sm font-normal text-slate-500">
-                            {row.original.createdForStudent.email}
-                        </Typography>
-                    </div>
-                </div>
+                <Typography variant={"secondary"} className="text-sm font-normal">
+                    {row.original.createdForStudent.email}
+                </Typography>
             </Link>
         ) : ""
     },

@@ -12,19 +12,19 @@ const PlacmentTestClient = ({ formattedData }: { formattedData: PlacmentTestRow[
     const [loadingToast, setLoadingToast] = useState<toastType>()
 
     const trpcUtils = api.useUtils()
-    const deleteMutation = api.evaluationForm.deleteEvalForm.useMutation(
+    const deleteMutation = api.systemForms.deleteSystemForms.useMutation(
         createMutationOptions({
             trpcUtils,
             loadingToast,
             setLoadingToast,
             toast,
-            successMessageFormatter: ({ deletedEvalForms }) => `${deletedEvalForms.count} forms deleted`,
+            successMessageFormatter: ({ deletedSystemForms }) => `${deletedSystemForms.count} forms deleted`,
             loadingMessage: "Deleting..."
         })
     )
 
     const onDelete = (callback?: () => void) => {
-        deleteMutation.mutate({ ids: data.map(item => item.id) }, {
+        deleteMutation.mutate(data.map(item => item.id), {
             onSuccess: () => {
                 callback?.()
             }
@@ -42,7 +42,7 @@ const PlacmentTestClient = ({ formattedData }: { formattedData: PlacmentTestRow[
             ]}
             dateRanges={[{ key: "createdAt", label: "Created At" }]}
             exportConfig={{
-                fileName: `${formattedData[0]?.evalForm.courseId} Placement Test`,
+                fileName: `${formattedData[0]?.systemForm.courseId} Placement Test`,
                 sheetName: "Placement Test",
             }}
         />

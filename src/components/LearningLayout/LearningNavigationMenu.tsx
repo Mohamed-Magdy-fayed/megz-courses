@@ -26,6 +26,7 @@ import { useNavStore } from "@/zustand/store"
 import Image from "next/image"
 import { getInitials } from "@/lib/getInitials"
 import { UserCog } from "lucide-react"
+import { hasPermission } from "@/server/permissions"
 
 export const LearningNavigationMenu = ({ siteIdentity }: { siteIdentity?: SiteIdentity }) => {
     const latestCoursesQuery = api.courses.getLatest.useQuery(undefined, {
@@ -42,7 +43,7 @@ export const LearningNavigationMenu = ({ siteIdentity }: { siteIdentity?: SiteId
         if (!session.data?.user) return
         const isMobile = /Mobi|Android/i.test(navigator.userAgent);
         const isTablet = /Tablet|iPad/i.test(navigator.userAgent);
-        const getDevice = () => isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop'
+        const getDevice = () => isMobile ? 'Mobile' : isTablet ? 'Tablet' : 'Desktop'
 
         if (session.data.user.device === (getDevice())) return
         editUserQuery.mutate({
@@ -210,7 +211,7 @@ const DesktopAuthenticatedProfileMenu = () => {
     return (
         <div className="hidden md:flex col-span-3 items-center gap-4 justify-end">
             {/* Authenticated Users (Students) */}
-            {session.data?.user.userType === "student" ? (
+            {session.data?.user && !hasPermission(session.data.user, "adminLayout", "view") ? (
                 <>
                     <Link href={`/my_courses`}>
                         <Button customeColor={"primaryIcon"}>
@@ -225,7 +226,7 @@ const DesktopAuthenticatedProfileMenu = () => {
                         </Button>
                     </Link>
                 </>
-            ) /* Authenticated Users (non student) */ : (
+            ) /* Authenticated Users (non Student) */ : (
                 <Link href={`/dashboard`}>
                     <Button customeColor={"primaryIcon"}>
                         <Typography className="text-foreground whitespace-nowrap">Dashboard</Typography>
@@ -327,7 +328,7 @@ const MobileAuthenticatedProfileMenu = () => {
                         <DarkModeToggle />
                     </div>
                     <Separator></Separator>
-                    {session.data?.user.userType === "student" ? (
+                    {session.data?.user && !hasPermission(session.data.user, "adminLayout", "view") ? (
                         <Link href={`/my_courses`}>
                             <Button customeColor={"primaryIcon"} className="w-full my-2">
                                 <Typography className="text-foreground">My courses</Typography>

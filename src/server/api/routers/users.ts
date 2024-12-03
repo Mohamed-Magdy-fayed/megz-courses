@@ -2,13 +2,13 @@ import { z } from "zod";
 import {
   createTRPCRouter,
   protectedProcedure,
-  adminProcedure,
 } from "@/server/api/trpc";
 import bcrypt from "bcrypt";
 import { TRPCError } from "@trpc/server";
 import { Prisma } from "@prisma/client";
-import { validDeviceTypes, validTrainerRoles, validUserTypes } from "@/lib/enumsTypes";
+import { validDeviceTypes, validUserRoles } from "@/lib/enumsTypes";
 import { env } from "@/env.mjs";
+import { hasPermission } from "@/server/permissions";
 
 export const usersRouter = createTRPCRouter({
   queryUsers: protectedProcedure
@@ -18,6 +18,8 @@ export const usersRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input: { userName } }) => {
+      if (!hasPermission(ctx.session.user, "users", "view")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
+
       const users = await ctx.prisma.user.findMany({
         where: {
           name: {
@@ -35,16 +37,13 @@ export const usersRouter = createTRPCRouter({
 
       return { users };
     }),
-  getUsers: protectedProcedure
-    .input(
-      z.object({
-        userType: z.enum(validUserTypes),
-      })
-    )
-    .query(async ({ ctx, input: { userType } }) => {
+  getStudents: protectedProcedure
+    .query(async ({ ctx }) => {
+      if (!hasPermission(ctx.session.user, "users", "view")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
+
       const users = await ctx.prisma.user.findMany({
         where: {
-          userType,
+          userRoles: { equals: ["Student"] },
         },
         orderBy: {
           id: "desc"
@@ -52,7 +51,36 @@ export const usersRouter = createTRPCRouter({
         include: {
           orders: true,
           zoomGroups: { include: { zoomSessions: true } },
-          evaluationFormSubmissions: true,
+          systemFormSubmissions: true,
+          courseStatus: true
+        },
+      });
+
+      return { users };
+    }),
+  getUsers: protectedProcedure
+    .input(
+      z.object({
+        userRole: z.enum(validUserRoles),
+      })
+    )
+    .query(async ({ ctx, input: { userRole } }) => {
+      if (!hasPermission(ctx.session.user, "users", "view")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
+
+      const users = await ctx.prisma.user.findMany({
+        where: {
+          AND: [
+            { userRoles: { has: userRole } },
+            { NOT: { userRoles: { has: "Admin" } } },
+          ]
+        },
+        orderBy: {
+          id: "desc"
+        },
+        include: {
+          orders: true,
+          zoomGroups: { include: { zoomSessions: true } },
+          systemFormSubmissions: true,
           courseStatus: true
         },
       });
@@ -61,12 +89,14 @@ export const usersRouter = createTRPCRouter({
     }),
   getRetintionsUsers: protectedProcedure
     .query(async ({ ctx }) => {
+      if (!hasPermission(ctx.session.user, "users", "view")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
+
       const users = await ctx.prisma.user.findMany({
         where: {
-          userType: "student",
+          userRoles: { has: "Student" },
           courseStatus: {
             some: {
-              status: "completed"
+              status: "Completed"
             }
           }
         },
@@ -76,7 +106,7 @@ export const usersRouter = createTRPCRouter({
         include: {
           orders: true,
           zoomGroups: { include: { zoomSessions: true } },
-          evaluationFormSubmissions: true,
+          systemFormSubmissions: true,
           courseStatus: { include: { course: true, level: true } },
         },
       });
@@ -94,11 +124,11 @@ export const usersRouter = createTRPCRouter({
         where: { id },
         include: {
           orders: { include: { course: { include: { levels: true, orders: { include: { user: true } } } } } },
-          evaluationFormSubmissions: true,
-          zoomGroups: { include: { zoomSessions: true, trainer: { include: { user: true } }, course: true, students: true, courseLevel: true }, },
+          systemFormSubmissions: true,
+          zoomGroups: { include: { zoomSessions: true, teacher: { include: { user: true } }, course: true, students: true, courseLevel: true }, },
           placementTests: {
             include: {
-              trainer: { include: { user: true } },
+              tester: { include: { user: true } },
               course: { include: { levels: true } },
               student: { include: { courseStatus: { include: { level: true } } } },
               writtenTest: { include: { submissions: true } }
@@ -111,6 +141,8 @@ export const usersRouter = createTRPCRouter({
       });
 
       if (!user) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "didn't find user" })
+      if (!hasPermission(ctx.session.user, "users", "view", user)) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
+
       return { user };
     }),
   getCurrentUser: protectedProcedure
@@ -118,14 +150,13 @@ export const usersRouter = createTRPCRouter({
       const id = ctx.session.user.id
       const user = await ctx.prisma.user.findUnique({
         where: { id },
-
         include: {
-          orders: { include: { course: { include: { levels: true, orders: { include: { user: true } } } }, salesOperation: { include: { assignee: true } }, user: true } },
-          evaluationFormSubmissions: true,
-          zoomGroups: { include: { zoomSessions: true, trainer: { include: { user: true } }, course: true, students: true, courseLevel: true }, },
+          orders: { include: { course: { include: { levels: true, orders: { include: { user: true } } } }, lead: { include: { assignee: { include: { user: true } } } }, user: true } },
+          systemFormSubmissions: true,
+          zoomGroups: { include: { zoomSessions: true, teacher: { include: { user: true } }, course: true, students: true, courseLevel: true }, },
           placementTests: {
             include: {
-              trainer: { include: { user: true } },
+              tester: { include: { user: true } },
               course: { include: { levels: true } },
               student: { include: { courseStatus: { include: { level: true } } } },
               writtenTest: { include: { submissions: true } }
@@ -145,6 +176,8 @@ export const usersRouter = createTRPCRouter({
       })
     )
     .query(async ({ input: { email }, ctx }) => {
+      if (!hasPermission(ctx.session.user, "users", "view")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
+
       const user = await ctx.prisma.user.findUnique({
         where: {
           email,
@@ -154,16 +187,16 @@ export const usersRouter = createTRPCRouter({
           studentNotes: { include: { createdByUser: true, mentions: true } },
           placementTests: {
             include: {
-              trainer: { include: { user: true } },
+              tester: { include: { user: true } },
               writtenTest: { include: { submissions: true } },
               course: true,
               student: true,
             }
           },
-          evaluationFormSubmissions: true,
+          systemFormSubmissions: true,
           zoomGroups: {
             include: {
-              trainer: { include: { user: true } },
+              teacher: { include: { user: true } },
               course: true,
               students: true,
               zoomSessions: true,
@@ -180,16 +213,18 @@ export const usersRouter = createTRPCRouter({
         name: z.string(),
         email: z.string().email(),
         password: z.string(),
-        phone: z.string().optional(),
+        phone: z.string(),
         image: z.string().optional(),
         state: z.string().optional(),
         country: z.string().optional(),
         street: z.string().optional(),
         city: z.string().optional(),
-        userType: z.enum(validUserTypes).optional(),
+        userRole: z.enum(validUserRoles).optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
+      if (!hasPermission(ctx.session.user, "users", "create")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
+
       const hashedPassword = await bcrypt.hash(input.password, 10);
 
       // check if email is taken
@@ -214,7 +249,7 @@ export const usersRouter = createTRPCRouter({
             city: input.city,
             country: input.country,
           },
-          userType: input.userType || "student",
+          userRoles: [input.userRole || "Student"],
         },
       });
 
@@ -230,12 +265,13 @@ export const usersRouter = createTRPCRouter({
           email: z.string().email(),
           phone: z.string(),
         })),
-        userType: z.enum(validUserTypes),
-        role: z.enum(validTrainerRoles).optional(),
+        userRole: z.enum(validUserRoles),
         password: z.string(),
       })
     )
-    .mutation(async ({ input: { usersData, userType, role, password }, ctx }) => {
+    .mutation(async ({ input: { usersData, userRole, password }, ctx }) => {
+      if (!hasPermission(ctx.session.user, "users", "create")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
+
       const hashedPassword = await bcrypt.hash(password, 10);
 
       const checkedUsers = await Promise.all(
@@ -263,12 +299,13 @@ export const usersRouter = createTRPCRouter({
               email: user.email,
               phone: user.phone,
               name: user.name,
-              userType,
+              userRoles: [userRole],
               emailVerified: new Date(),
               hashedPassword,
-              chatAgent: userType === "chatAgent" ? { create: {} } : undefined,
-              trainer: role && userType === "teacher" ? { create: { role } } : undefined,
-              salesAgent: userType === "salesAgent" ? { create: { salary: "0" } } : undefined,
+              chatAgent: userRole === "ChatAgent" ? { create: {} } : undefined,
+              teacher: userRole === "Teacher" ? { create: {} } : undefined,
+              tester: userRole === "Tester" ? { create: {} } : undefined,
+              SalesAgent: userRole === "SalesAgent" ? { create: {} } : undefined,
             }
           })
         )),
@@ -287,10 +324,7 @@ export const usersRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input: { url, email } }) => {
-      if (ctx.session.user.userType !== "admin"
-        && ctx.session.user.email !== email) {
-        throw new TRPCError({ code: "UNAUTHORIZED" })
-      }
+      if (!hasPermission(ctx.session.user, "users", "update", { email })) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
 
       const updatedUser = await ctx.prisma.user.update({
         where: {
@@ -310,7 +344,7 @@ export const usersRouter = createTRPCRouter({
         name: z.string(),
         email: z.string().email(),
         password: z.string().optional(),
-        userType: z.enum(validUserTypes).optional(),
+        userRoles: z.array(z.enum(validUserRoles)).optional(),
         phone: z.string().optional(),
         state: z.string().optional(),
         country: z.string().optional(),
@@ -322,11 +356,12 @@ export const usersRouter = createTRPCRouter({
     .mutation(
       async ({
         ctx,
-        input: { id, name, email, password, userType, phone, state, country, street, city, device },
+        input: { id, name, email, password, userRoles, phone, state, country, street, city, device },
       }) => {
+        if (!hasPermission(ctx.session.user, "users", "update", { id })) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
+
         const user = await ctx.prisma.user.findUnique({ where: { id } })
         if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "user not found" })
-        if (ctx.session.user.userType !== "admin" && ctx.session.user.email !== user.email) throw new TRPCError({ code: "UNAUTHORIZED", message: "You're not authorized to take that action!" })
 
         const updateOptions: Prisma.UserUpdateArgs = {
           where: {
@@ -343,9 +378,18 @@ export const usersRouter = createTRPCRouter({
               city,
             },
             device,
-            userType,
-            trainer: userType === "teacher" ? {
-              connectOrCreate: { where: { userId: user.id }, create: { role: "teacher" } }
+            userRoles,
+            teacher: userRoles?.includes("Teacher") ? {
+              connectOrCreate: { where: { userId: user.id }, create: {} }
+            } : undefined,
+            tester: userRoles?.includes("Tester") ? {
+              connectOrCreate: { where: { userId: user.id }, create: {} }
+            } : undefined,
+            chatAgent: userRoles?.includes("ChatAgent") ? {
+              connectOrCreate: { where: { userId: user.id }, create: {} }
+            } : undefined,
+            SalesAgent: userRoles?.includes("SalesAgent") ? {
+              connectOrCreate: { where: { userId: user.id }, create: {} }
             } : undefined,
             emailVerified: user.email !== email ? null : undefined
           },
@@ -355,16 +399,9 @@ export const usersRouter = createTRPCRouter({
         const accessToken = await bcrypt.hash(user.id, 10);
 
 
-        if (ctx.session.user.userType === "admin" && password) {
+        if (ctx.session.user.userRoles.includes("Admin") && password) {
           const hashedPassword = await bcrypt.hash(password, 10)
           updateOptions.data.hashedPassword = hashedPassword
-        }
-
-        if (ctx.session.user.userType === "admin" && userType) {
-          updateOptions.data.userType = userType
-          updateOptions.data.trainer = user.userType === "student" && userType === "teacher" ? {
-            connectOrCreate: { where: { userId: user.id }, create: { role: "teacher" } }
-          } : undefined
         }
 
         const updatedUser = await ctx.prisma.user.update(updateOptions);
@@ -380,10 +417,11 @@ export const usersRouter = createTRPCRouter({
         };
       }
     ),
-  deleteUser: adminProcedure
+  deleteUser: protectedProcedure
     .input(z.array(z.string()))
     .mutation(async ({ input, ctx }) => {
-      if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+      if (!hasPermission(ctx.session.user, "users", "delete")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
+
       const deletedUsers = await ctx.prisma.user.deleteMany({
         where: {
           id: {

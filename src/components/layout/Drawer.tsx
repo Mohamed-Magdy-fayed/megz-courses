@@ -48,10 +48,6 @@ export const mainNavLinks = [
     url: "ops_team",
   },
   {
-    label: "Sales Operations",
-    url: "sales_operations",
-  },
-  {
     label: "Chat Team",
     url: "chat_agents",
   },
@@ -128,9 +124,10 @@ export default function MegzDrawer({ siteIdentity }: { siteIdentity?: SiteIdenti
       <div className="rounded-lg bg-muted-foreground/50 p-4 w-full text-foreground">
         <Typography variant={"secondary"} >Megz</Typography>
         <Typography>Development</Typography>
+        <div>Version: 1.1.0</div>
       </div>
       <Separator />
-      <ScrollArea className="w-min h-screen">
+      <ScrollArea className="w-min h-full pr-4">
         <div className="flex flex-col items-center gap-2">
           {mainNavLinks.map((link) => {
             const isActive = pathname && pathname.split("/")[1] === link.url;

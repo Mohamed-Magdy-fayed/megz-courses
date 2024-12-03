@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Typography } from "../ui/Typoghraphy";
 import { useToast } from "../ui/use-toast";
-import SelectField from "../salesOperation/SelectField";
+import SelectField from "../ui/SelectField";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
@@ -58,11 +58,11 @@ const AddStudentsForm: FC<AddStudentsFormProps> = ({ setIsOpen, id, courseId, lv
                         multiSelect
                         values={userIds}
                         setValues={setUserIds}
-                        placeholder={courseWaitingListData.watingUsers.length === 0 ? "No students waiting for this course!" : "Select Users..."}
+                        placeholder={courseWaitingListData.watingUsers.length === 0 ? "No students Waiting for this course!" : "Select Users..."}
                         listTitle="Users"
                         data={courseWaitingListData.watingUsers
                             .map(user => ({
-                                active: true,
+                                Active: true,
                                 label: user.email,
                                 value: user.id,
                                 customLabel: (

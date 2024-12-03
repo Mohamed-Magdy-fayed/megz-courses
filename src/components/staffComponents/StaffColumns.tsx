@@ -1,20 +1,20 @@
-import { ArrowUpDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "../ui/checkbox";
 import Link from "next/link";
 import { getInitials } from "@/lib/getInitials";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Typography } from "../ui/Typoghraphy";
+import { UserRoles } from "@prisma/client";
+import EducationalTeamActionCell from "@/components/staffComponents/EducationalTeamActionCell";
 
 export type TrainerColumn = {
   id: string;
   userId: string;
   name: string;
+  userRoles: UserRoles[];
   email: string;
-  image?: string;
-  phone?: string;
-  role: string;
+  image: string;
+  phone: string;
   createdAt: string;
 };
 
@@ -65,15 +65,21 @@ export const columns: ColumnDef<TrainerColumn>[] = [
     ),
   },
   {
-    accessorKey: "role",
-    header: "Role",
-  },
-  {
     accessorKey: "phone",
     header: "Phone",
+  },
+  {
+    accessorKey: "userRoles",
   },
   {
     accessorKey: "createdAt",
     header: "User Since",
   },
+  {
+    id: "actions",
+    header: "Actions",
+    cell: ({ row }) => <EducationalTeamActionCell
+      trainerUser={{ ...row.original, id: row.original.userId }}
+    />,
+  }
 ];

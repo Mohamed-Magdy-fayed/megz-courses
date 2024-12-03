@@ -5,11 +5,31 @@ import {
 } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { validDefaultStages } from "@/lib/enumsTypes";
+import { hasPermission } from "@/server/permissions";
 
 export const leadStagesRouter = createTRPCRouter({
     getLeadStages: protectedProcedure
         .query(async ({ ctx }) => {
-            let stages = await ctx.prisma.leadStage.findMany({
+            const leads = await ctx.prisma.lead.findMany()
+            const emails = leads.map(l => l.email).filter(l => l !== null)
+            const phones = leads.map(l => l.phone).filter(l => l !== null)
+
+            const usersWithEamil = await ctx.prisma.user.findMany({ where: { email: { in: emails } } })
+            const usersWithPhone = await ctx.prisma.user.findMany({ where: { phone: { in: phones } } })
+
+            await ctx.prisma.lead.updateMany({
+                where: {
+                    OR: {
+                        email: { in: usersWithEamil.map(u => u.email).filter(l => l !== null) },
+                        phone: { in: usersWithPhone.map(u => u.phone).filter(l => l !== null) },
+                    }
+                },
+                data: {
+                    isInvalid: true,
+                }
+            })
+
+            const stages = await ctx.prisma.leadStage.findMany({
                 include: {
                     leads: {
                         orderBy: { createdAt: "desc" },
@@ -17,31 +37,13 @@ export const leadStagesRouter = createTRPCRouter({
                             labels: true,
                             assignee: { include: { user: true } },
                             notes: true,
-                            salesOperations: true,
+                            leadStage: true,
+                            orderDetails: true,
                         }
                     }
                 },
                 orderBy: { order: "asc" },
             });
-
-            if (stages.length === 0) {
-                await ctx.prisma.leadStage.createMany({
-                    data: validDefaultStages.map((s, i) => ({ name: s, defaultStage: s, order: i + 1 })),
-                })
-
-                stages = await ctx.prisma.leadStage.findMany({
-                    include: {
-                        leads: {
-                            include: {
-                                labels: true,
-                                assignee: { include: { user: true } },
-                                notes: true,
-                                salesOperations: true,
-                            }
-                        }
-                    }
-                });
-            }
 
             return { stages };
         }),
@@ -120,7 +122,7 @@ export const leadStagesRouter = createTRPCRouter({
     deleteLeadStage: protectedProcedure
         .input(z.array(z.string()))
         .mutation(async ({ input, ctx }) => {
-            if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+            if (!hasPermission(ctx.session.user, "leadStages", "delete")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
             const deletedLeadStages = await ctx.prisma.leadStage.deleteMany({
                 where: {
                     id: {

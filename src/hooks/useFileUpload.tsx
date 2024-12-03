@@ -55,7 +55,7 @@ const useFileUpload = () => {
                                         uploadToast.update({
                                             id: uploadToast.id,
                                             title: "Cancelled",
-                                            description: "Upload has been cancelled!",
+                                            description: "Upload has been Cancelled!",
                                             variant: "destructive",
                                             action: undefined,
                                         });
@@ -91,7 +91,7 @@ const useFileUpload = () => {
                                 uploadToast.update({
                                     id: uploadToast.id,
                                     title: "Cancelled",
-                                    description: "Upload has been cancelled!",
+                                    description: "Upload has been Cancelled!",
                                     variant: "destructive",
                                     action: undefined,
                                 });
@@ -122,7 +122,7 @@ const useFileUpload = () => {
             uploadToast.update({
                 id: uploadToast.id,
                 title: "Success",
-                description: "Upload completed!",
+                description: "Upload Completed!",
                 variant: "success",
                 action: undefined,
             })

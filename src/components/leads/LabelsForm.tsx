@@ -1,43 +1,23 @@
-import { Button, ButtonProps, SpinnerButton } from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandShortcut } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Typography } from "@/components/ui/Typoghraphy"
 import { toastType, useToast } from "@/components/ui/use-toast"
 import useDebounce from "@/hooks/useDebounce"
 import { api } from "@/lib/api"
 import { createMutationOptions } from "@/lib/mutationsHelper"
-import { cn } from "@/lib/utils"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { ScrollArea } from "@radix-ui/react-scroll-area"
-import { rest } from "lodash"
-import { PlusSquare } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-
-export const formSchema = z.object({
-    value: z.string(),
-})
-
-type FormValues = z.infer<typeof formSchema>
+import { ChevronDown } from "lucide-react"
+import { useState } from "react"
 
 const LabelsForm = ({ leadId }: { leadId: string }) => {
     const { toast } = useToast()
 
     const [loadingToast, setLoadingToast] = useState<toastType>()
-
-    const form = useForm<FormValues>({
-        resolver: zodResolver(formSchema),
-        defaultValues: {
-            value: "",
-        }
-    })
-
-    const inputRef = useRef<HTMLInputElement>(null)
+    const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false)
+    const [value, setValue] = useState("")
 
     const trpcUtils = api.useUtils()
-    const { data, refetch } = api.leadLabels.searchLeadLabels.useQuery({ value: form.getValues().value }, { enabled: form.getValues().value.length > 0 })
+    const { data, refetch } = api.leadLabels.searchLeadLabels.useQuery({ value }, { enabled: value.length > 0 })
     const addLabelMutation = api.leadLabels.createLeadLabel.useMutation(
         createMutationOptions({
             loadingToast,
@@ -45,7 +25,11 @@ const LabelsForm = ({ leadId }: { leadId: string }) => {
             toast,
             trpcUtils,
             loadingMessage: "Adding label...",
-            successMessageFormatter: ({ leadLabel }) => `${leadLabel.value} label Created`,
+            successMessageFormatter: ({ leadLabel }) => {
+                setValue("")
+                setIsSuggestionsOpen(false)
+                return `${leadLabel.value} label Created`
+            },
             disableToast: true,
         })
     )
@@ -56,61 +40,67 @@ const LabelsForm = ({ leadId }: { leadId: string }) => {
             toast,
             trpcUtils,
             loadingMessage: "Connecting label...",
-            successMessageFormatter: ({ leadLabel }) => `${leadLabel.value} label Connected`,
+            successMessageFormatter: ({ leadLabel }) => {
+                setValue("")
+                setIsSuggestionsOpen(false)
+                return `${leadLabel.value} label Connected`
+            },
             disableToast: true,
         })
     )
 
-    const onSubmit = (data: FormValues) => {
+    const handleCreateLabel = () => {
         addLabelMutation.mutate({
             leadId,
-            value: data.value
+            value,
         })
     }
 
     useDebounce(() => {
-        if (form.watch("value").length === 0) return
+        if (value.length === 0) return
         refetch()
-    }, 1000, [form.watch("value")])
+    }, 1000, [value])
 
     const handleSelectSuggestion = (labelId: string) => {
         connectLabelMutation.mutate({ labelId, leadId })
     }
 
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-2">
-                <FormField
-                    control={form.control}
-                    name="value"
-                    render={({ field }) => (
-                        <FormItem className="flex flex-col items-start">
-                            <FormLabel>Add a label</FormLabel>
-                            <FormControl>
-                                <Input
-                                    disabled={!!loadingToast}
-                                    autoComplete="off"
-                                    placeholder="Search or create a label"
-                                    {...field}
-                                    ref={inputRef}
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <div className="hidden">
-                    <SpinnerButton icon={PlusSquare} isLoading={!!loadingToast} text={"Add Label"} type="submit" />
-                </div>
-                <div className="flex items-center gap-4 flex-wrap">
-                    {data?.leadLabels.map(label => (
-                        <Button key={label.id} customeColor={"infoIcon"} onClick={() => handleSelectSuggestion(label.id)} type="button">
-                            {label.value}
-                        </Button>
-                    ))}
-                </div>
-            </form>
-        </Form>
+        <Popover open={isSuggestionsOpen} onOpenChange={(val) => setIsSuggestionsOpen(val)}>
+            <PopoverTrigger asChild>
+                <Button customeColor="primaryOutlined" variant="outline">
+                    <Typography>Add a Label</Typography>
+                    <ChevronDown className="size-4" />
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent asChild>
+                <Command>
+                    <CommandInput value={value} onValueChange={(val) => setValue(val)} />
+                    <CommandList>
+                        <CommandGroup>
+                            <CommandEmpty>No Data</CommandEmpty>
+                            {data?.leadLabels.map(label => (
+                                <CommandItem key={label.id} onSelect={() => {
+                                    setIsSuggestionsOpen(false)
+                                    handleSelectSuggestion(label.id)
+                                }}>
+                                    {label.value}
+                                </CommandItem>
+                            ))}
+                            {!data?.leadLabels.find(l => l.value === value) && (
+                                <CommandItem onSelect={() => {
+                                    setIsSuggestionsOpen(false)
+                                    handleCreateLabel()
+                                }}>
+                                    {value}
+                                </CommandItem>
+                            )}
+                        </CommandGroup>
+                    </CommandList>
+                    <CommandShortcut className="pt-4">Press Enter to create</CommandShortcut>
+                </Command>
+            </PopoverContent>
+        </Popover>
     )
 }
 

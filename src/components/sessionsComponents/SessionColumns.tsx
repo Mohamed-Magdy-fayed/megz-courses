@@ -10,7 +10,6 @@ import { api } from "@/lib/api";
 import { useState } from "react";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import Spinner from "@/components/Spinner";
-import { sendWhatsAppMessage } from "@/lib/whatsApp";
 import { env } from "@/env.mjs";
 import { SeverityPill } from "@/components/overview/SeverityPill";
 import { format } from "date-fns";
@@ -132,30 +131,6 @@ export const columns: ColumnDef<SessionColumn>[] = [
               description: `Session ${updatedSession.materialItem?.title} status updated to ${updatedSession.sessionStatus}`,
               variant: "success",
             })
-            updatedSession.zoomGroup?.students.forEach(student => {
-              if (updatedSession.sessionStatus === "starting" && updatedSession.zoomGroup?.zoomSessions[-1]?.sessionDate === updatedSession.sessionDate) sendWhatsAppMessage({
-                toNumber: `${student.phone}`,
-                textBody: `Hi ${student.name}, your final test is about to start, be ready!
-              \nPlease complete your test here: ${env.NEXT_PUBLIC_NEXTAUTH_URL}/my_courses/${updatedSession.zoomGroup?.course?.slug}/${updatedSession.zoomGroup?.courseLevel?.slug}/final_test
-              \nAnd join the meeting on time here: ${updatedSession.sessionLink}`,
-              })
-              if (updatedSession.sessionStatus === "starting") sendWhatsAppMessage({
-                toNumber: `${student.phone}`,
-                textBody: `Hi ${student.name}, your session for today is about to start, be ready!
-              \nPlease complete the quiz here: ${env.NEXT_PUBLIC_NEXTAUTH_URL}/my_courses/${updatedSession.zoomGroup?.course?.slug}/${updatedSession.zoomGroup?.courseLevel?.slug}/quiz/${updatedSession.materialItem?.slug}
-              \nAnd join the meeting on time here: ${updatedSession.sessionLink}`,
-              })
-              if (updatedSession.sessionStatus === "ongoing") sendWhatsAppMessage({
-                toNumber: `${student.phone}`,
-                textBody: `Hi ${student.name}, your session for today has started!
-              \nPlease join the meeting on from here: ${updatedSession.sessionLink}`,
-              })
-              if (updatedSession.sessionStatus === "completed") sendWhatsAppMessage({
-                toNumber: `${student.phone}`,
-                textBody: `Hi ${student.name}, your session for today has ended!
-              \nPlease complete the assignment here: ${env.NEXT_PUBLIC_NEXTAUTH_URL}/my_courses/${updatedSession.zoomGroup?.course?.slug}/${updatedSession.zoomGroup?.courseLevel?.slug}/assignment/${updatedSession.materialItem?.slug}`,
-              })
-            })
           }),
         onError: ({ message }) => loadingToast?.update({
           id: loadingToast.id,
@@ -169,11 +144,11 @@ export const columns: ColumnDef<SessionColumn>[] = [
         }
       })
 
-      if (status === "scheduled") return (
+      if (status === "Scheduled") return (
         <div className="space-y-2 grid">
           <SeverityPill color="primary">Scheduled</SeverityPill>
           <Button
-            onClick={() => editSessionStatusMutation.mutate({ id: session.id, sessionStatus: "starting" })}
+            onClick={() => editSessionStatusMutation.mutate({ id: session.id, sessionStatus: "Starting" })}
             variant={"outline"}
             customeColor={"infoOutlined"}
           >
@@ -182,11 +157,11 @@ export const columns: ColumnDef<SessionColumn>[] = [
         </div>
       )
 
-      if (status === "ongoing") return (
+      if (status === "Ongoing") return (
         <div className="space-y-2 grid">
           <SeverityPill color="info">Ongoing</SeverityPill>
           <Button
-            onClick={() => editSessionStatusMutation.mutate({ id: session.id, sessionStatus: "completed" })}
+            onClick={() => editSessionStatusMutation.mutate({ id: session.id, sessionStatus: "Completed" })}
             variant={"outline"}
             customeColor={"successOutlined"}
           >
@@ -195,7 +170,7 @@ export const columns: ColumnDef<SessionColumn>[] = [
         </div>
       )
 
-      if (status === "starting") return (
+      if (status === "Starting") return (
         <div className="grid space-y-2">
           <Typography>{session.title} Session</Typography>
           <SeverityPill color="secondary">Starting soon</SeverityPill>
@@ -204,7 +179,7 @@ export const columns: ColumnDef<SessionColumn>[] = [
               <Button className="w-full" type="button" customeColor={"info"}>Start Zoom Session</Button>
             </Link>
             <Button
-              onClick={() => editSessionStatusMutation.mutate({ id: session.id, sessionStatus: "ongoing" })}
+              onClick={() => editSessionStatusMutation.mutate({ id: session.id, sessionStatus: "Ongoing" })}
               variant={"outline"}
               customeColor={"infoOutlined"}
             >
@@ -213,10 +188,10 @@ export const columns: ColumnDef<SessionColumn>[] = [
           </div>
         </div>
       )
-      if (status === "completed") return (
+      if (status === "Completed") return (
         <SeverityPill color="success">Completed</SeverityPill>
       )
-      if (status === "cancelled") return (
+      if (status === "Cancelled") return (
         <SeverityPill color="destructive">Cancelled</SeverityPill>
       )
     },

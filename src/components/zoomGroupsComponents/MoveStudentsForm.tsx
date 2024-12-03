@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Typography } from "../ui/Typoghraphy";
 import { useToast } from "../ui/use-toast";
-import SelectField from "../salesOperation/SelectField";
+import SelectField from "../ui/SelectField";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
@@ -67,7 +67,7 @@ const MoveStudentsForm: FC<MoveStudentsFormProps> = ({ setIsOpen, id, courseId }
                             data={courseZoomGroupsdata.zoomGroups
                                 .filter(group => group.id !== id)
                                 .map(group => ({
-                                    active: true,
+                                    Active: true,
                                     label: group.groupNumber,
                                     value: group.id,
                                 }))}
@@ -82,7 +82,7 @@ const MoveStudentsForm: FC<MoveStudentsFormProps> = ({ setIsOpen, id, courseId }
                             listTitle="Users"
                             data={groupStudentsData.gorupStudents
                                 .map(user => ({
-                                    active: true,
+                                    Active: true,
                                     label: user.email,
                                     value: user.id,
                                     customLabel: (

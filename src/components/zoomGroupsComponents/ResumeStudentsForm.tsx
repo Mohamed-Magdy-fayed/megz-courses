@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Typography } from "../ui/Typoghraphy";
 import { useToast } from "../ui/use-toast";
-import SelectField from "../salesOperation/SelectField";
+import SelectField from "../ui/SelectField";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
@@ -19,7 +19,7 @@ const ResumeStudentsForm: FC<ResumeStudentsFormProps> = ({ setIsOpen }) => {
 
     const action = "Continue";
 
-    const { data: postpondedListData } = api.waitingList.queryFullList.useQuery({ status: "postponded" });
+    const { data: postpondedListData } = api.waitingList.queryFullList.useQuery({ status: "Postponded" });
     const resumeStudentsMutation = api.zoomGroups.resumeStudents.useMutation();
     const trpcUtils = api.useUtils();
     const { toastError, toastSuccess } = useToast()
@@ -32,7 +32,7 @@ const ResumeStudentsForm: FC<ResumeStudentsFormProps> = ({ setIsOpen }) => {
             onSuccess: (data) => {
                 trpcUtils.zoomGroups.invalidate()
                     .then(() => {
-                        toastSuccess(`${data.updatedCourseStatus.count} students has beed added to waiting list!`)
+                        toastSuccess(`${data.updatedCourseStatus.count} students has beed added to Waiting list!`)
                         setIsOpen(false);
                         setLoading(false);
                     })
@@ -57,7 +57,7 @@ const ResumeStudentsForm: FC<ResumeStudentsFormProps> = ({ setIsOpen }) => {
                         placeholder={postpondedListData?.fullList.length === 0 ? "No students in postpond list!" : "Select Users..."}
                         listTitle="Users"
                         data={postpondedListData?.fullList.map(status => ({
-                            active: true,
+                            Active: true,
                             label: status.user.name,
                             value: status.user.id,
                             customLabel: (

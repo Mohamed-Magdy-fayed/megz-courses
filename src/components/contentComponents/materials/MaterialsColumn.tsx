@@ -73,7 +73,7 @@ export const columns: ColumnDef<MaterialsRow>[] = [
         accessorKey: "type",
         header: "Type",
         cell: ({ row }) => (
-            <Typography>{row.original.type === "manual" ? "Interactive" : "Downloadable"}</Typography>
+            <Typography>{row.original.type === "Manual" ? "Interactive" : "Downloadable"}</Typography>
         )
     },
     {

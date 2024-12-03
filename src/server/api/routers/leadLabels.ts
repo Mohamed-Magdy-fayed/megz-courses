@@ -4,6 +4,7 @@ import {
     protectedProcedure,
 } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
+import { hasPermission } from "@/server/permissions";
 
 export const leadLabelsRouter = createTRPCRouter({
     getLeadLabels: protectedProcedure
@@ -109,7 +110,9 @@ export const leadLabelsRouter = createTRPCRouter({
     deleteLeadLabels: protectedProcedure
         .input(z.array(z.string()))
         .mutation(async ({ input, ctx }) => {
-            if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+            const labels = await ctx.prisma.leadInteraction.findMany({ where: { id: { in: input } }, include: { lead: true } })
+            if (!labels.every(label => label?.lead && hasPermission(ctx.session.user, "leads", "update", label.lead))) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
+
             const deletedLeadLabels = await ctx.prisma.leadLabel.deleteMany({
                 where: {
                     id: {

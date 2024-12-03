@@ -2,7 +2,6 @@ import { api } from "@/lib/api";
 import { useState } from "react";
 import { format } from "date-fns";
 import { TrainerColumn, columns } from "./StaffColumns";
-import { validTrainerRoles } from "@/lib/enumsTypes";
 import { upperFirst } from "lodash";
 import { DataTable } from "@/components/ui/DataTable";
 import { createMutationOptions } from "@/lib/mutationsHelper";
@@ -13,14 +12,15 @@ import { cn } from "@/lib/utils";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { type toastType, useToast } from "@/components/ui/use-toast";
 import SingleSelectField from "@/components/SingleSelectField";
-import { TrainerRole } from "@prisma/client";
+import { UserRoles } from "@prisma/client";
+import { validUserRoles } from "@/lib/enumsTypes";
 
 const TrainersClient = () => {
   const [trainers, setTraiers] = useState<TrainerColumn[]>([]);
 
   const [loadingToast, setLoadingToast] = useState<toastType>();
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<TrainerRole>();
+  const [role, setRole] = useState<typeof UserRoles.Teacher | typeof UserRoles.Tester>();
 
   const { ErrorsModal, setError } = useImportErrors()
 
@@ -55,11 +55,11 @@ const TrainersClient = () => {
   const formattedData: TrainerColumn[] = data?.trainers.map((trainer) => ({
     id: trainer.id,
     userId: trainer.userId,
+    userRoles: trainer.user.userRoles,
     name: trainer.user.name || "no name",
     email: trainer.user.email || "no email",
     image: trainer.user.image || "no image",
     phone: trainer.user.phone || "no phone",
-    role: trainer.role || "NA",
     createdAt: format(trainer.createdAt, "MMMM do, yyyy"),
   })) || [];
 
@@ -97,12 +97,14 @@ const TrainersClient = () => {
           { key: "phone", label: "Phone" },
         ]}
         filters={[{
-          key: "role",
+          key: "userRoles",
           filterName: "Role",
-          values: [...validTrainerRoles.map(role => ({
-            label: upperFirst(role),
-            value: role,
-          }))]
+          values: [...validUserRoles
+            .filter(r => r === "Teacher" || r === "Tester")
+            .map(role => ({
+              label: upperFirst(role),
+              value: role,
+            }))]
         }]}
         exportConfig={{
           fileName: `Trainers`,
@@ -115,9 +117,10 @@ const TrainersClient = () => {
           extraDetails: (
             <div className="flex flex-col items-stretch gap-4 w-full">
               <SingleSelectField
-                data={validTrainerRoles.map(r => ({ label: r, value: r }))}
+                data={validUserRoles.filter(r => r === "Teacher" || r === "Tester").map(r => ({ label: r, value: r }))}
                 isLoading={!!loadingToast}
                 title="Role"
+                placeholder="Select Role"
                 setSelected={setRole}
                 selected={role}
               />
@@ -154,8 +157,7 @@ const TrainersClient = () => {
                 phone: phone || "",
               })),
               password,
-              role,
-              userType: "teacher",
+              userRole: "Teacher",
             })
           }
           toastError("Password doesn't match criteria!")

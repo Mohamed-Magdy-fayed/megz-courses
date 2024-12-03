@@ -10,13 +10,13 @@ import { Copy, CopyPlus, Edit, MoreVertical, PlusSquare, Trash } from "lucide-re
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { api } from "@/lib/api";
 import { useState } from "react";
-import Spinner from "@/components/Spinner";
 import CourseForm from "./CourseForm";
 import { useRouter } from "next/router";
 import Modal from "@/components/ui/modal";
 import { env } from "@/env.mjs";
 import { AlertModal } from "@/components/modals/AlertModal";
 import { createMutationOptions } from "@/lib/mutationsHelper";
+import CreateQuickOrderModal from "@/components/leads/CreateQuickOrderModal";
 
 interface CellActionProps {
     id: string;
@@ -33,6 +33,7 @@ interface CellActionProps {
 const CoursesActionCell: React.FC<CellActionProps> = ({ id, slug, description, groupPrice, image, instructorPrice, levels, name, privatePrice }) => {
     const { toastInfo, toast } = useToast();
     const [isOpen, setIsOpen] = useState(false)
+    const [isAddOrderOpen, setIsAddOrderOpen] = useState(false)
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const [isDeleteOpen, setIsDeleteOpen] = useState(false)
 
@@ -43,21 +44,7 @@ const CoursesActionCell: React.FC<CellActionProps> = ({ id, slug, description, g
 
     const [loadingToast, setLoadingToast] = useState<toastType>()
 
-    const router = useRouter()
     const trpcUtils = api.useUtils()
-    const dublicateMutation = api.courses.dublicateCourse.useMutation(
-        createMutationOptions({
-            trpcUtils,
-            loadingToast,
-            setLoadingToast,
-            toast,
-            successMessageFormatter: ({ course }) => {
-                return `${course.name} dublicated successfully`
-            },
-            loadingMessage: "dublicating...",
-        })
-    )
-
     const deleteMutation = api.courses.deleteCourses.useMutation(
         createMutationOptions({
             trpcUtils,
@@ -73,10 +60,6 @@ const CoursesActionCell: React.FC<CellActionProps> = ({ id, slug, description, g
 
     const onDelete = () => {
         deleteMutation.mutate([id])
-    };
-
-    const onDublicate = () => {
-        dublicateMutation.mutate({ id })
     };
 
     return (
@@ -108,6 +91,7 @@ const CoursesActionCell: React.FC<CellActionProps> = ({ id, slug, description, g
                     />
                 )}
             />
+            <CreateQuickOrderModal defaultCourse={id} isOpen={isAddOrderOpen} setIsOpen={setIsAddOrderOpen} />
             <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
                 <DropdownMenuTrigger asChild>
                     <Button customeColor="mutedIcon" variant={"icon"} >
@@ -117,15 +101,11 @@ const CoursesActionCell: React.FC<CellActionProps> = ({ id, slug, description, g
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem onClick={() => {
-                        sessionStorage.setItem(`activeTab${id}`, "quick_order");
-                        router.push(`/content/courses/${slug}`)
+                        setIsOpen(false)
+                        setIsAddOrderOpen(true)
                     }}>
                         <PlusSquare className="w-4 h-4 mr-2" />
                         Quick Order
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={onDublicate}>
-                        <CopyPlus className="w-4 h-4 mr-2" />
-                        Dublicate
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => {
                         setIsEditModalOpen(true)

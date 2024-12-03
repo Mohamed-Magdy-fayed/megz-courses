@@ -9,15 +9,17 @@ import { Button } from '../ui/button'
 import Link from 'next/link'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { SeverityPill, SeverityPillProps } from '../overview/SeverityPill'
-import { Order, SalesOperation, Course, User } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import { api } from '@/lib/api'
 
 interface OrderReceiptProps {
-    order: Order & {
-        user: User;
-        salesOperation: SalesOperation;
-        course: Course;
-    }
+    order: Prisma.OrderGetPayload<{
+        include: {
+            user: true,
+            lead: true,
+            course: true,
+        }
+    }>;
     adminView: boolean
 }
 
@@ -38,10 +40,10 @@ const OrderReceipt: FC<OrderReceiptProps> = ({ order, adminView }) => {
 
     const status = order.status
     const color: SeverityPillProps["color"] =
-        status === "cancelled" ? "destructive"
-            : status === "refunded" ? "primary"
-                : status === "paid" ? "success"
-                    : status === "pending" ? "muted" : "destructive"
+        status === "Cancelled" ? "destructive"
+            : status === "Refunded" ? "primary"
+                : status === "Paid" ? "success"
+                    : status === "Pending" ? "muted" : "destructive"
 
     const { data: refundedByUserdata, refetch } = api.users.getUserById.useQuery({ id: order.refundRequester || "" }, { enabled: false });
 

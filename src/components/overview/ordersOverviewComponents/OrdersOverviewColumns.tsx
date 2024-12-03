@@ -1,16 +1,15 @@
-import { ArrowUpDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { SeverityPill, SeverityPillProps } from "../SeverityPill";
+import { format } from "date-fns";
 
 export type OrderColmun = {
   userId: string;
   orderId: string;
   orderNumber: string;
   userName: string;
-  createdAt: string;
+  createdAt: Date;
   status: string;
 };
 
@@ -34,11 +33,6 @@ export const columns: ColumnDef<OrderColmun>[] = [
   },
   {
     accessorKey: "userName",
-    header: () => {
-      return (
-        <Typography variant={"secondary"}>Customer Name</Typography>
-      );
-    },
     cell: ({ row }) => (
       <Link className="block w-fit" href={`/account/${row.original.userId}`}>
         <Typography
@@ -50,36 +44,27 @@ export const columns: ColumnDef<OrderColmun>[] = [
     ),
   },
   {
-    accessorKey: "createdAt",
-    header: ({ column }) => {
-      return (
-        <div className="flex items-center justify-between">
-          <Typography variant={"secondary"}>Date</Typography>
-        </div>
-      );
-    },
-  },
-  {
     accessorKey: "status",
-    header: ({ column }) => {
-      return (
-        <div className="flex items-center justify-between">
-          <Typography variant={"secondary"}>Status</Typography>
-        </div>
-      );
-    },
     cell: ({ row }) => {
       const status = row.original.status
       const color: SeverityPillProps["color"] =
-        status === "cancelled" ? "destructive"
-          : status === "refunded" ? "primary"
-            : status === "paid" ? "success"
-              : status === "pending" ? "destructive" : "muted"
+        status === "Cancelled" ? "destructive"
+          : status === "Refunded" ? "primary"
+            : status === "Paid" ? "success"
+              : status === "Pending" ? "destructive" : "muted"
       return (
         <SeverityPill color={color}>
           {status}
         </SeverityPill>
       )
     },
+  },
+  {
+    accessorKey: "createdAt",
+    cell: ({ row }) => (
+      <Typography>
+        {format(row.original.createdAt, "dd MMM yyyy")}
+      </Typography>
+    ),
   },
 ];

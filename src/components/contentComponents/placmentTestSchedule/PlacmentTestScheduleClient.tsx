@@ -11,7 +11,7 @@ const PlacmentTestScheduleClient = ({ formattedData }: { formattedData: Placment
             onDelete={() => { }}
             searches={[
                 { key: "studentName", label: "Student Name" },
-                { key: "trainerName", label: "Trainer Name" },
+                { key: "testerName", label: "Tester Name" },
             ]}
             dateRanges={[{ key: "oralTestTime", label: "Test Time" }]}
             exportConfig={{

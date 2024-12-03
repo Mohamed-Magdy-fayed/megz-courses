@@ -1,38 +1,58 @@
-import { Course, SalesAgent, SalesOperation, User, Order } from "@prisma/client";
-import { format } from "date-fns";
 import { columns } from "./OrdersOverviewColumns";
 import { DataTable } from "@/components/ui/DataTable";
+import { api } from "@/lib/api";
+import { useEffect } from "react";
 
-export interface Orders extends Order {
-  user: User;
-  salesOperation: SalesOperation & {
-    assignee: SalesAgent | null;
-  };
-  course: Course;
-}
+const LatestOrdersClient = () => {
+  const { data, refetch, isLoading } = api.orders.getLatest.useQuery(undefined, { enabled: false })
 
-
-const LatestOrdersClient = ({ data }: { data: Orders[] }) => {
-  const formattedData = data.map((order) => ({
+  const formattedData = data?.orders.map((order) => ({
     orderId: order.id,
     userId: order.user.id,
     orderNumber: order.orderNumber,
     userName: order.user.name,
-    createdAt: format(order.createdAt, "dd MMM yyyy"),
+    createdAt: order.createdAt,
     status: order.status,
-  }));
+  })) || [];
 
+  useEffect(() => { refetch() }, [])
 
   return (
     <DataTable
+      skele={isLoading}
+      isSuperSimple
       columns={columns}
       data={formattedData}
       setData={() => { }}
       onDelete={() => { }}
-      searches={[{
-        key: "orderNumber",
-        label: "Order Number"
-      }]}
+      searches={[
+        {
+          key: "orderNumber",
+          label: "Order Number"
+        },
+        {
+          key: "userName",
+          label: "Name"
+        },
+      ]}
+      dateRanges={[
+        {
+          key: "createdAt",
+          label: "Date"
+        }
+      ]}
+      filters={[
+        {
+          filterName: "Status",
+          key: "status",
+          values: formattedData.map(d => d.status)
+            .filter((value, index, self) => self.indexOf(value) === index)
+            .map(status => ({
+              label: status,
+              value: status,
+            }))
+        }
+      ]}
     />
   );
 };

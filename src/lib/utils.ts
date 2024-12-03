@@ -1,14 +1,9 @@
-import { Address, Course, CourseLevel, CourseStatus, EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, MaterialItem, Order, SubmissionAnswer, User, ZoomGroup, ZoomSession } from "@prisma/client";
+import { Address, Course, CourseLevel, CourseStatus, ItemQuestion, ItemQuestionOption, Order, SystemForm, SystemFormItem, SystemFormSubmission, SystemFormSubmissionAnswer, User, UserRoles, ZoomGroup, ZoomSession } from "@prisma/client";
 import { type ClassValue, clsx } from "clsx";
 import { format } from "date-fns";
 import { twMerge } from "tailwind-merge";
 import { getInitials } from "./getInitials";
 import { env } from "@/env.mjs";
-import { ToastFunctionType, toastType } from "@/components/ui/use-toast";
-import { Dispatch, SetStateAction } from "react";
-import Spinner from "@/components/Spinner";
-import { UseMutationOptions } from "@tanstack/react-query";
-import { TRPCErrorShape } from "@trpc/server/rpc";
 import { Row } from "@tanstack/react-table";
 
 export function cn(...inputs: ClassValue[]) {
@@ -17,9 +12,13 @@ export function cn(...inputs: ClassValue[]) {
 
 export const getAddress = (address: Address) => `${address?.city || "no city"} - ${address?.state || "no state"} - ${address?.country || "no country"}`;
 
-export const salesOperationCodeGenerator = () => `SO-${Date.now()}`
+export const leadsCodeGenerator = () => `Lead-${Date.now()}`
 
 export const orderCodeGenerator = () => `CO-${Date.now()}`
+
+export const hasAccess = (currentUserRole: UserRoles, userRoles: UserRoles[]) => {
+  return userRoles.some(t => t === currentUserRole)
+}
 
 export const formatPrice = (price: number) => {
   const formattedPrice = new Intl.NumberFormat('en-EG', {
@@ -37,6 +36,18 @@ export const formatPercentage = (value: number) => new Intl.NumberFormat("en-US"
   style: "percent",
   maximumFractionDigits: 2
 }).format(value / 100)
+
+export const formatSizeInGB = (size: number): string => {
+  if (size < 1024) {
+    return `${size} B`;
+  } else if (size < 1024 * 1024) {
+    return `${(size / 1024).toFixed(2)} KB`;
+  } else if (size < 1024 * 1024 * 1024) {
+    return `${(size / (1024 * 1024)).toFixed(2)} MB`;
+  } else {
+    return `${(size / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+  }
+};
 
 export const formatNumbers = (value: number) => new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(value)
 export const formatNumber2Digits = (value: number) => new Intl.NumberFormat("en-US", { minimumIntegerDigits: 2 }).format(value)
@@ -102,26 +113,26 @@ export type CourseType = Course & {
 }
 export const getWaitingList = (course: CourseType): number => {
   return course.courseStatus
-    .filter(stat => stat.status === "waiting" && stat.courseId === course.id)
+    .filter(stat => stat.status === "Waiting" && stat.courseId === course.id)
     .filter((stat, i, self) => i === self.findIndex(({ userId }) => stat.userId === userId))
     .length;
 }
 
 export const getLevelWaitingList = (course: CourseType, levelId: string): number => {
   return course.courseStatus
-    .filter(stat => stat.status === "waiting" && stat.courseLevelId === levelId)
+    .filter(stat => stat.status === "Waiting" && stat.courseLevelId === levelId)
     .filter((stat, i, self) => i === self.findIndex(({ userId }) => stat.userId === userId))
     .length
 }
 
 export const generateGroupNumnber = (startDate: Date, trainerUserName: string, courseName: string): string => {
-  return `${format(startDate.getTime(), "E_do_MMM_hh:mm_aaa")}_${getInitials(trainerUserName)}_${courseName.replaceAll(" ", "_")}`
+  return `${format(startDate, "E_do_MMM_hh:mm_aaa")}_${getInitials(trainerUserName)}_${courseName.replaceAll(" ", "_")}`
 }
 
 export const calculateAttendancePercentages = (group: ZoomGroup & { zoomSessions: ZoomSession[] }) => {
   const totalStudents = group.studentIds.length;
 
-  const sessionAttendance = group.zoomSessions.filter(session => session.sessionStatus === "completed").map(session => {
+  const sessionAttendance = group.zoomSessions.filter(session => session.sessionStatus === "Completed").map(session => {
     const attendedStudents = session.attenders.length;
     const attendancePercentage = (attendedStudents / totalStudents) * 100;
     return {
@@ -138,16 +149,21 @@ export const calculateAttendancePercentages = (group: ZoomGroup & { zoomSessions
   };
 }
 
-export const getEvalutaionFormFullMark = (questions: EvaluationFormQuestion[]) => questions.map(question => question.points).reduce((a, b) => a + b, 0)
-export const getSubmissionScoreAndPercentage = (evaluationForm: EvaluationForm, submissions: EvaluationFormSubmission[]) => {
-  const submissionScore = submissions.find(submission => submission.evaluationFormId === evaluationForm.id)?.rating || 0
+export const getEvalutaionFormFullMark = (questions: ItemQuestion[]) => questions.map(question => question.points).reduce((a, b) => a + b, 0)
+export const getSubmissionScoreAndPercentage = (systemForm: SystemForm, submissions: SystemFormSubmission[]) => {
+  const submissionScore = submissions.find(submission => submission.systemFormId === systemForm.id)?.totalScore || 0
   return {
     score: submissionScore || 0,
-    percentage: formatPercentage(submissionScore / evaluationForm.totalPoints * 100)
+    percentage: formatPercentage(submissionScore / systemForm.totalScore * 100)
   }
 }
-export const isQuestionCorrect = (question: EvaluationFormQuestion, submission: EvaluationFormSubmission) => {
-  return submission.answers.some(answer => answer.questionId === question.id && question.options.some(option => option.text === answer.text && option.isCorrect))
+
+export const getSubmissionScore = (questions: (ItemQuestion & { options: ItemQuestionOption[] })[], answers: SystemFormSubmission["answers"]) => {
+  return questions.map(question => answers.some(answer => answer.questionId === question.id && answer.isCorrect) ? question.points : 0).reduce((a, b) => a + b, 0)
+}
+
+export const isQuestionCorrect = (question: ItemQuestion & { options: ItemQuestionOption[] }, submission: SystemFormSubmission) => {
+  return submission.answers.some(ans => ans.questionId === question.id && ans.isCorrect)
 }
 
 export const getEvalutaionStatus = (formDueDate: Date, submitted: boolean = false) => {
@@ -194,12 +210,6 @@ export const getGroupSessionDays = (startDay: number) => {
   }
 }
 
-export const generateCertificateId = () => {
-  const timestamp = Date.now().toString(36); // Convert timestamp to base36
-  const randomString = Math.random().toString(36).substring(2, 8); // Generate a random string
-  return `${timestamp}-${randomString}`.toUpperCase();
-};
-
 export const isTimePassed = (testTime: number) => {
   const currentTime = new Date().getTime();
   // Calculate the time difference in milliseconds
@@ -223,7 +233,7 @@ export const isTimeNow = (testTime: number) => {
   return timeDifference < thirtyMinutesInMilliseconds;
 }
 
-export const getRating = (questions: EvaluationFormQuestion[], answers: SubmissionAnswer[]): number => {
+export const getRating = (questions: (ItemQuestion & { options: ItemQuestionOption[] })[], answers: SystemFormSubmissionAnswer[]): number => {
   let points = 0
 
   for (let i = 0; i < answers.length; i++) {
@@ -231,9 +241,7 @@ export const getRating = (questions: EvaluationFormQuestion[], answers: Submissi
     const question = questions.find(question => question.id === answer?.questionId)
 
     if (question) {
-      const correctOption = question.options.find(option => option.isCorrect)
-      if (question.type === "multipleChoice" && correctOption?.text === answer?.text) points += question.points
-      if (question.type === "trueFalse" && correctOption?.isTrue === answer?.isTrue) points += question.points
+      if (answer?.isCorrect) points += question.points
     }
   }
   return points

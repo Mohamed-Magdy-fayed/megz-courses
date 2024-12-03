@@ -11,10 +11,7 @@ import { toastType, useToast } from "../ui/use-toast";
 import { OrderStatus } from "@prisma/client";
 import { Dispatch, SetStateAction, useState } from "react";
 import { api } from "@/lib/api";
-import Spinner from "@/components/Spinner";
-import { render } from "@react-email/render";
-import Email from "@/components/emails/Email";
-import { sendZohoEmail } from "@/lib/gmailHelpers";
+import { createMutationOptions } from "@/lib/mutationsHelper";
 
 interface CellActionProps {
     status: OrderStatus;
@@ -26,34 +23,32 @@ interface CellActionProps {
 }
 
 const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId, paymentLink, setIsRefundModalOpen }) => {
-    const { toastInfo, toastSuccess, toastError } = useToast();
     const [isOpen, setIsOpen] = useState(false)
+    const [loadingToast, setLoadingToast] = useState<toastType>()
+
+    const { data: setupData } = api.setup.getCurrentTier.useQuery()
 
     const onCopy = () => {
         if (!paymentLink) return toastError("No payment link")
         navigator.clipboard.writeText(paymentLink);
+        setIsOpen(false)
         toastInfo("Payment link copied to the clipboard");
     };
 
-    const sendEmailMutation = api.emails.sendZohoEmail.useMutation()
-    const resendPaymentLinkMutation = api.orders.resendPaymentLink.useMutation({
-        onSuccess: ({ emailProps }) => {
-            const html = render(
-                <Email
-                    {...emailProps} />, { pretty: true }
-            )
-
-            sendEmailMutation.mutate({ email: emailProps.userEmail, subject: `Thanks for your order ${emailProps.orderNumber}`, html })
-            toastSuccess("Payment link resent to the customer")
-        },
-        onError: ({ message }) => toastError(message),
-        onSettled: () => trpcUtils.salesOperations.invalidate()
-    })
+    const { toastInfo, toast, toastError } = useToast();
     const trpcUtils = api.useUtils()
+    const resendPaymentLinkMutation = api.orders.resendPaymentLink.useMutation(
+        createMutationOptions({
+            loadingToast,
+            setLoadingToast,
+            trpcUtils,
+            toast,
+            successMessageFormatter: () => `Payment link resent successfully`
+        })
+    )
 
     const handleResendPaymentLink = () => {
         setIsOpen(false)
-
         resendPaymentLinkMutation.mutate({ orderId })
     }
 
@@ -67,22 +62,22 @@ const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId, p
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem disabled={!id || status !== "pending"} onClick={onCopy}>
+                    <DropdownMenuItem disabled={!id || status !== "Pending" || !setupData?.tier.onlinePayment} onClick={onCopy}>
                         <Copy className="w-4 h-4 mr-2" />
                         Copy payment link
                     </DropdownMenuItem>
-                    <DropdownMenuItem disabled={status !== "pending"} onClick={() => {
+                    <DropdownMenuItem disabled={status !== "Pending" || !setupData?.tier.onlinePayment} onClick={handleResendPaymentLink}>
+                        <Send className="w-4 h-4 mr-2" />
+                        Resend payment link
+                    </DropdownMenuItem>
+                    <DropdownMenuItem disabled={status !== "Pending"} onClick={() => {
                         setOpen(true)
                         setIsOpen(false)
                     }}>
                         <LucideDollarSign className="w-4 h-4 mr-2" />
                         Manual payment
                     </DropdownMenuItem>
-                    <DropdownMenuItem disabled={status !== "pending"} onClick={handleResendPaymentLink}>
-                        <Send className="w-4 h-4 mr-2" />
-                        Resend payment link
-                    </DropdownMenuItem>
-                    <DropdownMenuItem disabled={status === "refunded" || status !== "paid"} onClick={() => {
+                    <DropdownMenuItem disabled={status === "Refunded" || status !== "Paid"} onClick={() => {
                         setIsRefundModalOpen(true)
                         setIsOpen(false)
                     }}>

@@ -54,7 +54,10 @@ const LevelForm: React.FC<LevelFormProps> = ({ setIsOpen, initialData, courseSlu
       loadingToast,
       setLoadingToast,
       toast,
-      successMessageFormatter: ({ level }) => `Level created with name: ${level.name}`,
+      successMessageFormatter: ({ level }) => {
+        setIsOpen(false)
+        return `Level Created with name: ${level.name}`
+      },
     })
   )
 

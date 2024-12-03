@@ -1,16 +1,9 @@
-import { Dispatch, SetStateAction, useEffect, useState } from "react"
+import { Dispatch, SetStateAction, useState } from "react"
 import { api } from "@/lib/api"
-import { formatPrice } from "@/lib/utils"
 import { toastType, useToast } from "@/components/ui/use-toast"
 import { Button, SpinnerButton } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Input } from "@/components/ui/input"
-import { FormItem } from "@/components/ui/form"
-import { Label } from "@/components/ui/label"
 import { Typography } from "@/components/ui/Typoghraphy"
-import { sendWhatsAppMessage } from "@/lib/whatsApp"
-import MobileNumberInput from "@/components/ui/phone-number-input"
-import { useRouter } from "next/router"
 import Modal from "@/components/ui/modal"
 import Link from "next/link"
 import { Boxes, Copy, CopyPlus, Link2 } from "lucide-react"
@@ -18,14 +11,15 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { env } from "@/env.mjs"
 import SingleSelectCourses from "@/components/SingleSelectCourse"
 import { createMutationOptions } from "@/lib/mutationsHelper"
-import { render } from "@react-email/render"
-import { CredentialsEmail } from "@/components/emails/CredintialsEmail"
-import { sendZohoEmail } from "@/lib/gmailHelpers"
+import { Prisma } from "@prisma/client"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import MobileNumberInput from "@/components/ui/phone-number-input"
 
 export type CreatedUserData = {
     email: string;
     password: string;
-    salesOperationCode: string;
+    leadCode: string;
     writtenTestUrl: string;
 }
 
@@ -34,32 +28,32 @@ export type AfterSubmitData = {
     paymentLink: string;
     amount: number;
     password: string;
-    salesOperationCode: string;
+    leadCode: string;
     courseSlug: string;
-    user: {
-    }
+    user: Prisma.UserGetPayload<{}>
 }
 
-const CreateQuickOrderModal = ({ isOpen, leadId, setIsOpen, email, name, phone }: {
+const CreateQuickOrderModal = ({ isOpen, setIsOpen, email, name, phone, defaultCourse }: {
     isOpen: boolean;
     setIsOpen: Dispatch<SetStateAction<boolean>>;
-    leadId: string;
-    name: string;
-    phone: string;
-    email: string;
+    name?: string;
+    phone?: string;
+    email?: string;
+    defaultCourse?: string;
 }) => {
-    const [courseId, setCourseId] = useState("")
+    const [courseId, setCourseId] = useState(defaultCourse || "")
     const [isPrivate, setIsPrivate] = useState(false)
     const [loadingToast, setLoadingToast] = useState<toastType>()
+    const [orderName, setOrderName] = useState(name)
+    const [orderEmail, setOrderEmail] = useState(email)
+    const [orderPhone, setOrderPhone] = useState(phone)
     const [orderDetailsOpen, setOrderDetailsOpen] = useState(false)
-    const [userDetails, setUserDetails] = useState<CreatedUserData>({ email: "", password: "", salesOperationCode: "", writtenTestUrl: "" })
+    const [userDetails, setUserDetails] = useState<CreatedUserData>({ email: "", password: "", leadCode: "", writtenTestUrl: "" })
 
     const { toastError, toastSuccess, toast } = useToast()
 
-    const { data: siteData } = api.siteIdentity.getSiteIdentity.useQuery()
-
     const trpcUtils = api.useUtils()
-    const convertLeadMutation = api.leads.convertLead.useMutation(
+    const convertLeadMutation = api.orders.quickOrder.useMutation(
         createMutationOptions({
             loadingToast,
             setLoadingToast,
@@ -71,7 +65,7 @@ const CreateQuickOrderModal = ({ isOpen, leadId, setIsOpen, email, name, phone }
                     courseSlug: order.course.slug,
                     orderNumber: order.orderNumber,
                     password,
-                    salesOperationCode: order.salesOperation.code,
+                    leadCode: order.lead.code,
                     user,
                     paymentLink,
                 })
@@ -79,80 +73,26 @@ const CreateQuickOrderModal = ({ isOpen, leadId, setIsOpen, email, name, phone }
             },
         })
     )
-    const sendEmailMutation = api.emails.sendZohoEmail.useMutation()
-    const router = useRouter()
 
     const handleCreateOrder = () => {
+        if (courseId.length === 0) return toastError("Please select a course!")
+        if (!orderName || !orderEmail || !orderPhone) return toastError("Please fill the user details!")
         convertLeadMutation.mutate({
-            courseId,
-            email,
-            isPrivate,
-            name,
-            phone,
-            leadId,
+            name: orderName,
+            email: orderEmail,
+            phone: orderPhone,
+            courseDetails: {
+                courseId,
+                isPrivate,
+            },
         })
     }
 
     const handleAfterSubmit = ({
-        amount, courseSlug, orderNumber, password, salesOperationCode, paymentLink
+        courseSlug, password, leadCode, user
     }: AfterSubmitData) => {
-        setUserDetails({ email, password, salesOperationCode, writtenTestUrl: `${env.NEXT_PUBLIC_NEXTAUTH_URL}placement_test/${courseSlug}` })
+        setUserDetails({ email: user.email, password, leadCode, writtenTestUrl: `${env.NEXT_PUBLIC_NEXTAUTH_URL}placement_test/${courseSlug}` })
         setOrderDetailsOpen(true)
-        const html = render(
-            <CredentialsEmail
-                courseLink={`${env.NEXT_PUBLIC_NEXTAUTH_URL}my_courses`}
-                customerName={name}
-                logoUrl={siteData?.siteIdentity.logoPrimary || ""}
-                password={password}
-                userEmail={email}
-            />
-        )
-
-        handleSendEmail({ email, html, subject: `Your credentials for accessing the course materials` })
-
-        if (!phone) return toastError("Couldn't send 2 whatsApp messages to the student!")
-        sendWhatsAppMessage({
-            toNumber: phone,
-            textBody: `*Thanks for your order ${orderNumber}*
-                    \n\nHello ${name}, Your order *${orderNumber}* is pending payment now for *${formatPrice(amount)}*
-                    \nOrder Number: *${orderNumber}*
-                    \nOrder Total: *${formatPrice(amount)}*
-                    \n\nYou can proceed to payment here: *${paymentLink}*
-                    \n\n*شكرًا لطلبك ${orderNumber}*
-                    \n\nمرحبًا ${name}، طلبك *${orderNumber}* قيد الانتظار للدفع الآن بمبلغ *${formatPrice(amount)}*
-                    \nرقم الطلب: *${orderNumber}*
-                    \nإجمالي الطلب: *${formatPrice(amount)}*
-                    \n\nيمكنك المتابعة إلى الدفع هنا: *${paymentLink}*`
-        })
-        sendWhatsAppMessage({
-            toNumber: phone,
-            textBody: `Thank you for choosing us, here are your username and password for accessing the course materials.
-                    \n\n*Username*: ${email}
-                    \n*Password*: *${password}*
-                    \n\nYou can change your username and password at a later time and you can access your course on this link: *${window.location.host}/my_courses/*
-                    \n\nشكرا لاختيارك لنا، هتلاقي في الرسالة اسم المستخدم وكلمة السر عشان تقدر تشوف الكورس على موقعنا
-                    \n\n*اسم المستخدم*: ${email}
-                    \n*كلمة السر*: *${password}*
-                    \nطبعا تقدر تغير اسم المستخدم او كلمة السر في اي وقت تحبة وتقدر تشوف محتويات الكورس من اللينك ده: *${window.location.host}/my_courses/*`
-        })
-    }
-
-    const handleSendEmail = ({
-        email,
-        subject,
-        html,
-    }: {
-        email: string,
-        subject: string,
-        html: string,
-    }) => {
-        sendEmailMutation.mutate({
-            email,
-            subject,
-            html,
-        }, {
-            onError: (e) => toastError(e.message),
-        })
     }
 
     return (
@@ -180,7 +120,7 @@ const CreateQuickOrderModal = ({ isOpen, leadId, setIsOpen, email, name, phone }
                                 <Typography>{userDetails.password}</Typography>
                             </div>
                         </div>
-                        <Typography>You can send the written test link to the student</Typography>
+                        <Typography>You can send the written test link to the Student</Typography>
                         <div className="flex items-center justify-between w-full gap-4">
                             <div className="flex flex-col gap-2">
                                 <Tooltip>
@@ -202,9 +142,9 @@ const CreateQuickOrderModal = ({ isOpen, leadId, setIsOpen, email, name, phone }
                                         </Typography>
                                     </TooltipContent>
                                 </Tooltip>
-                                <Link href={`/sales_operations/${userDetails.salesOperationCode}`}>
+                                <Link href={`/leads/${userDetails.leadCode}`}>
                                     <Button customeColor={"success"}>
-                                        <Typography>Go to sales operation</Typography>
+                                        <Typography>Go to lead</Typography>
                                         <Link2 className="w-4 h-4" />
                                     </Button>
                                 </Link>
@@ -231,40 +171,16 @@ const CreateQuickOrderModal = ({ isOpen, leadId, setIsOpen, email, name, phone }
             ) : (
                 <div className="flex flex-col gap-4 p-2">
                     <div className="flex items-center justify-between w-full gap-4">
-                        <Typography>Name</Typography>
-                        <Typography
-                            onDoubleClick={() => {
-                                navigator.clipboard.writeText(`${name}`);
-                                toastSuccess("Credentials copied to the clipboard");
-                            }}
-                            className="w-60 truncate bg-primary/10 border border-primary rounded-lg p-2"
-                        >
-                            {name}
-                        </Typography>
+                        <Label htmlFor="name">Name</Label>
+                        <Input id="name" className="max-w-xs" placeholder="Student Name" type="text" value={orderName} onChange={(e) => setOrderName(e.target.value)} />
                     </div>
                     <div className="flex items-center justify-between w-full gap-4">
-                        <Typography>Email</Typography>
-                        <Typography
-                            onDoubleClick={() => {
-                                navigator.clipboard.writeText(`${email}`);
-                                toastSuccess("Credentials copied to the clipboard");
-                            }}
-                            className="w-60 truncate bg-primary/10 border border-primary rounded-lg p-2"
-                        >
-                            {email}
-                        </Typography>
+                        <Label htmlFor="email">Email</Label>
+                        <Input id="email" className="max-w-xs" placeholder="Student Email" type="email" value={orderEmail} onChange={(e) => setOrderEmail(e.target.value)} />
                     </div>
                     <div className="flex items-center justify-between w-full gap-4">
-                        <Typography>Phone</Typography>
-                        <Typography
-                            onDoubleClick={() => {
-                                navigator.clipboard.writeText(`${phone}`);
-                                toastSuccess("Credentials copied to the clipboard");
-                            }}
-                            className="w-60 truncate bg-primary/10 border border-primary rounded-lg p-2"
-                        >
-                            {phone}
-                        </Typography>
+                        <Label htmlFor="phone">Phone</Label>
+                        <MobileNumberInput inputProps={{ id: "phone", className: "max-w-xs" }} placeholder="Student Phone" value={orderPhone || ""} setValue={(val) => setOrderPhone(val)} />
                     </div>
                     <SingleSelectCourses
                         courseId={courseId}

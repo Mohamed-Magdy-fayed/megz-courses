@@ -7,7 +7,11 @@ import {
 import bcrypt from "bcrypt";
 import { env } from "@/env.mjs";
 import { TRPCError } from "@trpc/server";
-import { sendZohoEmail } from "@/lib/gmailHelpers";
+import { sendZohoEmail } from "@/lib/emailHelpers";
+import { EmailsWrapper } from "@/components/emails/EmailsWrapper";
+import EmailConfirmation from "@/components/emails/EmailConfirmation";
+import { sendWhatsAppMessage } from "@/lib/whatsApp";
+import EmailConfirmationSuccess from "@/components/emails/EmailConfirmed";
 
 export const authRouter = createTRPCRouter({
   register: publicProcedure
@@ -39,17 +43,41 @@ export const authRouter = createTRPCRouter({
         },
       });
 
-      const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
       const accessToken = await bcrypt.hash(user.id, 10);
+      const confirmationLink = `${env.NEXTAUTH_URL}email_conf/${user.id}?access_token=${accessToken}`
 
-      return {
-        user,
-        emailConfirmationProps: {
+      const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
+      const html = await EmailsWrapper({
+        EmailComp: EmailConfirmation,
+        prisma: ctx.prisma,
+        props: {
           logoUrl: logoUrl || "",
-          confirmationLink: `${env.NEXTAUTH_URL}email_conf/${user.id}?access_token=${accessToken}`,
+          confirmationLink,
           customerName: user.name,
           userEmail: user.email,
         }
+      })
+      await sendZohoEmail({ email: user.email, subject: `Confirm your email ${user.email}`, html })
+      await sendWhatsAppMessage({ prisma: ctx.prisma, toNumber: user.phone, type: "ConfirmEmail", variables: { name: user.name, confirmationLink } })
+
+      await ctx.prisma.userNote.create({
+        data: {
+          sla: 0,
+          status: "Closed",
+          title: "Email needs confirmation",
+          type: "Info",
+          createdForStudent: { connect: { id: user.id } },
+          createdByUser: { connect: { email: "system@mail.com" } },
+          messages: [{
+            message: `The studnet's email needs confirmation`,
+            updatedAt: new Date(),
+            updatedBy: "System"
+          }],
+        }
+      })
+
+      return {
+        user,
       };
     }),
   confirmUserEmail: publicProcedure
@@ -59,24 +87,29 @@ export const authRouter = createTRPCRouter({
     }))
     .mutation(async ({ ctx, input: { accessToken, id } }) => {
       if (!(await bcrypt.compare(id, accessToken))) throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid access token!" })
-      if ((await ctx.prisma.user.findUnique({ where: { id } }))?.emailVerified) return { message: "Email already verified!" }
+      if ((await ctx.prisma.user.findUnique({ where: { id } }))?.emailVerified) return { user: null }
 
       const user = await ctx.prisma.user.update({
         where: { id },
         data: { emailVerified: new Date() },
-        select: { id: true, name: true, email: true }
+        select: { id: true, name: true, email: true, phone: true, emailVerified: true }
       })
 
-      const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
+      const html = await EmailsWrapper({
+        EmailComp: EmailConfirmationSuccess,
+        prisma: ctx.prisma,
+        props: {
+          accountLink: `${env.NEXTAUTH_URL}my_account`,
+          customerName: user.name,
+          userEmail: user.email,
+        }
+      })
+
+      await sendZohoEmail({ html, email: user.email, subject: `Congratulations, your email is now verified.` })
+      await sendWhatsAppMessage({ prisma: ctx.prisma, toNumber: user.phone, type: "EmailConfirmed", variables: { name: user.name } })
 
       return {
         user,
-        emailConfirmationSuccessProps: {
-          accountLink: `${env.NEXTAUTH_URL}my_account`,
-          customerName: user.name,
-          logoUrl: logoUrl || "",
-          userEmail: user.email,
-        }
       }
     }),
   resetPasswordRequest: publicProcedure

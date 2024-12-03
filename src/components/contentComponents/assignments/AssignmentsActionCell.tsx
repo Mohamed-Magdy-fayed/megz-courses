@@ -6,58 +6,49 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Copy, Edit, MoreVertical, Trash } from "lucide-react";
+import { Edit, EyeIcon, MoreVertical, Trash } from "lucide-react";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
-import Modal from "@/components/ui/modal";
-import ConnectGoogleForm from "@/components/FormsComponents/ConnectGoogleForm";
-import { EvaluationForm, EvaluationFormQuestion, EvaluationFormSubmission, GoogleForm, GoogleFormQuestion, MaterialItem } from "@prisma/client";
-import CustomForm from "@/components/FormsComponents/CustomForm";
+import { Prisma } from "@prisma/client";
 import { api } from "@/lib/api";
-import Spinner from "@/components/Spinner";
 import { AlertModal } from "@/components/modals/AlertModal";
 import { createMutationOptions } from "@/lib/mutationsHelper";
+import { CustomFormModal } from "@/components/systemForms/CustomFormModal";
+import Link from "next/link";
+import { useRouter } from "next/router";
 
 interface ActionCellProps {
     id: string;
-    evalForm: EvaluationForm & {
-        materialItem: MaterialItem | null;
-        submissions: EvaluationFormSubmission[];
-        questions: EvaluationFormQuestion[];
-        googleForm?: GoogleForm & {
-            googleFormQuestions: GoogleFormQuestion[]
-        } | null;
-    };
+    systemForm: Prisma.SystemFormGetPayload<{ include: { materialItem: true, submissions: { include: { student: true } }, items: { include: { questions: { include: { options: true } } } } } }>;
+    levelSlug: string;
 }
 
-const ActionCell: React.FC<ActionCellProps> = ({ id, evalForm }) => {
-    const { toastInfo, toast } = useToast();
+const ActionCell: React.FC<ActionCellProps> = ({ id, systemForm, levelSlug }) => {
+    const router = useRouter()
+    const courseSlug = router.query.courseSlug as string
+
+    const { toast } = useToast();
     const [isOpen, setIsOpen] = useState(false)
-    const [isDeleteOpen, setIsDeleteOpen] = useState(false)
     const [isEditOpen, setIsEditOpen] = useState(false)
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false)
     const [loadingToast, setLoadingToast] = useState<toastType>()
 
-    const onCopy = () => {
-        navigator.clipboard.writeText(id);
-        toastInfo("ID copied to the clipboard");
-    };
-
     const trpcUtils = api.useUtils()
-    const deleteMutation = api.evaluationForm.deleteEvalForm.useMutation(
+    const deleteMutation = api.systemForms.deleteSystemForms.useMutation(
         createMutationOptions({
             trpcUtils,
             loadingToast,
             setLoadingToast,
             toast,
-            successMessageFormatter: (data) => {
-                return `${data.deletedEvalForms.count} forms deleted`
+            successMessageFormatter: ({ deletedSystemForms }) => {
+                return `${deletedSystemForms.count} forms deleted`
             },
             loadingMessage: "Deleting..."
         })
     )
 
     const onDelete = () => {
-        deleteMutation.mutate({ ids: [id] })
+        deleteMutation.mutate([id])
     }
 
     return (
@@ -68,17 +59,7 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, evalForm }) => {
                 loading={!!loadingToast}
                 onConfirm={onDelete}
             />
-            <Modal
-                title="Edit"
-                description="edit evaluation form"
-                isOpen={isEditOpen}
-                onClose={() => setIsEditOpen(false)}
-                children={(
-                    <div>
-                        {evalForm.googleForm ? <ConnectGoogleForm setIsOpen={setIsEditOpen} initialData={evalForm} /> : <CustomForm initialData={evalForm} />}
-                    </div>
-                )}
-            />
+            <CustomFormModal isOpen={isEditOpen} setIsOpen={setIsEditOpen} systemForm={systemForm} />
             <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
                 <DropdownMenuTrigger asChild>
                     <Button customeColor="mutedIcon" variant={"icon"} >
@@ -87,9 +68,11 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, evalForm }) => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={onCopy}>
-                        <Copy className="w-4 h-4 mr-2" />
-                        Copy ID
+                    <DropdownMenuItem asChild>
+                        <Link href={`/my_courses/${courseSlug}/${levelSlug}/Assignment/${systemForm.materialItem?.slug}`}>
+                            <EyeIcon className="w-4 h-4 mr-2" />
+                            View
+                        </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => {
                         setIsEditOpen(true)

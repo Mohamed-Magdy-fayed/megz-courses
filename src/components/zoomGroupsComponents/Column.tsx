@@ -1,7 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Typography } from "../ui/Typoghraphy";
-import { Course, CourseLevel, GroupStatus, Trainer, User } from "@prisma/client";
+import { Course, CourseLevel, GroupStatus, Teacher, User } from "@prisma/client";
 import { SeverityPill, SeverityPillProps } from "../overview/SeverityPill";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -22,8 +22,8 @@ export type ColumnType = {
     startDate: Date,
     studentsCount: number,
     students: User[],
-    trainerName: string,
-    trainer: Trainer & {
+    teacherName: string,
+    teacher: Teacher & {
         user: User
     },
 }
@@ -77,37 +77,37 @@ export const columns: ColumnDef<ColumnType>[] = [
         cell: ({ row }) => {
             const status = row.original.groupStatus
             const color: SeverityPillProps["color"] =
-                status === "completed" ? "success"
-                    : status === "cancelled" ? "destructive"
-                        : status === "inactive" ? "secondary"
-                            : status === "active" ? "info"
-                                : status === "paused" ? "muted" : "primary"
+                status === "Completed" ? "success"
+                    : status === "Cancelled" ? "destructive"
+                        : status === "Inactive" ? "secondary"
+                            : status === "Active" ? "info"
+                                : status === "Paused" ? "muted" : "primary"
 
             return <SeverityPill color={color}>{status}</SeverityPill>
         },
         enableSorting: true
     },
     {
-        accessorKey: "trainerName",
+        accessorKey: "teacherName",
         header: "Trainer",
         cell: ({ row }) => {
             return (
-                <Link className="block w-fit" href={`/account/${row.original.trainer.userId}`}>
+                <Link className="block w-fit" href={`/account/${row.original.teacher.userId}`}>
                     <div className="flex items-center gap-2" >
                         <Avatar>
-                            <AvatarImage src={`${row.original.trainer?.user.image}`} />
+                            <AvatarImage src={`${row.original.teacher?.user.image}`} />
                             <AvatarFallback>
-                                {getInitials(`${row.original.trainer?.user.name}`)}
+                                {getInitials(`${row.original.teacher?.user.name}`)}
                             </AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col gap-2">
                             <Typography
                                 className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
                             >
-                                {row.original.trainer?.user.name}
+                                {row.original.teacher?.user.name}
                             </Typography>
                             <Typography variant={"secondary"} className="text-sm font-normal text-slate-500">
-                                {row.original.trainer?.user.email}
+                                {row.original.teacher?.user.email}
                             </Typography>
                         </div>
                     </div>
@@ -138,7 +138,7 @@ export const columns: ColumnDef<ColumnType>[] = [
             courseId={row.original.course.id}
             courseLevel={row.original.courseLevel}
             startDate={row.original.startDate}
-            trainerId={row.original.trainer?.id}
+            teacherId={row.original.teacher?.id}
             studentIds={row.original.students.map(student => student.id)}
             status={row.original.groupStatus}
         />

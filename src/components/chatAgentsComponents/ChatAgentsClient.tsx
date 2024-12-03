@@ -68,7 +68,7 @@ const ChatAgentsClient = () => {
 
   const onDelete = (callback?: () => void) => {
     deleteMutation.mutate(
-      chatAgents.map((chatAgent) => chatAgent.id),
+      chatAgents.map((ChatAgent) => ChatAgent.id),
       {
         onSuccess: () => {
           trpcUtils.chatAgents.invalidate()
@@ -139,7 +139,7 @@ const ChatAgentsClient = () => {
                 phone,
               })),
               password,
-              userType: "chatAgent",
+              userRole: "ChatAgent",
             })
           }
           toastError("Password doesn't match criteria!")

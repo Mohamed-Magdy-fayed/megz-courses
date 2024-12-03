@@ -3,9 +3,10 @@ import {
     createTRPCRouter,
     protectedProcedure,
 } from "@/server/api/trpc";
-import { TRPCError } from "@trpc/server";
+import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
 import { env } from "@/env.mjs";
 import axios from "axios";
+import { hasPermission } from "@/server/permissions";
 
 export const metaAccountRouter = createTRPCRouter({
     getMetaClient: protectedProcedure
@@ -18,7 +19,7 @@ export const metaAccountRouter = createTRPCRouter({
             id: z.string(),
         }))
         .mutation(async ({ ctx, input: { id } }) => {
-            if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+            if (!hasPermission(ctx.session.user, "metaClients", "delete")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
 
             const deletedMetaClient = await ctx.prisma.metaClient.delete({
                 where: { id }
@@ -32,7 +33,7 @@ export const metaAccountRouter = createTRPCRouter({
             fbExchangeToken: z.string(),
         }))
         .mutation(async ({ input: { name, fbExchangeToken }, ctx }) => {
-            if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+            if (!hasPermission(ctx.session.user, "metaClients", "create")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
             const clientId = env.NEXT_PUBLIC_WHATSAPP_APP_ID
             const clientSecret = env.NEXT_PUBLIC_WHATSAPP_APP_SECRET
 
@@ -47,17 +48,28 @@ export const metaAccountRouter = createTRPCRouter({
             try {
                 const response = (await axios.request(config)).data;
 
+                const pagesUrl = `https://graph.facebook.com/v20.0/me/accounts?access_token=${response.access_token}`;
+                const pagesResponse = (await axios.get(pagesUrl)).data;
+
+                if (!pagesResponse.data || pagesResponse.data.length === 0) {
+                    throw new TRPCError({ code: "NOT_FOUND", message: "No pages found for this user." });
+                }
+
+                const page = pagesResponse.data.find((s: any) => s.name.toLowerCase() === name.toLowerCase());
+                if (!page) throw new TRPCError({ code: "BAD_REQUEST", message: `No page found with this name! ${name}` });
+                const pageAccessToken = page.access_token;
+
                 const metaClient = await ctx.prisma.metaClient.create({
                     data: {
-                        name,
-                        accessToken: response.access_token
+                        name: page.name,
+                        accessToken: pageAccessToken
                     }
                 })
 
                 return { metaClient }
             }
             catch (error) {
-                throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: JSON.stringify(error) })
+                throw new TRPCError(getTRPCErrorFromUnknown(error))
             }
         }),
     updatePermenantAccessCode: protectedProcedure
@@ -67,7 +79,7 @@ export const metaAccountRouter = createTRPCRouter({
             fbExchangeToken: z.string(),
         }))
         .mutation(async ({ input: { id, name, fbExchangeToken }, ctx }) => {
-            if (ctx.session.user.userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your admin!" })
+            if (!hasPermission(ctx.session.user, "metaClients", "update")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
             const clientId = env.NEXT_PUBLIC_WHATSAPP_APP_ID
             const clientSecret = env.NEXT_PUBLIC_WHATSAPP_APP_SECRET
 
@@ -82,11 +94,21 @@ export const metaAccountRouter = createTRPCRouter({
             try {
                 const response = (await axios.request(config)).data;
 
+                const pagesUrl = `https://graph.facebook.com/v20.0/me/accounts?access_token=${response.access_token}`;
+                const pagesResponse = (await axios.get(pagesUrl)).data;
+
+                if (!pagesResponse.data || pagesResponse.data.length === 0) {
+                    throw new TRPCError({ code: "NOT_FOUND", message: "No pages found for this user." });
+                }
+
+                const page = pagesResponse.data.find((s: any) => s.name === name);
+                const pageAccessToken = page.access_token;
+
                 const metaClient = await ctx.prisma.metaClient.update({
                     where: { id },
                     data: {
                         name,
-                        accessToken: response.access_token
+                        accessToken: pageAccessToken
                     }
                 })
 

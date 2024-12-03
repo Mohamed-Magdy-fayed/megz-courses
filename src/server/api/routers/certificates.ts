@@ -1,5 +1,4 @@
-import { env } from "@/env.mjs";
-import { generateCertificateId } from "@/lib/utils";
+import { generateCertificate } from "@/lib/certificatesHelpers";
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -14,32 +13,7 @@ export const certificatesRouter = createTRPCRouter({
       score: z.string(),
     }))
     .mutation(async ({ ctx, input: { courseSlug, levelSlug, score } }) => {
-      const certificate = await ctx.prisma.certificate.create({
-        data: {
-          certificateId: generateCertificateId(),
-          completionDate: new Date(),
-          user: { connect: { id: ctx.session.user.id } },
-          course: { connect: { slug: courseSlug } },
-          courseLevel: { connect: { slug: levelSlug } },
-        },
-        include: { user: true, course: true }
-      })
-
-      await ctx.prisma.userNote.create({
-        data: {
-          sla: 0,
-          status: "Closed",
-          title: `Student final test submitted with score ${score}`,
-          type: "Info",
-          messages: [{
-            message: `Final test submitted and user certificate was created ${certificate.certificateId}\nCertificate URL: ${env.NEXTAUTH_URL}certificates/${certificate.certificateId}`,
-            updatedAt: new Date(),
-            updatedBy: "System"
-          }],
-          createdByUser: { connect: { id: ctx.session.user.id } },
-          createdForStudent: { connect: { id: ctx.session.user.id } }
-        }
-      })
+      const certificate = await generateCertificate({ ctx, courseSlug, levelSlug, score })
 
       return {
         certificate,
@@ -58,7 +32,7 @@ export const certificatesRouter = createTRPCRouter({
           userId: ctx.session.user.id,
         },
         include: {
-          user: { include: { zoomGroups: { include: { trainer: { include: { user: true } } } } } },
+          user: { include: { zoomGroups: { include: { teacher: { include: { user: true } } } } } },
           course: true,
         }
       })
@@ -77,7 +51,7 @@ export const certificatesRouter = createTRPCRouter({
           certificateId: id,
         },
         include: {
-          user: { include: { zoomGroups: { include: { trainer: { include: { user: true } } } } } },
+          user: { include: { zoomGroups: { include: { teacher: { include: { user: true } } } } } },
           course: true,
         }
       })

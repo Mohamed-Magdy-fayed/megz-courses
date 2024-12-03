@@ -4,12 +4,14 @@ export const importFromExcel = (file: File, onFileLoad: (data: any[]) => void) =
     if (file) {
         const reader = new FileReader();
         reader.onload = (event) => {
+
             if (!event.target) return alert("error line 8: useXlsx.ts")
-            const data = new Uint8Array(event.target.result as ArrayBufferLike);
+                const data = new Uint8Array(event.target.result as ArrayBufferLike);
             const workbook = XLSX.read(data, { type: 'array' });
             const sheetName = workbook.SheetNames[0];
             const sheet = workbook.Sheets[sheetName!];
             const jsonData: Record<string, any>[] = XLSX.utils.sheet_to_json(sheet!);
+            console.log(jsonData);
 
             const stringData: Record<string, string>[] = jsonData.map((item) => {
                 const stringifiedItem: Record<string, string> = {};

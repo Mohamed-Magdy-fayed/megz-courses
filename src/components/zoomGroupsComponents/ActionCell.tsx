@@ -11,7 +11,7 @@ import { FC, useState } from "react";
 import { api } from "@/lib/api";
 import { toastType, useToast } from "../ui/use-toast";
 import Link from "next/link";
-import SelectField from "../salesOperation/SelectField";
+import SelectField from "../ui/SelectField";
 import { CourseLevel, GroupStatus } from "@prisma/client";
 import { upperFirst } from "lodash";
 import ZoomGroupForm from "./Form";
@@ -29,14 +29,14 @@ interface ActionCellProps {
     id: string;
     courseId: string;
     courseLevel: CourseLevel;
-    trainerId: string;
+    teacherId: string;
     studentIds: string[];
     startDate: Date;
     status: GroupStatus;
     isGroupPage?: boolean;
 }
 
-const ActionCell: FC<ActionCellProps> = ({ id, courseId, courseLevel, startDate, trainerId, status, studentIds, isGroupPage }) => {
+const ActionCell: FC<ActionCellProps> = ({ id, courseId, courseLevel, startDate, teacherId, status, studentIds, isGroupPage }) => {
     const { toast } = useToast();
 
     const [loadingToast, setLoadingToast] = useState<toastType>()
@@ -140,7 +140,7 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, courseLevel, startDate,
             />
             <Modal
                 title="Move studnets"
-                description="move studnets to waiting list"
+                description="move studnets to Waiting list"
                 isOpen={isMoveFormOpen}
                 onClose={() => setIsMoveFormOpen(false)}
                 children={(
@@ -149,7 +149,7 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, courseLevel, startDate,
             />
             <Modal
                 title="Remove studnets"
-                description="move studnets to waiting list"
+                description="move studnets to Waiting list"
                 isOpen={isRemoveFormOpen}
                 onClose={() => setIsRemoveFormOpen(false)}
                 children={(
@@ -158,7 +158,7 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, courseLevel, startDate,
             />
             <Modal
                 title="Postpond studnets"
-                description="move studnets to postponded list"
+                description="move studnets to Postponded list"
                 isOpen={isPostpondFormOpen}
                 onClose={() => setIsPostpondFormOpen(false)}
                 children={(
@@ -167,7 +167,7 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, courseLevel, startDate,
             />
             <Modal
                 title="Resume studnets"
-                description="move studnets to back to waiting list"
+                description="move studnets to back to Waiting list"
                 isOpen={isResumeFormOpen}
                 onClose={() => setIsResumeFormOpen(false)}
                 children={(
@@ -186,7 +186,7 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, courseLevel, startDate,
                         courseLevel,
                         startDate,
                         studentIds,
-                        trainerId,
+                        teacherId,
                     }} />
                 )}
             />
@@ -206,7 +206,7 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, courseLevel, startDate,
                         <SelectField
                             disabled={!!loadingToast}
                             data={Object.values(GroupStatus).map(groupstatus => ({
-                                active: groupstatus !== status,
+                                Active: groupstatus !== status,
                                 label: upperFirst(groupstatus),
                                 value: groupstatus,
                             }))}

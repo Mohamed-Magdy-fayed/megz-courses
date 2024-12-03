@@ -6,6 +6,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { User } from "@prisma/client";
+import ActionCell from "@/components/contentComponents/placmentTestSubmissions/PlacementTestSubmissionActionCell";
 
 export type PlacementTestSubmissionsRow = {
     id: string,
@@ -87,4 +88,12 @@ export const columns: ColumnDef<PlacementTestSubmissionsRow>[] = [
             )
         }
     },
+    {
+        id: "action",
+        header: "Actions",
+        cell: ({ row }) => <ActionCell
+            id={row.original.id}
+            submission={row.original}
+        />,
+    }
 ];

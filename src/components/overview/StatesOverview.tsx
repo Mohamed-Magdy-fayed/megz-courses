@@ -18,9 +18,9 @@ export type StateOverview = {
 }
 
 export default function StatesOverview() {
-  const salesAgentsQuery = api.salesAgents.getSalesAgents.useQuery()
-  const studentsQuery = api.users.getUsers.useQuery({ userType: "student" })
-  const operationsQuery = api.salesOperations.getAll.useQuery()
+  const salesAgentsQuery = api.salesAgents.getBudget.useQuery()
+  const studentsQuery = api.users.getStudents.useQuery()
+  const leadsQuery = api.leads.getLeads.useQuery()
   const ordersQuery = api.orders.getAll.useQuery()
 
   const [budget, setBudget] = useState<StateOverview>({
@@ -44,7 +44,7 @@ export default function StatesOverview() {
     isLiability: false
   })
   const [tasks, setTasks] = useState<StateOverview>({
-    title: "Tasks progress",
+    title: "Convertion Rate",
     target: 0,
     style: "percent",
     icon: <ListTodo className="text-background"></ListTodo>,
@@ -71,8 +71,8 @@ export default function StatesOverview() {
         const {
           difference: salariesSinceLastWeek,
           total: currentTotalSalaries
-        } = data?.salesAgents
-            ? getDifferenceMargin(data?.salesAgents, "salary")
+        } = data?.zoomGroups
+            ? getDifferenceMargin(data?.zoomGroups, "groupCost")
             : { difference: 0, total: 0 }
 
         setBudget(prev => ({
@@ -98,18 +98,18 @@ export default function StatesOverview() {
         }))
       })
 
-    operationsQuery.refetch()
+    leadsQuery.refetch()
       .then(({ data }) => {
         const {
           difference: progressSinceLastWeek,
           total: progress
-        } = data?.salesOperations
-            ? getDifferenceMargin(data?.salesOperations.filter(op => op.status === "completed").map(op => ({ ...op, createdAt: op.updatedAt })), "id")
+        } = data?.leads
+            ? getDifferenceMargin(data?.leads.filter(lead => lead.leadStage?.defaultStage === "Converted").map(lead => ({ ...lead, createdAt: lead.updatedAt })), "id")
             : { difference: 0, total: 0 }
 
         setTasks(prev => ({
           ...prev,
-          target: progress / (data?.salesOperations.length || 1),
+          target: progress / (data?.leads.length || 1),
           sinceLastWeek: progressSinceLastWeek,
         }))
       })

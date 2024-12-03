@@ -12,15 +12,20 @@ import { Checkbox } from "../ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useEffect } from "react";
 import { api } from "@/lib/api";
+import Image from "next/image";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { EyeIcon } from "lucide-react";
 
 export type OrderRow = {
   isStudentView: boolean;
   id: string;
   amount: number;
   orderNumber: string;
+  paymentConfirmationImage: string | null;
   paymentId: string;
-  salesOperationId: string;
-  salesOperationCode: string;
+  leadId: string;
+  leadCode: string;
   status: Order["status"];
   userId: string;
   userName: string;
@@ -134,7 +139,7 @@ export const columns: ColumnDef<OrderRow>[] = [
     ),
   },
   {
-    accessorKey: "salesOperationCode",
+    accessorKey: "leadCode",
     header: ({ column }) => {
       if (column.getFacetedRowModel().rows.some(r => r.original.isStudentView)) return null
       return "Sales Operation"
@@ -143,9 +148,9 @@ export const columns: ColumnDef<OrderRow>[] = [
       if (row.original.isStudentView) return null
 
       return (
-        <Link href={`/sales_operations/${row.original.salesOperationCode}`}>
+        <Link href={`/leads/${row.original.leadCode}`}>
           <Typography>
-            {row.original.salesOperationCode}
+            {row.original.leadCode}
           </Typography>
         </Link>
       )
@@ -163,10 +168,10 @@ export const columns: ColumnDef<OrderRow>[] = [
     cell: ({ row }) => {
       const status = row.original.status
       const color: SeverityPillProps["color"] =
-        status === "cancelled" ? "destructive"
-          : status === "refunded" ? "primary"
-            : status === "paid" ? "success"
-              : status === "pending" ? "muted" : "destructive"
+        status === "Cancelled" ? "destructive"
+          : status === "Refunded" ? "primary"
+            : status === "Paid" ? "success"
+              : status === "Pending" ? "muted" : "destructive"
 
       const refundedByUser = api.users.getUserById.useQuery({ id: row.original.refundRequester || "" }, { enabled: false });
 
@@ -182,18 +187,36 @@ export const columns: ColumnDef<OrderRow>[] = [
             </SeverityPill>
           </TooltipTrigger>
           <TooltipContent>
-            Refunded By: {refundedByUser.data?.user.email ? refundedByUser.data?.user.email : format(row.original.updatedAt, "PPP")}
+            {status === "Refunded" && `Refunded By: ${refundedByUser.data?.user.email ? refundedByUser.data?.user.email : format(row.original.updatedAt, "PPP")}`}
           </TooltipContent>
         </Tooltip>
       )
     },
   },
   {
+    accessorKey: "paymentConfirmationImage",
+    header: "Confirmation Image",
+    cell: ({ row }) => (
+      <div>
+        {(row.original.status === "Paid" && !!row.original.paymentConfirmationImage) && (
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button customeColor={"infoIcon"}>View <EyeIcon /></Button>
+            </DialogTrigger>
+            <DialogContent>
+              <Image className="max-w-2xl" src={row.original.paymentConfirmationImage} alt="Payment Proof" width={1000} height={1000} />
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+    ),
+  },
+  {
     accessorKey: "updatedAt",
     header: "Payment Date",
     cell: ({ row }) => (
       <Typography>
-        {row.original.status === "pending" || row.original.status === "cancelled" ? "NA" : format(row.original.updatedAt, "do MMM yy")}
+        {row.original.status === "Pending" || row.original.status === "Cancelled" ? "NA" : format(row.original.updatedAt, "do MMM yy")}
       </Typography>
     ),
   },

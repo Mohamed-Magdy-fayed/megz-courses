@@ -13,6 +13,7 @@ import { Input } from "../ui/input";
 import { render } from "@react-email/render";
 import ResetPasswordEmail from "../emails/ResetPasswordEmail";
 import { createMutationOptions } from "@/lib/mutationsHelper";
+import { passwordSchema } from "@/components/authComponents/AuthForm";
 
 // Schema for requesting the reset password code
 export const requestResetPasswordSchema = z.object({
@@ -22,17 +23,7 @@ export const requestResetPasswordSchema = z.object({
 // Schema for resetting the password
 export const resetPasswordSchema = z.object({
     code: z.string().min(4, "Security code is required"), // Security code length validation
-    password: z.string().min(6, "Password must be at least 6 characters long")
-        .refine(
-            (value) =>
-                /[a-z]/.test(value) &&   // At least one lowercase letter
-                /[A-Z]/.test(value) &&   // At least one uppercase letter
-                /[0-9]/.test(value) &&   // At least one number
-                /[!@#$%^&*(),.?":{}|<>]/.test(value),  // At least one special character
-            {
-                message: "Password must include uppercase, lowercase, number, and special character",
-            }
-        ),
+    password: passwordSchema,
     passwordConfirmation: z.string().optional()
 }).superRefine(({ password, passwordConfirmation }) => password === passwordConfirmation);
 

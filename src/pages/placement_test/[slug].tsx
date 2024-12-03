@@ -2,12 +2,11 @@ import Spinner from "@/components/Spinner"
 import LandingLayout from "@/components/landingPageComponents/LandingLayout"
 import LoginModal from "@/components/modals/LoginModal"
 import OralTestCard from "@/components/placementTestView/OralTestCard"
-import PlacementTestCard from "@/components/placementTestView/PlacementTestCard"
+import SystemFormCard from "@/components/systemForms/SystemFormCard"
 import { ConceptTitle } from "@/components/ui/Typoghraphy"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { usePlacementTest } from "@/hooks/usePlacementTest"
-import { api } from "@/lib/api"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
@@ -47,7 +46,7 @@ const CoursePlacementTestPage = () => {
                             <CardDescription>You will see your oral test details here</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            Not yet scheduled we'll contact you soon!
+                            Not yet Scheduled we'll contact you soon!
                         </CardContent>
                     </Card>
                 ) : (
@@ -67,9 +66,9 @@ const CoursePlacementTestPage = () => {
                         </CardHeader>
                     </Card>
                 ) : courseData?.course && (
-                    <PlacementTestCard
-                        courseName={courseData.course.name}
+                    <SystemFormCard
                         courseSlug={slug}
+                        formType={"PlacementTest"}
                         enabled={!!slug}
                     />
                 )}

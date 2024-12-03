@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Copy, ExternalLink, MoreVertical, PackagePlus, Trash, View } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { AssignModal } from "../modals/AssignModal";
 import { Lead } from "./LeadsColumn";
@@ -18,6 +18,10 @@ import { createMutationOptions } from "@/lib/mutationsHelper";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import CreateQuickOrderModal from "@/components/leads/CreateQuickOrderModal";
+import { useSession } from "next-auth/react";
+import { Workflow } from "lucide-react";
+import { hasPermission } from "@/server/permissions";
+import CreateOrderModal from "@/components/modals/CreateOrderModal";
 
 interface CellActionProps {
   data: Lead;
@@ -32,7 +36,7 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const router = useRouter()
 
   const [loadingToast, setLoadingToast] = useState<toastType>();
-  const { toast, toastSuccess } = useToast()
+  const { toast, toastSuccess, toastError } = useToast()
   const trpcUtils = api.useUtils()
 
   const onCopy = (id: string) => {
@@ -58,7 +62,7 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
       setLoadingToast,
       toast,
       trpcUtils,
-      successMessageFormatter: ({ updatedLeads, salesOperations }) => `Lead moved ${salesOperations ? "and a sales operation created" : ""}`
+      successMessageFormatter: ({ updatedLeads }) => `Lead moved`
     })
   )
   const deleteMutation = api.leads.deleteLead.useMutation(
@@ -68,13 +72,26 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
       toast,
       trpcUtils,
       loadingMessage: "Deleting...",
-      successMessageFormatter: ({ deletedLeads }) => `Deleted ${deletedLeads.count} successfully!`
+      successMessageFormatter: ({ deletedLeads }) => {
+        setIsDeleteOpen(false)
+        return `Deleted ${deletedLeads.count} successfully!`
+      }
     })
   )
+
+  const session = useSession()
+  const isOperationAssigned = useMemo(() => !!data.assignee, [data.assignee])
+  const isOperationManger = useMemo(() => session.data?.user && hasPermission(session.data?.user, "leads", "update", data), [session.data?.user])
+  const operationAssignedForCurrentUser = useMemo(() => session.data?.user.id === data.assignee?.userId, [session.data?.user.id, data.assignee?.userId])
 
   const onAssign = (agentId: string) => {
     assignMutation.mutate({ agentId, leadId: data.id })
   };
+
+  const handleAssignToMe = () => {
+    if (!session.data?.user.id) return toastError("Not authenticated")
+    assignMutation.mutate({ agentId: session.data?.user.id, leadId: data.id })
+  }
 
   const handleDelete = () => {
     deleteMutation.mutate([data.id])
@@ -102,7 +119,7 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
         onConfirm={handleDelete}
         description="The lead data can not be restored after this action, are you sure?"
       />
-      <CreateQuickOrderModal email={data.email || "No Email"} name={data.name} phone={data.phone || "No Phone"} leadId={data.id} isOpen={isCreateOrderOpen} setIsOpen={setIsCreateOrderOpen} />
+      <CreateOrderModal email={data.email} leadId={data.id} isOpen={isCreateOrderOpen} setIsOpen={setIsCreateOrderOpen} />
       <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" customeColor={"mutedOutlined"} className="h-8 w-8 p-0">
@@ -121,19 +138,32 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
             <Copy className="w-4 h-4 mr-2" />
             Copy Id
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => (setOpen(true), setIsOpen(false))}>
-            <CheckCircle className="w-4 h-4 mr-2" />
-            Assign
-          </DropdownMenuItem>
-          {data.salesOperations.length > 0 ? (
-            <DropdownMenuItem disabled={!data.salesOperations[0]?.code} onClick={() => (router.push(`/sales_operations/${data.salesOperations[0]?.code}`), setIsOpen(false))}>
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Go to operation
+          {isOperationManger ? (
+            <DropdownMenuItem onClick={() => {
+              setIsOpen(false)
+              setOpen(true)
+            }}>
+              <Workflow className="w-4 h-4 mr-2" />
+              Assign
             </DropdownMenuItem>
-          ) : (
+          ) : !operationAssignedForCurrentUser && !isOperationAssigned && (
+            <DropdownMenuItem onClick={handleAssignToMe}>
+              <Workflow className="w-4 h-4 mr-2" />
+              Assign to me
+            </DropdownMenuItem>
+          )}
+          {!data.orderDetails?.orderNumber ? (
             <DropdownMenuItem disabled={data.stage?.defaultStage !== "Qualified"} onClick={() => (setIsOpen(false), setIsCreateOrderOpen(true))}>
               <PackagePlus className="w-4 h-4 mr-2" />
               Create Order
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem disabled={!data.orderDetails} onClick={() => {
+              setIsOpen(false)
+              router.push(`/orders/${data.orderDetails?.orderNumber}`)
+            }}>
+              <ExternalLink className="w-4 h-4 mr-2" />
+              Go to order
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
@@ -144,7 +174,7 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
             </DropdownMenuItem>
           ))}
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => (setOpen(true), setIsDeleteOpen(true))}>
+          <DropdownMenuItem onClick={() => (setIsOpen(false), setIsDeleteOpen(true))}>
             <Trash className="w-4 h-4 mr-2 text-destructive" />
             Delete
           </DropdownMenuItem>

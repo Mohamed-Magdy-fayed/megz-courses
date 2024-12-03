@@ -2,7 +2,7 @@ import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
 import { api } from "@/lib/api";
-import { ArrowLeftToLine } from "lucide-react";
+import { ArrowLeftToLine, ChevronDownIcon, FilePlus2Icon, PackageCheckIcon, PlusIcon, Trash2Icon, UploadCloudIcon } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Spinner from "@/components/Spinner";
@@ -10,17 +10,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import Link from "next/link";
 import Modal from "@/components/ui/modal";
 import UploadMaterialForm from "@/components/contentComponents/materials/uploadForm/UploadMaterialForm";
-import CreateQuickOrder from "@/components/contentComponents/courses/CreateQuickOrder";
-import CustomTestGoogleForm from "@/components/FormsComponents/CustomTestGoogleForm";
 import { formatPercentage } from "@/lib/utils";
-import LevelsTabContent from "@/components/contentComponents/levels/LevelsTabContent";
-import MaterialsTabContent from "@/components/contentComponents/materials/MaterialsTabContent";
 import AssignmentsTabContent from "@/components/contentComponents/assignments/AssignmentsTabContent";
 import QuizzesTabContent from "@/components/contentComponents/quizzes/QuizzesTabContent";
 import PlacementTestsTabContent from "@/components/contentComponents/placmentTests/PlacementTestsTabContent";
 import FinalTestsTabContent from "@/components/contentComponents/finalTests/FinalTestsTabContent";
 import WaitingListTabContent from "@/components/contentComponents/waitingList/WaitingListTabContent";
 import CourseGroupsTabContent from "@/components/contentComponents/courseGroups/CourseGroupsTabContent";
+import { CustomFormModal } from "@/components/systemForms/CustomFormModal";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import LevelForm from "@/components/contentComponents/levels/LevelForm";
+import { PaperContainer } from "@/components/ui/PaperContainers";
+import LevelClient from "@/components/contentComponents/levels/LevelClient";
+import MaterialsClient from "@/components/contentComponents/materials/MaterialsClient";
+import CreateQuickOrderModal from "@/components/leads/CreateQuickOrderModal";
 
 const tabs = [
     { value: "levels", label: "Levels" },
@@ -31,7 +34,6 @@ const tabs = [
     { value: "groups", label: "Groups" },
     { value: "placement_tests", label: "Placement tests" },
     { value: "final_tests", label: "Final tests" },
-    { value: "quick_order", label: "Quick Order" },
 ]
 
 const CoursePage = () => {
@@ -39,10 +41,13 @@ const CoursePage = () => {
     const courseSlug = router.query?.courseSlug as string;
     const { data, isLoading, isError } = api.courses.getBySlug.useQuery({ slug: courseSlug }, { enabled: !!courseSlug });
 
-    const [isUploadOpen, setIsUploadOpen] = useState(false);
-    const [isTestOpen, setIsTestOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
+    const [isAddLevelOpen, setIsAddLevelOpen] = useState(false);
+    const [isAddMaterialOpen, setIsAddMaterialOpen] = useState(false);
+    const [isAddFormOpen, setIsAddFormOpen] = useState(false);
+    const [isAddOrderOpen, setIsAddOrderOpen] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
-    const [placementTest, setPlacementTest] = useState(data?.course?.evaluationForms.filter(form => form.type === "placementTest")[0]);
+    const [PlacementTest, setPlacementTest] = useState(data?.course?.systemForms.filter(form => form.type === "PlacementTest")[0]);
 
     useEffect(() => {
         if (!isMounted) setIsMounted(true)
@@ -50,8 +55,8 @@ const CoursePage = () => {
 
     useEffect(() => {
         if (!data?.course) return
-        setPlacementTest(data.course.evaluationForms.filter(form => form.type === "placementTest")[0])
-    }, [data?.course?.evaluationForms]);
+        setPlacementTest(data.course.systemForms.filter(form => form.type === "PlacementTest")[0])
+    }, [data?.course?.systemForms]);
 
     if (!isMounted) return null;
     if (!data?.course) return null;
@@ -60,37 +65,90 @@ const CoursePage = () => {
         <AppLayout>
             <div className="space-y-4">
                 <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                        <Link href={`/content/`}>
-                            <Button variant={"icon"} customeColor={"infoIcon"}>
-                                <ArrowLeftToLine />
-                            </Button>
-                        </Link>
-                        <ConceptTitle>{data.course.name}</ConceptTitle>
-                        <Typography className="text-sm font-medium text-muted">
-                            total levels: {data.course.levels.length}
-                        </Typography>
+                    <div className="flex items-center gap-4 p-4 justify-between">
+                        <div className="flex items-center gap-2">
+                            <Link href={`/content/`}>
+                                <Button variant={"icon"} customeColor={"infoIcon"}>
+                                    <ArrowLeftToLine />
+                                </Button>
+                            </Link>
+                            <ConceptTitle>{data.course.name}</ConceptTitle>
+                            <Typography className="text-sm font-medium text-muted">
+                                total levels: {data.course.levels.length}
+                            </Typography>
+                        </div>
+                        <div>
+                            <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" customeColor="primaryOutlined" className="flex items-center gap-4">
+                                        Actions
+                                        <ChevronDownIcon className="size-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-56">
+                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuGroup>
+                                        <DropdownMenuItem onClick={() => {
+                                            setIsOpen(false)
+                                            setIsAddLevelOpen(true)
+                                        }}>
+                                            <PlusIcon />
+                                            <span>Create a Level</span>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => {
+                                            setIsOpen(false)
+                                            setIsAddMaterialOpen(true)
+                                        }}>
+                                            <UploadCloudIcon />
+                                            <span>Upload Material</span>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => {
+                                            setIsOpen(false)
+                                            setIsAddFormOpen(true)
+                                        }}>
+                                            <FilePlus2Icon />
+                                            <span>Create a Form</span>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => {
+                                            setIsOpen(false)
+                                            setIsAddOrderOpen(true)
+                                        }}>
+                                            <PackageCheckIcon />
+                                            <span>Quick Order</span>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuGroup>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem className="text-destructive focus:bg-destructive focus:text-destructive-foreground">
+                                        <Trash2Icon />
+                                        <span>Delete</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+
+                        </div>
                     </div>
                 </div>
                 <Modal
-                    title="Connect Google Form"
-                    description="Use a google form as an assignment or quiz"
-                    isOpen={isTestOpen}
-                    onClose={() => setIsTestOpen(false)}
+                    title="Create"
+                    description="Create a new level for the course"
+                    isOpen={isAddLevelOpen}
+                    onClose={() => setIsAddLevelOpen(false)}
                     children={(
-                        <CustomTestGoogleForm setIsOpen={setIsTestOpen} />
+                        <LevelForm courseSlug={courseSlug} setIsOpen={setIsAddLevelOpen} />
                     )}
                 />
                 <Modal
-                    description="Upload a material for the course"
                     title="Upload material"
-                    isOpen={isUploadOpen}
-                    onClose={() => setIsUploadOpen(false)}
+                    description="Upload a material for the course"
+                    isOpen={isAddMaterialOpen}
+                    onClose={() => setIsAddMaterialOpen(false)}
                     children={(
-                        <UploadMaterialForm setIsOpen={setIsUploadOpen} />
+                        <UploadMaterialForm setIsOpen={setIsAddMaterialOpen} />
                     )}
                 />
-
+                <CustomFormModal isOpen={isAddFormOpen} setIsOpen={setIsAddFormOpen} />
+                <CreateQuickOrderModal isOpen={isAddOrderOpen} setIsOpen={setIsAddOrderOpen} />
                 {isLoading ? (
                     <Spinner className="w-full h-40" />
                 ) : isError ? (
@@ -110,20 +168,19 @@ const CoursePage = () => {
                             ))}
                         </TabsList>
                         <TabsContent value="levels">
-                            <LevelsTabContent
-                                courseSlug={courseSlug}
-                                data={data.course?.levels ? data.course.levels.map(level => ({
+                            <PaperContainer>
+                                <LevelClient formattedData={data.course?.levels ? data.course.levels.map(level => ({
                                     id: level.id,
                                     name: level.name,
                                     slug: level.slug,
                                     courseSlug,
                                     createdAt: level.createdAt,
-                                })) : []}
-                            />
+                                })) : []} />
+                            </PaperContainer>
                         </TabsContent>
                         <TabsContent value="materials">
-                            <MaterialsTabContent
-                                data={data.course.levels.flatMap(({ materialItems }) => materialItems).map(({
+                            <PaperContainer>
+                                <MaterialsClient formattedData={data.course.levels.flatMap(({ materialItems }) => materialItems).map(({
                                     id,
                                     slug,
                                     title,
@@ -147,29 +204,29 @@ const CoursePage = () => {
                                     courseSlug: data.course?.slug || "",
                                     createdAt,
                                     updatedAt,
-                                }))}
-                            />
+                                }))} />
+                            </PaperContainer>
                         </TabsContent>
                         <TabsContent value="assignments">
                             <AssignmentsTabContent
                                 data={data?.course.levels ? data.course.levels
                                     .flatMap(({ materialItems }) => materialItems
-                                        .flatMap(item => item.evaluationForms)
-                                        .filter(form => form.type === "assignment"))
-                                    .map(evalForm => ({
-                                        id: evalForm.id,
-                                        materialItemTitle: evalForm.materialItem?.title || "",
+                                        .flatMap(item => item.systemForms)
+                                        .filter(form => form.type === "Assignment"))
+                                    .map(systemForm => ({
+                                        id: systemForm.id,
+                                        materialItemTitle: systemForm.materialItem?.title || "",
                                         levelSlugs: data.course?.levels.map(lvl => ({ label: lvl.name, value: lvl.slug })) || [],
-                                        levelSlug: evalForm.materialItem?.courseLevel?.slug || "",
-                                        levelName: evalForm.materialItem?.courseLevel?.name || "",
-                                        questions: evalForm.questions.length,
-                                        submissions: evalForm.submissions.length,
-                                        totalPoints: evalForm.totalPoints,
-                                        googleFormTitle: evalForm.googleForm?.title ? "Google Form" : "System Form",
-                                        evalForm,
-                                        createdBy: evalForm.createdBy,
-                                        createdAt: evalForm.createdAt,
-                                        updatedAt: evalForm.updatedAt,
+                                        levelSlug: systemForm.materialItem?.courseLevel?.slug || "",
+                                        levelName: systemForm.materialItem?.courseLevel?.name || "",
+                                        questions: systemForm.items.flatMap(item => item.questions).length,
+                                        submissions: systemForm.submissions.length,
+                                        totalPoints: systemForm.totalScore,
+                                        googleFormTitle: systemForm.googleFormUrl ? "Google Form" : "System Form",
+                                        systemForm,
+                                        createdBy: systemForm.createdBy,
+                                        createdAt: systemForm.createdAt,
+                                        updatedAt: systemForm.updatedAt,
                                     })) : []}
                             />
                         </TabsContent>
@@ -177,29 +234,29 @@ const CoursePage = () => {
                             <QuizzesTabContent
                                 data={data?.course.levels ? data.course.levels
                                     .flatMap(({ materialItems }) => materialItems
-                                        .flatMap(item => item.evaluationForms)
-                                        .filter(form => form.type === "quiz"))
-                                    .map(evalForm => ({
-                                        id: evalForm.id,
-                                        materialItemTitle: evalForm.materialItem?.title || "",
+                                        .flatMap(item => item.systemForms)
+                                        .filter(form => form.type === "Quiz"))
+                                    .map(systemForm => ({
+                                        id: systemForm.id,
+                                        materialItemTitle: systemForm.materialItem?.title || "",
                                         levelSlugs: data.course?.levels.map(lvl => ({ label: lvl.name, value: lvl.slug })) || [],
-                                        levelSlug: evalForm.materialItem?.courseLevel?.slug || "",
-                                        levelName: evalForm.materialItem?.courseLevel?.name || "",
-                                        questions: evalForm.questions.length,
-                                        submissions: evalForm.submissions.length,
-                                        totalPoints: evalForm.totalPoints,
-                                        googleFormTitle: evalForm.googleForm?.title ? "Google Form" : "System Form",
-                                        evalForm,
-                                        createdBy: evalForm.createdBy,
-                                        createdAt: evalForm.createdAt,
-                                        updatedAt: evalForm.updatedAt,
+                                        levelSlug: systemForm.materialItem?.courseLevel?.slug || "",
+                                        levelName: systemForm.materialItem?.courseLevel?.name || "",
+                                        questions: systemForm.items.length,
+                                        submissions: systemForm.submissions.length,
+                                        totalPoints: systemForm.totalScore,
+                                        googleFormTitle: systemForm.googleFormUrl ? "Google Form" : "System Form",
+                                        systemForm,
+                                        createdBy: systemForm.createdBy,
+                                        createdAt: systemForm.createdAt,
+                                        updatedAt: systemForm.updatedAt,
                                     })) : []}
                             />
                         </TabsContent>
                         <TabsContent value="waiting_list">
                             <WaitingListTabContent
                                 formattedData={data?.course.courseStatus ? data?.course.courseStatus
-                                    .filter(({ status, courseId }) => status === "waiting" && data.course?.id === courseId)
+                                    .filter(({ status, courseId }) => status === "Waiting" && data.course?.id === courseId)
                                     .map(({ courseId, level, user: {
                                         id,
                                         name,
@@ -235,7 +292,7 @@ const CoursePage = () => {
                                     groupStatus,
                                     startDate,
                                     studentIds,
-                                    trainerId,
+                                    teacherId,
                                     courseId,
                                     courseLevel,
                                     createdAt,
@@ -246,7 +303,7 @@ const CoursePage = () => {
                                     groupStatus,
                                     startDate,
                                     studentIds,
-                                    trainerId: trainerId || "",
+                                    teacherId: teacherId || "",
                                     courseId: courseId || "",
                                     courseLevel: {
                                         id: courseLevel?.id || "",
@@ -263,32 +320,33 @@ const CoursePage = () => {
                         </TabsContent>
                         <TabsContent value="placement_tests" className="space-y-4">
                             <PlacementTestsTabContent
-                                placementTests={placementTest ?
+                                placementTests={PlacementTest ?
                                     [{
-                                        id: placementTest.id,
-                                        questions: placementTest.questions.length,
-                                        submissions: placementTest.submissions.length,
-                                        totalPoints: placementTest.totalPoints,
-                                        evalForm: placementTest,
-                                        createdBy: placementTest.createdBy,
-                                        createdAt: placementTest.createdAt,
-                                        updatedAt: placementTest.updatedAt,
+                                        id: PlacementTest.id,
+                                        questions: PlacementTest.items.length,
+                                        submissions: PlacementTest.submissions.length,
+                                        totalPoints: PlacementTest.totalScore,
+                                        systemForm: PlacementTest,
+                                        createdBy: PlacementTest.createdBy,
+                                        createdAt: PlacementTest.createdAt,
+                                        updatedAt: PlacementTest.updatedAt,
                                     }] : []}
                                 placementTestsSchedule={data.course.placementTests
-                                    .filter(test => !test.writtenTest.submissions.some(sub => sub.userId === test.student.id))
+                                    .filter(test => !data.course?.courseStatus.some(s => !!s.courseLevelId && s.courseId === data.course?.id && test.studentUserId === s.userId))
                                     .map(({
                                         id,
                                         student,
                                         course,
                                         oralTestTime,
-                                        trainer,
+                                        oralTestMeeting,
+                                        tester,
                                         writtenTest,
                                         courseId,
                                         createdAt,
                                         updatedAt,
                                     }) => {
                                         const test = writtenTest
-                                        const submission = writtenTest.submissions.find(sub => sub.userId === student.id)
+                                        const submission = writtenTest.submissions.find(sub => sub.studentId === student.id)
                                         const link = `${window.location.host}/placement_test/${course.slug}`
 
                                         return ({
@@ -304,82 +362,77 @@ const CoursePage = () => {
                                             studentEmail: student.email,
                                             studentImage: student.image,
                                             oralTestTime,
+                                            oralTestMeeting,
                                             testLink: `/placement_test/${course.slug}`,
-                                            trainerId: trainer.user.id,
-                                            trainerName: trainer.user.name,
-                                            trainerEmail: trainer.user.email,
-                                            trainerImage: trainer.user.image,
+                                            testerId: tester.user.id,
+                                            testerName: tester.user.name,
+                                            testerEmail: tester.user.email,
+                                            testerImage: tester.user.image,
                                             link,
                                             rating: submission
-                                                ? formatPercentage(submission.rating / test.totalPoints * 100)
+                                                ? formatPercentage(submission.totalScore / test.totalScore * 100)
                                                 : "Not Submitted",
                                             createdAt: createdAt,
                                             updatedAt: updatedAt,
                                         })
                                     })}
-                                placementTestSubmissions={placementTest?.submissions ? placementTest.submissions.map(({
+                                placementTestSubmissions={PlacementTest?.submissions ? PlacementTest.submissions.map(({
                                     id,
                                     student,
-                                    evaluationForm,
-                                    rating,
+                                    systemForm,
+                                    totalScore,
                                     createdAt,
                                     updatedAt,
                                 }) => ({
                                     id,
                                     student,
                                     studentName: student.name,
-                                    rating: formatPercentage(rating / evaluationForm.totalPoints * 100),
+                                    rating: formatPercentage(totalScore / systemForm.totalScore * 100),
                                     createdAt,
                                     updatedAt,
                                 })) : []}
                             />
                         </TabsContent>
-                        <TabsContent value="final_tests">
+                        <TabsContent value="final_tests" className="space-y-4">
                             <FinalTestsTabContent
-                                finalTests={data?.course.evaluationForms.filter(form => form.type === "finalTest").length > 0
-                                    ? data?.course.evaluationForms.filter(form => form.type === "finalTest").map(finalTest => ({
-                                        id: finalTest.id,
-                                        questions: finalTest.questions.length,
-                                        submissions: finalTest.submissions.length,
-                                        totalPoints: finalTest.totalPoints,
-                                        levelName: finalTest.courseLevel?.name || "level",
-                                        evalForm: finalTest,
-                                        createdBy: finalTest.createdBy,
-                                        createdAt: finalTest.createdAt,
-                                        updatedAt: finalTest.updatedAt,
+                                finalTests={data?.course.levels.flatMap(lvl => lvl.systemForms).length > 0
+                                    ? data?.course.levels.flatMap(lvl => lvl.systemForms).map(finalTestForm => ({
+                                        id: finalTestForm.id,
+                                        questions: finalTestForm.items.length,
+                                        submissions: finalTestForm.submissions.length,
+                                        totalPoints: finalTestForm.totalScore,
+                                        courseSlug: data?.course?.slug || "",
+                                        levelSlug: finalTestForm.courseLevel?.slug || "",
+                                        levelName: finalTestForm.courseLevel?.name || "level",
+                                        systemForm: finalTestForm,
+                                        createdBy: finalTestForm.createdBy,
+                                        createdAt: finalTestForm.createdAt,
+                                        updatedAt: finalTestForm.updatedAt,
                                     }))
                                     : []}
-                                finalTestSubmissions={data?.course.evaluationForms.filter(form => form.type === "finalTest").length > 0
-                                    ? data?.course.evaluationForms.filter(form => form.type === "finalTest")
-                                        .flatMap(test => test.submissions)
-                                        .map(({
-                                            id,
-                                            student,
-                                            answers,
-                                            evaluationForm,
-                                            rating,
-                                            createdAt,
-                                            updatedAt,
-                                        }) => ({
-                                            id,
-                                            answers,
-                                            student,
-                                            levelSlugs: data.course?.levels.map(lvl => ({ label: lvl.name, value: lvl.slug })) || [],
-                                            levelSlug: evaluationForm.courseLevel?.slug || "",
-                                            certificate: student.certificates.find(cert => cert.courseLevelId === evaluationForm.courseLevelId),
-                                            email: student.email,
-                                            rating,
-                                            courseId: data.course?.id || "",
-                                            courseName: data.course?.name || "",
-                                            evaluationForm,
-                                            createdAt,
-                                            updatedAt,
-                                        })) : []}
-                            />
-                        </TabsContent>
-                        <TabsContent value="quick_order">
-                            <CreateQuickOrder
-                                courseData={data.course}
+                                finalTestSubmissions={data?.course.levels.flatMap(lvl => lvl.systemForms.flatMap(form => form.submissions.map(sub => ({ ...sub, systemForm: form }))))
+                                    .map(({
+                                        id,
+                                        student,
+                                        answers,
+                                        systemForm,
+                                        totalScore,
+                                        createdAt,
+                                        updatedAt,
+                                    }) => ({
+                                        id,
+                                        answers,
+                                        student,
+                                        levelSlugs: data.course?.levels.map(lvl => ({ label: lvl.name, value: lvl.slug })) || [],
+                                        levelSlug: systemForm.courseLevel?.slug || "",
+                                        certificate: student.certificates.find(cert => cert.courseLevelId === systemForm.courseLevelId),
+                                        email: student.email,
+                                        rating: totalScore,
+                                        courseId: data.course?.id || "",
+                                        courseName: data.course?.name || "",
+                                        createdAt,
+                                        updatedAt,
+                                    })) || []}
                             />
                         </TabsContent>
                     </Tabs>

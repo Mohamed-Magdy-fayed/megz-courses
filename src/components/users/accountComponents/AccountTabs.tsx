@@ -5,23 +5,35 @@ import AccountHistory from "@/components/users/accountComponents/AccountHistory"
 import AccountNotes from "@/components/users/accountComponents/AccountNotes";
 import { useRouter } from "next/router";
 import ZoomGroupsClient from "@/components/zoomGroupsComponents/Client";
-import CoursesClient from "@/components/contentComponents/courses/CoursesClient";
 import PlacmentTestScheduleClient from "@/components/contentComponents/placmentTestSchedule/PlacmentTestScheduleClient";
-import { format } from "date-fns";
 import { formatPercentage } from "@/lib/utils";
-import { UserGetPayload } from "@/pages/account/[id]";
 import CertificatesClient from "@/components/users/accountComponents/certificates/CertificateClient";
+import { Prisma } from "@prisma/client";
 
 const tabs = [
     { value: "notes", label: "Account Notes" },
     { value: "groups", label: "Groups" },
-    { value: "waiting_list", label: "Waiting list" },
     { value: "placement_tests", label: "Placement tests" },
     { value: "certificates", label: "Certificates" },
     { value: "history", label: "Account History" },
 ]
 
-export const UserAccountTabs = ({ user }: { user: UserGetPayload }) => {
+export const UserAccountTabs = ({ user }: {
+    user: Prisma.UserGetPayload<{
+        include: {
+            placementTests: {
+                include: {
+                    course: { include: { levels: true } },
+                    student: { include: { courseStatus: { include: { level: true } } } },
+                    tester: { include: { user: true } },
+                    writtenTest: { include: { submissions: true } },
+                }
+            },
+            certificates: { include: { course: true, courseLevel: true } },
+            orders: true,
+        }
+    }>
+}) => {
     const router = useRouter()
     const id = router.query?.id as string;
 
@@ -46,22 +58,6 @@ export const UserAccountTabs = ({ user }: { user: UserGetPayload }) => {
                         <CardContent className="flex flex-col items-center p-4">
                             <ZoomGroupsClient />
                         </CardContent>
-                        <CardFooter className="flex items-center justify-end">
-                            <Button type="button">Add to group</Button>
-                        </CardFooter>
-                    </Card>
-                </TabsContent>
-                <TabsContent value="waiting_list">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Waiting List</CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex flex-col items-center p-4">
-                            <CoursesClient />
-                        </CardContent>
-                        <CardFooter className="flex items-center justify-end">
-                            <Button type="button">Add to group</Button>
-                        </CardFooter>
                     </Card>
                 </TabsContent>
                 <TabsContent value="placement_tests">
@@ -76,14 +72,15 @@ export const UserAccountTabs = ({ user }: { user: UserGetPayload }) => {
                                     student,
                                     course,
                                     oralTestTime,
-                                    trainer,
+                                    oralTestMeeting,
+                                    tester,
                                     writtenTest,
                                     courseId,
                                     createdAt,
                                     updatedAt,
                                 }) => {
                                     const test = writtenTest
-                                    const Submission = writtenTest.submissions.find(sub => sub.userId === student.id)
+                                    const Submission = writtenTest.submissions.find(sub => sub.studentId === student.id)
                                     const link = `${window.location.host}/placement_test/${course.slug}`
 
                                     return ({
@@ -99,14 +96,15 @@ export const UserAccountTabs = ({ user }: { user: UserGetPayload }) => {
                                         studentEmail: student.email,
                                         studentImage: student.image,
                                         oralTestTime,
+                                        oralTestMeeting,
                                         testLink: `/placement_test/${course.slug}`,
-                                        trainerId: trainer.user.id,
-                                        trainerName: trainer.user.name,
-                                        trainerEmail: trainer.user.email,
-                                        trainerImage: trainer.user.image,
+                                        testerId: tester.user.id,
+                                        testerName: tester.user.name,
+                                        testerEmail: tester.user.email,
+                                        testerImage: tester.user.image,
                                         link,
                                         rating: Submission
-                                            ? formatPercentage(Submission.rating / test.totalPoints * 100)
+                                            ? formatPercentage(Submission.totalScore / test.totalScore * 100)
                                             : "Not Submitted",
                                         createdAt,
                                         updatedAt,
@@ -114,9 +112,6 @@ export const UserAccountTabs = ({ user }: { user: UserGetPayload }) => {
                                 })}
                             />
                         </CardContent>
-                        <CardFooter className="flex items-center justify-end">
-                            <Button type="button">Add to group</Button>
-                        </CardFooter>
                     </Card>
                 </TabsContent>
                 <TabsContent value="certificates">
@@ -135,9 +130,6 @@ export const UserAccountTabs = ({ user }: { user: UserGetPayload }) => {
                                 updatedAt: cert.updatedAt,
                             }))} />
                         </CardContent>
-                        <CardFooter className="flex items-center justify-end">
-                            <Button type="button">Add to group</Button>
-                        </CardFooter>
                     </Card>
                 </TabsContent>
                 <TabsContent value="history">

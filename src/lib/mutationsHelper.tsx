@@ -7,19 +7,19 @@ import { Dispatch, SetStateAction } from 'react';
 
 type ErrorData = TRPCClientErrorLike<AppRouter>;
 
-export function createMutationOptions<TSuccessData>(
+export function createMutationOptions<TSuccessData, TSuccessVars>(
     { setLoadingToast, successMessageFormatter, toast, trpcUtils, loadingToast, loadingMessage, disableToast }: {
         loadingToast: toastType | undefined,
         setLoadingToast: Dispatch<SetStateAction<toastType | undefined>>,
         trpcUtils: ReturnType<typeof api.useUtils>;
         toast: ToastFunctionType;
-        successMessageFormatter: (data: TSuccessData) => string;
+        successMessageFormatter: (data: TSuccessData, variables: TSuccessVars) => string;
         loadingMessage?: string;
         disableToast?: boolean;
     }
 ) {
     if (disableToast) return {
-        onSuccess: (data: TSuccessData) => trpcUtils.invalidate(),
+        onSuccess: (data: TSuccessData, variables: TSuccessVars) => trpcUtils.invalidate(),
         onError: (error: ErrorData) => toast({
             title: "Error",
             description: error.message,
@@ -43,11 +43,11 @@ export function createMutationOptions<TSuccessData>(
             variant: "info",
             duration: 30000,
         })),
-        onSuccess: (data: TSuccessData) => trpcUtils.invalidate().then(() => {
+        onSuccess: (data: TSuccessData, variables: TSuccessVars) => trpcUtils.invalidate().then(() => {
             loadingToast?.update({
                 id: loadingToast.id,
                 title: "Success",
-                description: successMessageFormatter(data),
+                description: successMessageFormatter(data, variables),
                 variant: "success",
             })
         }),

@@ -63,7 +63,7 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
         title="Delete"
         description="This action can't be undone!"
         children={
-          <div className="flex w-full items-center justify-end space-x-2 pt-6">
+          <div className="flex w-full items-center justify-end space-x-2 pt-6 py-2">
             <Button disabled={loading} variant={"outline"} customeColor={"mutedOutlined"} onClick={() => setOpen(false)}>
               Cancel
             </Button>
@@ -90,7 +90,7 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
             <Copy className="w-4 h-4 mr-2" />
             Copy Order Number
           </DropdownMenuItem>
-          <DropdownMenuItem disabled={data.status === "refunded"} onClick={() => {
+          <DropdownMenuItem disabled={data.status === "Refunded"} onClick={() => {
             setIsRefundModalOpen(true)
             setIsOpen(false)
           }}>

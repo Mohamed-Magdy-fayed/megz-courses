@@ -1,29 +1,7 @@
-import { google } from 'googleapis';
+import { forms_v1, google } from 'googleapis';
 import { env } from '@/env.mjs';
 import { prisma } from '@/server/db';
 import { TRPCError } from '@trpc/server';
-
-export const getFormResponses = async (url: string, clientId: string) => {
-    try {
-        const { oauth2Client } = await refreshGoogleToken(clientId)
-        const formsApi = google.forms({ version: 'v1', auth: oauth2Client });
-        const formId = getFormIdFromUrl(url)
-
-        const responses = (await formsApi.forms.responses.list({ formId })).data.responses?.map(res => {
-            return {
-                responseId: res.responseId,
-                formId,
-                userEmail: res.respondentEmail,
-                totalScore: res.totalScore,
-                createdAt: res.createTime,
-            }
-        })
-
-        return responses
-    } catch (error: any) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: error.message })
-    }
-}
 
 const getFormIdFromUrl = (url: string) => {
     const match = url.match(/\/d\/([a-zA-Z0-9_-]+)\//);
@@ -44,32 +22,7 @@ const getForm = async (url: string, clientId: string) => {
 export const getGoogleFormDetails = async (url: string, clientId: string) => {
     const { form } = await getForm(url, clientId)
 
-    const formRespondUrl = form.responderUri
-    const formId = form.formId
-    const title = form.info?.title || "no title"
-    if (!formRespondUrl || !formId) throw new TRPCError({ code: "BAD_REQUEST", message: "Form Data incomplete!" })
-    const questions = form.items?.map(i => {
-        const questionText = i.title || "no text"
-        const questionImage = i.questionItem?.image || "no image"
-        const questionPoints = i.questionItem?.question?.grading?.pointValue || 0
-        const questionOptions = i.questionItem?.question?.choiceQuestion?.options || []
-        const correctAnswers = i.questionItem?.question?.grading?.correctAnswers?.answers || []
-
-        return ({
-            questionText,
-            questionImage,
-            questionPoints,
-            questionOptions,
-            correctAnswers,
-        })
-    }) || []
-
-    return {
-        formRespondUrl,
-        formId,
-        title,
-        questions,
-    };
+    return form
 };
 
 export const refreshGoogleToken = async (id: string) => {

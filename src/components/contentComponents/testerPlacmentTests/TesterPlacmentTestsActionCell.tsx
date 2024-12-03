@@ -9,11 +9,10 @@ import { Button } from "@/components/ui/button";
 import { CheckSquare, Copy, MoreVertical } from "lucide-react";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
-import SelectField from "@/components/salesOperation/SelectField";
+import SelectField from "@/components/ui/SelectField";
 import { api } from "@/lib/api";
 import Spinner from "@/components/Spinner";
 import { Typography } from "@/components/ui/Typoghraphy";
-import { sendWhatsAppMessage } from "@/lib/whatsApp";
 import Modal from "@/components/ui/modal";
 import { CourseLevel } from "@prisma/client";
 
@@ -54,19 +53,11 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, testLink, courseId, courseN
                 id: addToWaitingListToast.id,
                 title: "Success",
                 description: <Typography>
-                    Added student {user.name} to waiting list of course {course.name} at level {levelName}
+                    Added Student {user.name} to Waiting list of course {course.name} at level {levelName}
                 </Typography>,
                 duration: 3000,
                 variant: "success",
             })
-            if (user.phone) {
-                sendWhatsAppMessage({
-                    toNumber: user.phone,
-                    textBody: `Hi ${user.name}, congtulations your placement test result for course ${course.name} has been submitted and placed you at level ${levelName}
-                    \nYou're now just one step away from starting your course.
-                    \nOur Team.`,
-                })
-            }
         },
         onError: ({ message }) => addToWaitingListToast?.update({
             id: addToWaitingListToast.id,
@@ -98,7 +89,7 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, testLink, courseId, courseN
         <>
             <Modal
                 title={courseName}
-                description="Select the appropriate level for the student"
+                description="Select the appropriate level for the Student"
                 isOpen={isOpen}
                 onClose={() => setIsOpen(false)}
             >
@@ -110,12 +101,12 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, testLink, courseId, courseN
                         values={level}
                         setValues={setLevel}
                         data={courseLevels.map(level => ({
-                            active: true,
+                            Active: true,
                             label: level.name,
                             value: level.id,
                         }))}
                     />
-                    <Button type="button" onClick={handleSubmitLevel}>Add to waiting list</Button>
+                    <Button type="button" onClick={handleSubmitLevel}>Add to Waiting list</Button>
                 </div>
             </Modal>
             <DropdownMenu open={isMenuOpen} defaultOpen={false} key={`oaoksnd`} onOpenChange={(val) => setIsMenuOpen(val)} modal>

@@ -21,13 +21,13 @@ export const emailsRouter = createTRPCRouter({
                 port: 465,
                 secure: true,
                 auth: {
-                    user: env.ZOHO_MAIL,
-                    pass: env.ZOHO_PASS,
+                    user: env.COMMS_EMAIL,
+                    pass: env.COMMS_EMAIL_PASS,
                 },
             });
 
             const mailOptions = {
-                from: env.ZOHO_MAIL,
+                from: env.COMMS_EMAIL,
                 to: input.email,
                 subject: input.subject,
                 html: input.html,

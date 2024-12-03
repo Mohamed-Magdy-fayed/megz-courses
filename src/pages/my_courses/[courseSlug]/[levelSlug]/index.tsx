@@ -46,7 +46,7 @@ const LevelPage = () => {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    {user.courseStatus.some(s => s.course.slug === course.slug && s.status === "waiting") ? (
+                                    {user.courseStatus.some(s => s.course.slug === course.slug && s.status === "Waiting") ? (
                                         <>
                                             Group not started yet
                                         </>
@@ -75,12 +75,12 @@ const LevelPage = () => {
                                                             <div className="flex items-center w-full justify-around">
                                                                 <Link
                                                                     className={
-                                                                        cn(zoomSession?.sessionStatus === "scheduled" && "pointer-events-none")
+                                                                        cn(zoomSession?.sessionStatus === "Scheduled" && "pointer-events-none")
                                                                     }
-                                                                    href={`/my_courses/${course.slug}/${level.slug}/quiz/${item.slug}`}
+                                                                    href={`/my_courses/${course.slug}/${level.slug}/Quiz/${item.slug}`}
                                                                 >
                                                                     <Button
-                                                                        disabled={zoomSession?.sessionStatus === "scheduled"}
+                                                                        disabled={zoomSession?.sessionStatus === "Scheduled"}
                                                                         variant={"outline"}
                                                                         customeColor={"infoOutlined"}
                                                                     >
@@ -92,12 +92,12 @@ const LevelPage = () => {
                                                                 </Link>
                                                                 <Link
                                                                     className={
-                                                                        cn((zoomSession?.sessionStatus && ["starting", "scheduled"].includes(zoomSession.sessionStatus)) && "pointer-events-none",)
+                                                                        cn((zoomSession?.sessionStatus && ["Starting", "Scheduled"].includes(zoomSession.sessionStatus)) && "pointer-events-none",)
                                                                     }
                                                                     href={`/my_courses/${course.slug}/${level.slug}/session/${item.slug}`}
                                                                 >
                                                                     <Button
-                                                                        disabled={(zoomSession?.sessionStatus && ["starting", "scheduled"].includes(zoomSession.sessionStatus))}
+                                                                        disabled={(zoomSession?.sessionStatus && ["Starting", "Scheduled"].includes(zoomSession.sessionStatus))}
                                                                         variant={"outline"}
                                                                         customeColor={"primaryOutlined"}
                                                                     >
@@ -109,12 +109,12 @@ const LevelPage = () => {
                                                                 </Link>
                                                                 <Link
                                                                     className={
-                                                                        cn(zoomSession?.sessionStatus !== "completed" && "pointer-events-none",)
+                                                                        cn(zoomSession?.sessionStatus !== "Completed" && "pointer-events-none",)
                                                                     }
-                                                                    href={`/my_courses/${course.slug}/${level.slug}/assignment/${item.slug}`}
+                                                                    href={`/my_courses/${course.slug}/${level.slug}/Assignment/${item.slug}`}
                                                                 >
                                                                     <Button
-                                                                        disabled={zoomSession?.sessionStatus !== "completed"}
+                                                                        disabled={zoomSession?.sessionStatus !== "Completed"}
                                                                         variant={"outline"}
                                                                         customeColor={"successOutlined"}
                                                                     >
@@ -137,12 +137,12 @@ const LevelPage = () => {
                                                     <div className="flex items-center w-full justify-around">
                                                         <Link
                                                             className={
-                                                                cn(!user.zoomGroups.some(group => group.courseId === course.id && group.zoomSessions.every(session => session.sessionStatus === "completed")) && "pointer-events-none")
+                                                                cn(!user.zoomGroups.some(group => group.courseId === course.id && group.zoomSessions.every(session => session.sessionStatus === "Completed")) && "pointer-events-none")
                                                             }
                                                             href={`/my_courses/${course.slug}/${level.slug}/final_test`}
                                                         >
                                                             <Button
-                                                                disabled={!user.zoomGroups.some(group => group.courseId === course.id && group.zoomSessions.every(session => session.sessionStatus === "completed"))}
+                                                                disabled={!user.zoomGroups.some(group => group.courseId === course.id && group.zoomSessions.every(session => session.sessionStatus === "Completed"))}
                                                                 variant={"outline"}
                                                                 customeColor={"destructiveOutlined"}
                                                             >

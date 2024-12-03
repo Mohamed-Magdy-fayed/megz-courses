@@ -20,7 +20,7 @@ const CoursesClient = () => {
             setLoadingToast,
             toast,
             successMessageFormatter: ({ courses }) => {
-                return `${courses.length} courses created`
+                return `${courses.length} courses Created`
             },
             loadingMessage: "Importing...",
         })
@@ -90,9 +90,9 @@ const CoursesClient = () => {
                         image: course.image || "",
                         name: course.name,
                         slug: course.slug,
-                        privatePrice: Number(course.privatePrice),
-                        instructorPrice: Number(course.instructorPrice),
-                        groupPrice: Number(course.groupPrice),
+                        privatePrice: 0,
+                        instructorPrice: 0,
+                        groupPrice: 0,
                     }))
                 )
             }}

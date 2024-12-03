@@ -2,41 +2,12 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowUpDown } from "lucide-react";
-import CellAction from "@/components/zoomAccount/ZoomAcountActionCell";
-import { SessionStatus } from "@prisma/client";
-import { Typography } from "@/components/ui/Typoghraphy";
-import SelectField from "@/components/salesOperation/SelectField";
-import { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { SeverityPill } from "@/components/overview/SeverityPill";
-import { toastType, useToast } from "@/components/ui/use-toast";
-import { api } from "@/lib/api";
-import Modal from "@/components/ui/modal";
-import { DatePicker } from "@/components/ui/DatePicker";
-import Spinner from "@/components/Spinner";
-import { Meeting } from "@/server/api/routers/zoomAccounts";
-import { format } from "date-fns";
-import Calendar from "@/components/ui/calendar";
 import GoogleAccountCellAction from "@/components/googleAccount/GoogleAccountCellAction";
 
 export type GoogleAccountColumn = {
     id: string;
     name: string;
     createdAt: string;
-};
-
-const statusMap: {
-    scheduled: "primary";
-    ongoing: "info";
-    starting: "secondary";
-    completed: "success";
-    cancelled: "destructive";
-} = {
-    scheduled: "primary",
-    ongoing: "info",
-    starting: "secondary",
-    completed: "success",
-    cancelled: "destructive"
 };
 
 export const columns: ColumnDef<GoogleAccountColumn>[] = [

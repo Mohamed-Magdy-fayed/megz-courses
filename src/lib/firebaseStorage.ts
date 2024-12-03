@@ -1,5 +1,31 @@
 import { storage } from "@/config/firebase";
-import { ref, getDownloadURL, uploadBytesResumable, StorageReference, deleteObject, listAll, list } from "firebase/storage";
+import { ref, getDownloadURL, uploadBytesResumable, StorageReference, deleteObject, listAll, list, getMetadata, ListResult } from "firebase/storage";
+
+export const fetchMetadataConcurrently = async (items: StorageReference[]) => {
+    const metadataPromises = items.map(async (itemRef) => {
+        const metadata = await getMetadata(itemRef);
+        return metadata.size;
+    });
+    return Promise.all(metadataPromises);
+};
+
+export const getTotalSize = async (folderPath: string): Promise<number> => {
+    const listRef = ref(storage, folderPath);
+    let totalSize = 0;
+    let pageToken: string | undefined = undefined;
+
+    do {
+        const listResult: ListResult = await list(listRef, { maxResults: 1000, pageToken });
+
+        const sizes = await fetchMetadataConcurrently(listResult.items);
+        totalSize += sizes.reduce((sum, size) => sum + size, 0);
+
+        pageToken = listResult.nextPageToken;
+
+    } while (pageToken);
+
+    return totalSize;
+};
 
 export const upload = async (file: File) => {
     const filename = file.name;

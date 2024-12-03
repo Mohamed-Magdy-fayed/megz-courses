@@ -13,6 +13,7 @@ import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { api } from "@/lib/api";
 import { getInitials } from "@/lib/getInitials";
+import { hasPermission } from "@/server/permissions";
 import { format } from "date-fns";
 import { Edit, PlusSquare, StepForward } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -66,11 +67,7 @@ export default function NotePage() {
             <Spinner className="mx-auto" />
         </AppLayout>
     )
-    if (
-        !data.note.mentionsUserIds.some(id => sessionData?.user.id === id)
-        && sessionData?.user.userType !== "admin"
-        && data.note.createdByUserId !== sessionData?.user.id
-    ) return <UnauthorizedAccess />
+    if (sessionData?.user && !hasPermission(sessionData.user, "notes", "view", data.note)) return <UnauthorizedAccess />
 
     const type = data.note.type
     const status = data.note.status

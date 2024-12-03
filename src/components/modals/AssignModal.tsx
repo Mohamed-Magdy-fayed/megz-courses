@@ -21,7 +21,7 @@ export const AssignModal = ({
 }: AssignModalProps) => {
     const [isMounted, setIsMounted] = useState(false);
     const [assigneeId, setAssigneeId] = useState("");
-    const { data } = api.users.getUsers.useQuery({ userType: "salesAgent" })
+    const { data } = api.users.getUsers.useQuery({ userRole: "SalesAgent" })
 
     useEffect(() => {
         setIsMounted(true);

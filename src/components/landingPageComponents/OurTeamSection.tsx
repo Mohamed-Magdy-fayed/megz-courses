@@ -38,7 +38,7 @@ const OurTeamSection = () => {
                         <CardContent className="p-4 space-y-4 flex-grow flex flex-col">
                             <div className='flex-grow'>
                                 <Typography>
-                                    {trainer.role === "teacher" ? "One of the best teachers in the field you will enjoy your online sessions with'em." : "One of our best testers with the ability to gauge your skills and level in English from the normal conversation you'll have."}
+                                    {trainer.user.userRoles.includes("Teacher") ? "One of the best teachers in the field you will enjoy your online sessions with'em." : "One of our best testers with the ability to gauge your skills and level in English from the normal conversation you'll have."}
                                 </Typography>
                             </div>
                             <div className="flex items-center justify-between px-4 py-2 bg-muted/10 whitespace-nowrap">

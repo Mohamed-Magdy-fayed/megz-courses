@@ -3,6 +3,7 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from "@/server/api/trpc";
+import { hasPermission } from "@/server/permissions";
 import { Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -80,8 +81,8 @@ export const notesRouter = createTRPCRouter({
       if (!userEmail) throw new TRPCError({ code: "BAD_REQUEST", message: "User not logged in!" })
       const oldNote = await ctx.prisma.userNote.findUnique({ where: { id } })
       if (!oldNote) throw new TRPCError({ code: "BAD_REQUEST", message: "Note doesn't exist" })
-      const isAllowedAccess = oldNote.createdByUserId === userId || oldNote.mentionsUserIds.some(id => id === userId) || ctx.session.user.userType === "admin"
-      if (!isAllowedAccess) throw new TRPCError({ code: "BAD_REQUEST", message: "You are not authorized to take that action, please contact your admin!" })
+      const isAllowedAccess = hasPermission(ctx.session.user, "notes", "update", oldNote)
+      if (!isAllowedAccess) throw new TRPCError({ code: "BAD_REQUEST", message: "You are not authorized to take that action, please contact your Admin!" })
 
       await ctx.prisma.userNote.update({
         where: { id }, data: {
@@ -112,15 +113,14 @@ export const notesRouter = createTRPCRouter({
       mentions: z.array(z.string()),
     }))
     .mutation(async ({ ctx, input: { id, message, mentions } }) => {
-      const userId = ctx.session.user.id
       const userEmail = ctx.session.user.email
       if (!userEmail) throw new TRPCError({ code: "BAD_REQUEST", message: "User not logged in!" })
 
       const oldNote = await ctx.prisma.userNote.findUnique({ where: { id } })
       if (!oldNote) throw new TRPCError({ code: "BAD_REQUEST", message: "Note doesn't exist" })
 
-      const isAllowedAccess = oldNote.createdByUserId === userId || oldNote.mentionsUserIds.some(id => id === userId) || ctx.session.user.userType === "admin"
-      if (!isAllowedAccess) throw new TRPCError({ code: "BAD_REQUEST", message: "You are not authorized to take that action, please contact your admin!" })
+      const isAllowedAccess = hasPermission(ctx.session.user, "notes", "update", oldNote)
+      if (!isAllowedAccess) throw new TRPCError({ code: "BAD_REQUEST", message: "You are not authorized to take that action, please contact your Admin!" })
 
       const note = await ctx.prisma.userNote.update({
         where: { id },
@@ -148,13 +148,12 @@ export const notesRouter = createTRPCRouter({
       status: z.enum(validNoteStatus),
     }))
     .mutation(async ({ ctx, input: { id, status } }) => {
-      const userId = ctx.session.user.id
       const userEmail = ctx.session.user.email
       if (!userEmail) throw new TRPCError({ code: "BAD_REQUEST", message: "User not logged in!" })
       const oldNote = await ctx.prisma.userNote.findUnique({ where: { id } })
       if (!oldNote) throw new TRPCError({ code: "BAD_REQUEST", message: "Note doesn't exist" })
-      const isAllowedAccess = oldNote.createdByUserId === userId || oldNote.mentionsUserIds.some(id => id === userId) || ctx.session.user.userType === "admin"
-      if (!isAllowedAccess) throw new TRPCError({ code: "BAD_REQUEST", message: "You are not authorized to take that action, please contact your admin!" })
+      const isAllowedAccess = hasPermission(ctx.session.user, "notes", "update", oldNote)
+      if (!isAllowedAccess) throw new TRPCError({ code: "BAD_REQUEST", message: "You are not authorized to take that action, please contact your Admin!" })
 
       const note = await ctx.prisma.userNote.update({
         where: { id },
@@ -179,8 +178,7 @@ export const notesRouter = createTRPCRouter({
       ids: z.array(z.string()),
     }))
     .mutation(async ({ ctx, input: { ids } }) => {
-      const userType = ctx.session.user.userType
-      if (userType !== "admin") throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action!" })
+      if (hasPermission(ctx.session.user, "notes", "delete")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action!" })
       const notes = await ctx.prisma.userNote.deleteMany({
         where: {
           id: {
@@ -211,10 +209,33 @@ export const notesRouter = createTRPCRouter({
         notes,
       };
     }),
+  getActiveUserNotes: protectedProcedure
+    .query(async ({ ctx }) => {
+      const notes = await ctx.prisma.userNote.findMany({
+        where: {
+          OR: [
+            { mentionsUserIds: { has: ctx.session.user.id } },
+            { createdForStudentId: ctx.session.user.id },
+            { createdByUserId: ctx.session.user.id },
+          ],
+        },
+        include: {
+          createdByUser: true,
+          createdForStudent: true,
+          mentions: true,
+        },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      })
+
+      return {
+        notes,
+      };
+    }),
   getAllNotes: protectedProcedure
     .query(async ({ ctx }) => {
       const notes = await ctx.prisma.userNote.findMany({
-        where: ctx.session.user.userType !== "admin" ? {
+        where: !hasPermission(ctx.session.user, "notes", "view") ? {
           mentionsUserIds: { has: ctx.session.user.id }
         } : undefined,
         include: {

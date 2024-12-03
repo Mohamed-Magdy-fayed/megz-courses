@@ -17,7 +17,7 @@ const LandingFooter = ({ course, level, siteIdentity }: {
     const { data } = useSession()
 
     const zoomGroup = course.zoomGroups.find(g => g.studentIds.includes(data?.user.id!) && g.courseId === course.id && g.courseLevelId === level?.id)
-    const progress = zoomGroup?.zoomSessions.filter(session => session.sessionStatus === "completed").length! / zoomGroup?.zoomSessions.length! * 100
+    const progress = zoomGroup?.zoomSessions.filter(session => session.sessionStatus === "Completed").length! / zoomGroup?.zoomSessions.length! * 100
 
     if (!course) return <Typography>No Course Found!</Typography>;
 

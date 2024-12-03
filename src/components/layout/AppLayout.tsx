@@ -8,9 +8,10 @@ import { ReactNode, useEffect } from "react";
 import Spinner from "../Spinner";
 import UnauthorizedAccess from "./UnauthorizedAccess";
 import { api } from "@/lib/api";
+import { hasPermission } from "@/server/permissions";
 
 const AppLayout = ({ children }: { children: ReactNode }) => {
-  const { opened, openNav, closeNav } = useNavStore();
+  const { Opened, openNav, closeNav } = useNavStore();
 
   const { data: session, status } = useSession({ required: true })
   const { data, refetch } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: false })
@@ -23,13 +24,13 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
     </div>
   )
 
-  if (session.user.userType === "student") return <UnauthorizedAccess />
+  if (!hasPermission(session.user, "adminLayout", "view")) return <UnauthorizedAccess />
 
   return (
     <div className="flex">
       <Sheet
-        open={opened}
-        onOpenChange={() => opened ? closeNav() : openNav()}
+        open={Opened}
+        onOpenChange={() => Opened ? closeNav() : openNav()}
       >
         <SheetContent side="left" className="p-0 w-min">
           <MegzDrawer siteIdentity={data?.siteIdentity} />

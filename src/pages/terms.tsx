@@ -26,19 +26,19 @@ const TermsAndConditionsPage = () => {
 
                     <ToggleSection title="User Accounts">
                         <Typography>
-                            Users are required to create an account to access specific pages of the platform. There are several types of accounts: Admin, Student (automatically created upon signup), Teacher, and Agent (created by the Admin as needed). All users must provide accurate information during account creation.
+                            Users are required to create an account to access specific pages of the platform. There are several types of accounts: Admin, Student (automatically Created upon signup), Teacher, and Agent (Created by the Admin as needed). All users must provide accurate information during account creation.
                         </Typography>
                     </ToggleSection>
 
                     <ToggleSection title="Content and Usage">
                         <Typography>
-                            All course content on the platform is owned by the site owner and may be created by the owner, Admin, or Agents. Content must be appropriate and, if necessary, include age limits in the course name. Sharing of content outside the platform is strictly prohibited.
+                            All course content on the platform is owned by the site owner and may be Created by the owner, Admin, or Agents. Content must be appropriate and, if necessary, include age limits in the course name. Sharing of content outside the platform is strictly prohibited.
                         </Typography>
                     </ToggleSection>
 
                     <ToggleSection title="Payment and Refund Policy">
                         <Typography>
-                            Courses on the platform are paid. Refunds are handled according to the system owner's refund policy, which can be provided upon request by contacting the owner.
+                            Courses on the platform are Paid. Refunds are handled according to the system owner's refund policy, which can be provided upon request by contacting the owner.
                         </Typography>
                     </ToggleSection>
 

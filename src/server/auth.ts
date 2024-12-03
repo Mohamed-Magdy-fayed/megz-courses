@@ -11,7 +11,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { env } from "@/env.mjs";
 import { prisma } from "@/server/db";
 import bcrypt from "bcrypt";
-import type { Devices, UserType } from "@prisma/client";
+import type { Devices, UserRoles } from "@prisma/client";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -24,8 +24,9 @@ declare module "next-auth" {
     accessToken: string;
     user: {
       id: string;
-      phone: string | null;
-      userType: UserType;
+      phone: string;
+      email: string;
+      userRoles: UserRoles[];
       device: Devices | null;
       emailVerified: Date | null;
       hasPassword: boolean;
@@ -35,8 +36,9 @@ declare module "next-auth" {
 
   interface User extends DefaultUser {
     id: string;
-    phone: string | null;
-    userType: UserType;
+    phone: string;
+    email: string;
+    userRoles: UserRoles[];
     device: Devices | null;
     emailVerified: Date | null;
     hasPassword: boolean;
@@ -102,7 +104,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account }) {
 
-      const { email, name, image, emailVerified } = user;
+      const { email, name, image, emailVerified, phone } = user;
       const isEmailVerified = !!emailVerified || account?.provider === "google";
 
       // Check if user exists in the database
@@ -118,6 +120,7 @@ export const authOptions: NextAuthOptions = {
           data: {
             email,
             name,
+            phone: phone || "",
             image,
             emailVerified: isEmailVerified ? new Date() : null,
           },
@@ -157,7 +160,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         return {
           ...token,
-          userType: user.userType,
+          userRoles: user.userRoles,
           name: user.name,
           email: user.email,
           phone: user.phone,
@@ -179,7 +182,7 @@ export const authOptions: NextAuthOptions = {
           phone: token.phone,
           hasPassword: token.hasPassword,
           picture: token.picture,
-          userType: token.userType,
+          userRoles: token.userRoles,
           device: token.device,
           emailVerified: token.emailVerified,
           id: token.sub,

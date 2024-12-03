@@ -4,7 +4,6 @@ import { usersRouter } from "./routers/users";
 import { coursesRouter } from "./routers/courses";
 import { materialItemsRouter } from "./routers/materialItems";
 import { leadsRouter } from "./routers/lead";
-import { salesOperationsRouter } from "./routers/salesOperations";
 import { salesAgentsRouter } from "./routers/salesAgents";
 import { ordersRouter } from "./routers/orders";
 import { emailsRouter } from "./routers/emails";
@@ -15,8 +14,6 @@ import { chatAgentsRouter } from "./routers/chatAgents";
 import { chatRouter } from "./routers/chat";
 import { trainersRouter } from "./routers/trainers";
 import { zoomGroupsRouter } from "./routers/zoomGroups";
-import { evaluationFormRouter } from "./routers/evaluationForm";
-import { evaluationFormSubmissionsRouter } from "./routers/evaluationFormSubmissions";
 import { waitingListRouter } from "./routers/waitingList";
 import { zoomMeetingsRouter } from "./routers/zoomMeetings";
 import { zoomAccountsRouter } from "@/server/api/routers/zoomAccounts";
@@ -31,6 +28,12 @@ import { ticketsRouter } from "@/server/api/routers/tickets";
 import { leadStagesRouter } from "@/server/api/routers/leadStages";
 import { leadLabelsRouter } from "@/server/api/routers/leadLabels";
 import { leadNotesRouter } from "@/server/api/routers/leadNotes";
+import { whatsAppTemplatesRouter } from "@/server/api/routers/whatsAppTemplates";
+import { leadInteractionsRouter } from "@/server/api/routers/leadInteractions";
+import { zoomSessionsRouter } from "@/server/api/routers/zoomSessions";
+import { paramsRouter } from "@/server/api/routers/params";
+import { systemFormsRouter } from "@/server/api/routers/systemForms";
+import { systemFormSubmissionsRouter } from "@/server/api/routers/systemFormSubmissions";
 
 /**
  * This is the primary router for your server.
@@ -47,7 +50,6 @@ export const appRouter = createTRPCRouter({
   leadStages: leadStagesRouter,
   leadLabels: leadLabelsRouter,
   leadNotes: leadNotesRouter,
-  salesOperations: salesOperationsRouter,
   salesAgents: salesAgentsRouter,
   orders: ordersRouter,
   emails: emailsRouter,
@@ -58,8 +60,8 @@ export const appRouter = createTRPCRouter({
   chat: chatRouter,
   trainers: trainersRouter,
   zoomGroups: zoomGroupsRouter,
-  evaluationForm: evaluationFormRouter,
-  evaluationFormSubmissions: evaluationFormSubmissionsRouter,
+  zoomSessions: zoomSessionsRouter,
+  systemFormSubmissions: systemFormSubmissionsRouter,
   waitingList: waitingListRouter,
   zoomMeetings: zoomMeetingsRouter,
   zoomAccounts: zoomAccountsRouter,
@@ -70,6 +72,10 @@ export const appRouter = createTRPCRouter({
   siteIdentity: siteIdentityRouter,
   setup: setupRouter,
   tickets: ticketsRouter,
+  whatsAppTemplates: whatsAppTemplatesRouter,
+  leadInteractions: leadInteractionsRouter,
+  params: paramsRouter,
+  systemForms: systemFormsRouter,
 });
 
 // export type definition of API

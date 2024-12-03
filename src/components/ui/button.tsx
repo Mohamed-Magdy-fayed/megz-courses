@@ -9,7 +9,7 @@ import { Progress } from "./progress"
 import { LucideIcon, PlusSquare } from "lucide-react"
 
 const buttonVariants = cva(
-    "inline-flex items-center space-x-2 active:opacity-75 justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+    "inline-flex items-center space-x-2 Active:opacity-75 justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
     {
         variants: {
             size: {
@@ -113,7 +113,7 @@ const SpinnerButton = React.forwardRef<HTMLButtonElement, ButtonProps & { loadin
         const Comp = asChild ? Slot : "button"
         return (
             <Comp
-                className={cn("!whitespace-nowrap !overflow-hidden !relative !min-w-fit !m-0", buttonVariants({ variant, size, className, customeColor }))}
+                className={cn("!whitespace-nowrap !overflow-hidden !relative !px-8 !min-w-fit !m-0", buttonVariants({ variant, size, className, customeColor }))}
                 ref={ref}
                 disabled={disabled || isLoading}
                 {...props}

@@ -7,6 +7,7 @@ import { Typography } from "@/components/ui/Typoghraphy";
 import ActionCell from "./PlacmentTestScheduleActionCell";
 import { getInitials } from "@/lib/getInitials";
 import { format } from "date-fns";
+import { Meeting } from "@prisma/client";
 
 export type PlacmentTestScheduleRow = {
     id: string;
@@ -19,10 +20,11 @@ export type PlacmentTestScheduleRow = {
     studentEmail: string;
     studentImage: string | null;
     oralTestTime: Date;
-    trainerId: string;
-    trainerName: string;
-    trainerEmail: string;
-    trainerImage: string | null;
+    oralTestMeeting: Meeting;
+    testerId: string;
+    testerName: string;
+    testerEmail: string;
+    testerImage: string | null;
     rating: string;
     link: string;
     createdAt: Date;
@@ -83,11 +85,11 @@ export const columns: ColumnDef<PlacmentTestScheduleRow>[] = [
         ),
     },
     {
-        accessorKey: "trainerName",
+        accessorKey: "testerName",
         header: ({ column }) => {
             return (
                 <div className="flex items-center justify-between">
-                    Trainer Info
+                    Tester Info
                     <Button
                         className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
                         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
@@ -98,17 +100,17 @@ export const columns: ColumnDef<PlacmentTestScheduleRow>[] = [
             );
         },
         cell: ({ row }) => (
-            <Link className="block w-fit" href={`/account/${row.original.trainerId}`}>
+            <Link className="block w-fit" href={`/account/${row.original.testerId}`}>
                 <div className="flex items-center gap-2" >
-                    <img alt={getInitials(row.original.trainerName)} src={row.original.trainerImage!} className="max-h-12" />
+                    <img alt={getInitials(row.original.testerName)} src={row.original.testerImage!} className="max-h-12" />
                     <div className="flex flex-col gap-2">
                         <Typography
                             className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
                         >
-                            {row.original.trainerName}
+                            {row.original.testerName}
                         </Typography>
                         <Typography variant={"secondary"} className="text-sm font-normal text-slate-500 whitespace-normal truncate max-h-14">
-                            {row.original.trainerEmail}
+                            {row.original.testerEmail}
                         </Typography>
                     </div>
                 </div>
@@ -163,6 +165,7 @@ export const columns: ColumnDef<PlacmentTestScheduleRow>[] = [
             userId={row.original.studentUserId}
             courseId={row.original.courseId}
             courseLevels={row.original.courseLevels}
+            oralTestMeeting={row.original.oralTestMeeting}
         />,
     },
 ];

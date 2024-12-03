@@ -3,7 +3,6 @@ import { api } from "@/lib/api";
 import { useState } from "react";
 import { ListChecks, PlusIcon } from "lucide-react";
 import { PaperContainer } from "@/components/ui/PaperContainers";
-import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
 import TrainerForm from "@/components/staffComponents/TrainerForm";
@@ -24,7 +23,7 @@ const EducationalTeamPage = () => {
               <ConceptTitle>Educational Team</ConceptTitle>
             </div>
             <div className="space-x-4">
-              {currentTrainerData?.trainer?.role === "tester" && (
+              {currentTrainerData?.trainer?.user.userRoles.includes("Tester") && (
                 <Link href={`/edu_team/my_tasks`}>
                   <Button customeColor={"primary"}>
                     <ListChecks className="mr-2"></ListChecks>
@@ -32,7 +31,7 @@ const EducationalTeamPage = () => {
                   </Button>
                 </Link>
               )}
-              {currentTrainerData?.trainer?.role === "teacher" && (
+              {currentTrainerData?.trainer?.user.userRoles.includes("Teacher") && (
                 <Link href={`/edu_team/my_sessions`}>
                   <Button customeColor={"primary"}>
                     <ListChecks className="mr-2"></ListChecks>

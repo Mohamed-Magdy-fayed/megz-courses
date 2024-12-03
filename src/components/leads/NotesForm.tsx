@@ -99,7 +99,7 @@ const NotesForm = ({ leadId, initialData, setIsOpen }: { leadId: string, initial
                     name="value"
                     render={({ field }) => (
                         <FormItem className="flex flex-col items-start">
-                            <FormLabel>Record your notes or Customer Interactions</FormLabel>
+                            <FormLabel>Record your notes</FormLabel>
                             <FormControl>
                                 <Textarea
                                     disabled={!!loadingToast}

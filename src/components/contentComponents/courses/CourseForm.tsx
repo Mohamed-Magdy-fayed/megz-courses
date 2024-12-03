@@ -69,7 +69,8 @@ const CourseForm = ({ initialData, setIsOpen }: {
       setLoadingToast,
       toast,
       successMessageFormatter: ({ course }) => {
-        return `Course ${course.name} created successfully`
+        setIsOpen(false)
+        return `Course ${course.name} Created successfully`
       },
       loadingMessage: "Creating..."
     })
@@ -82,6 +83,7 @@ const CourseForm = ({ initialData, setIsOpen }: {
       setLoadingToast,
       toast,
       successMessageFormatter: ({ updatedCourse }) => {
+        setIsOpen(false)
         return `updated ${updatedCourse.name} course successfully`
       },
       loadingMessage: "Updating...",

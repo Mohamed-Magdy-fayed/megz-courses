@@ -21,7 +21,7 @@ const StudentClient = () => {
   const trpcUtils = api.useUtils();
   const { data: coursesData, refetch: refetchCourses } = api.courses.getAll.useQuery(undefined, { enabled: false })
   const { data, isLoading } = api.users.getUsers.useQuery({
-    userType: "student",
+    userRole: "Student",
   });
 
   useEffect(() => {
@@ -95,9 +95,9 @@ const StudentClient = () => {
         onDelete={onDelete}
         dateRanges={[{ key: "createdAt", label: "Created On" }]}
         searches={[
-          { key: "email", label: "email" },
-          { key: "address", label: "address" },
-          { key: "phone", label: "phone" },
+          { key: "email", label: "Email" },
+          { key: "address", label: "Address" },
+          { key: "phone", label: "Phone" },
         ]}
         exportConfig={{
           fileName: `Students`,
@@ -142,7 +142,7 @@ const StudentClient = () => {
                 phone: phone || "",
               })),
               password,
-              userType: "student",
+              userRole: "Student",
             })
           }
           toastError("Password doesn't match criteria!")

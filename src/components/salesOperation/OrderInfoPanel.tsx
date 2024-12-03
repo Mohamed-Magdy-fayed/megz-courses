@@ -1,6 +1,4 @@
 import { formatPrice } from "@/lib/utils";
-import { SalesOperation, SalesAgent, Order, Course, User } from "@prisma/client";
-import { PaperContainer } from "../ui/PaperContainers";
 import { Typography } from "../ui/Typoghraphy";
 import { SeverityPill, SeverityPillProps } from "../overview/SeverityPill";
 import { DataTable } from "../ui/DataTable";
@@ -12,27 +10,25 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Info } from "lucide-react";
 import Modal from "@/components/ui/modal";
 import { RefundModal } from "@/components/modals/RefundModal";
+import { Prisma } from "@prisma/client";
 
 const OrderInfoPanel = ({ data }: {
-    data: SalesOperation & {
-        assignee: (SalesAgent & {
-            user: User;
-        }) | null;
-        orderDetails: (Order & {
-            user: User;
-            course: Course;
-        }) | null;
-    }
+    data: Prisma.LeadGetPayload<{
+        include: {
+            assignee: { include: { user: true } },
+            orderDetails: { include: { user: true, course: true } },
+        }
+    }>
 }) => {
     const color = (): SeverityPillProps["color"] => {
         switch (data.orderDetails?.status) {
-            case "cancelled":
+            case "Cancelled":
                 return "destructive"
-            case "refunded":
+            case "Refunded":
                 return "primary";
-            case "paid":
+            case "Paid":
                 return "success";
-            case "pending":
+            case "Pending":
                 return "muted";
             default:
                 return "destructive"
@@ -50,7 +46,7 @@ const OrderInfoPanel = ({ data }: {
     }, [data.orderDetails?.refundRequester])
 
     return (
-        <PaperContainer className="mt-4 p-4">
+        <div>
             {!!data.orderDetails?.id && (
                 <RefundModal
                     isOpen={isRefundModalOpen}
@@ -80,6 +76,7 @@ const OrderInfoPanel = ({ data }: {
                     </div>
                     {data.orderDetails?.status && (
                         <DataTable
+                            isSuperSimple
                             data={[{
                                 status: data.orderDetails?.status,
                                 total: data.orderDetails?.amount!,
@@ -94,7 +91,7 @@ const OrderInfoPanel = ({ data }: {
                                 {
                                     accessorKey: "status", header: () => "Status", cell: ({ row }) => (
                                         <div className="flex flex-col gap-2">
-                                            {row.original.status === "refunded" ? (
+                                            {row.original.status === "Refunded" ? (
                                                 <div className="flex gap-2 items-center">
                                                     <SeverityPill className="max-w-[6rem] flex-grow" color={color()}>{row.original.status}</SeverityPill>
                                                     <Tooltip>
@@ -125,6 +122,7 @@ const OrderInfoPanel = ({ data }: {
                     </div>
                     {data.orderDetails?.course && (
                         <DataTable
+                            isSuperSimple
                             data={[data.orderDetails?.course]}
                             onDelete={() => { }}
                             setData={() => { }}
@@ -148,7 +146,7 @@ const OrderInfoPanel = ({ data }: {
                     )}
                 </div>
             </div>
-        </PaperContainer>
+        </div>
     )
 }
 
