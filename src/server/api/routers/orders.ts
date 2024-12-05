@@ -123,7 +123,12 @@ export const ordersRouter = createTRPCRouter({
             })
             if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "No user with this Email" })
 
-            const foundMatchingCourse = user?.courseStatus.some((status) => status.courseId === courseDetails.courseId);
+            const foundMatchingCourse = user?.courseStatus.some((status) => status.courseId === courseDetails.courseId && (
+                status.status === "OrderCreated" ||
+                status.status === "OrderPaid" ||
+                status.status === "Waiting" ||
+                status.status === "Ongoing"
+            ));
 
             if (foundMatchingCourse) {
                 throw new TRPCError({
