@@ -109,7 +109,7 @@ export default function MegzDrawer({ siteIdentity }: { siteIdentity?: SiteIdenti
   if (!isMounted) return null;
 
   return (
-    <div className="sticky left-0 top-0 flex items-center h-screen flex-col gap-4 overflow-auto bg-muted text-muted-foreground p-4">
+    <div className="sticky left-0 top-0 flex items-center h-screen flex-col gap-2 overflow-auto bg-muted text-muted-foreground p-4">
       {siteIdentity?.logoForeground ? (
         <Image
           src={siteIdentity.logoForeground}
@@ -119,9 +119,9 @@ export default function MegzDrawer({ siteIdentity }: { siteIdentity?: SiteIdenti
           className='w-24 rounded-full bg-accent'
         />
       ) : (
-        <LogoForeground className="w-24 h-48 bg-accent" />
+        <LogoForeground className="w-20 h-40 bg-accent" />
       )}
-      <div className="rounded-lg bg-muted-foreground/50 p-4 w-full text-foreground">
+      <div className="rounded-lg bg-muted-foreground/50 px-4 py-2 w-full text-foreground">
         <Typography variant={"secondary"} >Megz</Typography>
         <Typography>Development</Typography>
         <div>Version: 1.1.0</div>
@@ -134,7 +134,7 @@ export default function MegzDrawer({ siteIdentity }: { siteIdentity?: SiteIdenti
             const linkProps = {
               key: link.url,
               className: cn(
-                "whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-muted-foreground/80 hover:text-muted",
+                "whitespace-nowrap w-full rounded-lg bg-transparent p-2 py-1 font-bold hover:bg-muted-foreground/80 hover:text-muted",
                 isActive && "bg-muted-foreground text-muted"
               ),
               ...(isActive ? { ref: activeLinkRef } : {}),
