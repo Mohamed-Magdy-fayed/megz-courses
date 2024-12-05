@@ -227,7 +227,7 @@ export const trainersRouter = createTRPCRouter({
           email: input.email,
         },
       });
-      if (exists?.id === input.id) throw new TRPCError({ code: "BAD_REQUEST", message: "Email already used!" });
+      if (exists?.id !== input.id && input.email === exists?.email) throw new TRPCError({ code: "BAD_REQUEST", message: "Email already used!" });
 
       const trainer = await ctx.prisma.user.create({
         data: {

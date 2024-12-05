@@ -35,10 +35,13 @@ const FinalTestClient = ({ formattedData }: { formattedData: FinalTestRow[] }) =
             dateRanges={[{ key: "createdAt", label: "Created At" }]}
             filters={[
                 {
-                    key: "levelName", filterName: "Level", values: formattedData.map(d => ({
-                        value: d.levelName,
-                        label: d.levelName,
-                    }))
+                    key: "levelName", filterName: "Level", values: formattedData
+                        .map(d => d.levelName)
+                        .filter((value, index, self) => self.indexOf(value) === index)
+                        .map(vale => ({
+                            value: vale,
+                            label: vale,
+                        }))
                 },
             ]}
             exportConfig={{

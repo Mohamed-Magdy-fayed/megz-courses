@@ -395,21 +395,20 @@ const CoursePage = () => {
                         </TabsContent>
                         <TabsContent value="final_tests" className="space-y-4">
                             <FinalTestsTabContent
-                                finalTests={data?.course.levels.flatMap(lvl => lvl.systemForms).length > 0
-                                    ? data?.course.levels.flatMap(lvl => lvl.systemForms).map(finalTestForm => ({
-                                        id: finalTestForm.id,
-                                        questions: finalTestForm.items.length,
-                                        submissions: finalTestForm.submissions.length,
-                                        totalPoints: finalTestForm.totalScore,
-                                        courseSlug: data?.course?.slug || "",
-                                        levelSlug: finalTestForm.courseLevel?.slug || "",
-                                        levelName: finalTestForm.courseLevel?.name || "level",
-                                        systemForm: finalTestForm,
-                                        createdBy: finalTestForm.createdBy,
-                                        createdAt: finalTestForm.createdAt,
-                                        updatedAt: finalTestForm.updatedAt,
-                                    }))
-                                    : []}
+                                finalTests={data?.course.levels.flatMap(lvl => lvl.systemForms).filter(f => f.type === "FinalTest").map(finalTestForm => ({
+                                    id: finalTestForm.id,
+                                    questions: finalTestForm.items.length,
+                                    submissions: finalTestForm.submissions.length,
+                                    totalPoints: finalTestForm.totalScore,
+                                    courseSlug: data?.course?.slug || "",
+                                    levelSlug: finalTestForm.courseLevel?.slug || "",
+                                    levelName: finalTestForm.courseLevel?.name || "level",
+                                    systemForm: finalTestForm,
+                                    createdBy: finalTestForm.createdBy,
+                                    createdAt: finalTestForm.createdAt,
+                                    updatedAt: finalTestForm.updatedAt,
+                                }))
+                                    || []}
                                 finalTestSubmissions={data?.course.levels.flatMap(lvl => lvl.systemForms.flatMap(form => form.submissions.map(sub => ({ ...sub, systemForm: form }))))
                                     .map(({
                                         id,

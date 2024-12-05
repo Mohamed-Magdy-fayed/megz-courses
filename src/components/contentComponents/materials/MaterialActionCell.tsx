@@ -6,43 +6,23 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Copy, CopyPlus, Edit, Eye, MoreVertical } from "lucide-react";
-import { toastType, useToast } from "@/components/ui/use-toast";
+import { Copy, Edit, Eye, MoreVertical } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 import Link from "next/link";
-import { api } from "@/lib/api";
 import { useState } from "react";
 import { env } from "@/env.mjs";
 import Modal from "@/components/ui/modal";
 import UploadMaterialForm from "@/components/contentComponents/materials/uploadForm/UploadMaterialForm";
 import { MaterialsRow } from "@/components/contentComponents/materials/MaterialsColumn";
-import { createMutationOptions } from "@/lib/mutationsHelper";
 
 const MaterialActionCell: React.FC<MaterialsRow> = ({ courseSlug, slug, subTitle, uploads, createdAt, id, levelSlug, levelName, levelSlugs, materialItemSlug, title, type, updatedAt }) => {
-    const { toastInfo, toast } = useToast();
-    const [loadingToast, setLoadingToast] = useState<toastType | undefined>()
+    const { toastInfo } = useToast();
     const [isOpen, setIsOpen] = useState(false)
     const [isEditOpen, setIsEditOpen] = useState(false)
 
     const onCopy = () => {
         navigator.clipboard.writeText(`${env.NEXT_PUBLIC_NEXTAUTH_URL}content/materials/${materialItemSlug}?path=uploads/content/courses/${courseSlug}/${levelSlug}/${materialItemSlug}`);
         toastInfo("View link copied to the clipboard");
-    };
-
-    const trpcUtils = api.useUtils()
-    const dublicateMutation = api.materials.dublicateMaterialItem.useMutation(
-        createMutationOptions({
-            trpcUtils,
-            loadingToast,
-            setLoadingToast,
-            toast,
-            successMessageFormatter: ({ materialItemDublication }) => {
-                return `Material item ${materialItemDublication.title} dublicated successfully`
-            },
-        })
-    )
-
-    const handleDublicate = () => {
-        dublicateMutation.mutate({ id })
     };
 
     return (
@@ -78,10 +58,6 @@ const MaterialActionCell: React.FC<MaterialsRow> = ({ courseSlug, slug, subTitle
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={handleDublicate}>
-                        <CopyPlus className="w-4 h-4 mr-2" />
-                        Dublicate
-                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => {
                         setIsEditOpen(true)
                         setIsOpen(false)

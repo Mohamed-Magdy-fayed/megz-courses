@@ -13,9 +13,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<any>) => {
             const metaClient = await prisma.metaClient.findFirst()
             if (!metaClient) return res.status(200).send('no meta client configured')
 
-            console.log(req.body.object);
-            console.log(JSON.stringify(req.body.entry));
-
             if (req.body.object === 'page') {
                 req.body.entry.forEach((entry: any) => {
                     entry.messaging.forEach(async function (event: any) {

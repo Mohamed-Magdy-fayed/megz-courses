@@ -41,7 +41,7 @@ const CellAction: React.FC<CellActionProps> = ({ id, name, slug }) => {
                 isOpen={isEditOpen}
                 onClose={() => setIsEditOpen(false)}
                 children={(
-                    <LevelForm courseSlug={courseSlug} setIsOpen={setIsEditOpen} initialData={{ name, slug }} />
+                    <LevelForm courseSlug={courseSlug} setIsOpen={setIsEditOpen} initialData={{ id, name, slug }} />
                 )}
             />
             <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>

@@ -242,7 +242,7 @@ const LeadsPage: NextPage = () => {
                                         <ArrowRightToLine />
                                         <Typography className="text-success">Converted {stagesData.stages.filter(stage => stage.defaultStage === "Converted").flatMap(stage => stage.leads).length}</Typography>
                                         <ArrowRightToLine />
-                                        <Typography className="text-destructive">Concertion Rate {formatPercentage(stagesData.stages.filter(stage => stage.defaultStage === "Converted").flatMap(stage => stage.leads).length / stagesData.stages.flatMap(stage => stage.leads).length * 100)}</Typography>
+                                        <Typography className="text-destructive">Convertion Rate {formatPercentage(stagesData.stages.filter(stage => stage.defaultStage === "Converted").flatMap(stage => stage.leads).length / stagesData.stages.flatMap(stage => stage.leads).length * 100)}</Typography>
                                     </div>
                                     <AllLeadsClient
                                         leads={values.length > 0 ? stagesData.stages.flatMap(s => s.leads).filter(lead => lead.labels.some(label => values.some(val => label.value === val))) : stagesData.stages.flatMap(s => s.leads)}
@@ -304,7 +304,7 @@ const LeadsPage: NextPage = () => {
                                         <ArrowRightToLine />
                                         <Typography className="text-success">Converted {stagesData.stages.filter(stage => stage.defaultStage === "Converted").flatMap(stage => stage.leads).length}</Typography>
                                         <ArrowRightToLine />
-                                        <Typography className="text-destructive">Concertion Rate {formatPercentage(stagesData.stages.filter(stage => stage.defaultStage === "Converted").flatMap(stage => stage.leads).length / stagesData.stages.flatMap(stage => stage.leads).length * 100)}</Typography>
+                                        <Typography className="text-destructive">Convertion Rate {formatPercentage(stagesData.stages.filter(stage => stage.defaultStage === "Converted").flatMap(stage => stage.leads).length / stagesData.stages.flatMap(stage => stage.leads).length * 100)}</Typography>
                                     </div>
                                     <LeadsClient
                                         stage={{

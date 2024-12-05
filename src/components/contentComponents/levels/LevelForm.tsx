@@ -19,6 +19,7 @@ import { Typography } from "@/components/ui/Typoghraphy";
 import { createMutationOptions } from "@/lib/mutationsHelper";
 
 const formSchema = z.object({
+  id: z.string(),
   name: z.string().min(1, "Name can't be empty"),
   slug: z.string().min(1, "Slug can't be empty").regex(/^\S*$/, "No spaces allowed"),
 });
@@ -38,6 +39,7 @@ const LevelForm: React.FC<LevelFormProps> = ({ setIsOpen, initialData, courseSlu
   const action = initialData ? "Edit" : "Create";
 
   const defaultValues: LevelFormValues = initialData ? initialData : {
+    id: "",
     name: "",
     slug: "",
   };
@@ -60,9 +62,22 @@ const LevelForm: React.FC<LevelFormProps> = ({ setIsOpen, initialData, courseSlu
       },
     })
   )
+  const editLevelMutation = api.levels.editLevel.useMutation(
+    createMutationOptions({
+      trpcUtils,
+      loadingToast,
+      setLoadingToast,
+      toast,
+      successMessageFormatter: ({ updatedLevel }) => {
+        setIsOpen(false)
+        return `Level updated with name: ${updatedLevel.name}`
+      },
+    })
+  )
 
   const onSubmit = (data: LevelFormValues) => {
-    addLevelMutation.mutate({ ...data, courseSlug });
+    if (!initialData) return addLevelMutation.mutate({ ...data, courseSlug });
+    editLevelMutation.mutate({ ...data, id: initialData.id })
   };
 
   return (

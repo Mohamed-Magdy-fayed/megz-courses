@@ -194,7 +194,7 @@ export const levelsRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input: { name, slug, id } }) => {
       if (!hasPermission(ctx.session.user, "courses", "update")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
-      const updatedCourse = await ctx.prisma.course.update({
+      const updatedLevel = await ctx.prisma.courseLevel.update({
         where: {
           id,
         },
@@ -204,7 +204,7 @@ export const levelsRouter = createTRPCRouter({
         },
       });
 
-      return { updatedCourse };
+      return { updatedLevel };
     }),
   deleteLevels: protectedProcedure
     .input(z.array(z.string()))

@@ -9,7 +9,7 @@ import { createMutationOptions } from '@/lib/mutationsHelper'
 import { Dispatch, SetStateAction, useState } from 'react'
 
 const CreateOrderModal = ({ leadId, email, isOpen, setIsOpen }: {
-    leadId: string | undefined;
+    leadId?: string;
     email: string | undefined;
     isOpen: boolean;
     setIsOpen: Dispatch<SetStateAction<boolean>>;
@@ -33,8 +33,28 @@ const CreateOrderModal = ({ leadId, email, isOpen, setIsOpen }: {
         })
     )
 
+    const createOrderWithLeadMutation = api.orders.createOrderWithLead.useMutation(
+        createMutationOptions({
+            loadingToast,
+            setLoadingToast,
+            toast,
+            trpcUtils,
+            successMessageFormatter: ({ orderNumber }) => {
+                setIsOpen(false)
+                return `Order ${orderNumber} Created successfully!`
+            }
+        })
+    )
+
     const handleCreateOrder = () => {
-        if (!leadId || !email) return toast({ title: "Error", variant: "destructive", description: "No User or Lead Created!" })
+        if (!email) return toast({ variant: "destructive", title: "No Email!" })
+        if (!leadId) return createOrderWithLeadMutation.mutate({
+            courseDetails: {
+                courseId,
+                isPrivate,
+            },
+            email,
+        })
         createOrderMutation.mutate({
             courseDetails: {
                 courseId,

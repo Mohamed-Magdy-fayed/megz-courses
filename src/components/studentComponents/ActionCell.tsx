@@ -6,11 +6,12 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Copy, MoreVertical, PackagePlus } from "lucide-react";
+import { EyeIcon, MoreVertical, PackagePlus } from "lucide-react";
 import { useToast } from "../ui/use-toast";
 import { useState } from "react";
-import CreateOrderForStudent from "./CreateOrderForStudent";
 import { Course, CourseStatus, Order, User } from "@prisma/client";
+import CreateOrderModal from "@/components/modals/CreateOrderModal";
+import Link from "next/link";
 
 interface CellActionProps {
     id: string;
@@ -28,27 +29,14 @@ interface CellActionProps {
 
 const CellAction: React.FC<CellActionProps> = ({ id, coursesData, userData }) => {
     const { toastInfo } = useToast();
-    const [loading, setLoading] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
     const [isCreateOrderModalOpen, setIsCreateOrderModalOpen] = useState(false)
-
-    const onCopy = () => {
-        navigator.clipboard.writeText(id);
-        toastInfo("ID copied to the clipboard");
-    };
 
     return (
         <>
             {coursesData?.courses && userData?.user
                 && (
-                    <CreateOrderForStudent
-                        coursesData={coursesData.courses}
-                        loading={loading}
-                        open={isCreateOrderModalOpen}
-                        setLoading={setLoading}
-                        setOpen={setIsCreateOrderModalOpen}
-                        userData={userData.user}
-                    />
+                    <CreateOrderModal email={userData.user.email} isOpen={isCreateOrderModalOpen} setIsOpen={setIsCreateOrderModalOpen} />
                 )
             }
             <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
@@ -66,9 +54,11 @@ const CellAction: React.FC<CellActionProps> = ({ id, coursesData, userData }) =>
                         <PackagePlus className="w-4 h-4 mr-2" />
                         Create Order
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={onCopy}>
-                        <Copy className="w-4 h-4 mr-2" />
-                        Copy ID
+                    <DropdownMenuItem asChild>
+                        <Link href={`/account/${id}`}>
+                            <EyeIcon className="w-4 h-4 mr-2" />
+                            View
+                        </Link>
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
