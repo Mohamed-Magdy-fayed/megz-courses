@@ -126,11 +126,15 @@ export const materialItemsRouter = createTRPCRouter({
       title: z.string(),
       subTitle: z.string(),
       slug: z.string(),
+      courseSlug: z.string(),
       levelSlug: z.string(),
       uploads: z.array(z.string()),
     }))
-    .mutation(async ({ ctx, input: { title, subTitle, slug, levelSlug, uploads } }) => {
+    .mutation(async ({ ctx, input: { title, subTitle, slug, courseSlug, levelSlug, uploads } }) => {
       if (!hasPermission(ctx.session.user, "courses", "update")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
+      const course = await ctx.prisma.course.findUnique({ where: { slug: courseSlug }, select: { id: true } })
+      if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "Course not found!" })
+
       const materialItem = await ctx.prisma.materialItem.create({
         data: {
           title,
@@ -138,7 +142,7 @@ export const materialItemsRouter = createTRPCRouter({
           slug,
           type: "Upload",
           courseLevel: {
-            connect: { slug: levelSlug },
+            connect: { courseId_slug: { slug: levelSlug, courseId: course.id } },
           },
           uploads,
         },
@@ -149,23 +153,30 @@ export const materialItemsRouter = createTRPCRouter({
       };
     }),
   importMaterials: protectedProcedure
-    .input(z.array(z.object({
-      levelSlug: z.string(),
-      title: z.string(),
-      subTitle: z.string(),
-      slug: z.string(),
-      type: z.enum(validMaterialItemTypes),
-    })))
+    .input(z.object({
+      data: z.array(z.object({
+        levelSlug: z.string(),
+        title: z.string(),
+        subTitle: z.string(),
+        slug: z.string(),
+        type: z.enum(validMaterialItemTypes),
+      })),
+      courseSlug: z.string()
+    }))
     .mutation(async ({ ctx, input }) => {
       if (!hasPermission(ctx.session.user, "courses", "update")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
-      const materialItems = await ctx.prisma.$transaction(input.map(({ title, subTitle, slug, levelSlug, type }) => ctx.prisma.materialItem.create({
+
+      const course = await ctx.prisma.course.findUnique({ where: { slug: input.courseSlug }, select: { id: true } })
+      if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "Course not found!" })
+
+      const materialItems = await ctx.prisma.$transaction(input.data.map(({ title, subTitle, slug, levelSlug, type }) => ctx.prisma.materialItem.create({
         data: {
           title,
           subTitle,
           slug,
           type,
           courseLevel: {
-            connect: { slug: levelSlug },
+            connect: { courseId_slug: { courseId: course.id, slug: levelSlug } },
           },
         },
       })))
@@ -177,11 +188,13 @@ export const materialItemsRouter = createTRPCRouter({
   checkMaterialItem: protectedProcedure
     .input(z.object({
       slug: z.string(),
+      levelSlug: z.string(),
     }))
-    .mutation(async ({ ctx, input: { slug } }) => {
+    .mutation(async ({ ctx, input: { slug, levelSlug } }) => {
       if (!hasPermission(ctx.session.user, "courses", "update")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
-      const materialItem = await ctx.prisma.materialItem.findUnique({
-        where: { slug }
+
+      const materialItem = await ctx.prisma.materialItem.findFirst({
+        where: { slug, courseLevel: { slug: levelSlug } }
       });
 
       return {
@@ -195,10 +208,14 @@ export const materialItemsRouter = createTRPCRouter({
       subTitle: z.string(),
       slug: z.string(),
       levelSlug: z.string(),
+      courseSlug: z.string(),
     }))
-    .mutation(async ({ ctx, input: { id, title, subTitle, slug, levelSlug } }) => {
+    .mutation(async ({ ctx, input: { id, title, subTitle, slug, levelSlug, courseSlug } }) => {
       if (!hasPermission(ctx.session.user, "courses", "update")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
       await ctx.prisma.materialItem.update({ where: { id }, data: { courseLevel: { disconnect: true } } })
+
+      const course = await ctx.prisma.course.findUnique({ where: { slug: courseSlug }, select: { id: true } })
+      if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "Course not found!" })
 
       const materialItem = await ctx.prisma.materialItem.update({
         where: {
@@ -209,7 +226,7 @@ export const materialItemsRouter = createTRPCRouter({
           subTitle,
           slug,
           courseLevel: {
-            connect: { slug: levelSlug },
+            connect: { courseId_slug: { courseId: course.id, slug: levelSlug } },
           },
         },
       });

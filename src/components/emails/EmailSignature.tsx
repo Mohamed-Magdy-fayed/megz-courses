@@ -47,7 +47,7 @@ export function EmailSignature({
                         <p style={{ fontWeight: 'bold', fontSize: '1.125rem', color: emailColors.primary }}>
                             {brandName1.toUpperCase()} {brandName2.toUpperCase()}
                         </p>
-                        <p style={{ color: emailColors.muted }}>Courses - Megz Techs</p>
+                        <p style={{ color: emailColors.muted }}>Courses - Gateling TMS</p>
                         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                             <a href={brandFacebookLink} style={{ backgroundColor: 'inherit', borderRadius: '0.125rem', padding: '0.125rem' }}>
                                 <Facebook style={{ fontSize: '1.25rem', color: '#1877F2' }} />

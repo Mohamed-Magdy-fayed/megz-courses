@@ -15,7 +15,7 @@ const GoogleDocumentationDoc = () => {
                 </p>
             </div>
             <p className="c27">
-                <span className="c3">Megz Learning</span>
+                <span className="c3">Gateling TMS</span>
             </p>
             <p className="c17 title" id="h.5x0d5h95i329">
                 <span className="c19 c29">Business Process Manual</span>
@@ -2992,7 +2992,7 @@ const GoogleDocumentationDoc = () => {
             </h2>
             <h2 className="c7" id="h.ree6faxkqsfo">
                 <span className="c13 c15 c31">
-                    For common issues, please report them to info@megz.pro
+                    For common issues, please report them to info@gateling.com
                 </span>
             </h2>
             <h2 className="c7 c28" id="h.b1s5expuxnqm">

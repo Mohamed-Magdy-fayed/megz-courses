@@ -62,7 +62,7 @@ export const LearningNavigationMenu = ({ siteIdentity }: { siteIdentity?: SiteId
                 <div className="col-span-6 flex items-center justify-center">
                     <Link href={'/'} className="flex items-center gap-1 justify-center w-fit">
                         <Typography variant={"primary"} className="!text-lg !leading-none !font-extrabold text-primary">
-                            {siteIdentity?.name1 || "Megz"}
+                            {siteIdentity?.name1 || "Gateling"}
                         </Typography>
                         {siteIdentity?.logoForeground ? (
                             <Image src={siteIdentity.logoForeground} height={1000} width={1000} alt="Logo" className='w-12 rounded-full' />
@@ -70,7 +70,7 @@ export const LearningNavigationMenu = ({ siteIdentity }: { siteIdentity?: SiteId
                             <LogoForeground className="w-12 h-12" />
                         )}
                         <Typography variant={"primary"} className="!text-lg !leading-none !font-extrabold text-primary">
-                            {siteIdentity?.name2 || "Learning"}
+                            {siteIdentity?.name2 || "TMS"}
                         </Typography>
                     </Link>
                 </div>

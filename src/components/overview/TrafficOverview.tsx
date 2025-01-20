@@ -2,6 +2,7 @@ import { Chart } from "@/components/overview/Chart";
 import { Laptop, Smartphone, TabletIcon } from 'lucide-react'
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Typography } from "@/components/ui/Typoghraphy";
+import { formatPercentage } from "@/lib/utils";
 
 const useChartOptions = (labels: string[]) => {
   return {
@@ -37,9 +38,7 @@ const useChartOptions = (labels: string[]) => {
     },
     theme: {
     },
-    tooltip: {
-      fillSeriesColor: false,
-    },
+
   };
 };
 
@@ -74,7 +73,11 @@ export const TrafficOverview = ({
       <CardContent>
         <Chart
           height={300}
-          options={chartOptions}
+          options={{
+            ...chartOptions, tooltip: {
+              fillSeriesColor: true, cssClass: "p-1", custom: (ops) => `${ops.w.globals.labels[ops.seriesIndex]} ${formatPercentage(ops.series[ops.seriesIndex])}`,
+            }
+          }}
           series={chartSeries}
           type="donut"
           width="100%"
@@ -96,7 +99,7 @@ export const TrafficOverview = ({
                   {label}
                 </Typography>
                 <Typography variant="bodyText">
-                  {item || 0}%
+                  {formatPercentage(item) || 0}
                 </Typography>
               </div>
             );

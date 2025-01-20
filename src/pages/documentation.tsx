@@ -5,8 +5,8 @@ const DocumentationPage = () => {
     return (
         <LandingLayout>
             <Head>
-                <title>Documentation | Megz Learning</title>
-                <meta name="description" content="Documentation for Megz Learning" />
+                <title>Documentation | Gateling TMS</title>
+                <meta name="description" content="Documentation for Gateling TMS" />
                 <meta name="robots" content="index, follow" />
             </Head>
             <div className='w-full'>

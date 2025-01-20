@@ -114,10 +114,11 @@ export const columns: ColumnDef<CourseRow>[] = [
         cell: ({ row }) => {
             const status = row.original.groupStatus
             const color: SeverityPillProps["color"] =
-                status === "Active" ? "success"
+                status === "Completed" ? "success"
                     : status === "Cancelled" ? "destructive"
                         : status === "Inactive" ? "secondary"
-                            : status === "Paused" ? "muted" : "primary"
+                            : status === "Active" ? "info"
+                                : status === "Paused" ? "muted" : "primary"
 
             return <SeverityPill color={color}>{status}</SeverityPill>
         },

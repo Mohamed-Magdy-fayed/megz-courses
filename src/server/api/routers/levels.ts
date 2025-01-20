@@ -1,33 +1,9 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { hasPermission } from "@/server/permissions";
 
 export const levelsRouter = createTRPCRouter({
-  getWaitingList: protectedProcedure
-    .input(z.object({ slug: z.string() }))
-    .query(async ({ input: { slug }, ctx }) => {
-      const level = await ctx.prisma.courseLevel.findUnique({
-        where: {
-          slug,
-        },
-        include: { courseStatus: { include: { user: true } } }
-      });
-
-      const userIds = level?.courseStatus.map(s => s.userId || "")
-
-      const users = await ctx.prisma.user.findMany({
-        where: { id: { in: userIds } },
-        include: {
-          orders: true,
-          courseStatus: true,
-        }
-      })
-
-      const watingUsers = users.filter(u => u.courseStatus.some(({ courseLevelId, status }) => courseLevelId === level?.id && status === "Waiting"))
-
-      return { watingUsers };
-    }),
   getWaitingLists: protectedProcedure
     .query(async ({ ctx }) => {
       const levels = await ctx.prisma.courseLevel.findMany({
@@ -83,11 +59,15 @@ export const levelsRouter = createTRPCRouter({
     .input(
       z.object({
         slug: z.string(),
+        courseSlug: z.string(),
       })
     )
-    .query(async ({ ctx, input: { slug } }) => {
+    .query(async ({ ctx, input: { slug, courseSlug } }) => {
+      const course = await ctx.prisma.course.findUnique({ where: { slug: courseSlug }, select: { id: true } })
+      if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "Course not found!" })
+
       const level = await ctx.prisma.courseLevel.findUnique({
-        where: { slug },
+        where: { courseId_slug: { courseId: course.id, slug } },
         include: {
           zoomGroups: true,
           certificates: true,

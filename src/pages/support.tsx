@@ -10,12 +10,12 @@ const SupportPage = () => {
     return (
         <LandingLayout>
             <Head>
-                <title>Support | Megz Learning</title>
-                <meta name="description" content="Support information for Megz Learning" />
+                <title>Support | Gateling TMS</title>
+                <meta name="description" content="Support information for Gateling TMS" />
                 <meta name="robots" content="index, follow" />
             </Head>
             <div className="max-w-6xl mx-auto p-6">
-                <Typography className="text-primary mb-3" variant={"secondary"}>Megz Learning</Typography>
+                <Typography className="text-primary mb-3" variant={"secondary"}>Gateling TMS</Typography>
                 <ConceptTitle className="mb-2 !text-6xl">Support</ConceptTitle>
                 <Typography className='block mb-12 text-muted'>19<sup>th</sup> September 2024</Typography>
 
@@ -34,7 +34,7 @@ const SupportPage = () => {
                         </ToggleSection>
                         <ToggleSection title="What does this system do?" primaryColor defaultIsOpen>
                             <Typography>
-                                Megz Learning allows you to manage your small/medium-sized teaching organization by providing an easy and organized way for your team to work together you can get rid of all your spreadsheets and your data will be semlissley interacted with better than ever before
+                                Gateling TMS allows you to manage your small/medium-sized teaching organization by providing an easy and organized way for your team to work together you can get rid of all your spreadsheets and your data will be semlissley interacted with better than ever before
                             </Typography>
                         </ToggleSection>
                         <ToggleSection title="How much it will cost my business to access the system?" primaryColor defaultIsOpen>
@@ -53,7 +53,7 @@ const SupportPage = () => {
                         <Typography>
                             You can find additional tutorials and guides on our Facebook page
                             <br />
-                            <Link className="text-primary underline" href="https://www.facebook.com/megztechs/" target='_blank'>Megz Techs</Link> and on the <Link className="text-primary underline" href="/documentation" target='_blank'>documentation page</Link>
+                            <Link className="text-primary underline" href="https://www.facebook.com/gatelingsolutions/" target='_blank'>Gateling TMS</Link> and on the <Link className="text-primary underline" href="/documentation" target='_blank'>documentation page</Link>
                         </Typography>
                     </ToggleSection>
                 </div>

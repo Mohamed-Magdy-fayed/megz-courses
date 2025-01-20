@@ -8,19 +8,19 @@ const TermsAndConditionsPage = () => {
     return (
         <LandingLayout>
             <Head>
-                <title>Terms and Conditions | Megz Learning</title>
-                <meta name="description" content="Terms and Conditions for Megz Learning" />
+                <title>Terms and Conditions | Gateling TMS</title>
+                <meta name="description" content="Terms and Conditions for Gateling TMS" />
                 <meta name="robots" content="index, follow" />
             </Head>
             <div className="max-w-6xl mx-auto p-6">
-                <Typography className="text-primary mb-3" variant={"secondary"}>Megz Learning</Typography>
+                <Typography className="text-primary mb-3" variant={"secondary"}>Gateling TMS</Typography>
                 <ConceptTitle className="mb-2 !text-6xl">Terms and Conditions</ConceptTitle>
                 <Typography className='block mb-12 text-muted'>19<sup>th</sup> September 2024</Typography>
 
                 <div className="space-y-4">
                     <ToggleSection title="Overview" defaultIsOpen>
                         <Typography>
-                            Welcome to Megz Learning! These Terms and Conditions outline the rules and regulations for the use of our learning management system. By accessing or using our platform, you agree to comply with these Terms and Conditions.
+                            Welcome to Gateling TMS! These Terms and Conditions outline the rules and regulations for the use of our learning management system. By accessing or using our platform, you agree to comply with these Terms and Conditions.
                         </Typography>
                     </ToggleSection>
 
@@ -74,7 +74,7 @@ const TermsAndConditionsPage = () => {
 
                     <ToggleSection title="Contact Us">
                         <Typography>
-                            If you have any questions or concerns about these Terms and Conditions, please contact us at: <Link href="mailto:info@megz.com" className="text-primary underline">info@megz.com</Link>.
+                            If you have any questions or concerns about these Terms and Conditions, please contact us at: <Link href="mailto:info@gateling.com" className="text-primary underline">info@gateling.com</Link>.
                         </Typography>
                     </ToggleSection>
                 </div>

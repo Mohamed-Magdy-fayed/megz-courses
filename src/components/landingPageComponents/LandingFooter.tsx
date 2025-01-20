@@ -21,8 +21,8 @@ const landingNavLinks = [
         url: "/my_courses",
     },
     {
-        label: "Developer Portfolio",
-        url: "https://megz.pro/",
+        label: "System Developer",
+        url: "https://gateling.com/",
         inNewTab: true,
     },
     {

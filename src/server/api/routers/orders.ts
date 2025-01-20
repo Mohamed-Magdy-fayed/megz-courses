@@ -799,7 +799,7 @@ export const ordersRouter = createTRPCRouter({
                         updatedAt: new Date(),
                         updatedBy: "System"
                     }],
-                    createdByUser: { connect: { email: "system@mail.com" } },
+                    createdByUser: { connect: { id: order.user.id } },
                 }
             })
 

@@ -5,6 +5,9 @@ import { twMerge } from "tailwind-merge";
 import { getInitials } from "./getInitials";
 import { env } from "@/env.mjs";
 import { Row } from "@tanstack/react-table";
+import packageJson from "../../package.json";
+
+export const getVersion = () => packageJson.version;
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -12,7 +15,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export const getAddress = (address: Address) => `${address?.city || "no city"} - ${address?.state || "no state"} - ${address?.country || "no country"}`;
 
-export const leadsCodeGenerator = () => `Lead-${Date.now()}`
+export const leadsCodeGenerator = (createdAt?: Date) => `Lead-${createdAt?.getTime() || Date.now()}`
 
 export const orderCodeGenerator = () => `CO-${Date.now()}`
 

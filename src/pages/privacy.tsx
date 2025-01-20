@@ -8,19 +8,19 @@ const PrivacyPolicyPage = () => {
     return (
         <LandingLayout>
             <Head>
-                <title>Privacy Policy | Megz Courses</title>
-                <meta name="description" content="Privacy Policy for Megz Courses" />
+                <title>Privacy Policy | Gateling TMS</title>
+                <meta name="description" content="Privacy Policy for Gateling TMS" />
                 <meta name="robots" content="index, follow" />
             </Head>
             <div className="max-w-6xl mx-auto p-6">
-                <Typography className="text-primary mb-3" variant={"secondary"}>Megz Learning</Typography>
+                <Typography className="text-primary mb-3" variant={"secondary"}>Gateling TMS</Typography>
                 <ConceptTitle className="mb-2 !text-6xl">Privacy Policy</ConceptTitle>
                 <Typography className='block mb-12 text-muted'>19<sup>th</sup> September 2024</Typography>
 
                 <div className="space-y-4">
                     <ToggleSection title="Overview" defaultIsOpen>
                         <Typography>
-                            Welcome to Megz Courses! This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our app integrated with Meta (formerly Facebook) services, including our Facebook Page, Messenger bot, or other Meta platforms.
+                            Welcome to Gateling TMS! This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our app integrated with Meta (formerly Facebook) services, including our Facebook Page, Messenger bot, or other Meta platforms.
                         </Typography>
                     </ToggleSection>
 
@@ -90,7 +90,7 @@ const PrivacyPolicyPage = () => {
 
                     <ToggleSection title="Contact Us">
                         <Typography>
-                            If you have any questions or concerns about this Privacy Policy or our practices, please contact us at: <Link href="mailto:info@megz.com" className="text-primary underline">info@megz.com</Link>.
+                            If you have any questions or concerns about this Privacy Policy or our practices, please contact us at: <Link href="mailto:info@gateling.com" className="text-primary underline">info@gateling.com</Link>.
                         </Typography>
                     </ToggleSection>
                 </div>

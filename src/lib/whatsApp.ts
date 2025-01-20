@@ -122,7 +122,7 @@ const messageTemplates = [
     {
         name: 'Welcome',
         type: MessageTemplateType.Welcome,
-        body: 'Welcome to Megz Learning, {{name}}!\n\nWe\'re excited to have you join our community.\nStart exploring our courses and enhancing your skills today!',
+        body: 'Welcome to Gateling TMS, {{name}}!\n\nWe\'re excited to have you join our community.\nStart exploring our courses and enhancing your skills today!',
         placeholders: ['name'],
     },
     {

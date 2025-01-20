@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn, getVersion } from "@/lib/utils";
 import { useNavStore } from "@/zustand/store";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -16,14 +16,6 @@ export const mainNavLinks = [
     url: "dashboard",
   },
   {
-    label: "Waiting List",
-    url: "waiting_list",
-  },
-  {
-    label: "Retintions List",
-    url: "retintions",
-  },
-  {
     label: "Notes",
     url: "notes",
   },
@@ -32,36 +24,44 @@ export const mainNavLinks = [
     url: "groups",
   },
   {
+    label: "Waiting List",
+    url: "waiting_list",
+  },
+  {
+    label: "Retintions List",
+    url: "retintions",
+  },
+  {
     label: "Orders",
     url: "orders",
-  },
-  {
-    label: "Students",
-    url: "students",
-  },
-  {
-    label: "Educational Team",
-    url: "edu_team",
-  },
-  {
-    label: "Operational Team",
-    url: "ops_team",
-  },
-  {
-    label: "Chat Team",
-    url: "chat_agents",
-  },
-  {
-    label: "Content Management",
-    url: "content",
   },
   {
     label: "Leads",
     url: "leads",
   },
   {
+    label: "Students",
+    url: "students",
+  },
+  {
     label: "Configurations",
     url: "config",
+  },
+  {
+    label: "Content Management",
+    url: "content",
+  },
+  {
+    label: "Operational Team",
+    url: "ops_team",
+  },
+  {
+    label: "Educational Team",
+    url: "edu_team",
+  },
+  {
+    label: "Chat Team",
+    url: "chat_agents",
   },
   {
     label: "Account",
@@ -122,9 +122,9 @@ export default function MegzDrawer({ siteIdentity }: { siteIdentity?: SiteIdenti
         <LogoForeground className="w-20 h-40 bg-accent" />
       )}
       <div className="rounded-lg bg-muted-foreground/50 px-4 py-2 w-full text-foreground">
-        <Typography variant={"secondary"} >Megz</Typography>
-        <Typography>Development</Typography>
-        <div>Version: 1.1.0</div>
+        <Typography variant={"secondary"} >Gateling</Typography>
+        <Typography>Solutions</Typography>
+        <div>Version: {getVersion()}</div>
       </div>
       <Separator />
       <ScrollArea className="w-min h-full pr-4">
@@ -162,12 +162,12 @@ export default function MegzDrawer({ siteIdentity }: { siteIdentity?: SiteIdenti
         <Typography className="whitespace-nowrap !text-xs">
           <Link
             className="text-dark underline decoration-slate-700 hover:decoration-dark"
-            href="https://megz-portfolio-dev.vercel.app/"
+            href="https://gateling.com/"
             target="_blank"
           >
             Contact
           </Link>{" "}
-          me for customizations
+          us for customizations
         </Typography>
       </div>
     </div>

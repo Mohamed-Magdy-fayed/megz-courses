@@ -12,7 +12,7 @@ const SessionPage: NextPage = () => {
     const levelSlug = router.query.levelSlug as string
     const materialItemSlug = router.query.slug as string
     const { data: courseData } = api.courses.getBySlug.useQuery({ slug: courseSlug });
-    const { data: levelData } = api.levels.getBySlug.useQuery({ slug: levelSlug });
+    const { data: levelData } = api.levels.getBySlug.useQuery({ slug: levelSlug, courseSlug });
     const { data: materialData } = api.materials.getBySlug.useQuery({ slug: materialItemSlug });
 
     const [mounted, setMounted] = useState(false);

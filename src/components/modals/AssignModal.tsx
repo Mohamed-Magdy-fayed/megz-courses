@@ -21,7 +21,7 @@ export const AssignModal = ({
 }: AssignModalProps) => {
     const [isMounted, setIsMounted] = useState(false);
     const [assigneeId, setAssigneeId] = useState("");
-    const { data } = api.users.getUsers.useQuery({ userRole: "SalesAgent" })
+    const { data } = api.salesAgents.getSalesAgents.useQuery()
 
     useEffect(() => {
         setIsMounted(true);
@@ -49,8 +49,8 @@ export const AssignModal = ({
                         />
                     </SelectTrigger>
                     <SelectContent>
-                        {data?.users.map(user => (
-                            <SelectItem key={user.id} value={user.id}>{user.email}</SelectItem>
+                        {data?.salesAgents.map(sa => (
+                            <SelectItem key={sa.user.id} value={sa.user.id}>{sa.user.email}</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>

@@ -67,7 +67,7 @@ export const authRouter = createTRPCRouter({
           title: "Email needs confirmation",
           type: "Info",
           createdForStudent: { connect: { id: user.id } },
-          createdByUser: { connect: { email: "system@mail.com" } },
+          createdByUser: { connect: { id: user.id } },
           messages: [{
             message: `The studnet's email needs confirmation`,
             updatedAt: new Date(),

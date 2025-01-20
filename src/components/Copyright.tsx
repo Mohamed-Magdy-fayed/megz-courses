@@ -11,9 +11,9 @@ export default function Copyright(props: any) {
       {"Copyright © "}
       <Link
         target="_blank"
-        href="https://portfolio-2-iota-brown.vercel.app/"
+        href="https://gateling.com/"
       >
-        <Button variant={"link"}>Megz</Button>
+        <Button variant={"link"}>Gateling</Button>
       </Link>{" "}
       {new Date().getFullYear()}
       {"."}{" "}

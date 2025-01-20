@@ -27,8 +27,8 @@ export default function NotFoundPage() {
             404: The page you are looking for isn’t here
           </Typography>
           <Typography className="mb-8" variant="secondary">
-            You either tried some shady route or you came here by mistake.
-            Whichever it is, try using the navigation
+            You may have came here by mistake.
+            try using the navigation
           </Typography>
           <div className="flex items-center justify-around w-full">
             <Button onClick={() => router.back()} className="flex gap-2" variant={"outline"} customeColor={"primaryOutlined"}>
@@ -38,7 +38,7 @@ export default function NotFoundPage() {
             <Link href={session.data?.user && hasPermission(session.data.user, "adminLayout", "view") ? "/dashboard" : "/"}>
               <Button className="flex gap-2">
                 <Home />
-                <Typography>Go to dashboard</Typography>
+                <Typography>Go to {session.data?.user && hasPermission(session.data.user, "adminLayout", "view") ? "dashboard" : "home page"}</Typography>
               </Button>
             </Link>
           </div>

@@ -69,7 +69,7 @@ const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: Material
                 const { files, levelSlug, title, slug, subTitle } = form.getValues()
 
                 uploadFiles(files, `uploads/content/courses/${courseSlug}/${levelSlug}/${slug}`).then((data) => {
-                    uploadMaterialMutation.mutateAsync({ title, subTitle, uploads: data, slug, levelSlug });
+                    uploadMaterialMutation.mutateAsync({ title, subTitle, uploads: data, slug, levelSlug, courseSlug });
                 }) || []
 
                 return ""
@@ -104,9 +104,9 @@ const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: Material
         if (title === "") return toastError("please enter a title")
         if (!levelSlug[0]) return toastError("Please select a level")
 
-        if (initialData) return editUploadMaterialMutation.mutate({ id: initialData.id, title, subTitle, slug, levelSlug })
+        if (initialData) return editUploadMaterialMutation.mutate({ id: initialData.id, title, subTitle, slug, levelSlug, courseSlug })
 
-        checkMaterialMutation.mutate({ slug })
+        checkMaterialMutation.mutate({ slug, levelSlug })
     };
 
 

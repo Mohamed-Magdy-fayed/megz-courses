@@ -69,13 +69,13 @@ export const LatestCourseOverview = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <Link href={`/courses/${course.id}`}>
+                    <Link href={`/courses/${course.slug}`}>
                       <DropdownMenuItem>
                         <Eye />
                         <Typography>View</Typography>
                       </DropdownMenuItem>
                     </Link>
-                    <Link href={`/content/courses/${course.id}`}>
+                    <Link href={`/content/courses/${course.slug}`}>
                       <DropdownMenuItem>
                         <Edit />
                         <Typography>Edit</Typography>

@@ -214,6 +214,12 @@ export const columns: ColumnDef<OrderRow>[] = [
   {
     accessorKey: "updatedAt",
     header: "Payment Date",
+    filterFn: (row, columnId, filterValue) => {
+      const val = row.original.updatedAt
+      const startDate = new Date(filterValue.split("|")[0])
+      const endDate = new Date(filterValue.split("|")[1])
+      return val.getTime() >= startDate.getTime() && val.getTime() <= endDate.getTime()
+    },
     cell: ({ row }) => (
       <Typography>
         {row.original.status === "Pending" || row.original.status === "Cancelled" ? "NA" : format(row.original.updatedAt, "do MMM yy")}

@@ -243,17 +243,18 @@ export const coursesRouter = createTRPCRouter({
 
         }
       });
+      if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "no course found" })
 
       const level = await ctx.prisma.courseLevel.findUnique({
         where: {
-          slug: levelSlug,
+          courseId_slug: { courseId: course?.id, slug: levelSlug },
         },
         include: {
           systemForms: true,
           materialItems: { include: { systemForms: true } }
         }
       })
-      if (!course || !level) throw new TRPCError({ code: "BAD_REQUEST", message: "no course or level found" })
+      if (!course || !level) throw new TRPCError({ code: "BAD_REQUEST", message: "no level found" })
 
       return { course, level };
     }),

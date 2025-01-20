@@ -15,10 +15,13 @@ const CourseGroupsClient = ({ formattedData }: { formattedData: CourseRow[] }) =
             filters={[
                 { key: "levelSlug", filterName: "Level", values: formattedData[0]?.levelSlugs || [] },
                 {
-                    key: "groupStatus", filterName: "Status", values: formattedData.map(d => ({
-                        value: d.groupStatus,
-                        label: d.groupStatus,
-                    })) || []
+                    key: "groupStatus", filterName: "Status", values: formattedData
+                        .map(d => d.groupStatus)
+                        .filter((value, index, self) => self.indexOf(value) === index)
+                        .map(val => ({
+                            value: val,
+                            label: val,
+                        })) || []
                 },
             ]}
             exportConfig={{

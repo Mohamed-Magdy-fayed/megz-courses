@@ -38,8 +38,9 @@ const EditMaterialPage = () => {
 
   const pathQuery = useMemo(() => router.query.path as string, [router.query.path])
   const segments = useMemo(() => pathQuery?.split("/") || [], [pathQuery])
-  const courseName = api.courses.getBySlug.useQuery({ slug: segments[3]! }, { enabled: !!segments[3] }).data?.course?.name
-  const levelName = api.levels.getBySlug.useQuery({ slug: segments[4]! }, { enabled: !!segments[4] }).data?.level?.name
+  const course = api.courses.getBySlug.useQuery({ slug: segments[3]! }, { enabled: !!segments[3] }).data?.course
+  const courseName = course?.name
+  const levelName = api.levels.getBySlug.useQuery({ slug: segments[4]!, courseSlug: segments[3]! }, { enabled: !!segments[4] && !!segments[3] }).data?.level?.name
   const materialName = api.materials.getBySlug.useQuery({ slug: segments[5]! }, { enabled: !!segments[5] }).data?.materialItem?.title
 
   const [uploading, setUploading] = useState(false)

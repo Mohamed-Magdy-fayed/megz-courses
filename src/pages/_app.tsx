@@ -15,10 +15,10 @@ const MyApp: AppType<{ session: Session | null }> = ({
   return (
     <SessionProvider session={session}>
       <Head>
-        <title>Megz Courses App</title>
+        <title>Gateling TMS</title>
         <meta
           name="description"
-          content="Your tool to manage and operate a coureses center"
+          content="Your gateway to manage and operate your academy"
         />
         <link rel="icon" href="/logo.svg" />
       </Head>

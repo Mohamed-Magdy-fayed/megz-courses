@@ -99,7 +99,7 @@ export const SiteIdentityForm = ({ initialData }: {
                                     <FormControl>
                                         <Input
                                             disabled={!!loadingToast}
-                                            placeholder="Megz"
+                                            placeholder="Gateling"
                                             {...field}
                                         />
                                     </FormControl>
@@ -185,7 +185,7 @@ export const SiteIdentityForm = ({ initialData }: {
                                     <FormControl>
                                         <Input
                                             disabled={!!loadingToast}
-                                            placeholder="Learning"
+                                            placeholder="TMS"
                                             {...field}
                                         />
                                     </FormControl>

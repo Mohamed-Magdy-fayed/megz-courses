@@ -1,6 +1,5 @@
 import { z } from "zod";
 import {
-  adminProcedure,
   createTRPCRouter,
   publicProcedure,
 } from "@/server/api/trpc";
@@ -12,8 +11,8 @@ import { subscriptionTiers } from "@/lib/system";
 import { env } from "@/env.mjs";
 import { sendZohoEmail } from "@/lib/emailHelpers";
 import { getTotalSize } from "@/lib/firebaseStorage";
-import { formatSizeInGB } from "@/lib/utils";
 import { PrismaClient } from "@prisma/client";
+import { LetsGo } from "@/lib/mockData";
 
 export const setupRouter = createTRPCRouter({
   start: publicProcedure
@@ -48,15 +47,6 @@ export const setupRouter = createTRPCRouter({
         },
       });
 
-      const systemUser = await ctx.prisma.user.create({
-        data: {
-          name: "System",
-          email: "system@mail.com",
-          phone: "201111111111",
-          userRoles: [...validUserRoles],
-        },
-      });
-
       const createdTemplates = await setupDefaultMessageTemplates(ctx.prisma)
 
       const leadStages = await ctx.prisma.leadStage.createMany({
@@ -65,13 +55,14 @@ export const setupRouter = createTRPCRouter({
 
       return {
         adminUser,
-        systemUser,
         createdTemplates,
         leadStages,
       }
     }),
-  reset: adminProcedure
+  reset: publicProcedure
     .mutation(async ({ ctx }) => {
+      return await LetsGo(ctx.prisma)
+
       const models: Array<keyof PrismaClient> = [
         "account",
         "session",
@@ -127,7 +118,7 @@ export const setupRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input: { requestedTier } }) => {
-      await sendZohoEmail({ email: "info@megz.pro", html: `Customer ${env.NEXT_PUBLIC_EMAIL} wants a new Tier: ${requestedTier}`, subject: "Tier update request!" })
+      await sendZohoEmail({ email: "info@gateling.com", html: `Customer ${env.NEXT_PUBLIC_EMAIL} wants a new Tier: ${requestedTier}`, subject: "Tier update request!" })
 
       return {
         success: true,

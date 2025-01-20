@@ -126,12 +126,6 @@ export const SalesOverview = ({ chartSeries, sync }: SalsesOverviewProps) => {
 
   return (
     <Card className="col-span-12 xl:col-span-8">
-      <CardHeader className="flex items-center justify-start gap-4 flex-row space-y-0">
-        <Button variant={"default"} onClick={() => sync()}>
-          <RefreshCcw />
-          <Typography variant={"buttonText"}>Sync</Typography>
-        </Button>
-      </CardHeader>
       <CardContent>
         <Chart
           height={350}

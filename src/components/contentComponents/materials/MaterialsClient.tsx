@@ -65,13 +65,16 @@ const MaterialsClient = ({ formattedData }: { formattedData: MaterialsRow[] }) =
                 templateName: "Materials Import Template",
             }}
             handleImport={(data) => {
-                importMutation.mutate(data.map(({ levelSlug, slug, subTitle, title, type }) => ({
-                    levelSlug,
-                    slug,
-                    subTitle,
-                    title,
-                    type,
-                })))
+                importMutation.mutate({
+                    courseSlug: formattedData[0]?.courseSlug!,
+                    data: data.map(({ levelSlug, slug, subTitle, title, type }) => ({
+                        levelSlug,
+                        slug,
+                        subTitle,
+                        title,
+                        type,
+                    }))
+                })
             }}
         />
     );

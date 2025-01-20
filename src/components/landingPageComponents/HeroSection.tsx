@@ -20,10 +20,10 @@ const HeroSection = () => {
                 <div className="col-span-12 lg:col-span-6 grid p-4 place-content-center">
                     <div className="-translate-y-20 lg:-translate-y-0 flex flex-col gap-8">
                         <Typography variant={"primary"} className="ml-auto lg:ml-0 !text-[clamp(1.75rem,6vw,3.5rem)] first-letter:text-primary whitespace-nowrap">
-                            {data?.siteIdentity.name1 || "Megz"}{" "}{data?.siteIdentity.name2 || "Learning"}
+                            {data?.siteIdentity.name1 || "Gateling"}{" "}{data?.siteIdentity.name2 || "TMS"}
                         </Typography>
                         <Typography>
-                            {data?.siteIdentity.heroText || "Dive into a world of English language excellence with Megz Courses. Elevate your\nlanguage skills and unlock new opportunities. Join us in the journey of learning \nwhere every lesson takes you a step closer to linguistic mastery."}
+                            {data?.siteIdentity.heroText || "Dive into a world of English language excellence with Gateling TMS. Elevate your\nlanguage skills and unlock new opportunities. Join us in the journey of learning \nwhere every lesson takes you a step closer to linguistic mastery."}
                         </Typography>
                         <div className="w-max">
                             <CourseSearchBar />

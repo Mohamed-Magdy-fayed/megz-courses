@@ -12,7 +12,7 @@ const useLoadLearningData = () => {
     const courseQuery = api.courses.getBySlug.useQuery({ slug: courseSlug }, {
         enabled: !!courseSlug ? true : false,
     })
-    const levelQuery = api.levels.getBySlug.useQuery({ slug: levelSlug }, {
+    const levelQuery = api.levels.getBySlug.useQuery({ slug: levelSlug, courseSlug }, {
         enabled: courseSlug && levelSlug ? true : false,
     })
     const user = userQuery.data?.user

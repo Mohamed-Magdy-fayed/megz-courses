@@ -8,7 +8,7 @@ export function formatAmountForPaymob(
     return amount * 100
 }
 
-export async function createPaymentIntent(price: number, course: Course, user: User, orderNumber: string) {
+export async function createPaymentIntent(price: number, course: Pick<Course, "name" | "description">, user: Pick<User, "name" | "email" | "phone">, orderNumber: string) {
     const intentData = {
         special_reference: orderNumber,
         amount: formatAmountForPaymob(price),

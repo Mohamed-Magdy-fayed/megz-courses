@@ -176,7 +176,7 @@ model Tester {
 model CourseLevel {
     id            String         @id @default(auto()) @map("_id") @db.ObjectId
     name          String
-    slug          String         @unique
+    slug          String
     course        Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
     courseId      String         @db.ObjectId
     systemForms   SystemForm[]
@@ -186,6 +186,8 @@ model CourseLevel {
     materialItems MaterialItem[]
     updatedAt     DateTime       @updatedAt
     createdAt     DateTime       @default(now())
+
+    @@unique([courseId, slug])
 }
 
 model Course {
@@ -227,7 +229,7 @@ model MaterialItem {
     id            String              @id @default(auto()) @map("_id") @db.ObjectId
     title         String
     subTitle      String?
-    slug          String              @unique
+    slug          String
     type          MaterialItemType
     uploads       String[]
     manual        MaterialItemManual?
@@ -237,6 +239,8 @@ model MaterialItem {
     courseLevelId String?             @db.ObjectId
     updatedAt     DateTime            @updatedAt
     createdAt     DateTime            @default(now())
+
+    @@unique([courseLevelId, slug])
 }
 
 type Question {
@@ -611,15 +615,15 @@ model Certificate {
 
 model SiteIdentity {
     id             String   @id @default(auto()) @map("_id") @db.ObjectId
-    name1          String   @default("Megz")
-    name2          String   @default("Learning")
-    heroText       String   @default("Dive into a world of English language excellence with Megz Courses. Elevate your\nlanguage skills and unlock new opportunities. Join us in the journey of learning \nwhere every lesson takes you a step closer to linguistic mastery.")
+    name1          String   @default("Gateling")
+    name2          String   @default("TMS")
+    heroText       String   @default("Dive into a world of English language excellence with Gateling TMS. Elevate your\nlanguage skills and unlock new opportunities. Join us in the journey of learning \nwhere every lesson takes you a step closer to linguistic mastery.")
     logoPrimary    String   @default("/logos/logoPrimary.png")
     logoAccent     String   @default("/logos/logoAccent.png")
     logoForeground String   @default("/logos/logoForeground.png")
-    facebook       String   @default("https://www.facebook.com/megztechs")
-    instagram      String   @default("https://www.instagram.com/megztechs")
-    youtube        String   @default("https://www.youtube.com/")
+    facebook       String   @default("https://www.facebook.com/gatelingsolutions")
+    instagram      String   @default("https://www.instagram.com/gatelingsolutions")
+    youtube        String   @default("https://www.youtube.com/gatelingsolutions")
     linkedin       String   @default("https://www.linkedin.com/in/mohamed-magdy-fayed/")
     updatedAt      DateTime @updatedAt
     createdAt      DateTime @default(now())

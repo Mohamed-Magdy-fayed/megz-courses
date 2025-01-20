@@ -1,5 +1,6 @@
 import { env } from "@/env.mjs";
 import { PrismaClient } from "@prisma/client"
+import { TRPCError } from "@trpc/server";
 import { Session } from "next-auth"
 
 export const generateCertificateId = () => {
@@ -14,13 +15,16 @@ export async function generateCertificate({ ctx, courseSlug, levelSlug, score }:
     levelSlug: string;
     score: string;
 }) {
+    const course = await ctx.prisma.course.findUnique({ where: { slug: courseSlug }, select: { id: true } })
+    if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "Course not found!" })
+
     const certificate = await ctx.prisma.certificate.create({
         data: {
             certificateId: generateCertificateId(),
             completionDate: new Date(),
             user: { connect: { id: ctx.session.user.id } },
             course: { connect: { slug: courseSlug } },
-            courseLevel: { connect: { slug: levelSlug } },
+            courseLevel: { connect: { courseId_slug: { slug: levelSlug, courseId: course.id } } },
         },
         include: { user: true, course: true, courseLevel: true }
     })

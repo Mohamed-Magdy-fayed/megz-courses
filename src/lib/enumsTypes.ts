@@ -1,4 +1,4 @@
-import { CourseStatuses, DefaultStage, Devices, GroupStatus, ItemQuestionType, ItemType, LeadInteractionType, MaterialItemType, MessageTemplateType, OrderStatus, QuestionChoiceType, SessionStatus, SupportTicketStatus, SystemFormTypes, UserNoteStatus, UserNoteTypes, UserRoles } from "@prisma/client";
+import { CourseStatuses, DefaultStage, Devices, GroupStatus, ItemQuestionType, ItemType, LeadInteractionType, LeadSource, MaterialItemType, MessageTemplateType, OrderStatus, QuestionChoiceType, SessionStatus, SupportTicketStatus, SystemFormTypes, UserNoteStatus, UserNoteTypes, UserRoles } from "@prisma/client";
 
 export const validUserRoles = [UserRoles.Admin, UserRoles.ChatAgent, UserRoles.SalesAgent, UserRoles.Student, UserRoles.Teacher, UserRoles.Tester, UserRoles.OperationAgent] as const;
 export const validDeviceTypes = [Devices.Desktop, Devices.Mobile, Devices.Tablet] as const;
@@ -11,6 +11,7 @@ export const validNoteTypes = [UserNoteTypes.ComplainLevel1, UserNoteTypes.Compl
 export const validMaterialItemTypes = [MaterialItemType.Manual, MaterialItemType.Upload] as const;
 export const validNoteStatus = [UserNoteStatus.Closed, UserNoteStatus.Created, UserNoteStatus.Opened] as const;
 export const validTrueOrFalse = ["true", "false"] as const;
+export const validLeadSources = [LeadSource.Facebook, LeadSource.Instagram, LeadSource.Manual, LeadSource.Other, LeadSource.WhatsApp] as const;
 export const validSupportTicketStatus = [SupportTicketStatus.Closed, SupportTicketStatus.Created, SupportTicketStatus.Opened] as const;
 export const validDefaultStages = [DefaultStage.Intake, DefaultStage.Qualified, DefaultStage.Converted, DefaultStage.NotQualified, DefaultStage.Lost] as const;
 export const validLeadInteractionsType = [LeadInteractionType.Call, LeadInteractionType.Chat, LeadInteractionType.Meeting] as const;

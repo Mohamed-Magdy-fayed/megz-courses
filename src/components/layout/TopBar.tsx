@@ -95,10 +95,10 @@ export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdenti
                 <LogoForeground className="w-12 h-12" />
               )}
               <Typography variant={"primary"} className="!text-lg !leading-none !font-extrabold text-primary">
-                {siteIdentity?.name1 || "Megz"}
+                {siteIdentity?.name1 || "Gateling"}
               </Typography>
               <Typography variant={"primary"} className="!text-lg !leading-none !font-extrabold text-primary">
-                {siteIdentity?.name2 || "Learning"}
+                {siteIdentity?.name2 || "TMS"}
               </Typography>
             </Link>
           </div>
