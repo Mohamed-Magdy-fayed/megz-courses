@@ -7,12 +7,15 @@ import type { NextApiRequest, NextApiResponse } from "next";
 const handler = async (req: NextApiRequest, res: NextApiResponse<any>) => {
     switch (req.method) {
         case "GET":
+            console.log(req.method, req.query);
+
             res.status(200).send(req.query["hub.challenge"]);
             break;
         case "POST":
             const metaClient = await prisma.metaClient.findFirst()
             if (!metaClient) return res.status(200).send('no meta client configured')
 
+            console.log(req.method, req.body.object);
             if (req.body.object === 'page') {
                 req.body.entry.forEach((entry: any) => {
                     entry.messaging.forEach(async function (event: any) {
