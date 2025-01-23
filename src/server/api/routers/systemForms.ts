@@ -247,6 +247,7 @@ export const systemFormsRouter = createTRPCRouter({
                     type: z.enum(validItemTypes),
                     title: z.string(),
                     questions: z.array(z.object({
+                        points: z.number(),
                         questionText: z.string(),
                         required: z.boolean(),
                         shuffle: z.boolean(),
@@ -277,8 +278,10 @@ export const systemFormsRouter = createTRPCRouter({
                             create: items.map(({ questions, title, type }) => ({
                                 type,
                                 title,
-                                question: {
+                                questions: {
                                     create: questions.map(q => ({
+                                        questionText: q.questionText,
+                                        points: q.points,
                                         required: q.required,
                                         shuffle: q.shuffle,
                                         type: q.type,
@@ -288,7 +291,7 @@ export const systemFormsRouter = createTRPCRouter({
                                                 isCorrect,
                                                 value,
                                             }))
-                                        }
+                                        },
                                     })),
                                 }
                             }))
