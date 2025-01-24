@@ -47,8 +47,9 @@ export const waitingListRouter = createTRPCRouter({
             courseId: z.string(),
             userId: z.string(),
             levelId: z.string(),
+            oralFeedback: z.string(),
         }))
-        .mutation(async ({ input: { userId, levelId, courseId }, ctx }) => {
+        .mutation(async ({ input: { userId, levelId, courseId, oralFeedback }, ctx }) => {
             const PlacementTest = await ctx.prisma.placementTest.findFirst({
                 where: { courseId, studentUserId: userId },
             })
@@ -71,35 +72,40 @@ export const waitingListRouter = createTRPCRouter({
             })
             if (!status[0]) throw new TRPCError({ code: "BAD_REQUEST", message: "No courses status found!" })
 
-            await ctx.prisma.courseStatus.update({
-                where: {
-                    id: status[0].id,
-                },
-                data: {
-                    status: "Waiting",
-                    level: {
-                        connect: {
-                            id: levelId,
+            const [] = await ctx.prisma.$transaction([
+                ctx.prisma.courseStatus.update({
+                    where: {
+                        id: status[0].id,
+                    },
+                    data: {
+                        status: "Waiting",
+                        level: {
+                            connect: {
+                                id: levelId,
+                            }
                         }
+                    },
+                }),
+                ctx.prisma.userNote.create({
+                    data: {
+                        sla: 0,
+                        status: "Closed",
+                        title: `Student added to Waiting list by ${ctx.session.user.name}`,
+                        type: "Info",
+                        createdForStudent: { connect: { id: user.id } },
+                        messages: [{
+                            message: `User was added to Waiting list of course ${course.name} at level ${user.courseStatus.find((s) => courseId === s.courseId)?.level?.name}`,
+                            updatedAt: new Date(),
+                            updatedBy: "System"
+                        }],
+                        createdByUser: { connect: { id: ctx.session.user.id } },
                     }
-                },
-            });
-
-            await ctx.prisma.userNote.create({
-                data: {
-                    sla: 0,
-                    status: "Closed",
-                    title: `Student added to Waiting list by ${ctx.session.user.name}`,
-                    type: "Info",
-                    createdForStudent: { connect: { id: user.id } },
-                    messages: [{
-                        message: `User was added to Waiting list of course ${course.name} at level ${user.courseStatus.find((s) => courseId === s.courseId)?.level?.name}`,
-                        updatedAt: new Date(),
-                        updatedBy: "System"
-                    }],
-                    createdByUser: { connect: { id: ctx.session.user.id } },
-                }
-            })
+                }),
+                ctx.prisma.placementTest.update({
+                    where: { id: PlacementTest?.id },
+                    data: { oralFeedback }
+                })
+            ])
 
             return { user, course };
         }),

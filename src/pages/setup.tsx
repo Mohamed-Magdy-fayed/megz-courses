@@ -19,6 +19,7 @@ import NotFoundPage from "@/pages/404";
 const SetupPage = () => {
   const setupQuery = api.setup.getCurrentSetup.useQuery();
 
+  const [isResetOpen2, setIsResetOpen2] = useState(false);
   const [isResetOpen, setIsResetOpen] = useState(false);
   const [loadingToast, setLoadingToast] = useState<toastType>();
 
@@ -39,9 +40,27 @@ const SetupPage = () => {
       loadingMessage: "Resetting..."
     })
   )
+  const resetMutation2 = api.setup.reset2.useMutation(
+    createMutationOptions({
+      loadingToast,
+      setLoadingToast,
+      successMessageFormatter: () => {
+        setIsResetOpen(false)
+        updateSession()
+        return `Reset Completed!`
+      },
+      toast,
+      trpcUtils,
+      loadingMessage: "Resetting..."
+    })
+  )
 
   const onReset = async () => {
     resetMutation.mutate()
+  }
+
+  const onReset2 = async () => {
+    resetMutation2.mutate()
   }
 
   if (setupQuery.isLoading) return (
@@ -63,13 +82,23 @@ const SetupPage = () => {
         onConfirm={onReset}
         description="WARNING!!! you're about to reset your system, any lost data will not be recoverable!"
       />
+      <AlertModal
+        isOpen={isResetOpen2}
+        onClose={() => setIsResetOpen2(false)}
+        loading={!!loadingToast}
+        onConfirm={onReset2}
+        description="WARNING!!! you're about to reset your system, any lost data will not be recoverable!"
+      />
       <div className="p-4 flex flex-col gap-8 items-center">
         <div className="grid grid-cols-12 w-full items-center">
           <Link href="/" className="col-span-3" >
             <LogoPrimary />
           </Link>
           <ConceptTitle className="text-center leading-8 col-span-6">Welcome To <br></br>Gateling TMS Setup</ConceptTitle>
-          <SpinnerButton className="ml-auto col-span-3" customeColor="destructiveOutlined" onClick={() => setIsResetOpen(true)} text="Reset Setup" icon={RefreshCwIcon} isLoading={!!loadingToast} />
+          <div>
+            <SpinnerButton className="ml-auto col-span-3" customeColor="destructiveOutlined" onClick={() => setIsResetOpen(true)} text="Reset Setup" icon={RefreshCwIcon} isLoading={!!loadingToast} />
+            <SpinnerButton className="ml-auto col-span-3" customeColor="destructiveOutlined" onClick={() => setIsResetOpen2(true)} text="Reset Setup" icon={RefreshCwIcon} isLoading={!!loadingToast} />
+          </div>
         </div>
         <Separator />
         {!setupQuery.data?.Admin && (

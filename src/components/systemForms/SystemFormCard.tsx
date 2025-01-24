@@ -3,6 +3,7 @@ import { FormItemComponent } from "@/components/systemForms/FormItemComponent"
 import { SystemFormResult } from "@/components/systemForms/SystemFormResult"
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from "@/components/ui/card"
 import { useEvalformSubmission } from "@/hooks/useEvalFormSubmission"
+import { cn } from "@/lib/utils"
 import { Prisma, SystemFormSubmissionAnswer, SystemFormTypes } from "@prisma/client"
 import { FC, SetStateAction, useState } from "react"
 
@@ -15,6 +16,7 @@ type SystemFormSubmissionCardProps = {
             }
         }
     }>;
+    fullWidth?: boolean;
 }
 
 type SystemFormCardProps = {
@@ -23,6 +25,7 @@ type SystemFormCardProps = {
     levelSlug?: string;
     materialItemSlug?: string;
     enabled?: boolean;
+    fullWidth?: boolean;
 }
 
 type UnionType = SystemFormCardProps | SystemFormSubmissionCardProps
@@ -32,7 +35,7 @@ const SystemFormCard: FC<UnionType> = (props) => {
         const { systemForm } = props.submissionData
 
         return (
-            <Card className="col-span-12 xl:col-span-8 w-full h-fit">
+            <Card className={cn("col-span-12 xl:col-span-8 w-full h-fit", props.fullWidth && "xl:col-span-12")}>
                 <CardHeader>
                     <CardTitle>{systemForm?.title}</CardTitle>
                     <CardDescription>{systemForm?.description}</CardDescription>
@@ -71,7 +74,7 @@ const SystemFormCard: FC<UnionType> = (props) => {
     if (error) return <>{error}</>
 
     return (
-        <Card className="col-span-12 xl:col-span-8 w-full h-fit">
+        <Card className={cn("col-span-12 xl:col-span-8 w-full h-fit", props.fullWidth && "xl:col-span-12")}>
             <CardHeader>
                 <CardTitle>{systemForm?.title}</CardTitle>
                 <CardDescription>{systemForm?.description}</CardDescription>

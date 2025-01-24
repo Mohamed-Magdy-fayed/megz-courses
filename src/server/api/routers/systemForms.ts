@@ -319,4 +319,19 @@ export const systemFormsRouter = createTRPCRouter({
 
             return { deletedSystemForms };
         }),
+    upsertOralTest: protectedProcedure
+        .input(z.object({
+            formId: z.string(),
+            questions: z.string(),
+        }))
+        .mutation(async ({ ctx, input: { formId, questions } }) => {
+            const updatedForm = await ctx.prisma.systemForm.update({
+                where: { id: formId },
+                data: {
+                    oralTestQuestions: questions,
+                }
+            })
+
+            return { updatedForm }
+        })
 });

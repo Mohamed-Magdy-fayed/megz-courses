@@ -6,13 +6,14 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { FileCheck2Icon, MoreVertical, Trash2Icon } from "lucide-react";
+import { MoreVertical, EyeIcon, Trash2Icon } from "lucide-react";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { createMutationOptions } from "@/lib/mutationsHelper";
 import { AlertModal } from "@/components/modals/AlertModal";
 import { PlacementTestSubmissionsRow } from "@/components/contentComponents/placmentTestSubmissions/PlacmentTestSubmissionsColumn";
+import Link from "next/link";
 
 interface ActionCellProps {
     id: string;
@@ -22,7 +23,6 @@ interface ActionCellProps {
 const ActionCell: React.FC<ActionCellProps> = ({ id, submission }) => {
     const [isOpen, setIsOpen] = useState(false)
     const [isDeleteOpen, setIsDeleteOpen] = useState(false)
-    const [isUpdateRatingOpen, setIsUpdateRatingOpen] = useState(false)
     const [loadingToast, setLoadingToast] = useState<toastType | undefined>()
 
     const { toast } = useToast();
@@ -61,12 +61,11 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, submission }) => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={() => {
-                        setIsOpen(false)
-                        setIsUpdateRatingOpen(true)
-                    }}>
-                        <FileCheck2Icon className="w-4 h-4 mr-2" />
-                        Update Rating
+                    <DropdownMenuItem asChild>
+                        <Link href={`/subs/${id}`}>
+                            <EyeIcon className="w-4 h-4 mr-2" />
+                            View
+                        </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => {
                         setIsOpen(false)

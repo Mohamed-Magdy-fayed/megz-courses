@@ -7,7 +7,6 @@ import { Typography } from "@/components/ui/Typoghraphy"
 import Modal from "@/components/ui/modal"
 import Link from "next/link"
 import { Boxes, Copy, CopyPlus, Link2 } from "lucide-react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { env } from "@/env.mjs"
 import SingleSelectCourses from "@/components/SingleSelectCourse"
 import { createMutationOptions } from "@/lib/mutationsHelper"
@@ -15,6 +14,7 @@ import { Prisma } from "@prisma/client"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import MobileNumberInput from "@/components/ui/phone-number-input"
+import WrapWithTooltip from "../ui/wrap-with-tooltip"
 
 export type CreatedUserData = {
     email: string;
@@ -98,7 +98,7 @@ const CreateQuickOrderModal = ({ isOpen, setIsOpen, email, name, phone, defaultC
     return (
         <Modal
             title={orderDetailsOpen ? "User Details" : "Create an order"}
-            description={orderDetailsOpen ? "Do you want to process the sales operation?" : ""}
+            description={orderDetailsOpen ? "Do you want to process the lead?" : ""}
             isOpen={isOpen}
             onClose={() => setIsOpen(false)}
             children={orderDetailsOpen ? (
@@ -119,29 +119,33 @@ const CreateQuickOrderModal = ({ isOpen, setIsOpen, email, name, phone, defaultC
                                 <Typography>{userDetails.email}</Typography>
                                 <Typography>{userDetails.password}</Typography>
                             </div>
+                            <WrapWithTooltip text={"Copy user credentials"}>
+                                <Button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(`${userDetails.email}\n${userDetails.password}`);
+                                        toastSuccess("Credentials copied to the clipboard");
+                                    }}
+                                    customeColor={"infoIcon"}
+                                >
+                                    <Copy className="w-4 h-4" />
+                                </Button>
+                            </WrapWithTooltip>
                         </div>
                         <Typography>You can send the written test link to the Student</Typography>
                         <div className="flex items-center justify-between w-full gap-4">
                             <div className="flex flex-col gap-2">
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            onClick={() => {
-                                                navigator.clipboard.writeText(userDetails.writtenTestUrl);
-                                                toastSuccess("Link copied to the clipboard");
-                                            }}
-                                            customeColor={"infoIcon"}
-                                        >
-                                            <Typography>Click to copy the Link</Typography>
-                                            <CopyPlus className="w-4 h-4" />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <Typography>
-                                            {userDetails.writtenTestUrl}
-                                        </Typography>
-                                    </TooltipContent>
-                                </Tooltip>
+                                <WrapWithTooltip text={userDetails.writtenTestUrl}>
+                                    <Button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(userDetails.writtenTestUrl);
+                                            toastSuccess("Link copied to the clipboard");
+                                        }}
+                                        customeColor={"infoIcon"}
+                                    >
+                                        <Typography>Click to copy the Link</Typography>
+                                        <CopyPlus className="w-4 h-4" />
+                                    </Button>
+                                </WrapWithTooltip>
                                 <Link href={`/leads/${userDetails.leadCode}`}>
                                     <Button customeColor={"success"}>
                                         <Typography>Go to lead</Typography>
@@ -149,22 +153,6 @@ const CreateQuickOrderModal = ({ isOpen, setIsOpen, email, name, phone, defaultC
                                     </Button>
                                 </Link>
                             </div>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button
-                                        onClick={() => {
-                                            navigator.clipboard.writeText(`${userDetails.email}\n${userDetails.password}`);
-                                            toastSuccess("Credentials copied to the clipboard");
-                                        }}
-                                        customeColor={"infoIcon"}
-                                    >
-                                        <Copy className="w-4 h-4" />
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <Typography>Copy user credentials</Typography>
-                                </TooltipContent>
-                            </Tooltip>
                         </div>
                     </div>
                 )

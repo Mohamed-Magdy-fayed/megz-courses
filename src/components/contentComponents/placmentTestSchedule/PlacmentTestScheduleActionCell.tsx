@@ -10,32 +10,34 @@ import { CheckSquare, Copy, MoreVertical, TargetIcon, Trash2Icon } from "lucide-
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import { api } from "@/lib/api";
-import SelectField from "@/components/ui/SelectField";
-import Modal from "@/components/ui/modal";
 import { env } from "@/env.mjs";
 import { createMutationOptions } from "@/lib/mutationsHelper";
 import { AlertModal } from "@/components/modals/AlertModal";
 import Link from "next/link";
 import { meetingLinkConstructor } from "@/lib/meetingsHelpers";
 import { Meeting } from "@prisma/client";
+import SubmitLevelModal from "@/components/modals/SubmitLevelModal";
 
 interface ActionCellProps {
     id: string;
     isLevelSubmitted: boolean;
+    courseName: string;
     testLink: string;
     userId: string;
     courseId: string;
     courseLevels: { label: string, value: string }[]
     oralTestMeeting: Meeting;
+    oralTestQuestions: string | null;
 }
 
-const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, isLevelSubmitted, testLink, userId, oralTestMeeting }) => {
+const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, courseName, isLevelSubmitted, testLink, userId, oralTestMeeting, oralTestQuestions }) => {
     const { toastInfo, toast, toastError } = useToast();
     const [isOpen, setIsOpen] = useState(false)
     const [isSubmitLevelOpen, setIsSubmitLevelOpen] = useState(false)
     const [isDeleteOpen, setIsDeleteOpen] = useState(false)
-    const [level, setLevel] = useState<string[]>([])
     const [loadingToast, setLoadingToast] = useState<toastType | undefined>()
+    const [level, setLevel] = useState<string>()
+    const [oralFeedback, setOralFeedback] = useState("")
 
     const trpcUtils = api.useUtils()
     const addToWaitingListMutation = api.waitingList.addToWaitingList.useMutation(
@@ -46,7 +48,7 @@ const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, isL
             toast,
             successMessageFormatter: ({ course, user }) => {
                 setIsSubmitLevelOpen(false)
-                return `Added Student ${user.name} to Waiting list of course ${course.name} at level ${courseLevels.find(courseLevel => courseLevel.value === level[0])?.label}`
+                return `Added Student ${user.name} to Waiting list of course ${course.name} at level ${courseLevels.find(courseLevel => courseLevel.value === level)?.label}`
             },
         })
     )
@@ -69,8 +71,8 @@ const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, isL
     };
 
     const handleSubmitLevel = () => {
-        if (!level[0]) return toastError("Please select a Level")
-        addToWaitingListMutation.mutate({ courseId, levelId: level[0], userId })
+        if (!level) return toastError("Please select a Level")
+        addToWaitingListMutation.mutate({ courseId, levelId: level, userId, oralFeedback })
     };
 
     const handleDelete = () => {
@@ -86,27 +88,19 @@ const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, isL
                 onConfirm={handleDelete}
                 description="This action can't be undone, Are you sure?"
             />
-            <Modal
-                title="Submit Student level"
-                description="Select the appropriate level for the Student"
+            <SubmitLevelModal
+                courseName={courseName}
                 isOpen={isSubmitLevelOpen}
-                onClose={() => setIsSubmitLevelOpen(false)}
-            >
-                <div className="flex items-center justify-between p-2">
-                    <SelectField
-                        disabled={!!loadingToast}
-                        placeholder="Select Level"
-                        listTitle="Level"
-                        values={level}
-                        setValues={setLevel}
-                        data={courseLevels.map(level => ({
-                            Active: true,
-                            ...level
-                        }))}
-                    />
-                    <Button disabled={!!loadingToast} type="button" onClick={handleSubmitLevel}>Add to Waiting list</Button>
-                </div>
-            </Modal>
+                setIsOpen={setIsSubmitLevelOpen}
+                oralFeedback={oralFeedback}
+                setOralFeedback={setOralFeedback}
+                loading={!!loadingToast}
+                level={level}
+                setLevel={setLevel}
+                courseLevels={courseLevels.map(l => ({ id: l.value, name: l.label }))}
+                handleSubmitLevel={handleSubmitLevel}
+                oralQuestions={oralTestQuestions}
+            />
             <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
                 <DropdownMenuTrigger asChild>
                     <Button customeColor="mutedIcon" variant={"icon"} >

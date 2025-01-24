@@ -11,6 +11,8 @@ import { Info } from "lucide-react";
 import Modal from "@/components/ui/modal";
 import { RefundModal } from "@/components/modals/RefundModal";
 import { Prisma } from "@prisma/client";
+import Link from "next/link";
+import { Button } from "../ui/button";
 
 const OrderInfoPanel = ({ data }: {
     data: Prisma.LeadGetPayload<{
@@ -130,7 +132,9 @@ const OrderInfoPanel = ({ data }: {
                                 {
                                     accessorKey: "name",
                                     header: "Name",
-                                    cell: ({ row }) => <>{row.original.name}</>
+                                    cell: ({ row }) => <Link href={`/content/courses/${row.original.slug}`}>
+                                        <Button variant={"link"}>{row.original.name}</Button>
+                                    </Link>
                                 },
                                 {
                                     accessorKey: "price",

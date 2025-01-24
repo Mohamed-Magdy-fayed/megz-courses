@@ -52,6 +52,7 @@ const MyTasksPage: NextPage = () => {
                                     ),
                                 writtenTestTotalPoints: test.writtenTest.totalScore,
                                 oralTestMeeting: test.oralTestMeeting,
+                                oralTestQuestions: test.writtenTest.oralTestQuestions,
                                 createdBy: test.createdBy?.name || "Null",
                                 createdAt: format(test.createdAt, "PPPp"),
                                 updatedAt: format(test.updatedAt, "PPPp"),

@@ -34,6 +34,8 @@ import WrapWithTooltip from "@/components/ui/wrap-with-tooltip";
 import { PlacementTest } from "@prisma/client";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { AfterSubmitData, CreatedUserData } from "@/components/leads/CreateQuickOrderModal";
+import OrderDetailsModal from "@/components/leads/OrderDetailsModal";
 
 export default function LeadPage() {
     const router = useRouter()
@@ -48,12 +50,12 @@ export default function LeadPage() {
     const [showReminders, setShowReminders] = useState(false);
     const [isEditReminderOpen, setIsEditReminderOpen] = useState(false);
     const [isEditNoteOpen, setIsEditNoteOpen] = useState("");
-    const [courseId, setCourseId] = useState("");
     const [isDeleteNoteOpen, setIsDeleteNoteOpen] = useState(false);
-    const [isAddingInteraction, setIsAddingInteraction] = useState(false);
     const [isEditContactInfo, setIsEditContactInfo] = useState(false);
     const [isScheduleTestOpen, setIsScheduleTestOpen] = useState(false)
     const [isCreateOrderOpen, setIsCreateOrderOpen] = useState(false)
+    const [orderDetailsOpen, setOrderDetailsOpen] = useState(false)
+    const [userDetails, setUserDetails] = useState<CreatedUserData>({ email: "", password: "", leadCode: "", writtenTestUrl: "" })
 
     const [loadingToast, setLoadingToast] = useState<toastType>();
     const { toast } = useToast()
@@ -150,8 +152,6 @@ export default function LeadPage() {
         deleteMutation.mutate([leadData.lead.id])
     }
 
-
-
     const handleDeleteNote = (noteId: string) => {
         deleteNoteMutation.mutate([noteId])
     }
@@ -209,6 +209,11 @@ export default function LeadPage() {
                 onClose={() => setIsDeleteOpen(false)}
                 onConfirm={handleDelete}
                 description="The lead data can not be restored after this action, are you sure?"
+            />
+            <OrderDetailsModal
+                isOpen={orderDetailsOpen}
+                setIsOpen={(val) => setOrderDetailsOpen(val)}
+                userDetails={userDetails}
             />
             <SchedulePlacementTestModal leadCode={code} setIsScheduleTestOpen={setIsScheduleTestOpen} isScheduleTestOpen={isScheduleTestOpen} />
             <CreateOrderModal

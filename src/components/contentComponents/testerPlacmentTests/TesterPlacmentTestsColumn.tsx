@@ -43,6 +43,7 @@ export type Column = {
     writtenTestResult?: number,
     writtenTestTotalPoints?: number,
     oralTestMeeting: Meeting,
+    oralTestQuestions: string | null,
     createdBy: string,
     createdAt: string,
     updatedAt: string,
@@ -236,6 +237,7 @@ export const columns: ColumnDef<Column>[] = [
             courseId={row.original.courseId}
             courseName={row.original.courseName}
             courseLevels={row.original.courseLevels}
+            oralTestQuestions={row.original.oralTestQuestions}
         />,
     },
 ];

@@ -12,7 +12,7 @@ import { env } from "@/env.mjs";
 import { sendZohoEmail } from "@/lib/emailHelpers";
 import { getTotalSize } from "@/lib/firebaseStorage";
 import { PrismaClient } from "@prisma/client";
-import { LetsGo } from "@/lib/mockData";
+import { LetsGo, LetsGo2 } from "@/lib/mockData";
 
 export const setupRouter = createTRPCRouter({
   start: publicProcedure
@@ -110,6 +110,10 @@ export const setupRouter = createTRPCRouter({
       )
 
       return { resettedModels }
+    }),
+  reset2: publicProcedure
+    .mutation(async ({ ctx }) => {
+      return await LetsGo2(ctx.prisma)
     }),
   update: publicProcedure
     .input(

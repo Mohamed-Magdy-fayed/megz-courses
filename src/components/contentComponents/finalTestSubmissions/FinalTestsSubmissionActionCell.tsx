@@ -6,7 +6,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { EyeIcon, FileCheck2Icon, MoreVertical, Trash2Icon } from "lucide-react";
+import { CheckSquareIcon, EyeIcon, MoreVertical, Trash2Icon } from "lucide-react";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import { api } from "@/lib/api";
@@ -14,6 +14,7 @@ import { createMutationOptions } from "@/lib/mutationsHelper";
 import { FinalTestSubmissionRow } from "@/components/contentComponents/finalTestSubmissions/FinalTestSubmissionsColumn";
 import { AlertModal } from "@/components/modals/AlertModal";
 import Link from "next/link";
+import SubmitOralTestModal from "@/components/modals/SubmitOralTestModal";
 
 interface ActionCellProps {
     id: string;
@@ -23,11 +24,25 @@ interface ActionCellProps {
 const ActionCell: React.FC<ActionCellProps> = ({ id, submission }) => {
     const [isOpen, setIsOpen] = useState(false)
     const [isDeleteOpen, setIsDeleteOpen] = useState(false)
-    const [isUpdateRatingOpen, setIsUpdateRatingOpen] = useState(false)
+    const [isUpdateOralOpen, setIsUpdateOralOpen] = useState(false)
     const [loadingToast, setLoadingToast] = useState<toastType | undefined>()
+    const [oralFeedback, setOralFeedback] = useState("")
 
     const { toast } = useToast();
     const trpcUtils = api.useUtils()
+
+    const submitOralMutation = api.systemFormSubmissions.submitOralTest.useMutation(
+        createMutationOptions({
+            toast,
+            loadingToast,
+            setLoadingToast,
+            trpcUtils,
+            successMessageFormatter: () => {
+                setIsUpdateOralOpen(false)
+                return `Oral test feedback submitted!`
+            }
+        })
+    )
 
     const deleteMutation = api.systemFormSubmissions.deleteSystemFormSubmission.useMutation(
         createMutationOptions({
@@ -42,6 +57,10 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, submission }) => {
         })
     )
 
+    const handleSubmit = () => {
+        submitOralMutation.mutate({ id, oralFeedback })
+    }
+
     const onDelete = () => {
         deleteMutation.mutate({ ids: [id] })
     }
@@ -53,6 +72,16 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, submission }) => {
                 onClose={() => setIsDeleteOpen(false)}
                 onConfirm={onDelete}
                 loading={!!loadingToast}
+            />
+            <SubmitOralTestModal
+                courseName={"Oral Test"}
+                isOpen={isUpdateOralOpen}
+                setIsOpen={setIsUpdateOralOpen}
+                loading={!!loadingToast}
+                oralFeedback={oralFeedback}
+                setOralFeedback={setOralFeedback}
+                oralQuestions={submission.oralQuestions}
+                handleSubmit={handleSubmit}
             />
             <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
                 <DropdownMenuTrigger asChild>
@@ -70,10 +99,10 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, submission }) => {
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => {
                         setIsOpen(false)
-                        setIsUpdateRatingOpen(true)
+                        setIsUpdateOralOpen(true)
                     }}>
-                        <FileCheck2Icon className="w-4 h-4 mr-2" />
-                        Update Rating
+                        <CheckSquareIcon className="w-4 h-4 mr-2" />
+                        Oral Test
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => {
                         setIsOpen(false)

@@ -363,7 +363,7 @@ export const ordersRouter = createTRPCRouter({
             })
 
             return {
-                orderNumber,
+                order,
             }
         }),
     quickOrder: protectedProcedure

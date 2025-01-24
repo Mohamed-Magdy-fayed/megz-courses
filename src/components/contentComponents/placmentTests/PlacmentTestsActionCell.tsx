@@ -5,8 +5,8 @@ import {
     DropdownMenuLabel,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Copy, Edit, EyeIcon, MoreVertical } from "lucide-react";
+import { Button, SpinnerButton } from "@/components/ui/button";
+import { Copy, Edit, Edit3Icon, EyeIcon, MoreVertical, PlusCircleIcon } from "lucide-react";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import { Prisma } from "@prisma/client";
@@ -17,6 +17,8 @@ import { createMutationOptions } from "@/lib/mutationsHelper";
 import { useRouter } from "next/router";
 import { CustomFormModal } from "@/components/systemForms/CustomFormModal";
 import Link from "next/link";
+import Modal from "@/components/ui/modal";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ActionCellProps {
     id: string;
@@ -25,6 +27,8 @@ interface ActionCellProps {
 
 const ActionCell: React.FC<ActionCellProps> = ({ id, systemForm }) => {
     const { toastInfo, toast } = useToast();
+    const [isOralTestOpen, setIsOralTestOpen] = useState(false)
+    const [oralText, setOralText] = useState(systemForm.oralTestQuestions ? systemForm.oralTestQuestions : "")
     const [isOpen, setIsOpen] = useState(false)
     const [isEditOpen, setIsEditOpen] = useState(false)
     const [isDeleteOpen, setIsDeleteOpen] = useState(false)
@@ -46,6 +50,27 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, systemForm }) => {
         })
     )
 
+    const upsertOralTestMutation = api.systemForms.upsertOralTest.useMutation(
+        createMutationOptions({
+            trpcUtils,
+            loadingToast,
+            setLoadingToast,
+            toast,
+            successMessageFormatter: ({ updatedForm }) => {
+                setIsOralTestOpen(false)
+                return `updated oral test for ${updatedForm.title} Form`
+            },
+            loadingMessage: "Loading..."
+        })
+    )
+
+    const onUpsertOralTest = () => {
+        upsertOralTestMutation.mutate({
+            formId: systemForm.id,
+            questions: oralText,
+        })
+    };
+
     const onDelete = () => {
         deleteMutation.mutate([id])
     };
@@ -57,6 +82,27 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, systemForm }) => {
                 onClose={() => setIsDeleteOpen(false)}
                 loading={!!loadingToast}
                 onConfirm={onDelete}
+            />
+            <Modal
+                title="Add Oral Test"
+                description="Add the questions for your test."
+                isOpen={isOralTestOpen}
+                onClose={() => setIsOralTestOpen(false)}
+                children={(
+                    <div className="p-2 grid gap-4 place-items-end">
+                        <Textarea
+                            placeholder="Questions here..."
+                            value={oralText}
+                            onChange={(e) => setOralText(e.target.value)}
+                        />
+                        <SpinnerButton
+                            icon={PlusCircleIcon}
+                            isLoading={!!loadingToast}
+                            text="Update"
+                            onClick={onUpsertOralTest}
+                        />
+                    </div>
+                )}
             />
             <CustomFormModal isOpen={isEditOpen} setIsOpen={setIsEditOpen} systemForm={systemForm} />
             <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
@@ -79,6 +125,13 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, systemForm }) => {
                     }}>
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => {
+                        setIsOralTestOpen(true)
+                        setIsOpen(false)
+                    }}>
+                        <Edit3Icon className="w-4 h-4 mr-2" />
+                        Update Oral Questions
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => {
                         setIsDeleteOpen(true)

@@ -187,5 +187,20 @@ export const systemFormSubmissionsRouter = createTRPCRouter({
             })
 
             return { deletedSubmissions }
+        }),
+    submitOralTest: protectedProcedure
+        .input(z.object({
+            id: z.string(),
+            oralFeedback: z.string(),
+        }))
+        .mutation(async ({ ctx, input: { id, oralFeedback } }) => {
+            if (!hasPermission(ctx.session.user, "systemFormsSubmissions", "update")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You're not authorized to take this action, please contact your Admin!" })
+
+            const updatedSubmission = await ctx.prisma.systemFormSubmission.update({
+                where: { id },
+                data: { oralFeedback }
+            })
+
+            return { updatedSubmission }
         })
 });

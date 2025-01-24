@@ -13,6 +13,7 @@ export type PlacmentTestScheduleRow = {
     id: string;
     isLevelSubmitted: boolean,
     courseId: string,
+    courseName: string,
     courseLevels: { label: string, value: string }[],
     testLink: string,
     studentUserId: string;
@@ -21,6 +22,7 @@ export type PlacmentTestScheduleRow = {
     studentImage: string | null;
     oralTestTime: Date;
     oralTestMeeting: Meeting;
+    oralTestQuestions: string | null;
     testerId: string;
     testerName: string;
     testerEmail: string;
@@ -160,6 +162,8 @@ export const columns: ColumnDef<PlacmentTestScheduleRow>[] = [
         ),
         cell: ({ row }) => <ActionCell
             id={row.original.id}
+            courseName={row.original.courseName}
+            oralTestQuestions={row.original.oralTestQuestions}
             isLevelSubmitted={row.original.isLevelSubmitted}
             testLink={row.original.testLink}
             userId={row.original.studentUserId}

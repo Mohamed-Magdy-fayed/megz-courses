@@ -19,9 +19,10 @@ export type FinalTestSubmissionRow = {
         isCorrect: boolean;
     }[];
     student: User;
-    levelSlugs: { label: string, value: string }[],
+    levelSlugs: { label: string, value: string, id: string }[],
     levelSlug: string,
     certificate: Certificate | undefined;
+    oralQuestions: string | null;
     email: string;
     courseId: string;
     courseName: string;

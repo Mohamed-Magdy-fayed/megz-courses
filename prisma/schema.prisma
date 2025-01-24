@@ -144,6 +144,7 @@ model PlacementTest {
     courseId        String     @db.ObjectId
     writtenTest     SystemForm @relation(fields: [writtenTestId], references: [id], onDelete: Cascade)
     writtenTestId   String     @db.ObjectId
+    oralFeedback    String?
     oralTestMeeting Meeting
     oralTestTime    DateTime
     tester          Tester     @relation(fields: [testerId], references: [id], onDelete: Cascade)
@@ -708,12 +709,13 @@ enum SystemFormTypes {
 }
 
 model SystemForm {
-    id            String          @id @default(auto()) @map("_id") @db.ObjectId
-    title         String
-    description   String
-    totalScore    Int
-    googleFormUrl String?
-    type          SystemFormTypes
+    id                String          @id @default(auto()) @map("_id") @db.ObjectId
+    title             String
+    description       String
+    totalScore        Int
+    googleFormUrl     String?
+    oralTestQuestions String?
+    type              SystemFormTypes
 
     googleClient   GoogleClient?          @relation(fields: [courseId], references: [id], onDelete: Cascade)
     googleClientId String?                @db.ObjectId
@@ -802,8 +804,9 @@ type SystemFormSubmissionAnswer {
 model SystemFormSubmission {
     id String @id @default(auto()) @map("_id") @db.ObjectId
 
-    answers    SystemFormSubmissionAnswer[]
-    totalScore Int
+    answers      SystemFormSubmissionAnswer[]
+    totalScore   Int
+    oralFeedback String?
 
     student      User       @relation(fields: [studentId], references: [id], onDelete: Cascade)
     studentId    String     @db.ObjectId
