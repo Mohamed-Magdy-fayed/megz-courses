@@ -245,14 +245,18 @@ export const zoomGroupsRouter = createTRPCRouter({
     createZoomGroup: protectedProcedure
         .input(
             z.object({
-                startDate: z.date(),
+                sessionDates: z.array(z.object({
+                    date: z.date(),
+                    sessionId: z.string().optional(),
+                })),
                 studentIds: z.array(z.string()),
                 courseId: z.string(),
                 teacherId: z.string(),
                 courseLevelId: z.string(),
             })
         )
-        .mutation(async ({ input: { startDate, studentIds, courseId, teacherId, courseLevelId }, ctx }) => {
+        .mutation(async ({ input: { sessionDates, studentIds, courseId, teacherId, courseLevelId }, ctx }) => {
+            if (sessionDates.some(d => !d.sessionId)) throw new TRPCError({ code: "BAD_REQUEST", message: "Some sessions are not found!" })
             if (!hasPermission(ctx.session.user, "zoomGroups", "create")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not allowed to take this action, Please contact your Admin!" })
 
             const Teacher = await ctx.prisma.teacher.findUnique({ where: { id: teacherId }, include: { user: true } })
@@ -264,6 +268,9 @@ export const zoomGroupsRouter = createTRPCRouter({
             const level = course.levels.find(({ id }) => id === courseLevelId)
             if (!level) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No levels!" })
             if (level.materialItems.length === 0) throw new TRPCError({ code: "BAD_REQUEST", message: "No materials in this level!" })
+
+            const startDate = sessionDates[0]?.date
+            if (!startDate) throw new TRPCError({ code: "BAD_REQUEST", message: "No dates selected!" })
 
             const { zoomClient } = await getAvailableZoomClient(startDate, ctx.prisma, 120)
             if (!zoomClient) throw new TRPCError({ code: "BAD_REQUEST", message: "No available zoom account at the selected time!" })
@@ -279,42 +286,6 @@ export const zoomGroupsRouter = createTRPCRouter({
             })
             const { meetingNumber, meetingPassword } = await createZoomMeeting(meetingConfig, zoomClient?.accessToken)
 
-            type ZoomSession = {
-                sessionDate: Date,
-                sessionLink: string,
-                sessionStatus: SessionStatus,
-                attenders: string[],
-                materialItemId: string,
-                zoomClientId: string,
-            }
-
-            const generateZoomSessions = async (startDate: Date, level: CourseLevel & { materialItems: MaterialItem[] }, zoomClientId: string): Promise<ZoomSession[]> => {
-                const sessions: ZoomSession[] = [];
-                let currentDate = new Date(startDate)
-
-                const startDay = currentDate.getDay();
-                const days = getGroupSessionDays(startDay)
-
-                for (let index = 0; index < level.materialItems.length; index++) {
-                    const materialItem = level.materialItems[index];
-                    while (!sessions[index]) {
-                        if (days.some((day) => day === currentDate.getDay())) {
-                            sessions.push({
-                                attenders: [],
-                                sessionStatus: "Scheduled",
-                                sessionDate: new Date(currentDate),
-                                sessionLink: "",
-                                materialItemId: materialItem?.id!,
-                                zoomClientId,
-                            })
-                        }
-                        currentDate.setDate(currentDate.getDate() + 1)
-                    }
-                }
-
-                return sessions;
-            }
-
             const zoomGroup = await ctx.prisma.zoomGroup.create({
                 data: {
                     startDate: new Date(startDate),
@@ -324,7 +295,14 @@ export const zoomGroupsRouter = createTRPCRouter({
                     groupStatus: "Waiting",
                     zoomSessions: {
                         createMany: {
-                            data: (await generateZoomSessions(startDate, level, zoomClient.id))
+                            data: sessionDates.map(session => ({
+                                attenders: [],
+                                sessionStatus: "Scheduled",
+                                sessionDate: session.date,
+                                sessionLink: "",
+                                materialItemId: session.sessionId,
+                                zoomClientId: zoomClient.id,
+                            }))
                         }
                     },
                     students: { connect: studentIds.map(c => ({ id: c })) },
@@ -354,8 +332,8 @@ export const zoomGroupsRouter = createTRPCRouter({
                 }
             })
 
-            await Promise.all(zoomGroup.students.map(async (student) => {
-                await ctx.prisma.userNote.create({
+            await ctx.prisma.$transaction(zoomGroup.students.map((student) => (
+                ctx.prisma.userNote.create({
                     data: {
                         sla: 0,
                         status: "Closed",
@@ -370,7 +348,7 @@ export const zoomGroupsRouter = createTRPCRouter({
                         createdByUser: { connect: { id: ctx.session.user.id } },
                     }
                 })
-            }))
+            )))
 
 
             return {

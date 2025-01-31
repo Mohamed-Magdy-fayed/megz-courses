@@ -1,18 +1,26 @@
 import { api } from "@/lib/api";
 import { FC, useEffect, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Typography } from "../ui/Typoghraphy";
 import { toastType, useToast } from "../ui/use-toast";
 import SelectField from "../ui/SelectField";
 import Spinner from "../Spinner";
 import { DatePicker } from "../ui/DatePicker";
-import { CourseType, getLevelWaitingList, getWaitingList } from "@/lib/utils";
+import { cn, CourseType, getLevelWaitingList, getWaitingList } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { createMutationOptions } from "@/lib/mutationsHelper";
 import SingleSelectField from "@/components/SingleSelectField";
+import { DayPicker, SelectMultipleContext, SelectMultipleEventHandler, SelectMultipleProvider, useSelectMultiple } from "react-day-picker";
+import { ChevronLeftIcon } from "lucide-react";
+import { ChevronRightIcon } from "lucide-react";
+import { DateMultiplePicker } from "@/components/ui/DateMultiplePicker";
+import { TimePicker } from "@/components/ui/TimePicker";
+import { TimePickerInput } from "@/components/ui/TimePickerInput";
+import { TimePickerSelect } from "@/components/ui/TimePickerSelect";
+import { format } from "date-fns";
 
 interface ZoomGroupFormProps {
     setIsOpen: (val: boolean) => void;
@@ -36,7 +44,8 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
     const [courseId, setCourseId] = useState(initialData?.courseId);
     const [courseLevelId, setCourseLevelId] = useState(initialData?.courseLevel.id);
     const [studentIds, setStudentIds] = useState<string[]>(initialData ? initialData.studentIds : []);
-    const [date, setDate] = useState<Date | undefined>(initialData ? initialData.startDate : new Date());
+    const [date, setDate] = useState<Date | undefined>(initialData ? initialData.startDate : new Date(new Date().setMinutes(30)));
+    const [days, setDays] = useState<Date[]>([]);
     const [loadingToast, setLoadingToast] = useState<toastType>()
     const { toast } = useToast()
 
@@ -44,6 +53,7 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
 
     const { data: teachersData } = api.trainers.getTeachers.useQuery();
     const { data: coursesData } = api.courses.getAll.useQuery();
+    const { data: zoomClients } = api.zoomAccounts.getZoomAccounts.useQuery();
     const trpcUtils = api.useUtils();
     const createZoomGroupMutation = api.zoomGroups.createZoomGroup.useMutation(
         createMutationOptions({
@@ -65,8 +75,22 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
         if (!teacherId) return toastError("Please select the trainer!")
         if (!courseId) return toastError("Please select the course!")
         if (!courseLevelId) return toastError("Please select the courseLevel!")
+
+        const materials = coursesData?.courses.find(c => c.id === courseId)?.levels.find(l => l.id === courseLevelId)?.materialItems || []
+
+        const sessionDates: { sessionId: string | undefined; date: Date; }[] = days.map((d, idx) => {
+            const sessionId = materials[idx]?.id
+
+            return {
+                sessionId,
+                date: d,
+            }
+        })
+
+        if (sessionDates.some(d => !d.sessionId)) return toastError("Some sessions are missing!")
+
         createZoomGroupMutation.mutate({
-            startDate: date,
+            sessionDates,
             courseId,
             teacherId,
             courseLevelId,
@@ -115,6 +139,9 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
         <div>
             {!teachersData || !coursesData ? <Spinner className="w-fit mx-auto" /> : (
                 <div className="flex flex-col p-4 items-start gap-4 h-full">
+                    <SelectMultipleProvider initialProps={{}}>
+
+                    </SelectMultipleProvider>
                     <SingleSelectField
                         selected={teacherId}
                         placeholder="Select a trainer"
@@ -256,11 +283,30 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                             }
                         />
                     )}
-                    <DatePicker
-                        className="row-start-2"
+                    <TimePickerSelect
                         date={date}
                         setDate={setDate}
                     />
+                    <div className="flex gap-4">
+                        <DateMultiplePicker
+                            trainerSessions={teachersData?.teachers.find(t => t.id === teacherId)?.groups.flatMap(g => g.zoomSessions) || []}
+                            hours={date?.getHours() || 0}
+                            minutes={date?.getMinutes() || 0}
+                            maxDays={coursesData.courses.find(c => c.id === courseId)?.levels.find(l => l.id === courseLevelId)?.materialItems.length || 0}
+                            zoomClients={zoomClients?.zoomAccounts || []}
+                            days={days}
+                            setDays={setDays}
+                        />
+                        <div className="flex flex-col gap-2 whitespace-nowrap">
+                            {coursesData.courses.find(c => c.id === courseId)?.levels.find(l => l.id === courseLevelId)?.materialItems.map((item, idx) => (
+                                <>
+                                    <Typography>{item.title}</Typography>
+                                    <Typography>{days[idx] && format(days[idx], "PPPP")}</Typography>
+                                    <Separator />
+                                </>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             )}
             <Separator></Separator>

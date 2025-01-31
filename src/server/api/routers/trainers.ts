@@ -46,7 +46,7 @@ export const trainersRouter = createTRPCRouter({
         },
         include: {
           user: true,
-          groups: true,
+          groups: { include: { zoomSessions: true } },
         },
       })
 

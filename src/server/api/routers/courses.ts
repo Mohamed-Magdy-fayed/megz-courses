@@ -115,7 +115,7 @@ export const coursesRouter = createTRPCRouter({
           }
         },
         systemForms: true,
-        levels: true,
+        levels: { include: { materialItems: true } },
         courseStatus: true,
       },
       orderBy: { createdAt: "desc" }

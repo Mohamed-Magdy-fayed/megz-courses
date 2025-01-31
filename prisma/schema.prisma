@@ -693,10 +693,13 @@ model MessageTemplate {
 }
 
 model Parameters {
-    id        String   @id @default(auto()) @map("_id") @db.ObjectId
-    name      String
-    altName   String
-    value     String
+    id      String @id @default(auto()) @map("_id") @db.ObjectId
+    number  Int
+    name    String
+    altName String
+    value   String
+
+    updatedBy String
     updatedAt DateTime @updatedAt
     createdAt DateTime @default(now())
 }
