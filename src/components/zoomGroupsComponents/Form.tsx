@@ -78,9 +78,8 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
 
         const materials = coursesData?.courses.find(c => c.id === courseId)?.levels.find(l => l.id === courseLevelId)?.materialItems || []
 
-        const sessionDates: { sessionId: string | undefined; date: Date; }[] = days.map((d, idx) => {
+        const sessionDates = days.map((d, idx) => {
             const sessionId = materials[idx]?.id
-
             return {
                 sessionId,
                 date: d,
