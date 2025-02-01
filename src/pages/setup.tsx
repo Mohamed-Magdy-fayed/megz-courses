@@ -69,9 +69,9 @@ const SetupPage = () => {
     </div>
   )
 
-  // if (setupQuery.data?.Admin?.email) return (
-  //   <NotFoundPage />
-  // )
+  if (setupQuery.data?.Admin?.email) return (
+    <NotFoundPage />
+  )
 
   return (
     <ScrollArea className="h-screen">

@@ -44,7 +44,7 @@ const MaterialsClient = ({ formattedData }: { formattedData: MaterialsRow[] }) =
             data={formattedData}
             setData={(data) => setMaterialItems(data.map(item => item.id))}
             onDelete={onDelete}
-            searches={[{ key: "title", label: "Title" }]}
+            searches={[{ key: "title", label: "Title" }, { key: "sessionOrder", label: "No." }]}
             filters={[
                 { key: "levelSlug", filterName: "Level", values: formattedData[0]?.levelSlugs || [] },
                 {
@@ -67,9 +67,10 @@ const MaterialsClient = ({ formattedData }: { formattedData: MaterialsRow[] }) =
             handleImport={(data) => {
                 importMutation.mutate({
                     courseSlug: formattedData[0]?.courseSlug!,
-                    data: data.map(({ levelSlug, slug, subTitle, title, type }) => ({
+                    data: data.map(({ levelSlug, slug, subTitle, title, type, sessionOrder }) => ({
                         levelSlug,
                         slug,
+                        sessionOrder,
                         subTitle,
                         title,
                         type,

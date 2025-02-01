@@ -94,11 +94,12 @@ export const generateMaterials = async (prisma: PrismaClient) => {
     const createdCourses = await prisma.course.findMany({ include: { levels: true } })
 
     const addedMaterials = await prisma.$transaction(
-        courses.flatMap(course => course.levels.flatMap(level => level.materials.map(item => prisma.materialItem.create({
+        courses.flatMap(course => course.levels.flatMap(level => level.materials.map((item, idx) => prisma.materialItem.create({
             data: {
                 title: item.title,
                 subTitle: item.subTitle,
                 slug: item.slug,
+                sessionOrder: idx + 1,
                 uploads: item.uploads,
                 type: "Upload",
                 courseLevel: { connect: { id: createdCourses.find(c => c.slug === course.slug)?.levels.find(lvl => level.slug === lvl.slug)?.id } },

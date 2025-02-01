@@ -34,7 +34,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import Modal from "@/components/ui/modal";
 import { Prisma } from "@prisma/client";
 import { useSession } from "next-auth/react";
-import { downloadTemplate, exportToExcel, importFromExcel } from "@/lib/xlsx";
+import { downloadTemplate, exportToExcel, importFromExcel } from "@/lib/exceljs";
 import { useDropFile } from "@/hooks/useDropFile";
 import { Input } from "@/components/ui/input";
 import { toastType, useToast } from "@/components/ui/use-toast";

@@ -15,7 +15,7 @@ import Modal from "@/components/ui/modal";
 import UploadMaterialForm from "@/components/contentComponents/materials/uploadForm/UploadMaterialForm";
 import { MaterialsRow } from "@/components/contentComponents/materials/MaterialsColumn";
 
-const MaterialActionCell: React.FC<MaterialsRow> = ({ courseSlug, slug, subTitle, uploads, createdAt, id, levelSlug, levelName, levelSlugs, materialItemSlug, title, type, updatedAt }) => {
+const MaterialActionCell: React.FC<MaterialsRow> = ({ courseSlug, slug, subTitle, uploads, createdAt, id, levelSlug, levelName, levelSlugs, materialItemSlug, title, type, updatedAt, sessionOrder }) => {
     const { toastInfo } = useToast();
     const [isOpen, setIsOpen] = useState(false)
     const [isEditOpen, setIsEditOpen] = useState(false)
@@ -45,6 +45,7 @@ const MaterialActionCell: React.FC<MaterialsRow> = ({ courseSlug, slug, subTitle
                         type,
                         updatedAt,
                         slug,
+                        sessionOrder,
                         subTitle,
                         uploads,
                     }} />

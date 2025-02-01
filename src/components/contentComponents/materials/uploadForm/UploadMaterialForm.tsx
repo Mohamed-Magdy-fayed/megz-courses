@@ -16,6 +16,7 @@ import { createMutationOptions } from "@/lib/mutationsHelper";
 const formSchema = z.object({
     title: z.string().min(1, "Title can't be empty"),
     subTitle: z.string(),
+    sessionOrder: z.number(),
     levelSlug: z.string().min(1, "Please select a level!"),
     slug: z.string().min(1, "Please add a slug").regex(/^\S*$/, "No spaces allowed"),
     uploads: z.array(z.string()),
@@ -40,6 +41,7 @@ const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: Material
                 subTitle: initialData.subTitle || "",
                 levelSlug: initialData.levelSlug,
                 slug: initialData.slug || "",
+                sessionOrder: initialData.sessionOrder || 0,
                 files: [],
                 uploads: initialData.uploads || [],
             }
@@ -47,6 +49,7 @@ const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: Material
                 title: "",
                 subTitle: "",
                 levelSlug: undefined,
+                sessionOrder: 0,
                 slug: "",
                 files: [],
                 uploads: [],
@@ -62,15 +65,7 @@ const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: Material
             setLoadingToast,
             toast,
             successMessageFormatter: ({ exists }) => {
-                if (exists) {
-                    return `material item with same slug already exists!`
-                }
 
-                const { files, levelSlug, title, slug, subTitle } = form.getValues()
-
-                uploadFiles(files, `uploads/content/courses/${courseSlug}/${levelSlug}/${slug}`).then((data) => {
-                    uploadMaterialMutation.mutateAsync({ title, subTitle, uploads: data, slug, levelSlug, courseSlug });
-                }) || []
 
                 return ""
             },
@@ -99,14 +94,27 @@ const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: Material
 
     const { uploadFiles } = useFileUpload();
 
-    const handleSubmit = async ({ files, slug, subTitle, title, levelSlug }: UploadsFormValues) => {
+    const handleSubmit = async ({ files, slug, subTitle, title, levelSlug, sessionOrder }: UploadsFormValues) => {
         if (!files) return toastError("no files selected")
         if (title === "") return toastError("please enter a title")
         if (!levelSlug[0]) return toastError("Please select a level")
 
-        if (initialData) return editUploadMaterialMutation.mutate({ id: initialData.id, title, subTitle, slug, levelSlug, courseSlug })
+        if (initialData) {
+            await editUploadMaterialMutation.mutateAsync({ id: initialData.id, title, subTitle, slug, levelSlug, courseSlug, sessionOrder })
+            return setIsOpen(false)
+        }
 
-        checkMaterialMutation.mutate({ slug, levelSlug })
+        const { exists } = await checkMaterialMutation.mutateAsync({ slug, levelSlug })
+
+        if (exists) {
+            return toastError(`material item with same slug already exists!`)
+        }
+
+        const data = await uploadFiles(files, `uploads/content/courses/${courseSlug}/${levelSlug}/${slug}`)
+
+        await uploadMaterialMutation.mutateAsync({ title, subTitle, uploads: data, slug, levelSlug, courseSlug, sessionOrder });
+
+        setIsOpen(false)
     };
 
 
@@ -172,6 +180,19 @@ const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: Material
                             <FormLabel>URL Slug</FormLabel>
                             <FormControl>
                                 <Input disabled={!!loadingToast} placeholder="session_1 (no spaces)" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="sessionOrder"
+                    render={({ field }) => (
+                        <FormItem className="p-4">
+                            <FormLabel>Session Order</FormLabel>
+                            <FormControl>
+                                <Input type="number" disabled={!!loadingToast} placeholder="Session Order" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>

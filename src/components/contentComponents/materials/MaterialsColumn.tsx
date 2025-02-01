@@ -18,6 +18,7 @@ export type MaterialsRow = {
     createdAt: Date,
     updatedAt: Date,
     title: string,
+    sessionOrder: number,
     subTitle: string,
     slug: string,
     uploads: string[],
@@ -70,10 +71,10 @@ export const columns: ColumnDef<MaterialsRow>[] = [
         ),
     },
     {
-        accessorKey: "type",
-        header: "Type",
+        accessorKey: "sessionOrder",
+        header: "Session Order",
         cell: ({ row }) => (
-            <Typography>{row.original.type === "Manual" ? "Interactive" : "Downloadable"}</Typography>
+            <Typography>{row.original.sessionOrder}</Typography>
         )
     },
     {

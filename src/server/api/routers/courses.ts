@@ -191,7 +191,8 @@ export const coursesRouter = createTRPCRouter({
                 include: {
                   courseLevel: true,
                   systemForms: { include: { googleClient: true, items: { include: { questions: { include: { options: true } } } }, materialItem: { include: { courseLevel: true } }, submissions: { include: { student: { include: { certificates: true } } } } } }
-                }
+                },
+                orderBy: { sessionOrder: "asc" }
               },
               systemForms: { include: { materialItem: true, items: { include: { questions: { include: { options: true } } } }, submissions: { include: { student: { include: { certificates: true } } } }, courseLevel: true } },
               course: true,

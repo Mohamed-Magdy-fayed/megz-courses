@@ -25,6 +25,7 @@ export const formSchema = z.object({
   firstTestTitle: z.string(),
   title: z.string(),
   subTitle: z.string(),
+  sessionOrder: z.number(),
   answerCards: z.array(
     z.object({
       id: z.string(),
@@ -104,6 +105,19 @@ const MaterialsForm = ({
               <FormLabel>Material Subtitle</FormLabel>
               <FormControl>
                 <Input placeholder="Subtitle" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="sessionOrder"
+          render={({ field }) => (
+            <FormItem className="p-4">
+              <FormLabel>Session Order</FormLabel>
+              <FormControl>
+                <Input type="number" placeholder="Session Order" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)} />
               </FormControl>
               <FormMessage />
             </FormItem>

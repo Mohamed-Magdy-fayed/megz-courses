@@ -231,6 +231,7 @@ model MaterialItem {
     title         String
     subTitle      String?
     slug          String
+    sessionOrder  Int
     type          MaterialItemType
     uploads       String[]
     manual        MaterialItemManual?
@@ -694,7 +695,7 @@ model MessageTemplate {
 
 model Parameters {
     id      String @id @default(auto()) @map("_id") @db.ObjectId
-    number  Int
+    number  Int    @unique
     name    String
     altName String
     value   String

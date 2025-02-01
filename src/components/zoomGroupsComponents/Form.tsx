@@ -297,7 +297,7 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                             setDays={setDays}
                         />
                         <div className="flex flex-col gap-2 whitespace-nowrap">
-                            {coursesData.courses.find(c => c.id === courseId)?.levels.find(l => l.id === courseLevelId)?.materialItems.map((item, idx) => (
+                            {coursesData.courses.find(c => c.id === courseId)?.levels.find(l => l.id === courseLevelId)?.materialItems.sort((a, b) => a.sessionOrder - b.sessionOrder).map((item, idx) => (
                                 <>
                                     <Typography>{item.title}</Typography>
                                     <Typography>{days[idx] && format(days[idx], "PPPP")}</Typography>

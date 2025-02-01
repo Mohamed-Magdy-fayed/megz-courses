@@ -100,6 +100,7 @@ export const materialItemsRouter = createTRPCRouter({
               practiceQuestions: materialItem.manual?.practiceQuestions,
             },
             slug: materialItem.slug,
+            sessionOrder: materialItem.sessionOrder,
           }
           : {
             title: materialItem.title,
@@ -110,6 +111,7 @@ export const materialItemsRouter = createTRPCRouter({
             },
             uploads: materialItem.uploads,
             slug: materialItem.slug,
+            sessionOrder: materialItem.sessionOrder,
           }
 
         const materialItemDublication = await ctx.prisma.materialItem.create({
@@ -126,11 +128,12 @@ export const materialItemsRouter = createTRPCRouter({
       title: z.string(),
       subTitle: z.string(),
       slug: z.string(),
+      sessionOrder: z.number(),
       courseSlug: z.string(),
       levelSlug: z.string(),
       uploads: z.array(z.string()),
     }))
-    .mutation(async ({ ctx, input: { title, subTitle, slug, courseSlug, levelSlug, uploads } }) => {
+    .mutation(async ({ ctx, input: { title, subTitle, slug, courseSlug, levelSlug, uploads, sessionOrder } }) => {
       if (!hasPermission(ctx.session.user, "courses", "update")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
       const course = await ctx.prisma.course.findUnique({ where: { slug: courseSlug }, select: { id: true } })
       if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "Course not found!" })
@@ -140,6 +143,7 @@ export const materialItemsRouter = createTRPCRouter({
           title,
           subTitle,
           slug,
+          sessionOrder,
           type: "Upload",
           courseLevel: {
             connect: { courseId_slug: { slug: levelSlug, courseId: course.id } },
@@ -159,6 +163,7 @@ export const materialItemsRouter = createTRPCRouter({
         title: z.string(),
         subTitle: z.string(),
         slug: z.string(),
+        sessionOrder: z.number(),
         type: z.enum(validMaterialItemTypes),
       })),
       courseSlug: z.string()
@@ -169,11 +174,12 @@ export const materialItemsRouter = createTRPCRouter({
       const course = await ctx.prisma.course.findUnique({ where: { slug: input.courseSlug }, select: { id: true } })
       if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "Course not found!" })
 
-      const materialItems = await ctx.prisma.$transaction(input.data.map(({ title, subTitle, slug, levelSlug, type }) => ctx.prisma.materialItem.create({
+      const materialItems = await ctx.prisma.$transaction(input.data.map(({ title, subTitle, slug, levelSlug, type, sessionOrder }) => ctx.prisma.materialItem.create({
         data: {
           title,
           subTitle,
           slug,
+          sessionOrder,
           type,
           courseLevel: {
             connect: { courseId_slug: { courseId: course.id, slug: levelSlug } },
@@ -207,10 +213,11 @@ export const materialItemsRouter = createTRPCRouter({
       title: z.string(),
       subTitle: z.string(),
       slug: z.string(),
+      sessionOrder: z.number(),
       levelSlug: z.string(),
       courseSlug: z.string(),
     }))
-    .mutation(async ({ ctx, input: { id, title, subTitle, slug, levelSlug, courseSlug } }) => {
+    .mutation(async ({ ctx, input: { id, title, subTitle, slug, levelSlug, courseSlug, sessionOrder } }) => {
       if (!hasPermission(ctx.session.user, "courses", "update")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
       await ctx.prisma.materialItem.update({ where: { id }, data: { courseLevel: { disconnect: true } } })
 
@@ -225,6 +232,7 @@ export const materialItemsRouter = createTRPCRouter({
           title,
           subTitle,
           slug,
+          sessionOrder,
           courseLevel: {
             connect: { courseId_slug: { courseId: course.id, slug: levelSlug } },
           },
@@ -244,6 +252,7 @@ export const materialItemsRouter = createTRPCRouter({
         firstTestTitle: z.string(),
         title: z.string(),
         slug: z.string(),
+        sessionOrder: z.number(),
         subTitle: z.string(),
         answerCards: z.array(
           z.object({
@@ -295,6 +304,7 @@ export const materialItemsRouter = createTRPCRouter({
           subTitle,
           title,
           slug,
+          sessionOrder,
           vocabularyCards,
         },
         ctx,
@@ -306,6 +316,7 @@ export const materialItemsRouter = createTRPCRouter({
             subTitle,
             type: "Manual",
             slug,
+            sessionOrder,
             courseLevel: {
               connect: { id: courseLevelId },
             },
