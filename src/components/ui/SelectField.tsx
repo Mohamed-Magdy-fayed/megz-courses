@@ -1,7 +1,7 @@
 import { ButtonHTMLAttributes, Dispatch, FC, ReactNode, SetStateAction, useEffect, useState } from 'react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { Button } from '../ui/button'
-import { Check, ChevronsUpDown, XIcon } from 'lucide-react'
+import { Check, ChevronDownIcon, ChevronsDownIcon, ChevronsUpDown, XIcon } from 'lucide-react'
 import { Input } from '../ui/input'
 import { cn } from '@/lib/utils'
 import { ScrollArea } from '../ui/scroll-area'
@@ -41,7 +41,7 @@ const SelectField: FC<SelectFieldProps<any>> = ({ placeholder, listTitle, data, 
                 <Button
                     variant="outline"
                     customeColor={"foregroundOutlined"}
-                    className={cn('max-w-sm flex flex-wrap items-center h-fit gap-2 justify-start', className)}
+                    className={cn('flex flex-wrap w-full items-center h-fit gap-2 justify-between', className)}
                     {...props}
                 >
                     {values.length === 0 ? (
@@ -53,7 +53,7 @@ const SelectField: FC<SelectFieldProps<any>> = ({ placeholder, listTitle, data, 
                             {item.label}
                         </Typography>
                     ))}
-                    <ChevronsUpDown className="h-4 w-4 opacity-50 ml-auto" />
+                    <ChevronDownIcon className="h-4 w-4 opacity-50 ml-auto" />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>

@@ -16,6 +16,7 @@ import GoogleAccountForm from "@/components/googleAccount/GoogleAccountForm";
 import MetaConfigTab from "@/components/systemConfigurations/MetaConfigTab";
 import WhatsappConfigTab from "@/components/systemConfigurations/WhatsappConfigTab";
 import ParamsConfigTab from "@/components/systemConfigurations/ParamsConfigTab";
+import OnMeetingAccountForm from "@/components/onMeetingAccount/OnMeetingAccountForm";
 
 const tabs = [
     { value: "site_identity", label: "Site Identity" },
@@ -28,6 +29,7 @@ const tabs = [
 
 const ConfigPage: NextPage = () => {
     const [isZoomOpen, setIsZoomOpen] = useState(false)
+    const [isOnMeetingOpen, setIsOnMeetingOpen] = useState(false)
     const [isGoogleOpen, setIsGoogleOpen] = useState(false)
 
     const { data, refetch } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: false })
@@ -57,13 +59,28 @@ const ConfigPage: NextPage = () => {
                             <ZoomAccountForm setIsOpen={setIsZoomOpen} />
                         )}
                     />
+                    <Modal
+                        description=""
+                        title="Add an onMeeting account"
+                        isOpen={isOnMeetingOpen}
+                        onClose={() => setIsOnMeetingOpen(false)}
+                        children={(
+                            <OnMeetingAccountForm setIsOpen={setIsOnMeetingOpen} />
+                        )}
+                    />
                     <div className="space-y-4">
                         <div className="flex items-center justify-between w-full">
                             <ConceptTitle>Zoom Accounts</ConceptTitle>
-                            <Button onClick={() => setIsZoomOpen(true)} >
-                                <PlusSquare className="w-4 h-4 mr-2" />
-                                Add an account
-                            </Button>
+                            <div className="flex items-center gap-4">
+                                <Button onClick={() => setIsOnMeetingOpen(true)} >
+                                    <PlusSquare className="w-4 h-4 mr-2" />
+                                    On Meeting
+                                </Button>
+                                <Button onClick={() => setIsZoomOpen(true)} >
+                                    <PlusSquare className="w-4 h-4 mr-2" />
+                                    Zoom
+                                </Button>
+                            </div>
                         </div>
                         <PaperContainer>
                             <ZoomAccountsClient />

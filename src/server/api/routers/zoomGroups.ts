@@ -10,6 +10,7 @@ import { generateGroupNumnber, getGroupSessionDays } from "@/lib/utils";
 import { createZoomMeeting, generateGroupMeetingConfig, getAvailableZoomClient, meetingLinkConstructor } from "@/lib/meetingsHelpers";
 import { env } from "@/env.mjs";
 import { hasPermission } from "@/server/permissions";
+import { createMeeting, generateToken, getMeetingDetails, getUserRoom } from "@/lib/onMeetingApi";
 
 export const zoomGroupsRouter = createTRPCRouter({
     attendSession: protectedProcedure
@@ -259,8 +260,8 @@ export const zoomGroupsRouter = createTRPCRouter({
             if (sessionDates.some(d => !d.sessionId)) throw new TRPCError({ code: "BAD_REQUEST", message: "Some sessions are not found!" })
             if (!hasPermission(ctx.session.user, "zoomGroups", "create")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not allowed to take this action, Please contact your Admin!" })
 
-            const Teacher = await ctx.prisma.teacher.findUnique({ where: { id: teacherId }, include: { user: true } })
-            if (!Teacher) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Course doesn't exist!" })
+            const teacher = await ctx.prisma.teacher.findUnique({ where: { id: teacherId }, include: { user: true } })
+            if (!teacher) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Course doesn't exist!" })
 
             const course = await ctx.prisma.course.findUnique({ where: { id: courseId }, include: { levels: { include: { materialItems: true } } } })
             if (!course) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Course doesn't exist!" })
@@ -275,7 +276,7 @@ export const zoomGroupsRouter = createTRPCRouter({
             const { zoomClient } = await getAvailableZoomClient(startDate, ctx.prisma, 120)
             if (!zoomClient) throw new TRPCError({ code: "BAD_REQUEST", message: "No available zoom account at the selected time!" })
 
-            const groupNumber = generateGroupNumnber(startDate, Teacher.user.name, course.name)
+            const groupNumber = generateGroupNumnber(startDate, teacher.user.name, course.name)
 
             const meetingConfig = generateGroupMeetingConfig({
                 courseName: course.name,
@@ -284,7 +285,33 @@ export const zoomGroupsRouter = createTRPCRouter({
                 levelName: level.name,
                 startDate,
             })
-            const { meetingNumber, meetingPassword } = await createZoomMeeting(meetingConfig, zoomClient?.accessToken)
+
+            let meetingData = { meetingNumber: "", meetingPassword: "" }
+
+            if (!zoomClient.isZoom) {
+                const token = await generateToken({ api_key: zoomClient.accessToken, api_secret: zoomClient.refreshToken })
+                const room = await getUserRoom({ token })
+                const { meeting_no } = await createMeeting({
+                    token,
+                    meetingData: {
+                        alert: true,
+                        join_before_host: true,
+                        recording: true,
+                        room_code: room.room_code,
+                        topic: groupNumber,
+                    }
+                })
+
+                const { meetingNumber, password } = await getMeetingDetails({ token, meetingNo: meeting_no })
+                if (!meetingNumber || !password) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "An error occured while getting the meeting number and password, please check the server logs!" })
+
+                meetingData = { meetingNumber, meetingPassword: password }
+            } else {
+                const { meetingNumber, meetingPassword } = await createZoomMeeting(meetingConfig, zoomClient?.accessToken)
+                meetingData = { meetingNumber, meetingPassword }
+            }
+
+            const { meetingNumber, meetingPassword } = meetingData
 
             const zoomGroup = await ctx.prisma.zoomGroup.create({
                 data: {
@@ -376,14 +403,14 @@ export const zoomGroupsRouter = createTRPCRouter({
 
                 if (!zoomGroup) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Zoom group doesn't exist!" })
 
-                const Teacher = teacherId ? await ctx.prisma.teacher.findUnique({ where: { id: teacherId }, include: { user: true } }) : null
+                const teacher = teacherId ? await ctx.prisma.teacher.findUnique({ where: { id: teacherId }, include: { user: true } }) : null
 
                 const updatedZoomGroup = await ctx.prisma.zoomGroup.update({
                     where: {
                         id,
                     },
                     data: {
-                        groupNumber: generateGroupNumnber(startDate || zoomGroup.startDate, Teacher?.user.name || zoomGroup.teacher?.user.name!, zoomGroup.course?.name!),
+                        groupNumber: generateGroupNumnber(startDate || zoomGroup.startDate, teacher?.user.name || zoomGroup.teacher?.user.name!, zoomGroup.course?.name!),
                         startDate: startDate ?? undefined,
                         teacher: teacherId ? { connect: { id: teacherId } } : undefined,
                         groupStatus: groupStatus ?? undefined,

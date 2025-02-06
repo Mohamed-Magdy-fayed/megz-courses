@@ -6,6 +6,8 @@ import { ZoomMeeting } from "@/lib/zoomTypes";
 import { env } from "@/env.mjs";
 import { format } from "date-fns";
 import { sendWhatsAppMessage } from "@/lib/whatsApp";
+import { createMeeting, generateToken, getMeetingDetails, getUserRoom } from "@/lib/onMeetingApi";
+import { ZoomClient } from "@prisma/client";
 
 export const placementTestsRouter = createTRPCRouter({
     getUserCoursePlacementTest: protectedProcedure
@@ -94,23 +96,64 @@ export const placementTestsRouter = createTRPCRouter({
             const course = await ctx.prisma.course.findUnique({ where: { id: courseId } })
             if (!tester || !course) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Course or Tester doesn't exist!" })
 
-            const meetingData: Partial<ZoomMeeting> = {
-                topic: `Placement Test for course ${course.name}`,
-                agenda: `Oral test with mr. ${tester.user.name}`,
-                duration: parseInt(env.NEXT_PUBLIC_PLACEMENT_TEST_TIME),
-                password: "abcd1234",
-                settings: {
-                    auto_recording: "cloud",
-                    host_video: true,
-                    jbh_time: 10,
-                    join_before_host: true,
-                    waiting_room: false,
-                },
-                start_time: format(testTime, "yyyy-MM-dd'T'HH:mm:ss:SSS'Z'"),
-                timezone: "Africa/Cairo",
-                type: 2,
+            const generateTheMeeting = async ({ courseName, testTime, testerName, userEmail, zoomClient }: {
+                zoomClient: ZoomClient;
+                userEmail: string;
+                courseName: string;
+                testerName: string;
+                testTime: Date;
+            }) => {
+                if (!zoomClient.isZoom) {
+                    const token = await generateToken({ api_key: zoomClient.accessToken, api_secret: zoomClient.refreshToken })
+                    const room = await getUserRoom({ token })
+                    const { meeting_no } = await createMeeting({
+                        token,
+                        meetingData: {
+                            alert: true,
+                            join_before_host: true,
+                            recording: true,
+                            room_code: room.room_code,
+                            topic: `Placement Test for course ${courseName} ${userEmail}`
+                        }
+                    })
+
+                    const { meetingNumber, password } = await getMeetingDetails({ token, meetingNo: meeting_no })
+
+                    return { meetingNumber, meetingPassword: password }
+                } else {
+                    const meetingData: Partial<ZoomMeeting> = {
+                        topic: `Placement Test for course ${courseName}`,
+                        agenda: `Oral test with mr. ${testerName}`,
+                        duration: parseInt(env.NEXT_PUBLIC_PLACEMENT_TEST_TIME),
+                        password: "abcd1234",
+                        settings: {
+                            auto_recording: "cloud",
+                            host_video: true,
+                            jbh_time: 10,
+                            join_before_host: true,
+                            waiting_room: false,
+                        },
+                        start_time: format(testTime, "yyyy-MM-dd'T'HH:mm:ss:SSS'Z'"),
+                        timezone: "Africa/Cairo",
+                        type: 2,
+                    }
+
+                    const { meetingNumber, meetingPassword } = await createZoomMeeting(meetingData, zoomClient.accessToken)
+                    return { meetingNumber, meetingPassword }
+                }
             }
-            const { meetingNumber, meetingPassword, meetingLink } = await createZoomMeeting(meetingData, zoomClient?.accessToken)
+
+            const { meetingNumber, meetingPassword } = await generateTheMeeting({
+                courseName: course.name,
+                testerName: tester.user.name,
+                testTime,
+                userEmail: lead.orderDetails.user.email,
+                zoomClient,
+            })
+
+            if (!meetingNumber || !meetingPassword) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "An error occured while getting the meeting number and password, please check the server logs!" })
+
+            const meetingLink = `${env.NEXTAUTH_URL}${meetingLinkConstructor({ meetingNumber, meetingPassword, sessionTitle: `Placement Test for course ${course.name}` })}`
 
             await ctx.prisma.zoomClient.update({
                 where: { id: zoomClient.id },
@@ -118,7 +161,7 @@ export const placementTestsRouter = createTRPCRouter({
                     zoomSessions: {
                         create: {
                             sessionDate: testTime,
-                            sessionLink: `${env.NEXTAUTH_URL}${meetingLinkConstructor({ meetingNumber, meetingPassword, sessionTitle: `Placement Test for course ${course.name}` })}`,
+                            sessionLink: meetingLink,
                             sessionStatus: "Scheduled",
                         }
                     }

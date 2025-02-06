@@ -9,9 +9,10 @@ const ZoomAccountsClient = () => {
     const { data: zoomAccountsData } = api.zoomAccounts.getZoomAccounts.useQuery()
 
     const [accounts, setAccounts] = useState<AccountColumn[]>([]);
-    const formattedData = zoomAccountsData?.zoomAccounts ? zoomAccountsData.zoomAccounts.map(({ createdAt, id, name, zoomSessions }) => ({
+    const formattedData = zoomAccountsData?.zoomAccounts ? zoomAccountsData.zoomAccounts.map(({ createdAt, id, name, zoomSessions,isZoom }) => ({
         id,
         name,
+        isZoom,
         zoomSessions: zoomSessions.map(session => ({
             status: session.sessionStatus,
             date: format(session.sessionDate, "PPPp"),

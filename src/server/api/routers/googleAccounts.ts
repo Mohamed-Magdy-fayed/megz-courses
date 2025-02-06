@@ -7,6 +7,7 @@ import { TRPCError } from "@trpc/server";
 import { google } from "googleapis";
 import { getGoogleFormDetails, refreshGoogleToken, revokeToken } from "@/lib/googleApis";
 import { hasPermission } from "@/server/permissions";
+import { env } from "@/env.mjs";
 
 export const googleAccountsRouter = createTRPCRouter({
     getGoogleAccounts: protectedProcedure
@@ -44,9 +45,9 @@ export const googleAccountsRouter = createTRPCRouter({
             name: z.string(),
         }))
         .mutation(async ({ input: { name } }) => {
-            const clientId = process.env.GOOGLE_CLIENT_ID;
-            const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-            const redirectUri = `${process.env.NEXTAUTH_URL}google`;
+            const clientId = env.GOOGLE_CLIENT_ID;
+            const clientSecret = env.GOOGLE_CLIENT_SECRET;
+            const redirectUri = env.GOOGLE_REDIRECT_URI;
 
             const oAuth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
 
@@ -55,7 +56,6 @@ export const googleAccountsRouter = createTRPCRouter({
                 scope: [
                     "https://www.googleapis.com/auth/forms",
                     "https://www.googleapis.com/auth/drive.file",
-                    "https://www.googleapis.com/auth/forms.responses.readonly",
                     "https://www.googleapis.com/auth/forms.body.readonly",
                 ],
                 prompt: "consent",
@@ -70,9 +70,9 @@ export const googleAccountsRouter = createTRPCRouter({
             name: z.string(),
         }))
         .mutation(async ({ ctx, input: { code, name } }) => {
-            const clientId = process.env.GOOGLE_CLIENT_ID;
-            const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-            const redirectUri = `${process.env.NEXTAUTH_URL}google`;
+            const clientId = env.GOOGLE_CLIENT_ID;
+            const clientSecret = env.GOOGLE_CLIENT_SECRET;
+            const redirectUri = env.GOOGLE_REDIRECT_URI;
 
             const oAuth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
 

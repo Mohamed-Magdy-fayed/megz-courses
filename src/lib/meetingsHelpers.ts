@@ -1,4 +1,5 @@
 import { env } from "@/env.mjs";
+import { generateToken, getUserMeetings } from "@/lib/onMeetingApi";
 import { getZoomSessionDays } from "@/lib/utils";
 import { MeetingResponse, ZoomMeeting } from "@/lib/zoomTypes";
 import { PrismaClient, ZoomClient } from "@prisma/client";
@@ -78,18 +79,37 @@ export async function getAvailableZoomClient(
 
     const availableClients = await Promise.all(zoomClients.map(async (client) => {
         try {
-            const refreshedClient = await refreshZoomAccountToken(client, prisma)
-            const clientMeetings = await getZoomAccountMeetings(refreshedClient, startDate, endDate)
+            if (client.isZoom) {
+                const refreshedClient = await refreshZoomAccountToken(client, prisma)
+                const clientMeetings = await getZoomAccountMeetings(refreshedClient, startDate, endDate)
 
-            const isOverlapping = clientMeetings.some(m => {
-                const existingStart = new Date(m.start_time);
-                const existingEnd = new Date(existingStart);
-                existingEnd.setMinutes(existingEnd.getMinutes() + m.duration);
+                const isOverlapping = clientMeetings.some(m => {
+                    const existingStart = new Date(m.start_time);
+                    const existingEnd = new Date(existingStart);
+                    existingEnd.setMinutes(existingEnd.getMinutes() + m.duration);
 
-                return (startDate < existingEnd && endDate > existingStart);
+                    return (startDate < existingEnd && endDate > existingStart);
+                });
+
+                return isOverlapping ? null : refreshedClient;
+            }
+
+            const token = await generateToken({ api_key: client.accessToken, api_secret: client.refreshToken })
+            const clientRooms = await getUserMeetings({ token })
+
+            const isOverlapping = clientRooms.some(room => {
+                return room.meetings.some(m => {
+                    if (!m.date || !m.start || !m.end || m.type === 1) {
+                        return false
+                    }
+                    const existingStart = m.start;
+                    const existingEnd = m.end;
+    
+                    return (startDate < existingEnd && endDate > existingStart);
+                })
             });
 
-            return isOverlapping ? null : refreshedClient;
+            return isOverlapping ? null : client;
         } catch (error: any) {
             return null
         }

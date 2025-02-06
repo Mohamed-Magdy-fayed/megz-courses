@@ -33,7 +33,7 @@ const SelectButton: FC<SelectButtonProps> = ({ placeholder, listTitle, data, val
                     {!data ? (
                         <Spinner size={420} />
                     ) : data.map(item => (
-                        <SelectItem key={item.value} value={item.value} children={item.label} disabled={item.active === false} />
+                        <SelectItem key={item.value} className='block' value={item.value} children={item.customLabel ? item.customLabel : item.label} disabled={item.active === false} />
                     ))}
                 </SelectGroup>
             </SelectContent>

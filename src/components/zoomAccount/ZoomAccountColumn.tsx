@@ -13,11 +13,13 @@ import Modal from "@/components/ui/modal";
 import Spinner from "@/components/Spinner";
 import { format } from "date-fns";
 import Calendar from "@/components/ui/calendar";
-import { Meeting } from "@/lib/meetingsHelpers";
+import { type Meeting } from "@/lib/meetingsHelpers";
+import { type OnMeeting } from "@/lib/onMeetingApi";
 
 export type AccountColumn = {
     id: string;
     name: string;
+    isZoom: boolean;
     zoomSessions: {
         date: string;
         status: SessionStatus,
@@ -74,7 +76,8 @@ export const columns: ColumnDef<AccountColumn>[] = [
             const [startDate, setStartDate] = useState<Date | undefined>()
             const [endDate, setEndDate] = useState<Date | undefined>()
             const [isCheckMeetingsOpen, setIsCheckMeetingsOpen] = useState(false)
-            const [meetings, setMeetings] = useState<Meeting[]>([])
+            const [onMeetings, setOnMeetings] = useState<(OnMeeting)[]>([])
+            const [meetings, setMeetings] = useState<(Meeting)[]>([])
 
             const trpcUtils = api.useUtils();
             const checkMeetingsMutation = api.zoomAccounts.checkMeetings.useMutation({
@@ -93,6 +96,7 @@ export const columns: ColumnDef<AccountColumn>[] = [
                         description: `${meetings.length} Meetings found`,
                         title: "Success"
                     })
+
                     setMeetings(meetings)
                     setIsCheckMeetingsOpen(false)
                 }),
@@ -124,11 +128,10 @@ export const columns: ColumnDef<AccountColumn>[] = [
                                 <div className="flex gap-2 py-2 justify-between">
                                     <div className="flex flex-col">
                                         <Typography>From Date</Typography>
-                                        <Calendar mode="single" selected={startDate} onSelect={setStartDate} initialFocus />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <Typography>To Date</Typography>
-                                        <Calendar mode="single" selected={endDate} onSelect={setEndDate} initialFocus />
+                                        <Calendar mode="range" selected={{ from: startDate, to: endDate }} onSelect={(range) => {
+                                            setStartDate(range?.from)
+                                            setEndDate(range?.to)
+                                        }} initialFocus />
                                     </div>
                                 </div>
                                 <Button disabled={!!loadingToast} onClick={() => checkMeetings(startDate, endDate)}>Confirm</Button>
@@ -144,8 +147,8 @@ export const columns: ColumnDef<AccountColumn>[] = [
                         Check Meetings
                     </Button>
                     {meetings.length > 0 && (<Button customeColor={"destructive"} onClick={() => setMeetings([])}>Clear</Button>)}
-                    {meetings.map(session => (
-                        <Card key={session.id} className="flex flex-col items-start gap-2 p-4">
+                    {meetings.map((session, idx) => (
+                        <Card key={session.topic + `${idx}`} className="flex flex-col items-start gap-2 p-4">
                             <Typography>
                                 Session Date: {format(new Date(session.start_time), "PPPpp")}
                             </Typography>
@@ -179,6 +182,7 @@ export const columns: ColumnDef<AccountColumn>[] = [
         header: "Actions",
         cell: ({ row }) => <CellAction
             id={row.original.id}
+            isZoom={row.original.isZoom}
         />,
     },
 ];

@@ -6,27 +6,36 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { CheckSquare, Copy, MoreVertical, RefreshCcw, Trash } from "lucide-react";
+import { MoreVertical, RefreshCcw, Trash } from "lucide-react";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { Typography } from "@/components/ui/Typoghraphy";
 import Spinner from "@/components/Spinner";
 import { AlertModal } from "@/components/modals/AlertModal";
-import Modal from "@/components/ui/modal";
-import { DatePicker } from "@/components/ui/DatePicker";
+import { createMutationOptions } from "@/lib/mutationsHelper";
 
 interface CellActionProps {
     id: string;
+    isZoom: boolean;
 }
 
-const CellAction: React.FC<CellActionProps> = ({ id }) => {
-    const { toastInfo, toast } = useToast();
+const CellAction: React.FC<CellActionProps> = ({ id, isZoom }) => {
+    const { toast } = useToast();
     const [loadingToast, setLoadingToast] = useState<toastType>()
     const [isOpen, setIsOpen] = useState(false)
     const [isDeleteOpen, setIsDeleteOpen] = useState(false)
 
     const trpcUtils = api.useUtils();
+    const refreshOnMeetingTokenMutation = api.zoomAccounts.refreshOnMeetingToken.useMutation(
+        createMutationOptions({
+            loadingToast,
+            toast,
+            trpcUtils,
+            setLoadingToast,
+            successMessageFormatter: () => `Token refreshed`
+        })
+    )
     const refreshMutation = api.zoomMeetings.refreshToken.useMutation({
         onMutate: () => {
             setLoadingToast(toast({
@@ -89,7 +98,11 @@ const CellAction: React.FC<CellActionProps> = ({ id }) => {
     };
 
     const onRefreshAceessToken = () => {
-        refreshMutation.mutate({ zoomClientId: id });
+        if (isZoom) {
+            return refreshMutation.mutate({ zoomClientId: id });
+        }
+
+        refreshOnMeetingTokenMutation.mutate({ id })
     };
 
     return (
