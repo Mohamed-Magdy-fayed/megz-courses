@@ -47,9 +47,7 @@ const CourseGroupsActionCell: React.FC<CourseRow> = ({ id, courseId, courseLevel
             loadingToast,
             setLoadingToast,
             toast,
-            successMessageFormatter: (data) => {
-                return "Group deleted"
-            },
+            successMessageFormatter: () => "Group deleted",
             loadingMessage: "Deleting..."
         })
     )

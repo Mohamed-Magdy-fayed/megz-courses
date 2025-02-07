@@ -104,7 +104,7 @@ export async function getAvailableZoomClient(
                     }
                     const existingStart = m.start;
                     const existingEnd = m.end;
-    
+
                     return (startDate < existingEnd && endDate > existingStart);
                 })
             });
@@ -157,7 +157,15 @@ export function generateGroupMeetingConfig({
     levelName,
     materialItemsCount,
     startDate,
-}: { groupNumber: string; courseName: string; levelName: string; materialItemsCount: number, startDate: Date }) {
+    sessionDates,
+}: {
+    groupNumber: string; courseName: string; levelName: string; materialItemsCount: number;
+    startDate: Date;
+    sessionDates: {
+        date: Date;
+        sessionId?: string;
+    }[];
+}) {
     return {
         topic: groupNumber,
         agenda: `${courseName} Course @ Level ${levelName}`,
@@ -167,7 +175,7 @@ export function generateGroupMeetingConfig({
             end_times: materialItemsCount,
             type: 2,
             repeat_interval: 1,
-            weekly_days: getZoomSessionDays(startDate.getDay()).join(","),
+            weekly_days: sessionDates.map(s => s.date.getDate()).join(","),
         },
         settings: {
             auto_recording: "cloud",
