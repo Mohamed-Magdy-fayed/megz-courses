@@ -54,8 +54,8 @@ export const googleAccountsRouter = createTRPCRouter({
             const googleAuthUrl = oAuth2Client.generateAuthUrl({
                 access_type: "offline",
                 scope: [
-                    "https://www.googleapis.com/auth/forms",
                     "https://www.googleapis.com/auth/drive.file",
+                    "https://www.googleapis.com/auth/forms",
                     "https://www.googleapis.com/auth/forms.body.readonly",
                 ],
                 prompt: "consent",

@@ -82,7 +82,10 @@ export const revokeToken = async (accessToken: string, refreshToken: string) => 
         refresh_token: refreshToken,
     });
 
-    oauth2Client.revokeToken(accessToken, (err) => {
-        if (err) throw new TRPCError({ code: "BAD_REQUEST", message: "Error revoke token" })
-    })
+    const tokens = await oauth2Client.refreshAccessToken();
+    const newTokens = tokens.credentials;
+
+    if (!newTokens.access_token) throw new Error("Invalid Refreshed Token!")
+
+    await oauth2Client.revokeToken(newTokens.access_token)
 };
