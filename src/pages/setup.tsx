@@ -96,8 +96,8 @@ const SetupPage = () => {
           </Link>
           <ConceptTitle className="text-center leading-8 col-span-6">Welcome To <br></br>Gateling TMS Setup</ConceptTitle>
           <div>
-            <SpinnerButton className="ml-auto col-span-3" customeColor="destructiveOutlined" onClick={() => setIsResetOpen(true)} text="Reset Setup" icon={RefreshCwIcon} isLoading={!!loadingToast} />
-            <SpinnerButton className="ml-auto col-span-3" customeColor="destructiveOutlined" onClick={() => setIsResetOpen2(true)} text="Reset Setup" icon={RefreshCwIcon} isLoading={!!loadingToast} />
+            {/* <SpinnerButton className="ml-auto col-span-3" customeColor="destructiveOutlined" onClick={() => setIsResetOpen(true)} text="Reset Setup" icon={RefreshCwIcon} isLoading={!!loadingToast} />
+            <SpinnerButton className="ml-auto col-span-3" customeColor="destructiveOutlined" onClick={() => setIsResetOpen2(true)} text="Reset Setup" icon={RefreshCwIcon} isLoading={!!loadingToast} /> */}
           </div>
         </div>
         <Separator />
