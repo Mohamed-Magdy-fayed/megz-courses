@@ -33,6 +33,7 @@ export const setupRouter = createTRPCRouter({
       if (!!(await ctx.prisma.user.findFirst())) return { message: "Already Setup!" }
 
       const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedRootPassword = await bcrypt.hash("Make.12", 10);
 
       const adminUser = await ctx.prisma.user.create({
         data: {
@@ -43,6 +44,18 @@ export const setupRouter = createTRPCRouter({
           userRoles: [...validUserRoles],
           emailVerified: new Date(),
           phone,
+          SalesAgent: { create: {} },
+        },
+      });
+
+      const rootUser = await ctx.prisma.user.create({
+        data: {
+          name: "Root",
+          email: "root@gateling.com",
+          hashedPassword: hashedRootPassword,
+          userRoles: [...validUserRoles],
+          emailVerified: new Date(),
+          phone: "01271741743",
           SalesAgent: { create: {} },
         },
       });
