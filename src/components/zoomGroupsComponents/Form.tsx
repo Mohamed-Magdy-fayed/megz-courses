@@ -136,9 +136,6 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
         <div>
             {!teachersData || !coursesData ? <Spinner className="w-fit mx-auto" /> : (
                 <div className="flex flex-col p-4 items-start gap-4 h-full">
-                    <SelectMultipleProvider initialProps={{}}>
-
-                    </SelectMultipleProvider>
                     <SelectButton
                         value={teacherId}
                         placeholder="Select a trainer"
@@ -277,7 +274,7 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                     />
                     <div className="flex gap-4">
                         <DateMultiplePicker
-                            trainerSessions={teachersData?.teachers.find(t => t.id === teacherId)?.groups.flatMap(g => g.zoomSessions) || []}
+                            trainerSessions={teachersData?.teachers.find(t => t.id === teacherId)?.groups.flatMap(g => g.zoomSessions).flatMap(s => s.sessionDate) || []}
                             hours={date?.getHours() || 0}
                             minutes={date?.getMinutes() || 0}
                             maxDays={coursesData.courses.find(c => c.id === courseId)?.levels.find(l => l.id === courseLevelId)?.materialItems.length || 0}

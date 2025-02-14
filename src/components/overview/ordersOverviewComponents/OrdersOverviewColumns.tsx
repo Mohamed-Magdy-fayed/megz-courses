@@ -16,16 +16,9 @@ export type OrderColmun = {
 export const columns: ColumnDef<OrderColmun>[] = [
   {
     accessorKey: "orderNumber",
-    header: () => {
-      return (
-        <Typography variant={"secondary"}>Order Number</Typography>
-      );
-    },
     cell: ({ row }) => (
       <Link className="block w-fit" href={`/orders/${row.original.orderId}`}>
-        <Typography
-          className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
-        >
+        <Typography>
           {row.original.orderNumber}
         </Typography>
       </Link>
@@ -35,9 +28,7 @@ export const columns: ColumnDef<OrderColmun>[] = [
     accessorKey: "userName",
     cell: ({ row }) => (
       <Link className="block w-fit" href={`/account/${row.original.userId}`}>
-        <Typography
-          className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
-        >
+        <Typography>
           {row.original.userName}
         </Typography>
       </Link>
@@ -66,5 +57,11 @@ export const columns: ColumnDef<OrderColmun>[] = [
         {format(row.original.createdAt, "dd MMM yyyy")}
       </Typography>
     ),
+    filterFn: (row, columnId, filterValue) => {
+      const val = row.original.createdAt
+      const startDate = new Date(filterValue.split("|")[0])
+      const endDate = new Date(filterValue.split("|")[1])
+      return val.getTime() >= startDate.getTime() && val.getTime() <= endDate.getTime()
+    },
   },
 ];

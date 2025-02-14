@@ -132,8 +132,8 @@ const OrderInfoPanel = ({ data }: {
                                 {
                                     accessorKey: "name",
                                     header: "Name",
-                                    cell: ({ row }) => <Link href={`/content/courses/${row.original.slug}`}>
-                                        <Button variant={"link"}>{row.original.name}</Button>
+                                    cell: ({ row }) => <Link className="in-table-link" href={`/content/courses/${row.original.slug}`}>
+                                        {row.original.name}
                                     </Link>
                                 },
                                 {

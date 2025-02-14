@@ -201,17 +201,17 @@ export const generateLeads = async (inputCourses: Course[], prisma: PrismaClient
     const generatePhone = (index: number) => `201${(10 + index).toString().padStart(8, '0')}`;
 
     const leadDistribution = {
-        Converted: Math.floor(2134 * (0.75 + (Math.random() * (0.05) - 0.025))),
-        Qualified: Math.floor(2134 * (0.075 + (Math.random() * (0.015) - 0.0075))),
-        Intake: Math.floor(2134 * (0.075 + (Math.random() * (0.015) - 0.0075))),
-        Lost: Math.floor(2134 * (0.05 + (Math.random() * (0.01) - 0.005))),
-        NotQualified: Math.floor(2134 * (0.05 + (Math.random() * (0.01) - 0.005))),
+        Converted: Math.floor(1134 * (0.75 + (Math.random() * (0.05) - 0.025))),
+        Qualified: Math.floor(1134 * (0.075 + (Math.random() * (0.015) - 0.0075))),
+        Intake: Math.floor(1134 * (0.075 + (Math.random() * (0.015) - 0.0075))),
+        Lost: Math.floor(1134 * (0.05 + (Math.random() * (0.01) - 0.005))),
+        NotQualified: Math.floor(1134 * (0.05 + (Math.random() * (0.01) - 0.005))),
     };
 
     const deviceDistribution = {
-        Mobile: Math.floor(2134 * 0.48),
-        Tablet: Math.floor(2134 * 0.24),
-        Desktop: Math.floor(2134 * 0.38),
+        Mobile: Math.floor(1134 * 0.48),
+        Tablet: Math.floor(1134 * 0.24),
+        Desktop: Math.floor(1134 * 0.38),
     };
 
     const leads = [];

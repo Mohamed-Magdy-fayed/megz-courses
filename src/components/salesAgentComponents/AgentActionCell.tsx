@@ -6,7 +6,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Trash, SearchSlash, MoreVertical, Edit } from "lucide-react";
+import { Trash, SearchSlash, ChevronDownIcon, Edit } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { useToast } from "../ui/use-toast";
@@ -82,8 +82,8 @@ const AgentCellAction: React.FC<AgentCellActionProps> = ({ id, agent }) => {
             />
             <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
                 <DropdownMenuTrigger asChild>
-                    <Button customeColor="mutedIcon" variant={"icon"} >
-                        <MoreVertical className="w-4 h-4" />
+                    <Button customeColor="mutedOutlined" variant={"outline"} className="w-full h-fit p-0" >
+                        <ChevronDownIcon className="w-4 h-4" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">

@@ -57,9 +57,7 @@ export const columns: ColumnDef<LevelRow>[] = [
   },
   {
     id: "actions",
-    header: () => (
-      <Typography variant={"secondary"}>Actions</Typography>
-    ),
+    header: "Actions",
     cell: ({ row }) => <CellAction
       id={row.original.id}
       name={row.original.name}

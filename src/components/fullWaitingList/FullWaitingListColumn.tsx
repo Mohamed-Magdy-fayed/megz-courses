@@ -6,7 +6,6 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { Devices, Order } from "@prisma/client";
-import { getInitials } from "@/lib/getInitials";
 
 export type FullWaitingListRow = {
     id: string,
@@ -21,10 +20,11 @@ export type FullWaitingListRow = {
     device: Devices | null,
     email: string,
     phone: string | null,
-    orders: Order[] | null,
+    orderDate: Date,
     courseName: string,
     courseSlug: string,
     courseId: string,
+    isPrivate: string,
     createdAt: Date,
     updatedAt: Date,
 };
@@ -50,35 +50,10 @@ export const columns: ColumnDef<FullWaitingListRow>[] = [
         enableHiding: false,
     },
     {
-        accessorKey: "email",
-        header: ({ column }) => {
-            return (
-                <div className="flex items-center justify-between">
-                    Info
-                    <Button
-                        className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        <ArrowUpDown className="h-4 w-4 text-primary" />
-                    </Button>
-                </div>
-            );
-        },
+        accessorKey: "name",
         cell: ({ row }) => (
-            <Link className="block w-fit" href={`/account/${row.original.id}`}>
-                <div className="flex items-center gap-2" >
-                    <img alt={getInitials(row.original.name)} src={row.original.image!} className="max-h-12" />
-                    <div className="flex flex-col gap-2">
-                        <Typography
-                            className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
-                        >
-                            {row.original.name}
-                        </Typography>
-                        <Typography variant={"secondary"} className="text-sm font-normal text-slate-500 whitespace-normal truncate max-h-14">
-                            {row.original.email}
-                        </Typography>
-                    </div>
-                </div>
+            <Link className="in-table-link" href={`/account/${row.original.id}`}>
+                {row.original.name}
             </Link>
         ),
     },
@@ -87,10 +62,8 @@ export const columns: ColumnDef<FullWaitingListRow>[] = [
         header: "Course Name",
         cell: ({ row }) => {
             return (
-                <Link href={`/content/courses/${row.original.courseSlug}`}>
-                    <Button variant={"link"} className="text-info">
-                        {row.original.courseName}
-                    </Button>
+                <Link className="in-table-link" href={`/content/courses/${row.original.courseSlug}`}>
+                    {row.original.courseName}
                 </Link>
             )
         },
@@ -103,27 +76,21 @@ export const columns: ColumnDef<FullWaitingListRow>[] = [
         )
     },
     {
-        accessorKey: "orders",
-        header: ({ column }) => {
-            return (
-                <div className="flex items-center justify-between">
-                    Ordered on
-                    <Button
-                        className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        <ArrowUpDown className="h-4 w-4 text-primary" />
-                    </Button>
-                </div>
-            );
-        },
+        accessorKey: "isPrivate",
+        header: "Is Private",
+        cell: ({ row }) => (
+            <Typography>{row.original.isPrivate}</Typography>
+        )
+    },
+    {
+        accessorKey: "orderDate",
         cell: ({ row }) => {
             return (
-                <>{format(row.original.orders?.find(order => order.courseId === row.original.courseId)?.createdAt || new Date(), "dd MMM yyyy")}</>
+                <>{format(row.original.orderDate, "PP")}</>
             )
         },
         filterFn: (row, columnId, filterValue) => {
-            const val = row.original.orders?.find(order => order.courseId === row.original.courseId)?.createdAt
+            const val = row.original.orderDate
             if (!val) return true
             const startDate = new Date(filterValue.split("|")[0])
             const endDate = new Date(filterValue.split("|")[1])

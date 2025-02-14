@@ -225,9 +225,7 @@ export const columns: ColumnDef<Column>[] = [
     },
     {
         id: "actions",
-        header: () => (
-            <Typography variant={"secondary"}>Actions</Typography>
-        ),
+        header: "Actions",
         cell: ({ row }) => <ActionCell
             id={row.original.id}
             isLevelSubmitted={row.original.isLevelSubmitted}

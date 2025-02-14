@@ -163,19 +163,6 @@ export const columns: ColumnDef<AccountColumn>[] = [
     },
     {
         accessorKey: "createdAt",
-        header: ({ column }) => {
-            return (
-                <div className="flex items-center justify-between">
-                    Added On
-                    <Button
-                        className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        <ArrowUpDown className="h-4 w-4 text-primary" />
-                    </Button>
-                </div>
-            );
-        },
     },
     {
         id: "actions",

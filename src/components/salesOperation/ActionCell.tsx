@@ -6,7 +6,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Coins, Copy, LucideDollarSign, MoreVertical, Send } from "lucide-react";
+import { Coins, Copy, LucideDollarSign, ChevronDownIcon, Send } from "lucide-react";
 import { toastType, useToast } from "../ui/use-toast";
 import { OrderStatus } from "@prisma/client";
 import { Dispatch, SetStateAction, useState } from "react";
@@ -56,8 +56,8 @@ const CellAction: React.FC<CellActionProps> = ({ id, status, setOpen, orderId, p
         <>
             <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
                 <DropdownMenuTrigger asChild>
-                    <Button customeColor="mutedIcon" variant={"icon"} >
-                        <MoreVertical className="w-4 h-4" />
+                    <Button customeColor="mutedOutlined" variant={"outline"} className="w-full h-fit p-0" >
+                        <ChevronDownIcon className="w-4 h-4" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">

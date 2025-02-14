@@ -21,7 +21,7 @@ const AllLeadsClient: FC<AllLeadsClientProps> = ({ resetSelection, stagesData, h
   const { toast } = useToast()
   const trpcUtils = api.useUtils()
 
-  const formattedData = leads.map(({
+  const formattedData: Lead[] = leads.map(({
     userId,
     name,
     code,
@@ -35,35 +35,41 @@ const AllLeadsClient: FC<AllLeadsClientProps> = ({ resetSelection, stagesData, h
     source,
     image,
     assignee,
+    labels,
+    isReminderSet,
+    reminders,
+    createdAt,
+    updatedAt,
+  }) => {
+    const lastReminder = reminders[reminders.length - 1]?.time
+    const isOverdue = (lastReminder && lastReminder < new Date())
+    const dueToday = lastReminder && lastReminder.toDateString() === new Date().toDateString()
 
-    labels,
-    isReminderSet,
-    reminders,
-    createdAt,
-    updatedAt,
-  }) => ({
-    id,
-    name: name || "",
-    code: code || "",
-    email: email || "",
-    formId: formId || "",
-    message: message || "",
-    phone: phone || "",
-    source,
-    orderDetails,
-    stage: leadStage,
-    stages: stagesData,
-    stageName: leadStage?.name || "Intake",
-    assignee,
-    labels,
-    isReminderSet,
-    reminders,
-    assigneeName: assignee?.user.name || "Not Assigned",
-    image: image || "",
-    userId: userId || "",
-    createdAt,
-    updatedAt,
-  })) || []
+    return ({
+      id,
+      name: name || "",
+      code: code || "",
+      email: email || "",
+      formId: formId || "",
+      message: message || "",
+      phone: phone || "",
+      source,
+      orderDetails,
+      stage: leadStage,
+      stages: stagesData,
+      stageName: leadStage?.name || "Intake",
+      assignee,
+      labels,
+      isOverdue: !lastReminder ? "Not set" : isOverdue ? "Overdue" : dueToday ? "Due today" : "Due later",
+      isReminderSet,
+      reminders,
+      assigneeName: assignee?.user.name || "Not Assigned",
+      image: image || "",
+      userId: userId || "",
+      createdAt,
+      updatedAt,
+    })
+  }) || []
 
   const deleteLeadsMutation = api.leads.deleteLead.useMutation(
     createMutationOptions({

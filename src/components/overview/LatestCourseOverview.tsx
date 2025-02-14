@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Typography } from "@/components/ui/Typoghraphy";
-import { ArrowRight, Eye, Edit, MoreVertical } from "lucide-react";
+import { ArrowRight, Eye, Edit, ChevronDownIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { api } from "@/lib/api";
 import Link from "next/link";
@@ -65,7 +65,7 @@ export const LatestCourseOverview = () => {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant={"icon"} customeColor={"mutedIcon"} onClick={handleMenuToggle}>
-                      <MoreVertical />
+                      <ChevronDownIcon />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>

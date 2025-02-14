@@ -1,16 +1,14 @@
 import { Dispatch, SetStateAction, useState } from "react"
 import Modal from "@/components/ui/modal"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
-import { TimePicker } from "@/components/ui/TimePicker"
-import { CalendarIcon, Calendar } from "lucide-react"
-import { format } from "date-fns"
-import { Label } from "@/components/ui/label"
+import { Calendar } from "lucide-react"
 import { api } from "@/lib/api"
-import CalenderComp from "@/components/ui/calendar"
 import { createMutationOptions } from "@/lib/mutationsHelper"
 import { toastType, useToast } from "@/components/ui/use-toast"
 import SingleSelectField from "@/components/SingleSelectField"
+import { TimePickerSelect } from "@/components/ui/TimePickerSelect"
+import { DateMultiplePicker } from "@/components/ui/DateMultiplePicker"
+import { DateSinglePicker } from "@/components/ui/DateSinglePicker"
 
 function SchedulePlacementTestModal({ leadCode, isScheduleTestOpen, setIsScheduleTestOpen }: { leadCode: string; isScheduleTestOpen: boolean; setIsScheduleTestOpen: Dispatch<SetStateAction<boolean>> }) {
     const [testTime, setTestTime] = useState<Date | undefined>(new Date())
@@ -20,6 +18,7 @@ function SchedulePlacementTestModal({ leadCode, isScheduleTestOpen, setIsSchedul
 
     const { toast } = useToast()
     const { data: testersData } = api.trainers.getAvialableTesters.useQuery({ startTime: testTime! }, { enabled: !!testTime })
+    const { data: zoomClients } = api.zoomAccounts.getZoomAccounts.useQuery();
 
     const trpcUtils = api.useUtils()
     const createPlacementTestMutation = api.placementTests.schedulePlacementTest.useMutation(
@@ -49,29 +48,18 @@ function SchedulePlacementTestModal({ leadCode, isScheduleTestOpen, setIsSchedul
             title="Schedule"
         >
             <div className="space-y-4 p-2">
-                <Button
-                    variant="outline"
-                    customeColor={"foregroundOutlined"}
-                    onClick={() => setSelectTime(!selectTime)}
-                    className={cn('flex flex-wrap items-center h-fit gap-2 justify-start hover:bg-background hover:text-primary hover:border-primary')}
-                >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {testTime ? format(testTime, "PPPp") : <span>Pick a date</span>}
-                </Button>
-                <div className={cn("w-fit space-y-2", selectTime ? "grid" : "hidden")}>
-                    <div className="rounded-md border">
-                        <CalenderComp mode="single" selected={testTime} onSelect={setTestTime} initialFocus />
-                    </div>
-                    <Label htmlFor="hours" className="text-xs">
-                        Time
-                    </Label>
-                    <div className="flex gap-2 items-center">
-                        <TimePicker
-                            date={testTime}
-                            setDate={setTestTime}
-                        />
-                    </div>
-                </div>
+                <TimePickerSelect
+                    date={testTime}
+                    setDate={setTestTime}
+                />
+                <DateSinglePicker
+                    trainerSessions={testersData?.trainers.find(t => t.id === testerId)?.assignedTests.map(t => t.oralTestTime) || []}
+                    hours={testTime?.getHours() || 0}
+                    minutes={testTime?.getMinutes() || 0}
+                    zoomClients={zoomClients?.zoomAccounts || []}
+                    date={testTime}
+                    setDate={setTestTime}
+                />
                 <SingleSelectField
                     data={
                         testersData?.trainers

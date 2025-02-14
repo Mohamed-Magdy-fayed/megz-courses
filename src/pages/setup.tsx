@@ -5,16 +5,16 @@ import WrapWithTooltip from "@/components/ui/wrap-with-tooltip";
 import Spinner from "@/components/Spinner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import SetupForm from "@/components/setupComponents/SetupForm";
-import { SpinnerButton } from "@/components/ui/button";
 import { useState } from "react";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { createMutationOptions } from "@/lib/mutationsHelper";
-import { RefreshCwIcon } from "lucide-react";
 import { LogoPrimary } from "@/components/layout/Logo";
 import Link from "next/link";
 import { AlertModal } from "@/components/modals/AlertModal";
 import { useSession } from "next-auth/react";
 import NotFoundPage from "@/pages/404";
+import { SpinnerButton } from "@/components/ui/button";
+import { RefreshCwIcon } from "lucide-react";
 
 const SetupPage = () => {
   const setupQuery = api.setup.getCurrentSetup.useQuery();
@@ -95,10 +95,12 @@ const SetupPage = () => {
             <LogoPrimary />
           </Link>
           <ConceptTitle className="text-center leading-8 col-span-6">Welcome To <br></br>Gateling TMS Setup</ConceptTitle>
-          <div>
-            {/* <SpinnerButton className="ml-auto col-span-3" customeColor="destructiveOutlined" onClick={() => setIsResetOpen(true)} text="Reset Setup" icon={RefreshCwIcon} isLoading={!!loadingToast} />
-            <SpinnerButton className="ml-auto col-span-3" customeColor="destructiveOutlined" onClick={() => setIsResetOpen2(true)} text="Reset Setup" icon={RefreshCwIcon} isLoading={!!loadingToast} /> */}
-          </div>
+          {setupQuery.data?.isDebugMode && (
+            <div>
+              <SpinnerButton className="ml-auto col-span-3" customeColor="destructiveOutlined" onClick={() => setIsResetOpen(true)} text="Step 1" icon={RefreshCwIcon} isLoading={!!loadingToast} />
+              <SpinnerButton className="ml-auto col-span-3" customeColor="destructiveOutlined" onClick={() => setIsResetOpen2(true)} text="Step 2" icon={RefreshCwIcon} isLoading={!!loadingToast} />
+            </div>
+          )}
         </div>
         <Separator />
         {!setupQuery.data?.Admin && (

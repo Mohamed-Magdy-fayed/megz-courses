@@ -430,6 +430,7 @@ const CoursePage = () => {
                                         levelSlugs: data.course?.levels.map(lvl => ({ label: lvl.name, value: lvl.slug, id: lvl.id })) || [],
                                         levelSlug: systemForm.courseLevel?.slug || "",
                                         certificate: student.certificates.find(cert => cert.courseLevelId === systemForm.courseLevelId),
+                                        name: student.name,
                                         email: student.email,
                                         rating: totalScore,
                                         courseId: data.course?.id || "",

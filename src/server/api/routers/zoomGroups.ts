@@ -139,16 +139,14 @@ export const zoomGroupsRouter = createTRPCRouter({
         }),
     getStudentZoomGroups: protectedProcedure
         .input(z.object({
-            courseSlug: z.string(),
+            userId: z.string(),
         }))
-        .query(async ({ ctx, input: { courseSlug } }) => {
+        .query(async ({ ctx, input: { userId } }) => {
             const zoomGroups = await ctx.prisma.zoomGroup.findMany({
                 where: {
-                    course: { slug: courseSlug },
                     studentIds: {
-                        has: ctx.session.user.id
+                        has: userId
                     },
-                    groupStatus: "Active",
                 },
                 orderBy: { createdAt: "desc" },
                 include: {

@@ -83,9 +83,7 @@ export const columns: ColumnDef<AssignmentRow>[] = [
     },
     {
         id: "actions",
-        header: () => (
-            <Typography variant={"secondary"}>Actions</Typography>
-        ),
+        header: "Actions",
         cell: ({ row }) => <ActionCell
             id={row.original.id}
             systemForm={row.original.systemForm}

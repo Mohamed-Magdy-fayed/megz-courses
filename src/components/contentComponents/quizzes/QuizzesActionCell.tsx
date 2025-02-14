@@ -6,7 +6,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Edit, MoreVertical } from "lucide-react";
+import { Edit, ChevronDownIcon } from "lucide-react";
 import { useState } from "react";
 import { QuizRow } from "@/components/contentComponents/quizzes/QuizzesColumn";
 import { CustomFormModal } from "@/components/systemForms/CustomFormModal";
@@ -58,8 +58,8 @@ const ActionCell = (rowData: QuizRow) => {
             <CustomFormModal isOpen={isEditOpen} setIsOpen={setIsEditOpen} systemForm={rowData.systemForm} />
             <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
                 <DropdownMenuTrigger asChild>
-                    <Button customeColor="mutedIcon" variant={"icon"} >
-                        <MoreVertical className="w-4 h-4" />
+                    <Button customeColor="mutedOutlined" variant={"outline"} className="w-full h-fit p-0" >
+                        <ChevronDownIcon className="w-4 h-4" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">

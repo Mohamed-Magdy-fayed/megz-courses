@@ -6,7 +6,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Edit, EyeIcon, MoreVertical, Trash } from "lucide-react";
+import { Edit, EyeIcon, ChevronDownIcon, Trash } from "lucide-react";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import { Prisma } from "@prisma/client";
@@ -62,8 +62,8 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, systemForm, levelSlug }) =>
             <CustomFormModal isOpen={isEditOpen} setIsOpen={setIsEditOpen} systemForm={systemForm} />
             <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
                 <DropdownMenuTrigger asChild>
-                    <Button customeColor="mutedIcon" variant={"icon"} >
-                        <MoreVertical className="w-4 h-4" />
+                    <Button customeColor="mutedOutlined" variant={"outline"} className="w-full h-fit p-0" >
+                        <ChevronDownIcon className="w-4 h-4" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">

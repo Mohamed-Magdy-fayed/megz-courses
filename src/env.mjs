@@ -36,6 +36,7 @@ export const env = createEnv({
     PAYMOB_PUBLIC_KEY: z.string(),
     NEXT_PUBLIC_PLACEMENT_TEST_TIME: z.string(),
     TIER: z.string(),
+    DEBUG: z.string().optional(),
   },
 
   /**
@@ -93,6 +94,7 @@ export const env = createEnv({
     PAYMOB_PUBLIC_KEY: process.env.PAYMOB_PUBLIC_KEY,
     NEXT_PUBLIC_PLACEMENT_TEST_TIME: process.env.NEXT_PUBLIC_PLACEMENT_TEST_TIME,
     TIER: process.env.TIER,
+    DEBUG: process.env.DEBUG,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.

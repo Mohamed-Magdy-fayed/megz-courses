@@ -83,9 +83,7 @@ export const columns: ColumnDef<QuizRow>[] = [
     },
     {
         id: "actions",
-        header: () => (
-            <Typography variant={"secondary"}>Actions</Typography>
-        ),
+        header: "Actions",
         cell: ({ row }) => <ActionCell
             {...row.original}
         />,

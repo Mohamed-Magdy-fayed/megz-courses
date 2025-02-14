@@ -59,23 +59,28 @@ const WaitingListPage = () => {
                         ))}
                     </Tabs>
                     <PaperContainer>
-                        <FullWaitingListClient formattedData={waitingList?.fullList.map(item => ({
-                            id: item.user.id,
-                            name: item.user.name,
-                            image: item.user.image,
-                            device: item.user.device,
-                            email: item.user.email,
-                            phone: item.user.phone,
-                            orders: item.course.orders,
-                            courseName: item.course.name,
-                            courseSlug: item.course.slug,
-                            courseId: item.course.id,
-                            levelSlugs: item.course?.levels.map(lvl => ({ label: lvl.name, value: lvl.slug })) || [],
-                            levelSlug: item.level?.slug || "",
-                            levelName: item.level?.name || "",
-                            createdAt: item.createdAt,
-                            updatedAt: item.updatedAt,
-                        })) || []} />
+                        <FullWaitingListClient formattedData={waitingList?.fullList.map(item => {
+                            const order = item.course.orders?.find(order => order.courseId === item.course.id)
+
+                            return ({
+                                id: item.user.id,
+                                name: item.user.name,
+                                image: item.user.image,
+                                device: item.user.device,
+                                email: item.user.email,
+                                phone: item.user.phone,
+                                orderDate: order?.createdAt || item.createdAt,
+                                isPrivate: order?.courseType.isPrivate ? "Private" : "Group",
+                                courseName: item.course.name,
+                                courseSlug: item.course.slug,
+                                courseId: item.course.id,
+                                levelSlugs: item.course?.levels.map(lvl => ({ label: lvl.name, value: lvl.slug })) || [],
+                                levelSlug: item.level?.slug || "",
+                                levelName: item.level?.name || "",
+                                createdAt: item.createdAt,
+                                updatedAt: item.updatedAt,
+                            })
+                        }) || []} />
                     </PaperContainer>
                 </div>
             </main>

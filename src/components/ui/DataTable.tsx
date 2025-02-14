@@ -37,7 +37,7 @@ import { useSession } from "next-auth/react";
 import { downloadTemplate, exportToExcel, importFromExcel } from "@/lib/exceljs";
 import { useDropFile } from "@/hooks/useDropFile";
 import { Input } from "@/components/ui/input";
-import { toastType, useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { hasPermission } from "@/server/permissions";
 
 type Cursor = Prisma.UserFindManyArgs["cursor"]
@@ -183,7 +183,20 @@ export function DataTable<TData, TValue>({
             {exportConfig && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant={"icon"} customeColor={"mutedIcon"} onClick={() => exportToExcel(data, exportConfig.fileName, exportConfig.sheetName)}>
+                  <Button
+                    variant={"icon"}
+                    customeColor={"mutedIcon"}
+                    onClick={() => {
+                      const rows = table.getFilteredSelectedRowModel().rows.length === 0 ? table.getFilteredRowModel().rows : table.getFilteredSelectedRowModel().rows
+                      const exportData = rows.map(r => r.original)
+                      console.log(exportData);
+
+                      exportToExcel(
+                        exportData,
+                        exportConfig.fileName,
+                        exportConfig.sheetName
+                      )
+                    }}>
                     <DownloadCloud className="text-primary" />
                   </Button>
                 </TooltipTrigger>
@@ -363,7 +376,7 @@ export function DataTable<TData, TValue>({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead className="py-2" key={header.id}>
+                    <TableHead className="px-2" key={header.id}>
                       {searches?.some(s => s.key === header.id) ? (
                         <div className="flex items-center gap-2 justify-between">
                           <TableInput
@@ -557,7 +570,7 @@ export function DataTable<TData, TValue>({
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="py-1 px-2">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

@@ -4,7 +4,6 @@ import {
     protectedProcedure,
 } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import { validDefaultStages } from "@/lib/enumsTypes";
 import { hasPermission } from "@/server/permissions";
 
 export const leadStagesRouter = createTRPCRouter({

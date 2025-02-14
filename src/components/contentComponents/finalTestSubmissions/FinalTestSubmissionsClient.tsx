@@ -19,7 +19,7 @@ const FinalTestSubmissionsClient = ({ formattedData }: { formattedData: FinalTes
             })
         })
     }
-    
+
     return (
         <DataTable
             columns={columns}
@@ -27,7 +27,7 @@ const FinalTestSubmissionsClient = ({ formattedData }: { formattedData: FinalTes
             setData={setSelected}
             onDelete={onDelete}
             searches={[
-                { key: "email", label: "Email" },
+                { key: "name", label: "Name" },
             ]}
             filters={[
                 { key: "levelSlug", filterName: "Level", values: formattedData[0]?.levelSlugs || [] },

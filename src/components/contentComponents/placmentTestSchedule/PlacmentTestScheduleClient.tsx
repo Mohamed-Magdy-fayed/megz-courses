@@ -1,7 +1,7 @@
 import { DataTable } from "@/components/ui/DataTable";
 import { type PlacmentTestScheduleRow, columns } from "./PlacmentTestScheduleColumn";
 
-const PlacmentTestScheduleClient = ({ formattedData }: { formattedData: PlacmentTestScheduleRow[] }) => {
+const PlacmentTestScheduleClient = ({ formattedData }: { formattedData: PlacmentTestScheduleRow[], isLoading?: boolean }) => {
 
     return (
         <DataTable

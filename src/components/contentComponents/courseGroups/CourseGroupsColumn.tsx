@@ -54,42 +54,14 @@ export const columns: ColumnDef<CourseRow>[] = [
     },
     {
         accessorKey: "groupNumber",
-        header: ({ column }) => {
-            return (
-                <div className="flex items-center justify-between">
-                    Info
-                    <Button
-                        className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        <ArrowUpDown className="h-4 w-4 text-primary" />
-                    </Button>
-                </div>
-            );
-        },
         cell: ({ row }) => (
-            <Link href={`/groups/${row.original.id}`} target="_blank">
-                <Button variant={"link"}>
-                    <Typography>{row.original.groupNumber}</Typography>
-                </Button>
+            <Link className="in-table-link" href={`/groups/${row.original.id}`}>
+                {row.original.groupNumber}
             </Link>
         )
     },
     {
         accessorKey: "startDate",
-        header: ({ column }) => {
-            return (
-                <div className="flex items-center justify-between">
-                    Start Date
-                    <Button
-                        className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        <ArrowUpDown className="h-4 w-4 text-primary" />
-                    </Button>
-                </div>
-            );
-        },
         cell: ({ row }) => {
             return (
                 <>{format(row.original.startDate, "dd MMM yyyy")}</>
@@ -98,19 +70,6 @@ export const columns: ColumnDef<CourseRow>[] = [
     },
     {
         accessorKey: "groupStatus",
-        header: ({ column }) => {
-            return (
-                <div className="flex items-center justify-between">
-                    Status
-                    <Button
-                        className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        <ArrowUpDown className="h-4 w-4 text-primary" />
-                    </Button>
-                </div>
-            );
-        },
         cell: ({ row }) => {
             const status = row.original.groupStatus
             const color: SeverityPillProps["color"] =
@@ -126,16 +85,13 @@ export const columns: ColumnDef<CourseRow>[] = [
     },
     {
         accessorKey: "levelSlug",
-        header: "Level",
         cell: ({ row }) => (
             <Typography>{row.original.levelName}</Typography>
         ),
     },
     {
         id: "actions",
-        header: () => (
-            <Typography variant={"secondary"}>Actions</Typography>
-        ),
+        header: "Actoins",
         cell: ({ row }) => <CourseGroupsActionCell
             {...row.original}
         />,

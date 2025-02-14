@@ -79,9 +79,8 @@ const RetintionsClient = () => {
       ]}
       dateRanges={[{ key: "createdAt", label: "Created On" }]}
       searches={[
-        { key: "email", label: "email" },
-        { key: "address", label: "address" },
-        { key: "phone", label: "phone" },
+        { key: "name", label: "Name" },
+        { key: "phone", label: "Phone" },
       ]}
       exportConfig={{
         fileName: `Retintions List`,

@@ -49,28 +49,11 @@ export const columns: ColumnDef<StudentRow>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "email",
+    accessorKey: "name",
     header: "Info",
     cell: ({ row }) => (
-      <Link className="block w-fit" href={`/account/${row.original.id}`}>
-        <div className="flex items-center gap-2" >
-          <Avatar>
-            <AvatarImage src={`${row.original.image}`} />
-            <AvatarFallback>
-              {getInitials(`${row.original.name}`)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col gap-2">
-            <Typography
-              className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
-            >
-              {row.original.name}
-            </Typography>
-            <Typography variant={"secondary"} className="text-sm font-normal text-slate-500">
-              {row.original.email}
-            </Typography>
-          </div>
-        </div>
+      <Link className="in-table-link" href={`/account/${row.original.id}`}>
+        {row.original.name}
       </Link>
     ),
   },
@@ -84,15 +67,6 @@ export const columns: ColumnDef<StudentRow>[] = [
   },
   {
     accessorKey: "createdAt",
-    header: ({ column }) => {
-      let filterFn = column.getFilterFn()?.resolveFilterValue
-      filterFn = (val) => JSON.parse(val)
-      return (
-        <div className="flex items-center justify-between">
-          User Since
-        </div>
-      );
-    },
     filterFn: (row, columnId, filterValue) => {
       const val = row.original.createdAt
       const startDate = new Date(filterValue.split("|")[0])
@@ -100,14 +74,12 @@ export const columns: ColumnDef<StudentRow>[] = [
       return val.getTime() >= startDate.getTime() && val.getTime() <= endDate.getTime()
     },
     cell: ({ row }) => (
-      <Typography>{format(row.original.createdAt, "dd/MMM/yyyy")}</Typography>
+      <Typography>{format(row.original.createdAt, "PPP")}</Typography>
     ),
   },
   {
     id: "actions",
-    header: () => (
-      <Typography variant={"secondary"}>Actions</Typography>
-    ),
+    header: "Actions",
     cell: ({ row }) => <CellAction
       id={row.original.id}
       coursesData={row.original.coursesData}

@@ -53,8 +53,8 @@ export const notesColumns: ColumnDef<NotesColumn>[] = [
         accessorKey: "title",
         header: "Note Title",
         cell: ({ row }) => (
-            <Link href={`/notes/${row.original.id}`}>
-                <Typography className="whitespace-nowrap hover:underline hover:text-primary">{row.original.title}</Typography>
+            <Link href={`/notes/${row.original.id}`} className="in-table-link">
+                {row.original.title}
             </Link>
         )
     },
@@ -96,10 +96,8 @@ export const notesColumns: ColumnDef<NotesColumn>[] = [
         accessorKey: "createdForStudentName",
         header: ({ table }) => table.getCoreRowModel().rows.some(row => row.original.createdForStudent) ? "Student" : "",
         cell: ({ row }) => row.original.createdForStudent ? (
-            <Link className="block w-fit" href={`/account/${row.original.createdForStudent.id}`}>
-                <Typography variant={"secondary"} className="text-sm font-normal">
-                    {row.original.createdForStudent.email}
-                </Typography>
+            <Link className="in-table-link" href={`/account/${row.original.createdForStudent.id}`}>
+                {row.original.createdForStudent.email}
             </Link>
         ) : ""
     },

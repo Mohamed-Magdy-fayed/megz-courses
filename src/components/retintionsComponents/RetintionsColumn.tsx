@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Typography } from "../ui/Typoghraphy";
 import { format } from "date-fns";
 import { Course, CourseStatus, Order, User } from "@prisma/client";
+import { Button } from "@/components/ui/button";
 
 export type RetintionsRow = {
   id: string;
@@ -43,28 +44,11 @@ export const columns: ColumnDef<RetintionsRow>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "email",
+    accessorKey: "name",
     header: "Info",
     cell: ({ row }) => (
-      <Link className="block w-fit" href={`/account/${row.original.id}`}>
-        <div className="flex items-center gap-2" >
-          <Avatar>
-            <AvatarImage src={`${row.original.image}`} />
-            <AvatarFallback>
-              {getInitials(`${row.original.name}`)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col gap-2">
-            <Typography
-              className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
-            >
-              {row.original.name}
-            </Typography>
-            <Typography variant={"secondary"} className="text-sm font-normal text-slate-500">
-              {row.original.email}
-            </Typography>
-          </div>
-        </div>
+      <Link className="in-table-link" href={`/account/${row.original.id}`}>
+        {row.original.name}
       </Link>
     ),
   },

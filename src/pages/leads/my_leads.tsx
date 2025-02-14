@@ -4,7 +4,7 @@ import type { NextPage } from "next";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import LeadsClient from "@/components/leads/LeadsClient";
 import { Button, SpinnerButton } from "@/components/ui/button";
-import { Edit, ListChecks, MoreVertical, PlusSquare, Trash } from "lucide-react";
+import { Edit, ListChecks, ChevronDownIcon, PlusSquare, Trash } from "lucide-react";
 import { useState } from "react";
 import Modal from "@/components/ui/modal";
 import LeadsForm from "@/components/leads/LeadsForm";
@@ -150,7 +150,7 @@ const MyLeadsPage: NextPage = () => {
                                     </TabsTrigger>
                                 ))}
                                 <Button customeColor={"mutedIcon"} onClick={() => setIsManageOpen(!isManageOpen)}>
-                                    Manage Stages <MoreVertical className="w-4 h-4" />
+                                    Manage Stages <ChevronDownIcon className="w-4 h-4" />
                                 </Button>
                             </TabsList>
                         )}

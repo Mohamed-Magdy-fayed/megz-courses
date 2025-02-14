@@ -87,9 +87,7 @@ export const columns: ColumnDef<MessageTemplateRow>[] = [
   },
   {
     id: "actions",
-    header: () => (
-      <Typography variant={"secondary"}>Actions</Typography>
-    ),
+    header: "Actions",
     cell: ({ row }) => <CellAction
       id={row.original.id}
       body={row.original.body}

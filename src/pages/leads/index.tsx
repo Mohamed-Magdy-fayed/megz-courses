@@ -4,7 +4,7 @@ import type { NextPage } from "next";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import LeadsClient from "@/components/leads/LeadsClient";
 import { Button, SpinnerButton } from "@/components/ui/button";
-import { Edit, LinkIcon, ListChecks, MoreVertical, PlusSquare, Trash } from "lucide-react";
+import { Edit, LinkIcon, ListChecks, ChevronDownIcon, PlusSquare, Trash } from "lucide-react";
 import { useState } from "react";
 import Modal from "@/components/ui/modal";
 import LeadsForm from "@/components/leads/LeadsForm";
@@ -179,7 +179,7 @@ const LeadsPage: NextPage = () => {
                                     </TabsTrigger>
                                 ))}
                                 <Button customeColor={"mutedIcon"} onClick={() => setIsManageOpen(!isManageOpen)}>
-                                    Manage Stages <MoreVertical className="w-4 h-4" />
+                                    Manage Stages <ChevronDownIcon className="w-4 h-4" />
                                 </Button>
                             </TabsList>
                         )}
@@ -220,22 +220,24 @@ const LeadsPage: NextPage = () => {
                                                 isLoading={!!loadingToast} customeColor={"info"} onClick={() => onAssignAll()}
                                             />
                                         </div>
-                                        <SelectField
-                                            data={[...(labelsData?.leadLabels.map(label => ({
-                                                Active: true,
-                                                label: label.value,
-                                                value: label.value,
-                                            })) || []), {
-                                                Active: true,
-                                                label: "No Labels",
-                                                value: "No Labels",
-                                            }]}
-                                            listTitle="Labels"
-                                            placeholder="Select Label"
-                                            setValues={setValues}
-                                            values={values}
-                                            multiSelect
-                                        />
+                                        <div className="flex-shrink">
+                                            <SelectField
+                                                data={[...(labelsData?.leadLabels.map(label => ({
+                                                    Active: true,
+                                                    label: label.value,
+                                                    value: label.value,
+                                                })) || []), {
+                                                    Active: true,
+                                                    label: "No Labels",
+                                                    value: "No Labels",
+                                                }]}
+                                                listTitle="Labels"
+                                                placeholder="Select Label"
+                                                setValues={setValues}
+                                                values={values}
+                                                multiSelect
+                                            />
+                                        </div>
                                     </div>
                                     <div className="flex items-center gap-4 justify-between p-4 md:justify-start md:gap-8">
                                         <Typography className="text-info">Intake {stagesData.stages.flatMap(stage => stage.leads).length}</Typography>
@@ -282,22 +284,24 @@ const LeadsPage: NextPage = () => {
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </div>
-                                        <SelectField
-                                            data={[...(labelsData?.leadLabels.map(label => ({
-                                                Active: true,
-                                                label: label.value,
-                                                value: label.value,
-                                            })) || []), {
-                                                Active: true,
-                                                label: "No Labels",
-                                                value: "No Labels",
-                                            }]}
-                                            listTitle="Labels"
-                                            placeholder="Select Label"
-                                            setValues={setValues}
-                                            values={values}
-                                            multiSelect
-                                        />
+                                        <div>
+                                            <SelectField
+                                                data={[...(labelsData?.leadLabels.map(label => ({
+                                                    Active: true,
+                                                    label: label.value,
+                                                    value: label.value,
+                                                })) || []), {
+                                                    Active: true,
+                                                    label: "No Labels",
+                                                    value: "No Labels",
+                                                }]}
+                                                listTitle="Labels"
+                                                placeholder="Select Label"
+                                                setValues={setValues}
+                                                values={values}
+                                                multiSelect
+                                            />
+                                        </div>
                                     </div>
                                     <div className="flex items-center gap-4 justify-between p-4 md:justify-start md:gap-8">
                                         <Typography className="text-info">Intake {stagesData.stages.flatMap(stage => stage.leads).length}</Typography>

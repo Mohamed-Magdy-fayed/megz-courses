@@ -23,6 +23,7 @@ export type FinalTestSubmissionRow = {
     levelSlug: string,
     certificate: Certificate | undefined;
     oralQuestions: string | null;
+    name: string;
     email: string;
     courseId: string;
     courseName: string;
@@ -52,40 +53,10 @@ export const columns: ColumnDef<FinalTestSubmissionRow>[] = [
         enableHiding: false,
     },
     {
-        accessorKey: "email",
-        header: ({ column }) => {
-            return (
-                <div className="flex items-center justify-between">
-                    Student Info
-                    <Button
-                        className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        <ArrowUpDown className="h-4 w-4 text-primary" />
-                    </Button>
-                </div>
-            );
-        },
+        accessorKey: "name",
         cell: ({ row }) => (
-            <Link className="block w-fit" href={`/account/${row.original.student.id}`}>
-                <div className="flex items-center gap-2" >
-                    <Avatar>
-                        <AvatarImage src={`${row.original.student.image}`} />
-                        <AvatarFallback>
-                            {getInitials(`${row.original.student.name}`)}
-                        </AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col gap-2">
-                        <Typography
-                            className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
-                        >
-                            {row.original.student.name}
-                        </Typography>
-                        <Typography variant={"secondary"} className="text-sm font-normal text-slate-500 whitespace-normal truncate max-h-14">
-                            {row.original.student.email}
-                        </Typography>
-                    </div>
-                </div>
+            <Link className="in-table-link" href={`/account/${row.original.student.id}`}>
+                {row.original.student.name}
             </Link>
         ),
     },

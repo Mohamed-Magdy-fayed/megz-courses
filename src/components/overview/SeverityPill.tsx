@@ -34,7 +34,7 @@ export const SeverityPill = ({ color, className, children, ...rest }: SeverityPi
   return (
     <Badge
       variant="default"
-      className={cn(`h-6 grid place-content-center whitespace-nowrap rounded-xl px-1 py-2 text-center text-xs uppercase ${tailwindClass()}`, className)}
+      className={cn(`h-4 grid place-content-center whitespace-nowrap rounded-xl px-1 py-2 text-center text-xs uppercase ${tailwindClass()}`, className)}
       {...rest}
     >
       {children}

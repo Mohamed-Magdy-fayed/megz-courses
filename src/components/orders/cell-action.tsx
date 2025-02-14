@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Coins, Copy, MoreVertical, Trash } from "lucide-react";
+import { Coins, Copy, ChevronDownIcon, Trash } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { OrderRow } from "./OrdersColumn";
@@ -80,8 +80,8 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
       />
       <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" customeColor={"mutedOutlined"} className="h-8 w-8 p-0">
-            <MoreVertical className="w-4 h-4" />
+          <Button customeColor={"mutedOutlined"} variant={"outline"} className="h-fit w-full p-0">
+            <ChevronDownIcon className="w-4 h-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">

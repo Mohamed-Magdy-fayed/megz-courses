@@ -9,9 +9,9 @@ import { Typography } from "../ui/Typoghraphy";
 import { LeadLabel, LeadSource, LeadStage, Order, Prisma, Reminder } from "@prisma/client";
 import { format } from "date-fns";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { SeverityPill, SeverityPillProps } from "@/components/overview/SeverityPill";
 import WrapWithTooltip from "@/components/ui/wrap-with-tooltip";
+import { Button } from "@/components/ui/button";
 
 export type Lead = {
   userId: string;
@@ -24,8 +24,7 @@ export type Lead = {
   phone?: string;
   source: LeadSource;
   orderDetails: Order | null;
-  isReminderSet: boolean;
-  reminders: Reminder[];
+  isOverdue: "Overdue" | "Due today" | "Not set" | "Due later";
   stage: LeadStage | null;
   stages: LeadStage[] | undefined;
   stageName: string;
@@ -69,23 +68,31 @@ export const columns: ColumnDef<Lead>[] = [
     accessorKey: "code",
     header: "Code",
     cell: ({ row }) => (
-      <WrapWithTooltip text="Process operation">
+      <WrapWithTooltip text="Process lead">
         <Link className="in-table-link" href={`/leads/${row.original.code}`}>{row.original.code}</Link>
       </WrapWithTooltip>
     )
+  },
+  {
+    id: "isOverdue",
+    cell: ({ row }) => {
+      return (
+        <SeverityPill color={
+          row.original.isOverdue === "Overdue" ? "destructive"
+            : row.original.isOverdue === "Due today" ? "primary"
+              : row.original.isOverdue === "Due later" ? "success" : "info"}>
+          {row.original.isOverdue}
+        </SeverityPill>
+      )
+    },
+    enableSorting: false,
+    enableHiding: false,
   },
   {
     accessorKey: "name",
   },
   {
     accessorKey: "email",
-    header: ({ column }) => {
-      return (
-        <div className="flex items-center justify-between">
-          Email
-        </div>
-      );
-    },
     cell: ({ row }) => (
       <Typography>
         {row.original.email}
@@ -94,13 +101,6 @@ export const columns: ColumnDef<Lead>[] = [
   },
   {
     accessorKey: "phone",
-    header: ({ column }) => {
-      return (
-        <div className="flex items-center justify-between">
-          Phone
-        </div>
-      );
-    },
     cell: ({ row }) => (
       <Typography>
         {row.original.phone}
@@ -109,13 +109,6 @@ export const columns: ColumnDef<Lead>[] = [
   },
   {
     accessorKey: "source",
-    header: ({ column }) => {
-      return (
-        <div className="flex items-center justify-between">
-          Source
-        </div>
-      );
-    },
     cell: ({ row }) => (
       <Typography>
         {row.original.source}
@@ -124,7 +117,6 @@ export const columns: ColumnDef<Lead>[] = [
   },
   {
     accessorKey: "stageName",
-    header: "Stage",
     cell: ({ row }) => (
       <div className="flex items-center justify-between">
         <Typography>
@@ -137,37 +129,10 @@ export const columns: ColumnDef<Lead>[] = [
     accessorKey: "assigneeName",
     header: "Agent",
     cell: ({ row }) => (
-      <div className="flex items-center justify-between">
-        <Typography>
-          {row.original.assigneeName}
-        </Typography>
-      </div>
+      <Link href={`/account/${row.original.assignee?.id}`} className="in-table-link">
+        {row.original.assigneeName}
+      </Link>
     ),
-  },
-  {
-    accessorKey: "labels",
-    header: "Labels",
-    cell: ({ row }) => {
-      const validColors: SeverityPillProps["color"][] = [
-        "background",
-        "destructive",
-        "foreground",
-        "info",
-        "muted",
-        "primary",
-        "secondary",
-        "success",
-      ]
-      return (
-        <div className="flex flex-wrap items-center gap-4">
-          {row.original.labels.map((label, i) => (
-            <SeverityPill color={validColors[i] || validColors[i - validColors.length - 1] || "info"} key={label.id}>
-              {label.value}
-            </SeverityPill>
-          ))}
-        </div>
-      )
-    },
   },
   {
     accessorKey: "createdAt",

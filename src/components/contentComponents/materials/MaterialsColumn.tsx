@@ -113,9 +113,7 @@ export const columns: ColumnDef<MaterialsRow>[] = [
     },
     {
         id: "actions",
-        header: () => (
-            <Typography variant={"secondary"}>Actions</Typography>
-        ),
+        header: "Actions",
         cell: ({ row }) => <MaterialActionCell
             {...row.original}
         />,

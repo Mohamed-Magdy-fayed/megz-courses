@@ -6,7 +6,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Copy, Edit, Eye, MoreVertical } from "lucide-react";
+import { Copy, Edit, Eye, ChevronDownIcon } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import Link from "next/link";
 import { useState } from "react";
@@ -53,8 +53,8 @@ const MaterialActionCell: React.FC<MaterialsRow> = ({ courseSlug, slug, subTitle
             />
             <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
                 <DropdownMenuTrigger asChild>
-                    <Button customeColor="mutedIcon" variant={"icon"} >
-                        <MoreVertical className="w-4 h-4" />
+                    <Button customeColor="mutedOutlined" variant={"outline"} className="w-full h-fit p-0" >
+                        <ChevronDownIcon className="w-4 h-4" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">

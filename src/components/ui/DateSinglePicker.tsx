@@ -5,46 +5,33 @@ import { cn } from "@/lib/utils"
 import { DayPicker } from "react-day-picker"
 import { ZoomClient, ZoomSession } from "@prisma/client"
 
-interface DateMultiplePickerProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-    maxDays: number;
+interface DateSinglePickerProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     hours: number;
     minutes: number;
     trainerSessions: Date[];
     zoomClients: (ZoomClient & { zoomSessions: ZoomSession[] })[];
-    days: Date[];
-    setDays: (dates: Date[]) => void;
+    date: Date | undefined;
+    setDate: (dates: Date) => void;
 }
 
-export const DateMultiplePicker: FC<DateMultiplePickerProps> = ({
-    maxDays,
-    days,
+export const DateSinglePicker: FC<DateSinglePickerProps> = ({
+    date,
+    setDate,
     hours,
     minutes,
     trainerSessions,
     zoomClients,
-    setDays,
     className,
     ...props
 }) => {
     return (
         <DayPicker
             showOutsideDays={true}
-            mode="multiple"
-            selected={days}
+            mode="single"
+            selected={date}
             // @ts-ignore
-            onSelect={(selectedDays) => {
-                if (selectedDays) {
-                    setDays(selectedDays.map(d => new Date(d.setHours(hours, minutes, 0, 0))))
-                }
-            }}
+            onSelect={setDate}
             disabled={(day) => {
-                // Disable all days if the number of selected days exceeds the limit
-                if (days.length >= maxDays) {
-                    return !days.some((selectedDay) =>
-                        selectedDay.toDateString() === day.toDateString()
-                    );
-                }
-
                 // Disable days if the trainer has sessions on the exact date and time
                 const trainerHasSession = trainerSessions.some((session) => {
                     const sessionStart = new Date(session); // Start time of the session

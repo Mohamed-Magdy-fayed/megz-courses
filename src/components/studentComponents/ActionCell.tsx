@@ -6,8 +6,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { EyeIcon, MoreVertical, PackagePlus } from "lucide-react";
-import { useToast } from "../ui/use-toast";
+import { EyeIcon, ChevronDownIcon, PackagePlus } from "lucide-react";
 import { useState } from "react";
 import { Course, CourseStatus, Order, User } from "@prisma/client";
 import CreateOrderModal from "@/components/modals/CreateOrderModal";
@@ -28,7 +27,6 @@ interface CellActionProps {
 }
 
 const CellAction: React.FC<CellActionProps> = ({ id, coursesData, userData }) => {
-    const { toastInfo } = useToast();
     const [isOpen, setIsOpen] = useState(false)
     const [isCreateOrderModalOpen, setIsCreateOrderModalOpen] = useState(false)
 
@@ -41,8 +39,8 @@ const CellAction: React.FC<CellActionProps> = ({ id, coursesData, userData }) =>
             }
             <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
                 <DropdownMenuTrigger asChild>
-                    <Button customeColor="mutedIcon" variant={"icon"} >
-                        <MoreVertical className="w-4 h-4" />
+                    <Button customeColor="mutedOutlined" variant={"outline"} className="w-full h-fit p-0" >
+                        <ChevronDownIcon className="w-4 h-4" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">

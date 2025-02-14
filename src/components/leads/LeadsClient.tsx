@@ -21,7 +21,7 @@ const LeadsClient: FC<LeadsClientProps> = ({ resetSelection, stage, stagesData, 
   const { toast } = useToast()
   const trpcUtils = api.useUtils()
 
-  const formattedData = stage.leads.map(({
+  const formattedData: Lead[] = stage.leads.map(({
     userId,
     name,
     code,
@@ -34,34 +34,38 @@ const LeadsClient: FC<LeadsClientProps> = ({ resetSelection, stage, stagesData, 
     image,
     assignee,
     labels,
-    isReminderSet,
     reminders,
     orderDetails,
     createdAt,
     updatedAt,
-  }) => ({
-    id,
-    name: name || "",
-    code: code || "",
-    email: email || "",
-    formId: formId || "",
-    message: message || "",
-    phone: phone || "",
-    source,
-    stage,
-    stages: stagesData,
-    stageName: stage.name,
-    assignee,
-    labels,
-    isReminderSet,
-    reminders,
-    orderDetails,
-    assigneeName: assignee?.user.name || "Not Assigned",
-    image: image || "",
-    userId: userId || "",
-    createdAt,
-    updatedAt,
-  }))
+  }) => {
+    const lastReminder = reminders[reminders.length - 1]?.time
+    const isOverdue = (lastReminder && lastReminder < new Date())
+    const dueToday = lastReminder && lastReminder.toDateString() === new Date().toDateString()
+
+    return ({
+      id,
+      name: name || "",
+      code: code || "",
+      email: email || "",
+      formId: formId || "",
+      message: message || "",
+      phone: phone || "",
+      source,
+      stage,
+      stages: stagesData,
+      stageName: stage.name,
+      assignee,
+      labels,
+      isOverdue: !lastReminder ? "Not set" : isOverdue ? "Overdue" : dueToday ? "Due today" : "Due later",
+      orderDetails,
+      assigneeName: assignee?.user.name || "Not Assigned",
+      image: image || "",
+      userId: userId || "",
+      createdAt,
+      updatedAt,
+    })
+  })
 
   const [callback, setCallback] = useState<() => void>()
   const deleteLeadsMutation = api.leads.deleteLead.useMutation(
@@ -136,6 +140,14 @@ const LeadsClient: FC<LeadsClientProps> = ({ resetSelection, stage, stagesData, 
         },
         {
           key: "assigneeName", filterName: "Agent", values: [...formattedData.map(d => d.assigneeName)
+            .filter((value, index, self) => self.indexOf(value) === index)
+            .map(name => ({
+              label: name,
+              value: name,
+            })) || []]
+        },
+        {
+          key: "isOverdue", filterName: "Reminder", values: [...formattedData.map(d => d.isOverdue)
             .filter((value, index, self) => self.indexOf(value) === index)
             .map(name => ({
               label: name,

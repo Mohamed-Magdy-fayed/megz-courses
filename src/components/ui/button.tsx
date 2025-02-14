@@ -53,7 +53,7 @@ const buttonVariants = cva(
             variant: {
                 default: "",
                 outline: "border bg-transparent",
-                link: "bg-inhirit text-info hover:text-info hover:bg-inhirit underline-offset-4 hover:underline p-0 w-fit h-fit space-x-0",
+                link: "bg-inhirit text-primary hover:text-primary-hover hover:bg-inhirit underline-offset-4 hover:underline p-0 w-fit h-fit space-x-0",
                 x: "p-1 rounded-full w-6 h-6 bg-transparent text-destructive hover:bg-destructive/20",
                 icon: "rounded-full border-0 !p-0 aspect-square !h-8 !w-8",
             },

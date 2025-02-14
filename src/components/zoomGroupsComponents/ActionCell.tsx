@@ -6,7 +6,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Trash, SearchSlash, MoreVertical, List, Edit, UserPlus, UserMinus, PauseCircle, PlayCircle } from "lucide-react";
+import { Trash, SearchSlash, ChevronDownIcon, List, Edit, UserPlus, UserMinus, PauseCircle } from "lucide-react";
 import { FC, useState } from "react";
 import { api } from "@/lib/api";
 import { toastType, useToast } from "../ui/use-toast";
@@ -24,6 +24,7 @@ import ResumeStudentsForm from "./ResumeStudentsForm";
 import { useRouter } from "next/router";
 import Modal from "@/components/ui/modal";
 import { AlertModal } from "@/components/modals/AlertModal";
+import { PlayCircle } from "lucide-react";
 
 interface ActionCellProps {
     id: string;
@@ -128,7 +129,7 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, courseLevel, startDate,
     };
 
     return (
-        <div>
+        <div className="flex items-center">
             <Modal
                 title="Add studnets"
                 description="add new students to the group"
@@ -238,8 +239,8 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, courseLevel, startDate,
             />
             <DropdownMenu defaultOpen={false} onOpenChange={(val) => setIsOpen(val)} open={isOpen}>
                 <DropdownMenuTrigger asChild>
-                    <Button customeColor="mutedIcon" variant={"icon"} >
-                        <MoreVertical className="w-4 h-4" />
+                    <Button customeColor="mutedOutlined" size={"sm"} variant={"outline"} >
+                        <ChevronDownIcon className="w-4 h-4" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">

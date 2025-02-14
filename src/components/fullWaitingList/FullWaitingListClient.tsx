@@ -8,7 +8,7 @@ const FullWaitingListClient = ({ formattedData }: { formattedData: FullWaitingLi
             data={formattedData}
             setData={() => { }}
             searches={[
-                { key: "email", label: "Email" }
+                { key: "name", label: "Name" }
             ]}
             filters={[
                 {
@@ -23,9 +23,15 @@ const FullWaitingListClient = ({ formattedData }: { formattedData: FullWaitingLi
                         .filter((value, index, self) => self.indexOf(value) === index)
                         .map(val => ({ label: val, value: val }))
                 },
+                {
+                    key: "isPrivate", filterName: "Is private", values: formattedData
+                        .map(d => d.isPrivate)
+                        .filter((value, index, self) => self.indexOf(value) === index)
+                        .map(val => ({ label: val, value: val }))
+                },
             ]}
             dateRanges={[
-                { key: "orders", label: "Ordered On" },
+                { key: "orderDate", label: "Ordered On" },
             ]}
             exportConfig={{
                 fileName: `${formattedData[0]?.courseName} Waiting List`,

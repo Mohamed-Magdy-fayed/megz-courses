@@ -38,13 +38,6 @@ export const columns: ColumnDef<ChatAgentColumn>[] = [
   },
   {
     accessorKey: "email",
-    header: ({ column }) => {
-      return (
-        <div className="flex items-center justify-between">
-          Info
-        </div>
-      );
-    },
     cell: ({ row }) => (
       <Link className="block w-fit" href={`/account/${row.original.id}`}>
         <div className="flex items-center gap-2 space-x-2" >
@@ -79,13 +72,6 @@ export const columns: ColumnDef<ChatAgentColumn>[] = [
   },
   {
     accessorKey: "createdAt",
-    header: ({ column }) => {
-      return (
-        <div className="flex items-center justify-between">
-          Joined
-        </div>
-      );
-    },
   },
   {
     id: "action",

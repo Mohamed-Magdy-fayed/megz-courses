@@ -41,39 +41,14 @@ export const columns: ColumnDef<SalesAgentsColumn>[] = [
   },
   {
     accessorKey: "email",
-    header: ({ column }) => {
-      return (
-        <div className="flex items-center justify-between">
-          Info
-        </div>
-      );
-    },
     cell: ({ row }) => (
-      <Link className="block w-fit" href={`/account/${row.original.id}`}>
-        <div className="flex items-center gap-2" >
-          <Avatar>
-            <AvatarImage src={`${row.original.image}`} />
-            <AvatarFallback>
-              {getInitials(`${row.original.name}`)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col gap-2">
-            <Typography
-              className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
-            >
-              {row.original.name}
-            </Typography>
-            <Typography variant={"secondary"} className="text-sm font-normal text-slate-500">
-              {row.original.email}
-            </Typography>
-          </div>
-        </div>
+      <Link className="in-table-link" href={`/account/${row.original.id}`}>
+        {row.original.name}
       </Link>
     ),
   },
   {
     accessorKey: "phone",
-    header: "Phone",
   },
   {
     accessorKey: "tasks",
@@ -85,13 +60,6 @@ export const columns: ColumnDef<SalesAgentsColumn>[] = [
   },
   {
     accessorKey: "createdAt",
-    header: ({ column }) => {
-      return (
-        <div className="flex items-center justify-between">
-          Joined
-        </div>
-      );
-    },
   },
   {
     id: "action",

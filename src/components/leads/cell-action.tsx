@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Copy, ExternalLink, MoreVertical, PackagePlus, Trash, View } from "lucide-react";
+import { Copy, ExternalLink, ChevronDownIcon, PackagePlus, Trash, View } from "lucide-react";
 import { useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { AssignModal } from "../modals/AssignModal";
@@ -17,7 +17,6 @@ import { AlertModal } from "@/components/modals/AlertModal";
 import { createMutationOptions } from "@/lib/mutationsHelper";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import CreateQuickOrderModal from "@/components/leads/CreateQuickOrderModal";
 import { useSession } from "next-auth/react";
 import { Workflow } from "lucide-react";
 import { hasPermission } from "@/server/permissions";
@@ -122,8 +121,8 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
       <CreateOrderModal email={data.email} leadId={data.id} isOpen={isCreateOrderOpen} setIsOpen={setIsCreateOrderOpen} />
       <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" customeColor={"mutedOutlined"} className="h-8 w-8 p-0">
-            <MoreVertical className="w-4 h-4" />
+          <Button customeColor={"mutedOutlined"} variant={"outline"} className="h-fit w-full p-0">
+            <ChevronDownIcon className="w-4 h-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -158,12 +157,11 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
               Create Order
             </DropdownMenuItem>
           ) : (
-            <DropdownMenuItem disabled={!data.orderDetails} onClick={() => {
-              setIsOpen(false)
-              router.push(`/orders/${data.orderDetails?.orderNumber}`)
-            }}>
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Go to order
+            <DropdownMenuItem disabled={!data.orderDetails} asChild>
+              <Link href={`/orders/${data.orderDetails?.orderNumber}`}>
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Go to order
+              </Link>
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />

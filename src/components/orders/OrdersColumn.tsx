@@ -16,6 +16,7 @@ import Image from "next/image";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { EyeIcon } from "lucide-react";
+import WrapWithTooltip from "@/components/ui/wrap-with-tooltip";
 
 export type OrderRow = {
   isStudentView: boolean;
@@ -59,68 +60,26 @@ export const columns: ColumnDef<OrderRow>[] = [
   },
   {
     accessorKey: "orderNumber",
-    header: ({ column }) => {
-      return (
-        <div className="flex items-center justify-between">
-          Order Number
-        </div>
-      );
-    },
     cell: ({ row }) => (
-      <Link href={`/orders/${row.original.orderNumber}`}>
-        <Typography>
-          {row.original.orderNumber}
-        </Typography>
+      <Link className="in-table-link" href={`/orders/${row.original.orderNumber}`}>
+        {row.original.orderNumber}
       </Link>
     ),
   },
   {
     accessorKey: "userName",
-    header: ({ column }) => {
-      if (column.getFacetedRowModel().rows.some(r => r.original.isStudentView)) return null
-
-      return (
-        <div className="flex items-center justify-between">
-          User Info
-        </div>
-      );
-    },
     cell: ({ row }) => {
       if (row.original.isStudentView) return null
 
       return (
-        <Link className="block w-fit" href={`/account/${row.original.userId}`}>
-          <div className="flex items-center gap-2" >
-            <Avatar>
-              <AvatarImage src={`${row.original.userImage}`} />
-              <AvatarFallback>
-                {getInitials(`${row.original.userName}`)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col gap-2">
-              <Typography
-                className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
-              >
-                {row.original.userName}
-              </Typography>
-              <Typography variant={"secondary"} className="text-sm font-normal text-slate-500">
-                {row.original.userEmail}
-              </Typography>
-            </div>
-          </div>
+        <Link className="in-table-link" href={`/account/${row.original.userId}`}>
+          {row.original.userName}
         </Link>
       )
     },
   },
   {
     accessorKey: "amount",
-    header: ({ column }) => {
-      return (
-        <div className="flex items-center justify-between">
-          Amount
-        </div>
-      );
-    },
     cell: ({ row }) => (
       <Typography>
         {formatPrice(row.original.amount)}
@@ -148,23 +107,14 @@ export const columns: ColumnDef<OrderRow>[] = [
       if (row.original.isStudentView) return null
 
       return (
-        <Link href={`/leads/${row.original.leadCode}`}>
-          <Typography>
-            {row.original.leadCode}
-          </Typography>
+        <Link className="in-table-link" href={`/leads/${row.original.leadCode}`}>
+          {row.original.leadCode}
         </Link>
       )
     },
   },
   {
     accessorKey: "status",
-    header: ({ column }) => {
-      return (
-        <div className="flex items-center justify-between">
-          Status
-        </div>
-      );
-    },
     cell: ({ row }) => {
       const status = row.original.status
       const color: SeverityPillProps["color"] =
@@ -180,16 +130,11 @@ export const columns: ColumnDef<OrderRow>[] = [
       }, [row.original.refundRequester])
 
       return (
-        <Tooltip>
-          <TooltipTrigger className="w-full">
-            <SeverityPill color={color}>
-              {status}
-            </SeverityPill>
-          </TooltipTrigger>
-          <TooltipContent>
-            {status === "Refunded" && `Refunded By: ${refundedByUser.data?.user.email ? refundedByUser.data?.user.email : format(row.original.updatedAt, "PPP")}`}
-          </TooltipContent>
-        </Tooltip>
+        <WrapWithTooltip text={status === "Refunded" ? `Refunded By: ${refundedByUser.data?.user.email ? refundedByUser.data?.user.email : format(row.original.updatedAt, "PPP")}` : ""}>
+          <SeverityPill color={color}>
+            {status}
+          </SeverityPill>
+        </WrapWithTooltip>
       )
     },
   },
@@ -201,7 +146,7 @@ export const columns: ColumnDef<OrderRow>[] = [
         {(row.original.status === "Paid" && !!row.original.paymentConfirmationImage) && (
           <Dialog>
             <DialogTrigger asChild>
-              <Button customeColor={"infoIcon"}>View <EyeIcon /></Button>
+              <Button className="p-0 h-fit w-full" customeColor={"infoIcon"}>View <EyeIcon /></Button>
             </DialogTrigger>
             <DialogContent>
               <Image className="max-w-2xl" src={row.original.paymentConfirmationImage} alt="Payment Proof" width={1000} height={1000} />

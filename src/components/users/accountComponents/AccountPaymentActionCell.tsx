@@ -6,7 +6,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Copy, MoreVertical } from "lucide-react";
+import { Copy, ChevronDownIcon } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 interface AccountPaymentActionCellProps {
@@ -25,8 +25,8 @@ const AccountPaymentActionCell: React.FC<AccountPaymentActionCellProps> = ({ id 
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button customeColor="mutedIcon" variant={"icon"} >
-                        <MoreVertical className="w-4 h-4" />
+                    <Button customeColor="mutedOutlined" variant={"outline"} className="w-full h-fit p-0" >
+                        <ChevronDownIcon className="w-4 h-4" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">

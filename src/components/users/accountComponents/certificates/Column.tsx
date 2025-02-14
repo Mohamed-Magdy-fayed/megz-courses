@@ -38,7 +38,7 @@ export const columns: ColumnDef<CertificateRow>[] = [
         accessorKey: "certificateId",
         header: "Certificates Number",
         cell: ({ row }) => (
-            <Link href={`/certificates/${row.original.certificateId}`}>{row.original.certificateId}</Link>
+            <Link className="in-table-link" href={`/certificates/${row.original.certificateId}`}>{row.original.certificateId}</Link>
         ),
     },
     {

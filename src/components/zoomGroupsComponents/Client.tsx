@@ -6,11 +6,11 @@ import { type ColumnType, columns } from "./Column";
 import { validGroupStatuses } from "@/lib/enumsTypes";
 import { upperFirst } from "lodash";
 
-const ZoomGroupsClient = () => {
+const ZoomGroupsClient = ({ userId }: { userId?: string }) => {
     const [zoomGroups, setZoomGroups] = useState<ColumnType[]>([]);
 
     const trpcUtils = api.useUtils();
-    const { data: groupsData, isLoading: isGroupsLoading } = api.zoomGroups.getzoomGroups.useQuery();
+    const { data: groupsData, isLoading: isGroupsLoading } = userId ? api.zoomGroups.getStudentZoomGroups.useQuery({ userId }) : api.zoomGroups.getzoomGroups.useQuery()
     const deleteMutation = api.zoomGroups.deleteZoomGroup.useMutation();
     const { toastError, toastSuccess } = useToast()
 
@@ -55,18 +55,35 @@ const ZoomGroupsClient = () => {
             skele={isGroupsLoading}
             setData={setZoomGroups}
             onDelete={onDelete}
+            exportConfig={{
+                fileName: "ZoomGroups",
+                sheetName: "Zoom Groupsf",
+            }}
             dateRanges={[{ key: "startDate", label: "Start Date" }]}
             searches={[
                 { key: "groupNumber", label: "Group Number" },
-                { key: "teacherName", label: "Trainer" },
-                { key: "studentsCount", label: "Students Count" },
             ]}
-            filters={[{
-                key: "groupStatus", filterName: "Group Status", values: [...validGroupStatuses.map(status => ({
-                    label: upperFirst(status),
-                    value: status,
-                }))]
-            }]}
+            filters={[
+                {
+                    key: "groupStatus",
+                    filterName: "Group Status",
+                    values: [...validGroupStatuses.map(status => ({
+                        label: upperFirst(status),
+                        value: status,
+                    }))],
+                },
+                {
+                    key: "teacherName",
+                    filterName: "Trainer Name",
+                    values: [...formattedData
+                        .map(({ teacherName }) => teacherName)
+                        .filter((value, index, self) => self.indexOf(value) === index)
+                        .map(teacherName => ({
+                            label: upperFirst(teacherName),
+                            value: teacherName,
+                        }))],
+                },
+            ]}
         />
     );
 };

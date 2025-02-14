@@ -6,7 +6,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Copy, CopyPlus, Edit, MoreVertical, PlusSquare, Trash } from "lucide-react";
+import { Copy, CopyPlus, Edit, ChevronDownIcon, PlusSquare, Trash } from "lucide-react";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { api } from "@/lib/api";
 import { useState } from "react";
@@ -94,8 +94,8 @@ const CoursesActionCell: React.FC<CellActionProps> = ({ id, slug, description, g
             <CreateQuickOrderModal defaultCourse={id} isOpen={isAddOrderOpen} setIsOpen={setIsAddOrderOpen} />
             <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
                 <DropdownMenuTrigger asChild>
-                    <Button customeColor="mutedIcon" variant={"icon"} >
-                        <MoreVertical className="w-4 h-4" />
+                    <Button customeColor="mutedOutlined" variant={"outline"} className="w-full h-fit p-0" >
+                        <ChevronDownIcon className="w-4 h-4" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">

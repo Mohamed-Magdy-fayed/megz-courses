@@ -79,7 +79,7 @@ const OrdersClient = ({ userId }: { userId?: string }) => {
       dateRanges={[{ key: "updatedAt", label: "Payment Date" }]}
       searches={[
         { key: "orderNumber", label: "Order Number" },
-        { key: "userName", label: "User Name" },
+        { key: "userName", label: "Student Name" },
         { key: "leadCode", label: "Lead Code" },
       ]}
       filters={[

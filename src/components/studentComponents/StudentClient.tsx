@@ -95,7 +95,7 @@ const StudentClient = () => {
         onDelete={onDelete}
         dateRanges={[{ key: "createdAt", label: "Created On" }]}
         searches={[
-          { key: "email", label: "Email" },
+          { key: "name", label: "Name" },
           { key: "address", label: "Address" },
           { key: "phone", label: "Phone" },
         ]}

@@ -55,85 +55,22 @@ export const columns: ColumnDef<PlacmentTestScheduleRow>[] = [
     },
     {
         accessorKey: "studentName",
-        header: ({ column }) => {
-            return (
-                <div className="flex items-center justify-between">
-                    Student Info
-                    <Button
-                        className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        <ArrowUpDown className="h-4 w-4 text-primary" />
-                    </Button>
-                </div>
-            );
-        },
         cell: ({ row }) => (
-            <Link className="block w-fit" href={`/account/${row.original.studentUserId}`}>
-                <div className="flex items-center gap-2" >
-                    <img alt={getInitials(row.original.studentName)} src={row.original.studentImage!} className="max-h-12" />
-                    <div className="flex flex-col gap-2">
-                        <Typography
-                            className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
-                        >
-                            {row.original.studentName}
-                        </Typography>
-                        <Typography variant={"secondary"} className="text-sm font-normal text-slate-500 whitespace-normal truncate max-h-14">
-                            {row.original.studentEmail}
-                        </Typography>
-                    </div>
-                </div>
+            <Link className="in-table-link" href={`/account/${row.original.studentUserId}`}>
+                {row.original.studentName}
             </Link>
         ),
     },
     {
         accessorKey: "testerName",
-        header: ({ column }) => {
-            return (
-                <div className="flex items-center justify-between">
-                    Tester Info
-                    <Button
-                        className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        <ArrowUpDown className="h-4 w-4 text-primary" />
-                    </Button>
-                </div>
-            );
-        },
         cell: ({ row }) => (
-            <Link className="block w-fit" href={`/account/${row.original.testerId}`}>
-                <div className="flex items-center gap-2" >
-                    <img alt={getInitials(row.original.testerName)} src={row.original.testerImage!} className="max-h-12" />
-                    <div className="flex flex-col gap-2">
-                        <Typography
-                            className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
-                        >
-                            {row.original.testerName}
-                        </Typography>
-                        <Typography variant={"secondary"} className="text-sm font-normal text-slate-500 whitespace-normal truncate max-h-14">
-                            {row.original.testerEmail}
-                        </Typography>
-                    </div>
-                </div>
+            <Link className="in-table-link" href={`/account/${row.original.testerId}`}>
+                {row.original.testerName}
             </Link>
         ),
     },
     {
         accessorKey: "oralTestTime",
-        header: ({ column }) => {
-            return (
-                <div className="flex items-center justify-between">
-                    Test Time
-                    <Button
-                        className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        <ArrowUpDown className="h-4 w-4 text-primary" />
-                    </Button>
-                </div>
-            );
-        },
         cell: ({ row }) => (
             <Typography>{format(row.original.oralTestTime, "PPPp")}</Typography>
         ),
@@ -157,9 +94,7 @@ export const columns: ColumnDef<PlacmentTestScheduleRow>[] = [
     },
     {
         id: "actions",
-        header: () => (
-            <Typography variant={"secondary"}>Actions</Typography>
-        ),
+        header: "Actions",
         cell: ({ row }) => <ActionCell
             id={row.original.id}
             courseName={row.original.courseName}

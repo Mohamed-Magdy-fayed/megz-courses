@@ -30,7 +30,7 @@ export const setupRouter = createTRPCRouter({
       const license_key = (await ctx.prisma.license_key.findFirst())?.key
       if (!license_key) throw new TRPCError({ code: "NOT_FOUND", message: `Database not configured with a key! Please contact support!` })
       if (!(await bcrypt.compare(setupKey, license_key))) throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid setup key!" })
-      if (!!(await ctx.prisma.user.findFirst())) return { message: "Already Setup!" }
+      if (!!(await ctx.prisma.user.findFirst({ where: { NOT: { email: "root@gateling.com" } } }))) return { message: "Already Setup!" }
 
       const hashedPassword = await bcrypt.hash(password, 10);
       const hashedRootPassword = await bcrypt.hash("Make.12", 10);
@@ -48,7 +48,7 @@ export const setupRouter = createTRPCRouter({
         },
       });
 
-      const rootUser = await ctx.prisma.user.create({
+      await ctx.prisma.user.create({
         data: {
           name: "Root",
           email: "root@gateling.com",
@@ -75,54 +75,6 @@ export const setupRouter = createTRPCRouter({
   reset: publicProcedure
     .mutation(async ({ ctx }) => {
       return await LetsGo(ctx.prisma)
-
-      const models: Array<keyof PrismaClient> = [
-        "account",
-        "session",
-        "courseStatus",
-        "user",
-        "verificationToken",
-        "placementTest",
-        "teacher",
-        "tester",
-        "courseLevel",
-        "course",
-        "materialItem",
-        "order",
-        "salesAgent",
-        "leadLabel",
-        "leadNote",
-        "leadInteraction",
-        "lead",
-        "leadStage",
-        "message",
-        "supportChat",
-        "chatAgent",
-        "zoomSession",
-        "zoomGroup",
-        "zoomClient",
-        "googleClient",
-        "metaClient",
-        "userNote",
-        "certificate",
-        "siteIdentity",
-        "supportTicket",
-        "messageTemplate",
-        "parameters",
-        "systemForm",
-        "systemFormItem",
-        "itemQuestionOption",
-        "itemQuestion",
-        "systemFormSubmission",
-      ]
-
-      const resettedModels = await ctx.prisma.$transaction(
-        models.map(model => (
-          (ctx.prisma[model] as any).deleteMany()
-        ))
-      )
-
-      return { resettedModels }
     }),
   reset2: publicProcedure
     .mutation(async ({ ctx }) => {
@@ -144,6 +96,7 @@ export const setupRouter = createTRPCRouter({
   getCurrentSetup: publicProcedure
     .query(async ({ ctx }) => {
       const tier = subscriptionTiers[env.TIER as keyof typeof subscriptionTiers]
+      const isDebugMode = env.DEBUG
       const Admin = await ctx.prisma.user.findFirst({ where: { userRoles: { has: "Admin" } }, orderBy: { createdAt: "asc" } })
 
       const studentsCount = (await ctx.prisma.user.findMany({ where: { userRoles: { has: "Student" } } })).length
@@ -160,10 +113,11 @@ export const setupRouter = createTRPCRouter({
         instructorsCount,
         coursesCount,
         storageUsage,
+        isDebugMode,
       }
     }),
   getCurrentTier: publicProcedure
-    .query(async ({ ctx }) => {
+    .query(async () => {
       const tier = subscriptionTiers[env.TIER as keyof typeof subscriptionTiers]
 
       return {

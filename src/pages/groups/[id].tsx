@@ -108,7 +108,7 @@ const GroupPage: NextPage = () => {
                     <div className="flex w-full flex-col gap-4">
                         <div className="flex justify-between ">
                             <div className="flex items-center gap-2">
-                                <Link href={`/groups`} className="text-info">
+                                <Link href={`/groups`} className="text-primary">
                                     <ArrowLeftToLineIcon />
                                 </Link>
                                 <ConceptTitle className="hidden md:block">{data.zoomGroup.groupNumber || "loading..."}</ConceptTitle>
@@ -140,10 +140,8 @@ const GroupPage: NextPage = () => {
                                             </Avatar>
                                             <div className="flex flex-col gap-2">
                                                 <Typography variant={"secondary"}>{data.zoomGroup.teacher?.user.name || ""}</Typography>
-                                                <Link href={`/account/${data.zoomGroup.teacher?.user.id}`}>
-                                                    <Button variant={"link"}>
-                                                        <Typography variant={"bodyText"}>{data.zoomGroup.teacher?.user.email || ""}</Typography>
-                                                    </Button>
+                                                <Link className="in-table-link" href={`/account/${data.zoomGroup.teacher?.user.id}`}>
+                                                    {data.zoomGroup.teacher?.user.email || ""}
                                                 </Link>
                                             </div>
                                         </div>
@@ -398,7 +396,9 @@ const GroupPage: NextPage = () => {
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
                                                             <Link href={session.sessionLink} target={"_blank"}>
-                                                                <ExternalLink className="w4 h-4" />
+                                                                <Button variant={"icon"} customeColor={"foregroundIcon"}>
+                                                                    <ExternalLink className="w4 h-4" />
+                                                                </Button>
                                                             </Link>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
@@ -408,7 +408,9 @@ const GroupPage: NextPage = () => {
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
                                                             <Link href={`/meeting/?mn=${data.zoomGroup?.meetingNumber}&pwd=${data.zoomGroup?.meetingPassword}&session_title=${session.materialItem?.title}&session_id=${session.id}&leave_url=${env.NEXT_PUBLIC_NEXTAUTH_URL}groups/${data.zoomGroup?.id}`} target={"_blank"}>
-                                                                <LinkIcon className="w4 h-4" />
+                                                                <Button variant={"icon"} customeColor={"foregroundIcon"}>
+                                                                    <LinkIcon className="w4 h-4" />
+                                                                </Button>
                                                             </Link>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
@@ -455,10 +457,8 @@ const GroupPage: NextPage = () => {
                                                 <Typography>{student.name}</Typography>
                                                 <Tooltip>
                                                     <TooltipTrigger className="w-fit" asChild>
-                                                        <Link href={`/account/${student.id}`}>
-                                                            <Button variant={"link"}>
-                                                                <Typography>{student.email}</Typography>
-                                                            </Button>
+                                                        <Link className="in-table-link" href={`/account/${student.id}`}>
+                                                            <Typography>{student.email}</Typography>
                                                         </Link>
                                                     </TooltipTrigger>
                                                     <TooltipContent className="flex">

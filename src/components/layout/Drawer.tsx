@@ -59,9 +59,13 @@ export const mainNavLinks = [
     label: "Educational Team",
     url: "edu_team",
   },
+  // {
+  //   label: "Chat Team",
+  //   url: "chat_agents",
+  // },
   {
-    label: "Chat Team",
-    url: "chat_agents",
+    label: "Placement Tests",
+    url: "placement_tests",
   },
   {
     label: "Account",

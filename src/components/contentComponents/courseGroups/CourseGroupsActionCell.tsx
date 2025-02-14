@@ -6,7 +6,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Edit, List, MoreVertical, SearchSlash, Trash } from "lucide-react";
+import { Edit, List, ChevronDownIcon, SearchSlash, Trash } from "lucide-react";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import Link from "next/link";
 import { AlertModal } from "@/components/modals/AlertModal";
@@ -128,8 +128,8 @@ const CourseGroupsActionCell: React.FC<CourseRow> = ({ id, courseId, courseLevel
             />
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button customeColor="mutedIcon" variant={"icon"} >
-                        <MoreVertical className="w-4 h-4" />
+                    <Button customeColor="mutedOutlined" variant={"outline"} className="w-full h-fit p-0" >
+                        <ChevronDownIcon className="w-4 h-4" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">

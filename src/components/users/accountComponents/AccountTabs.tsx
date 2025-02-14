@@ -56,7 +56,7 @@ export const UserAccountTabs = ({ user }: {
                             <CardTitle>Groups</CardTitle>
                         </CardHeader>
                         <CardContent className="flex flex-col items-center p-4">
-                            <ZoomGroupsClient />
+                            <ZoomGroupsClient userId={id} />
                         </CardContent>
                     </Card>
                 </TabsContent>

@@ -44,13 +44,33 @@ export const placementTestsRouter = createTRPCRouter({
                     type: "PlacementTest",
                 },
                 include: {
-
                     items: true,
                     submissions: true,
                 }
             })
 
             return { test }
+        }),
+    getAllPlacementTests: protectedProcedure
+        .query(async ({ ctx }) => {
+            const courses = await ctx.prisma.course.findMany({
+                include: {
+                    placementTests: {
+                        include: {
+                            student: { include: { courseStatus: { include: { level: true } } } },
+                            tester: { include: { user: true } },
+                            course: { include: { courseStatus: true, levels: true } },
+                            writtenTest: { include: { submissions: true } }
+                        }
+                    }
+                }
+            })
+
+            const tests = courses
+                .flatMap(c => c.placementTests)
+                .filter(test => !test.course?.courseStatus.some(s => !!s.courseLevelId && s.courseId === test.course?.id && test.studentUserId === s.userId))
+
+            return { tests }
         }),
     getUserPlacementTest: protectedProcedure
         .input(z.object({

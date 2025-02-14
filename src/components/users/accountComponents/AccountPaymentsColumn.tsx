@@ -8,6 +8,7 @@ import { SeverityPill, SeverityPillProps } from "@/components/overview/SeverityP
 import { format } from "date-fns";
 import { formatPrice } from "@/lib/utils";
 import AccountPaymentActionCell from "./AccountPaymentActionCell";
+import Link from "next/link";
 
 export type Order = {
     id: string,
@@ -42,9 +43,9 @@ export const columns: ColumnDef<Order>[] = [
         accessorKey: "orderNumber",
         header: "Order Number",
         cell: ({ row }) => (
-            <Typography>
+            <Link className="in-table-link" href={`/orders/${row.original.orderNumber}`}>
                 {row.original.orderNumber}
-            </Typography>
+            </Link>
         ),
     },
     {

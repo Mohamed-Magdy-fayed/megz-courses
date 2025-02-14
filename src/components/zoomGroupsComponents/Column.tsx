@@ -4,8 +4,6 @@ import { Typography } from "../ui/Typoghraphy";
 import { Course, CourseLevel, GroupStatus, Teacher, User } from "@prisma/client";
 import { SeverityPill, SeverityPillProps } from "../overview/SeverityPill";
 import Link from "next/link";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { getInitials } from "@/lib/getInitials";
 import { format } from "date-fns";
 import { Button } from "../ui/button";
 import { ArrowUpDown } from "lucide-react";
@@ -52,28 +50,13 @@ export const columns: ColumnDef<ColumnType>[] = [
         accessorKey: "groupNumber",
         header: "Group Number",
         cell: ({ row }) => (
-            <Link href={`/groups/${row.original.id}`} target="_blank">
-                <Button variant={"link"}>
-                    <Typography>{row.original.groupNumber}</Typography>
-                </Button>
+            <Link className="in-table-link" href={`/groups/${row.original.id}`} target="_blank">
+                {row.original.groupNumber}
             </Link>
         )
     },
     {
         accessorKey: "groupStatus",
-        header: ({ column }) => {
-            return (
-                <div className="flex items-center justify-between">
-                    Status
-                    <Button
-                        className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        <ArrowUpDown className="h-4 w-4 text-primary" />
-                    </Button>
-                </div>
-            );
-        },
         cell: ({ row }) => {
             const status = row.original.groupStatus
             const color: SeverityPillProps["color"] =
@@ -89,28 +72,10 @@ export const columns: ColumnDef<ColumnType>[] = [
     },
     {
         accessorKey: "teacherName",
-        header: "Trainer",
         cell: ({ row }) => {
             return (
-                <Link className="block w-fit" href={`/account/${row.original.teacher.userId}`}>
-                    <div className="flex items-center gap-2" >
-                        <Avatar>
-                            <AvatarImage src={`${row.original.teacher?.user.image}`} />
-                            <AvatarFallback>
-                                {getInitials(`${row.original.teacher?.user.name}`)}
-                            </AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col gap-2">
-                            <Typography
-                                className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
-                            >
-                                {row.original.teacher?.user.name}
-                            </Typography>
-                            <Typography variant={"secondary"} className="text-sm font-normal text-slate-500">
-                                {row.original.teacher?.user.email}
-                            </Typography>
-                        </div>
-                    </div>
+                <Link className="in-table-link" href={`/account/${row.original.teacher.userId}`}>
+                    {row.original.teacher?.user.name}
                 </Link>
             )
         }
@@ -125,14 +90,14 @@ export const columns: ColumnDef<ColumnType>[] = [
         header: "Students",
         filterFn: "weakEquals",
         cell: ({ row }) => (
-            <Typography>{row.original.students.length}</Typography>
+            <div className="grid place-content-center">
+                <SeverityPill color="info" className="w-fit">{row.original.students.length}</SeverityPill>
+            </div>
         )
     },
     {
         id: "actions",
-        header: () => (
-            <Typography className="text-muted">Actions</Typography>
-        ),
+        header: "Actions",
         cell: ({ row }) => <ActionCell
             id={row.original.id}
             courseId={row.original.course.id}

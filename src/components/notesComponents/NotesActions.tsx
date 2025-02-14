@@ -6,7 +6,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Copy, MoreVertical, Trash } from "lucide-react";
+import { Copy, ChevronDownIcon, Trash } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
@@ -87,8 +87,8 @@ const NotesActions: React.FC<NotesActionsProps> = ({ data }) => {
             />
             <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" customeColor={"mutedOutlined"} className="h-8 w-8 p-0">
-                        <MoreVertical className="w-4 h-4" />
+                    <Button customeColor={"mutedOutlined"} variant={"outline"} className="p-0 h-fit w-full">
+                        <ChevronDownIcon className="w-4 h-4" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
