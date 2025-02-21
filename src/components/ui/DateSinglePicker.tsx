@@ -1,4 +1,4 @@
-import { ButtonHTMLAttributes, Dispatch, FC, SetStateAction, useState } from "react"
+import { ButtonHTMLAttributes, FC } from "react"
 import { buttonVariants } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -11,7 +11,8 @@ interface DateSinglePickerProps extends ButtonHTMLAttributes<HTMLButtonElement> 
     trainerSessions: Date[];
     zoomClients: (ZoomClient & { zoomSessions: ZoomSession[] })[];
     date: Date | undefined;
-    setDate: (dates: Date) => void;
+    setDate: (dates: Date | undefined) => void;
+    isTest?: boolean
 }
 
 export const DateSinglePicker: FC<DateSinglePickerProps> = ({
@@ -22,6 +23,7 @@ export const DateSinglePicker: FC<DateSinglePickerProps> = ({
     trainerSessions,
     zoomClients,
     className,
+    isTest,
     ...props
 }) => {
     return (
@@ -30,43 +32,62 @@ export const DateSinglePicker: FC<DateSinglePickerProps> = ({
             mode="single"
             selected={date}
             // @ts-ignore
-            onSelect={setDate}
+            onSelect={(newDate) => {
+                if (newDate) {
+                    const adjustedDate = new Date(newDate);
+                    adjustedDate.setHours(hours, minutes, 0, 0);
+                    setDate(adjustedDate);
+                } else {
+                    setDate(undefined);
+                }
+            }}
             disabled={(day) => {
-                // Disable days if the trainer has sessions on the exact date and time
+                // Set selected time range
+                const selectedTime = new Date(day);
+                selectedTime.setHours(hours, minutes, 0, 0);
+
+                const selectedTimeEnd = new Date(selectedTime);
+                selectedTimeEnd.setMinutes(selectedTimeEnd.getMinutes() + (isTest ? 30 : 120)); // 30 min if test, otherwise 2 hours
+
+                // Disable days if the trainer has sessions that intersect with the selected time
                 const trainerHasSession = trainerSessions.some((session) => {
-                    const sessionStart = new Date(session); // Start time of the session
-                    const sessionEnd = new Date(sessionStart.getTime() + 2 * 60 * 60 * 1000); // End time (2 hours later)
+                    const sessionStart = new Date(session);
+                    const sessionEnd = new Date(sessionStart);
+                    sessionEnd.setMinutes(sessionStart.getMinutes() + (isTest ? 30 : 120));
 
-                    const selectedTime = new Date(day); // Selected day and time
-                    selectedTime.setHours(hours, minutes, 0, 0); // Set the selected time
-
-                    // Check if the selected time is within the session's time range
-                    return selectedTime >= sessionStart && selectedTime <= sessionEnd;
+                    // Check if the selected time or its end time overlaps with a trainer's session
+                    return (
+                        (selectedTime >= sessionStart && selectedTime < sessionEnd) || // Selected time starts inside a session
+                        (selectedTimeEnd > sessionStart && selectedTimeEnd <= sessionEnd) || // Selected time ends inside a session
+                        (selectedTime <= sessionStart && selectedTimeEnd >= sessionEnd) // Selected time fully overlaps the session
+                    );
                 });
 
                 if (trainerHasSession) {
                     return true;
                 }
 
-                // Disable days if no Zoom clients are available on the selected date and time
-                const noZoomClientsAvailable = zoomClients.every((client) => {
-                    return client.zoomSessions.some(session => {
-                        const sessionStart = new Date(session.sessionDate); // Start time of the session
-                        const sessionEnd = new Date(sessionStart.getTime() + 2 * 60 * 60 * 1000); // End time (2 hours later)
+                // Disable days if no Zoom clients are available within the selected time
+                const noZoomClientsAvailable = zoomClients.every(client =>
+                    client.zoomSessions.some(session => {
+                        const sessionStart = new Date(session.sessionDate);
+                        const sessionEnd = new Date(sessionStart);
+                        sessionEnd.setMinutes(sessionStart.getMinutes() + (isTest ? 30 : 120));
 
-                        const selectedTime = new Date(day); // Selected day and time
-                        selectedTime.setHours(hours, minutes, 0, 0); // Set the selected time
-
-                        // Check if the selected time is within the session's time range
-                        return selectedTime >= sessionStart && selectedTime <= sessionEnd;
+                        // Check if the selected time overlaps with Zoom session
+                        return (
+                            (selectedTime > sessionStart && selectedTime < sessionEnd) ||
+                            (selectedTimeEnd > sessionStart && selectedTimeEnd < sessionEnd) ||
+                            (selectedTime <= sessionStart && selectedTimeEnd >= sessionEnd)
+                        );
                     })
-                });
+                );
 
                 if (noZoomClientsAvailable) {
                     return true;
                 }
 
-                // Otherwise, no days are disabled
+                // Otherwise, the day is selectable
                 return false;
             }}
             className={cn("p-3", className)}
@@ -90,12 +111,12 @@ export const DateSinglePicker: FC<DateSinglePickerProps> = ({
                 cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-primary-foreground/50 [&:has([aria-selected])]:bg-primary-foreground first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
                 day: cn(
                     buttonVariants({ variant: "outline", customeColor: "foregroundOutlined" }),
-                    "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-slate-50 hover:text-primary hover:border-primary"
+                    "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-primary-foreground hover:text-primary hover:border-primary"
                 ),
                 day_range_end: "day-range-end",
                 day_selected:
                     "!bg-primary !text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-                day_today: "bg-primary-foreground text-foreground",
+                day_today: "border-primary",
                 day_outside:
                     "day-outside text-primary opacity-50 aria-selected:bg-primary/50 aria-selected:text-primary aria-selected:opacity-30",
                 day_disabled: "text-primary opacity-50",

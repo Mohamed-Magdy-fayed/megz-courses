@@ -395,18 +395,6 @@ const GroupPage: NextPage = () => {
                                                     </Tooltip>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <Link href={session.sessionLink} target={"_blank"}>
-                                                                <Button variant={"icon"} customeColor={"foregroundIcon"}>
-                                                                    <ExternalLink className="w4 h-4" />
-                                                                </Button>
-                                                            </Link>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            Session external link
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
                                                             <Link href={`/meeting/?mn=${data.zoomGroup?.meetingNumber}&pwd=${data.zoomGroup?.meetingPassword}&session_title=${session.materialItem?.title}&session_id=${session.id}&leave_url=${env.NEXT_PUBLIC_NEXTAUTH_URL}groups/${data.zoomGroup?.id}`} target={"_blank"}>
                                                                 <Button variant={"icon"} customeColor={"foregroundIcon"}>
                                                                     <LinkIcon className="w4 h-4" />

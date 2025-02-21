@@ -9,10 +9,11 @@ const ZoomAccountsClient = () => {
     const { data: zoomAccountsData } = api.zoomAccounts.getZoomAccounts.useQuery()
 
     const [accounts, setAccounts] = useState<AccountColumn[]>([]);
-    const formattedData = zoomAccountsData?.zoomAccounts ? zoomAccountsData.zoomAccounts.map(({ createdAt, id, name, zoomSessions,isZoom }) => ({
+    const formattedData: AccountColumn[] = zoomAccountsData?.zoomAccounts ? zoomAccountsData.zoomAccounts.map(({ createdAt, id, name, zoomSessions, isZoom, roomCode }) => ({
         id,
         name,
-        isZoom,
+        isZoom: isZoom ? "Zoom" : "OnMeeting",
+        roomCode: roomCode || "",
         zoomSessions: zoomSessions.map(session => ({
             status: session.sessionStatus,
             date: format(session.sessionDate, "PPPp"),
@@ -30,7 +31,7 @@ const ZoomAccountsClient = () => {
             { ids: accounts.map((account) => account.id) },
             {
                 onSuccess: () => {
-                    trpcUtils.users.invalidate()
+                    trpcUtils.zoomAccounts.invalidate()
                         .then(() => {
                             toastSuccess("Account(s) deleted")
                             callback?.()
@@ -50,7 +51,11 @@ const ZoomAccountsClient = () => {
             setData={setAccounts}
             onDelete={onDelete}
             dateRanges={[{ key: "createdAt", label: "Added On" }]}
-            searches={[{ key: "name", label: "Name" }]}
+            searches={[
+                { key: "name", label: "Name" },
+                { key: "roomCode", label: "Room Code" },
+            ]}
+            filters={[{ filterName: "Account Type", key: "isZoom", values: [{ label: "Zoom", value: "Zoom" }, { label: "OnMeeting", value: "OnMeeting" }] }]}
         />
     );
 };

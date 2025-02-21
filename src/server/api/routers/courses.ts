@@ -221,6 +221,7 @@ export const coursesRouter = createTRPCRouter({
               tester: { include: { user: true } },
               writtenTest: { include: { items: true, submissions: { include: { student: { include: { certificates: true } } } } } },
               course: { include: { levels: true } },
+              zoomSessions: { include: { zoomClient: true } },
             }
           },
           courseStatus: { include: { user: { include: { orders: true } }, level: true } }

@@ -39,28 +39,14 @@ export const LatestCourseOverview = () => {
 
           return (
             <div key={course.id}>
-              <div className="flex items-center justify-between p-4">
-                <div className="flex items-center gap-4">
-                  <div>
-                    {course.image ? (
-                      <Image
-                        width={48}
-                        height={48}
-                        src={course.image}
-                        alt="image"
-                        className="rounded" />
-                    ) : (
-                      <Skeleton className="rounded bg-muted h-12 w-12" />
-                    )}
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <Typography variant={"secondary"}>
-                      {course.name}
-                    </Typography>
-                    <Typography variant={"bodyText"}>
-                      {`Updated ${ago} ago`}
-                    </Typography>
-                  </div>
+              <div className="flex items-center justify-between px-4 py-2">
+                <div className="flex flex-col">
+                  <Typography variant={"secondary"} className="!text-sm">
+                    {course.name}
+                  </Typography>
+                  <Typography variant={"bodyText"} className="!text-sm">
+                    {`Updated ${ago} ago`}
+                  </Typography>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

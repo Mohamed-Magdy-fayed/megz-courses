@@ -85,8 +85,8 @@ export const trainersRouter = createTRPCRouter({
             none: {
               // Ensure that no test overlaps with the given startTime, considering PLACEMENT_TEST_TIME in minutes
               oralTestTime: {
-                gte: lowerBoundTime, // No test Starting after this time (margin before startTime)
-                lte: upperBoundTime, // No test ending after this time (margin after startTime)
+                gt: lowerBoundTime, // No test Starting after this time (margin before startTime)
+                lt: upperBoundTime, // No test ending after this time (margin after startTime)
               }
             }
           }
@@ -161,6 +161,7 @@ export const trainersRouter = createTRPCRouter({
           course: { include: { levels: true } },
           writtenTest: { include: { submissions: true } },
           createdBy: true,
+          zoomSessions: { include: { zoomClient: true } },
         }
       })
 

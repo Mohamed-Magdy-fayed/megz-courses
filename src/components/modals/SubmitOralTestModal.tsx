@@ -21,7 +21,7 @@ export default function SubmitOralTestModal({
     return (
         <Modal
             title={courseName}
-            description="Select the appropriate level for the Student"
+            description="Write the student final test feedback"
             isOpen={isOpen}
             onClose={() => setIsOpen(false)}
         >
@@ -38,7 +38,7 @@ export default function SubmitOralTestModal({
                     className="w-full p-2 border rounded-md resize-none overflow-auto scrollbar-thin scrollbar-thumb-foreground scrollbar-track-background"
                 />
                 <div className="flex items-center justify-between gap-4">
-                    <SpinnerButton type="button" icon={PlusSquareIcon} isLoading={loading} onClick={handleSubmit} text="Add to Waiting list" />
+                    <SpinnerButton type="button" icon={PlusSquareIcon} isLoading={loading} onClick={handleSubmit} text="Submit Feedback" />
                 </div>
             </div>
         </Modal>

@@ -7,8 +7,8 @@ import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/getInitials";
 import { SeverityPill, SeverityPillProps } from "@/components/overview/SeverityPill";
-import { formatPercentage, isTimeNow, isTimePassed } from "@/lib/utils";
-import { CourseLevel, Meeting } from "@prisma/client";
+import { cn, formatPercentage, isTimeNow, isTimePassed } from "@/lib/utils";
+import { CourseLevel } from "@prisma/client";
 import { format } from "date-fns";
 import { useState } from "react";
 import Modal from "@/components/ui/modal";
@@ -18,7 +18,6 @@ import { Calendar } from "lucide-react";
 import { api } from "@/lib/api";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { createMutationOptions } from "@/lib/mutationsHelper";
-import { env } from "@/env.mjs";
 
 export type Column = {
     id: string,
@@ -29,6 +28,7 @@ export type Column = {
     courseName: string,
     courseLevels: CourseLevel[],
     testLink: string,
+    oralTestLink: string | undefined,
     testersData: {
         id: string;
         name: string;
@@ -42,7 +42,6 @@ export type Column = {
     isWrittenTestDone?: "true" | "false",
     writtenTestResult?: number,
     writtenTestTotalPoints?: number,
-    oralTestMeeting: Meeting,
     oralTestQuestions: string | null,
     createdBy: string,
     createdAt: string,
@@ -209,8 +208,8 @@ export const columns: ColumnDef<Column>[] = [
                         isOralTestTimePassed ? (
                             <Button onClick={() => setIsOpen(true)}>Reschedule</Button>
                         ) : isOralTestTimeNow ? (
-                            <Link target="_blank" className="w-fit" href={`/meeting/?mn=${row.original.oralTestMeeting.meetingNumber}&pwd=${row.original.oralTestMeeting.meetingPassword}&session_title=Placement_Test&leave_url=${env.NEXT_PUBLIC_NEXTAUTH_URL}edu_team/my_tasks`}>
-                                <Button disabled={isOralTestTimePassed}>Join Meeting</Button>
+                            <Link target="_blank" className={cn("w-fit", !row.original.oralTestLink && "pointer-events-none")} href={row.original.oralTestLink || ""}>
+                                <Button disabled={isOralTestTimePassed || !row.original.oralTestLink}>Join Meeting</Button>
                             </Link>
                         ) : null}
                 </div>

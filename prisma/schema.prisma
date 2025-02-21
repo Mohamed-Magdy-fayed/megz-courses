@@ -130,29 +130,30 @@ model VerificationToken {
     @@unique([identifier, token])
 }
 
-type Meeting {
-    meetingNumber   String
-    meetingPassword String
-    zoomClientId    String
-}
+// type Meeting {
+//     meetingNumber   String
+//     meetingPassword String
+//     zoomClientId    String
+// }
 
 model PlacementTest {
-    id              String     @id @default(auto()) @map("_id") @db.ObjectId
-    student         User       @relation("PlacementTestToStudent", fields: [studentUserId], references: [id], onDelete: Cascade)
-    studentUserId   String     @db.ObjectId
-    course          Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
-    courseId        String     @db.ObjectId
-    writtenTest     SystemForm @relation(fields: [writtenTestId], references: [id], onDelete: Cascade)
-    writtenTestId   String     @db.ObjectId
+    id              String        @id @default(auto()) @map("_id") @db.ObjectId
+    student         User          @relation("PlacementTestToStudent", fields: [studentUserId], references: [id], onDelete: Cascade)
+    studentUserId   String        @db.ObjectId
+    course          Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+    courseId        String        @db.ObjectId
+    writtenTest     SystemForm    @relation(fields: [writtenTestId], references: [id], onDelete: Cascade)
+    writtenTestId   String        @db.ObjectId
     oralFeedback    String?
-    oralTestMeeting Meeting
+    // oralTestMeeting Meeting
     oralTestTime    DateTime
-    tester          Tester     @relation(fields: [testerId], references: [id], onDelete: Cascade)
-    testerId        String     @db.ObjectId
-    createdBy       User?      @relation("PlacementTestToCreatedBy", fields: [createdByUserId], references: [id])
-    createdByUserId String?    @db.ObjectId
-    updatedAt       DateTime   @updatedAt
-    createdAt       DateTime   @default(now())
+    zoomSessions    ZoomSession[]
+    tester          Tester        @relation(fields: [testerId], references: [id], onDelete: Cascade)
+    testerId        String        @db.ObjectId
+    createdBy       User?         @relation("PlacementTestToCreatedBy", fields: [createdByUserId], references: [id])
+    createdByUserId String?       @db.ObjectId
+    updatedAt       DateTime      @updatedAt
+    createdAt       DateTime      @default(now())
 }
 
 model Teacher {
@@ -481,23 +482,26 @@ type SubmissionAnswer {
 }
 
 model ZoomSession {
-    id             String                 @id @default(auto()) @map("_id") @db.ObjectId
-    sessionDate    DateTime
-    sessionLink    String
-    sessionStatus  SessionStatus
-    teacher        Teacher?               @relation(fields: [teacherId], references: [id])
-    teacherId      String?                @db.ObjectId
-    zoomGroup      ZoomGroup?             @relation(fields: [groupId], references: [id], onDelete: Cascade)
-    groupId        String?                @db.ObjectId
-    materialItem   MaterialItem?          @relation(fields: [materialItemId], references: [id])
-    materialItemId String?                @db.ObjectId
-    zoomClient     ZoomClient?            @relation(fields: [zoomClientId], references: [id])
-    zoomClientId   String?                @db.ObjectId
-    attenders      String[]
-    assignments    SystemFormSubmission[] @relation("Assignments")
-    quizzes        SystemFormSubmission[] @relation("Quizzes")
-    updatedAt      DateTime               @updatedAt
-    createdAt      DateTime               @default(now())
+    id              String                 @id @default(auto()) @map("_id") @db.ObjectId
+    sessionDate     DateTime
+    meetingNumber   String
+    meetingPassword String
+    sessionStatus   SessionStatus
+    teacher         Teacher?               @relation(fields: [teacherId], references: [id])
+    teacherId       String?                @db.ObjectId
+    zoomGroup       ZoomGroup?             @relation(fields: [groupId], references: [id], onDelete: Cascade)
+    groupId         String?                @db.ObjectId
+    materialItem    MaterialItem?          @relation(fields: [materialItemId], references: [id], onDelete: Cascade)
+    materialItemId  String?                @db.ObjectId
+    placementTest   PlacementTest?         @relation(fields: [placementTestId], references: [id], onDelete: Cascade)
+    placementTestId String?                @db.ObjectId
+    zoomClient      ZoomClient?            @relation(fields: [zoomClientId], references: [id], onDelete: Cascade)
+    zoomClientId    String?                @db.ObjectId
+    attenders       String[]
+    assignments     SystemFormSubmission[] @relation("Assignments")
+    quizzes         SystemFormSubmission[] @relation("Quizzes")
+    updatedAt       DateTime               @updatedAt
+    createdAt       DateTime               @default(now())
 }
 
 enum GroupStatus {
@@ -537,6 +541,7 @@ model ZoomClient {
     accessToken     String
     refreshToken    String
     isZoom          Boolean
+    roomCode        String?
     zoomSessions    ZoomSession[]
     updatedAt       DateTime      @updatedAt
     createdAt       DateTime      @default(now())

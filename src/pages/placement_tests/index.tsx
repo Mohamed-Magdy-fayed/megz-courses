@@ -4,6 +4,7 @@ import AppLayout from "@/components/layout/AppLayout";
 import PlacmentTestScheduleClient from "@/components/contentComponents/placmentTestSchedule/PlacmentTestScheduleClient";
 import { api } from "@/lib/api";
 import { formatPercentage } from "@/lib/utils";
+import { preMeetingLinkConstructor } from "@/lib/meetingsHelpers";
 
 const PlacementTestsPage = () => {
     const { data, isLoading } = api.placementTests.getAllPlacementTests.useQuery()
@@ -23,7 +24,8 @@ const PlacementTestsPage = () => {
                             student,
                             course,
                             oralTestTime,
-                            oralTestMeeting,
+                            // oralTestMeeting,
+                            zoomSessions,
                             tester,
                             writtenTest,
                             courseId,
@@ -33,6 +35,14 @@ const PlacementTestsPage = () => {
                             const test = writtenTest
                             const submission = writtenTest.submissions.find(sub => sub.studentId === student.id)
                             const link = `${window.location.host}/placement_test/${course.slug}`
+                            const zoomSession = zoomSessions.find(s => s.sessionStatus !== "Cancelled")
+                            const oralTestLink = preMeetingLinkConstructor({
+                                isZoom: !zoomSession?.zoomClient?.isZoom,
+                                meetingNumber: zoomSession?.meetingNumber || "",
+                                meetingPassword: zoomSession?.meetingPassword || "",
+                                sessionTitle: `Placement Test for course ${course.name}`,
+                                sessionId: zoomSession?.id
+                            })
 
                             return ({
                                 id,
@@ -48,7 +58,8 @@ const PlacementTestsPage = () => {
                                 studentEmail: student.email,
                                 studentImage: student.image,
                                 oralTestTime,
-                                oralTestMeeting,
+                                // oralTestMeeting,
+                                oralTestLink,
                                 oralTestQuestions: writtenTest.oralTestQuestions,
                                 testLink: `/placement_test/${course.slug}`,
                                 testerId: tester.user.id,

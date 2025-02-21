@@ -7,9 +7,9 @@ import { Prisma } from '@prisma/client'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { format } from 'date-fns'
 import { FC } from 'react'
-import { env } from '@/env.mjs'
 import { isTimePassed } from '@/lib/utils'
 import Link from 'next/link'
+import { preMeetingLinkConstructor } from '@/lib/meetingsHelpers'
 
 type OralTestCardProps = {
     courseName: string;
@@ -21,12 +21,21 @@ type OralTestCardProps = {
             },
             student: { include: { courseStatus: { include: { course: true, level: true } } } },
             course: true;
+            zoomSessions: { include: { zoomClient: true } };
         }
     }>
 }
 
 const OralTestCard: FC<OralTestCardProps> = ({ courseName, placementTest, courseSlug }) => {
     const isOralTestTimePassed = isTimePassed(placementTest.oralTestTime.getTime() || new Date().getTime())
+    const session = placementTest.zoomSessions.find(s => s.sessionStatus !== "Cancelled")
+    const oralTestLink = preMeetingLinkConstructor({
+        isZoom: !!session?.zoomClient?.isZoom,
+        meetingNumber: session?.meetingNumber || "",
+        meetingPassword: session?.meetingPassword || "",
+        sessionTitle: `Placement test for ${courseName} course`,
+        sessionId: session?.id,
+    })
 
     return (
         <Card className="col-span-12 xl:col-span-4 w-full h-fit">
@@ -73,8 +82,12 @@ const OralTestCard: FC<OralTestCardProps> = ({ courseName, placementTest, course
                         Oral Test Result: <span className="text-primary">{placementTest?.student.courseStatus.find(({ course }) => course.slug === courseSlug)?.level?.name}</span>
                     </Typography>
                 ) : (
-                    <Link target="_blank" href={`/meeting/?mn=${placementTest?.oralTestMeeting.meetingNumber}&pwd=${placementTest?.oralTestMeeting.meetingPassword}&session_title=Placement_Test&leave_url=${env.NEXT_PUBLIC_NEXTAUTH_URL}placement_test/${placementTest?.course.slug}`}>
-                        <Button disabled={isOralTestTimePassed}>Join Meeting</Button>
+                    <Link
+                        target="_blank"
+                        href={oralTestLink || ""}
+                    // href={`/meeting/?mn=${placementTest?.oralTestMeeting.meetingNumber}&pwd=${placementTest?.oralTestMeeting.meetingPassword}&session_title=Placement_Test&leave_url=${env.NEXT_PUBLIC_NEXTAUTH_URL}placement_test/${placementTest?.course.slug}`}
+                    >
+                        <Button disabled={isOralTestTimePassed || !oralTestLink}>Join Meeting</Button>
                     </Link>
                 )}
             </CardFooter>

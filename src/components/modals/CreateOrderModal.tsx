@@ -35,6 +35,7 @@ const CreateOrderModal = ({ leadId, email, isOpen, setIsOpen }: {
             toast,
             trpcUtils,
             successMessageFormatter: ({ orderNumber }) => {
+                setIsOpen(false)
                 return `Order ${orderNumber} Created successfully!`
             }
         })

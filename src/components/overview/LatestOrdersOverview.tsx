@@ -8,15 +8,15 @@ import Link from "next/link";
 
 export const LatestOrdersOverview = () => {
   return (
-    <Card className="col-span-12 md:col-span-6 xl:col-span-8">
+    <Card className="col-span-12 md:col-span-6 xl:col-span-8 flex flex-col">
       <CardHeader >
         <Typography variant={"secondary"}>Latest Orders</Typography>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-grow">
         <LatestOrdersClient />
       </CardContent>
       <Separator />
-      <CardFooter className="justify-end p-4 mt-auto">
+      <CardFooter className="justify-end p-4">
         <Link href={`/orders`}>
           <Button>
             <ArrowRight />

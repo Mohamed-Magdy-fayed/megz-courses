@@ -9,6 +9,7 @@ import PlacmentTestScheduleClient from "@/components/contentComponents/placmentT
 import { formatPercentage } from "@/lib/utils";
 import CertificatesClient from "@/components/users/accountComponents/certificates/CertificateClient";
 import { Prisma } from "@prisma/client";
+import { meetingLinkConstructor } from "@/lib/meetingsHelpers";
 
 const tabs = [
     { value: "notes", label: "Account Notes" },
@@ -27,6 +28,7 @@ export const UserAccountTabs = ({ user }: {
                     student: { include: { courseStatus: { include: { level: true } } } },
                     tester: { include: { user: true } },
                     writtenTest: { include: { submissions: true } },
+                    zoomSessions: true,
                 }
             },
             certificates: { include: { course: true, courseLevel: true } },
@@ -72,7 +74,8 @@ export const UserAccountTabs = ({ user }: {
                                     student,
                                     course,
                                     oralTestTime,
-                                    oralTestMeeting,
+                                    // oralTestMeeting,
+                                    zoomSessions,
                                     tester,
                                     writtenTest,
                                     courseId,
@@ -82,7 +85,13 @@ export const UserAccountTabs = ({ user }: {
                                     const test = writtenTest
                                     const Submission = writtenTest.submissions.find(sub => sub.studentId === student.id)
                                     const link = `${window.location.host}/placement_test/${course.slug}`
-
+                                    const session = zoomSessions.find(s => s.sessionStatus !== "Cancelled")
+                                    const sessionLink = meetingLinkConstructor({
+                                        meetingNumber: session?.meetingNumber || "",
+                                        meetingPassword: session?.meetingPassword || "",
+                                        sessionTitle: "Placement Test",
+                                        sessionId: session?.id,
+                                    })
                                     return ({
                                         id,
                                         isLevelSubmitted: student.courseStatus.some(status => status.courseId === test.courseId && !!status.level),
@@ -97,9 +106,10 @@ export const UserAccountTabs = ({ user }: {
                                         studentEmail: student.email,
                                         studentImage: student.image,
                                         oralTestTime,
-                                        oralTestMeeting,
+                                        // oralTestMeeting,
                                         oralTestQuestions: writtenTest.oralTestQuestions,
                                         testLink: `/placement_test/${course.slug}`,
+                                        oralTestLink: sessionLink,
                                         testerId: tester.user.id,
                                         testerName: tester.user.name,
                                         testerEmail: tester.user.email,

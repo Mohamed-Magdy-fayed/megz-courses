@@ -6,78 +6,42 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDownIcon, RefreshCcw, Trash } from "lucide-react";
+import { ChevronDownIcon, ExternalLinkIcon, Trash } from "lucide-react";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { Typography } from "@/components/ui/Typoghraphy";
 import Spinner from "@/components/Spinner";
 import { AlertModal } from "@/components/modals/AlertModal";
-import { createMutationOptions } from "@/lib/mutationsHelper";
+import Link from "next/link";
+import { meetingLinkConstructor } from "@/lib/meetingsHelpers";
 
-interface CellActionProps {
+interface ZoomAccountMeetingsActionsProps {
     id: string;
-    isZoom: "OnMeeting" | "Zoom";
+    isZoom: boolean;
+    sessionLink: string;
 }
 
-const CellAction: React.FC<CellActionProps> = ({ id, isZoom }) => {
+const ZoomAccountMeetingsActions: React.FC<ZoomAccountMeetingsActionsProps> = ({ id, isZoom, sessionLink }) => {
     const { toast } = useToast();
     const [loadingToast, setLoadingToast] = useState<toastType>()
     const [isOpen, setIsOpen] = useState(false)
     const [isDeleteOpen, setIsDeleteOpen] = useState(false)
 
     const trpcUtils = api.useUtils();
-    const refreshOnMeetingTokenMutation = api.zoomAccounts.refreshOnMeetingToken.useMutation(
-        createMutationOptions({
-            loadingToast,
-            toast,
-            trpcUtils,
-            setLoadingToast,
-            successMessageFormatter: () => `Token refreshed`
-        })
-    )
-    const refreshMutation = api.zoomMeetings.refreshToken.useMutation({
-        onMutate: () => {
-            setLoadingToast(toast({
-                title: "Loading...",
-                variant: "info",
-                description: (
-                    <Spinner className="h-4 w-4" />
-                ),
-                duration: 3000,
-            }))
-        },
-        onSuccess: ({ updatedZoomClient }) => trpcUtils.zoomAccounts.invalidate().then(() => loadingToast?.update({
-            id: loadingToast.id,
-            variant: "success",
-            description: `${updatedZoomClient.name} zoom account token refreshed successfully`,
-            title: "Success",
-        })),
-        onError: ({ message }) => loadingToast?.update({
-            id: loadingToast.id,
-            variant: "destructive",
-            description: message,
-            title: "Error",
-            duration: 2000,
-        }),
-        onSettled: () => {
-            loadingToast?.dismissAfter()
-            setLoadingToast(undefined)
-        },
-    })
-    const deleteMutation = api.zoomAccounts.deleteZoomAccounts.useMutation({
+    const deleteMutation = api.zoomSessions.deleteZoomSessions.useMutation({
         onMutate: () => setLoadingToast(toast({
             title: "Loading...",
             variant: "info",
             description: (
                 <Spinner className="h-4 w-4" />
             ),
-            duration: 3000,
+            duration: 60000,
         })),
         onSuccess: () => trpcUtils.zoomAccounts.invalidate().then(() => loadingToast?.update({
             id: loadingToast.id,
             variant: "success",
-            description: `Account deleted successfully`,
+            description: `Session deleted successfully`,
             title: "Success"
         })),
         onError: ({ message }) => loadingToast?.update({
@@ -94,22 +58,14 @@ const CellAction: React.FC<CellActionProps> = ({ id, isZoom }) => {
     });
 
     const onDelete = () => {
-        deleteMutation.mutate({ ids: [id] });
-    };
-
-    const onRefreshAceessToken = () => {
-        if (isZoom === "Zoom") {
-            return refreshMutation.mutate({ zoomClientId: id });
-        }
-
-        refreshOnMeetingTokenMutation.mutate({ id })
+        deleteMutation.mutate([id]);
     };
 
     return (
         <>
             <AlertModal
                 isOpen={isDeleteOpen}
-                description="This action is very high risk, any associated sessions will lose Zoom account functionality!"
+                description="This action is very high risk, any associated sessions will lose Zoom functionality!"
                 onClose={() => setIsDeleteOpen(false)}
                 loading={!!loadingToast}
                 onConfirm={onDelete}
@@ -122,9 +78,11 @@ const CellAction: React.FC<CellActionProps> = ({ id, isZoom }) => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={onRefreshAceessToken}>
-                        <RefreshCcw className="w-4 h-4 mr-2" />
-                        Refresh Acess Token
+                    <DropdownMenuItem asChild>
+                        <Link href={sessionLink}>
+                            <ExternalLinkIcon className="w-4 h-4 mr-2" />
+                            Join
+                        </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => {
                         setIsOpen(false)
@@ -139,4 +97,4 @@ const CellAction: React.FC<CellActionProps> = ({ id, isZoom }) => {
     );
 };
 
-export default CellAction;
+export default ZoomAccountMeetingsActions;

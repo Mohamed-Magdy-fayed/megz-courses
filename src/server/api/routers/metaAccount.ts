@@ -34,8 +34,8 @@ export const metaAccountRouter = createTRPCRouter({
         }))
         .mutation(async ({ input: { name, fbExchangeToken }, ctx }) => {
             if (!hasPermission(ctx.session.user, "metaClients", "create")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
-            const clientId = env.NEXT_PUBLIC_WHATSAPP_APP_ID
-            const clientSecret = env.NEXT_PUBLIC_WHATSAPP_APP_SECRET
+            const clientId = env.WHATSAPP_APP_ID
+            const clientSecret = env.WHATSAPP_APP_SECRET
 
             const url = `https://graph.facebook.com/v20.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${clientId}&client_secret=${clientSecret}&fb_exchange_token=${fbExchangeToken}`;
 
@@ -80,8 +80,8 @@ export const metaAccountRouter = createTRPCRouter({
         }))
         .mutation(async ({ input: { id, name, fbExchangeToken }, ctx }) => {
             if (!hasPermission(ctx.session.user, "metaClients", "update")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
-            const clientId = env.NEXT_PUBLIC_WHATSAPP_APP_ID
-            const clientSecret = env.NEXT_PUBLIC_WHATSAPP_APP_SECRET
+            const clientId = env.WHATSAPP_APP_ID
+            const clientSecret = env.WHATSAPP_APP_SECRET
 
             const url = `https://graph.facebook.com/v20.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${clientId}&client_secret=${clientSecret}&fb_exchange_token=${fbExchangeToken}`;
 

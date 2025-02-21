@@ -1,6 +1,5 @@
 import { env } from "@/env.mjs";
 import { validLeadInteractionsType, validLeadSources, validSessionStatuses } from "@/lib/enumsTypes";
-import { meetingLinkConstructor } from "@/lib/meetingsHelpers";
 import { courses, salesAgentsData, systemFormData, trainersData } from "@/lib/mockData/data";
 import { generateGroupNumnber, getGroupSessionDays, getSubmissionScore, leadsCodeGenerator, orderCodeGenerator } from "@/lib/utils";
 import { Course, CourseStatuses, DefaultStage, Devices, OrderStatus, PrismaClient, SessionStatus, SystemFormTypes } from "@prisma/client";
@@ -393,27 +392,30 @@ export const generatePlacementTests = async (prisma: PrismaClient) => {
 
     const testers = await prisma.tester.findMany({ include: { user: true } })
 
-    convertedLeads.map(lead => {
+    await prisma.$transaction(convertedLeads.map(lead => {
         const timeStamps = generateTimestamps(lead.updatedAt)
         const oralTestTime = new Date(timeStamps.createdAt.setDate(timeStamps.createdAt.getDate() + Math.random() * 23))
 
-        prisma.placementTest.create({
+        return prisma.placementTest.create({
             data: {
                 course: { connect: { id: lead.orderDetails?.course.id } },
                 student: { connect: { id: lead.orderDetails?.user.id } },
                 tester: { connect: { id: testers[Math.floor(Math.random() * testers.length)]?.id } },
                 createdBy: { connect: { id: lead.assignee?.user.id } },
                 writtenTest: { connect: { id: lead.orderDetails?.course.systemForms.find(f => f.type === "PlacementTest")?.id } },
-                oralTestMeeting: {
-                    zoomClientId: "zoomClient.id",
-                    meetingNumber: "1234",
-                    meetingPassword: "1234",
+                zoomSessions: {
+                    create: {
+                        sessionDate: oralTestTime,
+                        meetingNumber: "77569231226",
+                        meetingPassword: "abcd1234",
+                        sessionStatus: oralTestTime.getTime() > new Date().getTime() ? "Scheduled" : "Completed"
+                    }
                 },
                 oralTestTime,
                 ...timeStamps
             },
         })
-    })
+    }))
 }
 
 export const generatePlacementTestsSubmissions = async (prisma: PrismaClient) => {
@@ -778,12 +780,8 @@ export const generateZoomGroups = async (prisma: PrismaClient) => {
                     prisma.zoomSession.update({
                         where: { id: session.id },
                         data: {
-                            sessionLink: `${process.env.NEXTAUTH_URL}${meetingLinkConstructor({
-                                meetingNumber: "1234",
-                                meetingPassword: "1234",
-                                sessionTitle: `Session ${idx + 1} for ${group.courseName} - Level ${level?.name}`,
-                                sessionId: session.id
-                            })}`
+                            meetingNumber: "77569231226",
+                            meetingPassword: "abcd1234",
                         }
                     })
                 )

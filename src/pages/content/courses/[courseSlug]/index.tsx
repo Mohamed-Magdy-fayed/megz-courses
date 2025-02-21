@@ -24,6 +24,7 @@ import { PaperContainer } from "@/components/ui/PaperContainers";
 import LevelClient from "@/components/contentComponents/levels/LevelClient";
 import MaterialsClient from "@/components/contentComponents/materials/MaterialsClient";
 import CreateQuickOrderModal from "@/components/leads/CreateQuickOrderModal";
+import { preMeetingLinkConstructor } from "@/lib/meetingsHelpers";
 
 const tabs = [
     { value: "levels", label: "Levels" },
@@ -340,7 +341,7 @@ const CoursePage = () => {
                                         student,
                                         course,
                                         oralTestTime,
-                                        oralTestMeeting,
+                                        zoomSessions,
                                         tester,
                                         writtenTest,
                                         courseId,
@@ -350,6 +351,14 @@ const CoursePage = () => {
                                         const test = writtenTest
                                         const submission = writtenTest.submissions.find(sub => sub.studentId === student.id)
                                         const link = `${window.location.host}/placement_test/${course.slug}`
+                                        const session = zoomSessions.find(s => s.sessionStatus !== "Cancelled")
+                                        const oralTestLink = `/${preMeetingLinkConstructor({
+                                            isZoom: !!session?.zoomClient?.isZoom,
+                                            meetingNumber: session?.meetingNumber || "",
+                                            meetingPassword: session?.meetingPassword || "",
+                                            sessionTitle: `Placement test for ${course.name} course`,
+                                            sessionId: session?.id,
+                                        })}`
 
                                         return ({
                                             id,
@@ -365,7 +374,7 @@ const CoursePage = () => {
                                             studentEmail: student.email,
                                             studentImage: student.image,
                                             oralTestTime,
-                                            oralTestMeeting,
+                                            oralTestLink,
                                             oralTestQuestions: writtenTest.oralTestQuestions,
                                             testLink: `/placement_test/${course.slug}`,
                                             testerId: tester.user.id,

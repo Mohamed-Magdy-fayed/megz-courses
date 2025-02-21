@@ -144,10 +144,11 @@ export const zoomSessionsRouter = createTRPCRouter({
         .input(z.object({
             id: z.string(),
             sessionDate: z.date(),
-            sessionLink: z.string(),
+            meetingNumber: z.string(),
+            meetingPassword: z.string(),
             sessionStatus: z.enum(validSessionStatuses),
         }))
-        .mutation(async ({ ctx, input: { id, sessionStatus, sessionDate, sessionLink } }) => {
+        .mutation(async ({ ctx, input: { id, sessionStatus, sessionDate, meetingNumber, meetingPassword } }) => {
             const originalSession = await ctx.prisma.zoomSession.findUnique({
                 where: {
                     id
@@ -159,7 +160,8 @@ export const zoomSessionsRouter = createTRPCRouter({
                 },
                 data: {
                     sessionDate,
-                    sessionLink,
+                    meetingNumber,
+                    meetingPassword,
                     sessionStatus,
                 },
                 include: {
@@ -233,6 +235,13 @@ export const zoomSessionsRouter = createTRPCRouter({
                 }))
             }
 
+            const sessionLink = `${env.NEXTAUTH_URL}${meetingLinkConstructor({
+                meetingNumber: updatedSession.zoomGroup?.meetingNumber || "",
+                meetingPassword: updatedSession.zoomGroup?.meetingPassword || "",
+                sessionTitle: updatedSession.materialItem?.title || "",
+                sessionId: updatedSession.id,
+            })}`
+
             if (
                 updatedSession.sessionDate.getDate() !== originalSession?.sessionDate.getDate()
                 && updatedSession.sessionDate.getHours() !== originalSession?.sessionDate.getHours()
@@ -244,42 +253,34 @@ export const zoomSessionsRouter = createTRPCRouter({
                         prisma: ctx.prisma,
                         props: {
                             sessionDate: format(updatedSession.sessionDate, "PPPp"),
-                            sessionLink: updatedSession.zoomGroup && updatedSession.materialItem ? `${env.NEXTAUTH_URL}${meetingLinkConstructor({
-                                meetingNumber: updatedSession.zoomGroup?.meetingNumber,
-                                meetingPassword: updatedSession.zoomGroup?.meetingPassword,
-                                sessionTitle: updatedSession.materialItem?.title,
-                                sessionId: updatedSession.id,
-                            })}` : sessionLink,
+                            sessionLink: sessionLink,
                             studentName: student.name,
                             studentEmail: student.email,
                         }
                     })
 
                     sendZohoEmail({ html, email: student.email, subject: "A session date has been updated" })
-                    sendWhatsAppMessage({ prisma: ctx.prisma, toNumber: student.phone, type: "SessionUpdated", variables: { name: student.name, newTime: format(updatedSession?.sessionDate, "PPPp"), oldTime: format(originalSession?.sessionDate || new Date(), "PPPp"), sessionLink: updatedSession.sessionLink } })
+                    sendWhatsAppMessage({ prisma: ctx.prisma, toNumber: student.phone, type: "SessionUpdated", variables: { name: student.name, newTime: format(updatedSession?.sessionDate, "PPPp"), oldTime: format(originalSession?.sessionDate || new Date(), "PPPp"), sessionLink } })
                 })
             }
 
             return { updatedSession }
         }),
-    deleteZoomGroup: protectedProcedure
+    deleteZoomSessions: protectedProcedure
         .input(z.array(z.string()))
         .mutation(async ({ input, ctx }) => {
-            if (!hasPermission(ctx.session.user, "zoomGroups", "delete")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not allowed to take this action, Please contact your Admin!" })
+            if (!hasPermission(ctx.session.user, "zoomSessions", "delete")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not allowed to take this action, Please contact your Admin!" })
 
-            const deletedzoomGroups = await ctx.prisma.zoomGroup.deleteMany({
+            const deletedZoomSessions = await ctx.prisma.zoomSession.deleteMany({
                 where: {
                     AND: {
                         id: {
                             in: input,
                         },
-                        studentIds: { isEmpty: true },
                     }
                 },
             });
 
-            if (deletedzoomGroups.count !== input.length) throw new TRPCError({ code: "BAD_REQUEST", message: "you may need to remove all stundets before deleting a group!" })
-
-            return { deletedzoomGroups };
+            return { deletedZoomSessions };
         }),
 });

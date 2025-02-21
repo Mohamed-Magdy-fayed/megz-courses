@@ -141,10 +141,12 @@ export const leadsRouter = createTRPCRouter({
                                     placementTests: {
                                         where: {
                                             course: { placementTests: { some: { course: { orders: { some: { lead: { code } } } } } } }
-                                        }
+                                        },
+                                        include: { zoomSessions: { include: { zoomClient: true } } },
                                     }
                                 }
-                            }, course: true
+                            },
+                            course: { include: { systemForms: true } },
                         }
                     },
                 }

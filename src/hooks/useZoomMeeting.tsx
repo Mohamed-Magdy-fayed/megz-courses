@@ -76,10 +76,9 @@ const useZoomMeeting = () => {
                                     }
                                 }
                             })
-                            if (session.data?.user.userRoles.includes("Teacher")) {
-                                editSessionStatusMutation.mutate({ id: sessionId, sessionStatus: "Ongoing" })
+                            if (session.data?.user.userRoles.some(role => role === "Teacher" || role === "Tester")) {
+                                editSessionStatusMutation.mutate({ id: sessionId, sessionStatus: "Ongoing" });
                             }
-
                         },
                         error: (error: any) => {
                             console.log('Error joining meeting', error);

@@ -28,14 +28,14 @@ import CreateOrderModal from "@/components/modals/CreateOrderModal";
 import OrderInfoPanel from "@/components/salesOperation/OrderInfoPanel";
 import InteractionsForm from "@/components/leads/InteractionsForm";
 import { validLeadInteractionsColors } from "@/lib/enumColors";
-import { meetingLinkConstructor } from "@/lib/meetingsHelpers";
-import { env } from "@/env.mjs";
 import WrapWithTooltip from "@/components/ui/wrap-with-tooltip";
-import { PlacementTest } from "@prisma/client";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { AfterSubmitData, CreatedUserData } from "@/components/leads/CreateQuickOrderModal";
+import { CreatedUserData } from "@/components/leads/CreateQuickOrderModal";
 import OrderDetailsModal from "@/components/leads/OrderDetailsModal";
+import { Session, ZoomSession } from "@prisma/client";
+import { meetingLinkConstructor, preMeetingLinkConstructor } from "@/lib/meetingsHelpers";
+import { env } from "@/env.mjs";
 
 export default function LeadPage() {
     const router = useRouter()
@@ -194,6 +194,14 @@ export default function LeadPage() {
         return undefined
     }, [leadData?.lead?.reminders])
 
+    const testSession = useMemo(() => {
+        const session = leadData?.lead?.orderDetails?.user.placementTests[0]?.zoomSessions.find(s => s.sessionStatus !== "Cancelled")
+        return {
+            session,
+            isZoom: session?.zoomClient?.isZoom,
+        }
+    }, [leadData?.lead])
+
     return (
         <AppLayout>
             <AssignModal
@@ -253,7 +261,7 @@ export default function LeadPage() {
                     </div>
                     <Card>
                         <CardHeader>
-                            <Typography variant={"secondary"}>Lead management</Typography>
+                            <Typography variant={"secondary"}>Contact Info</Typography>
                         </CardHeader>
                         <CardContent className="flex flex-col sm:flex-row items-center sm:items-start gap-4 p-4 justify-between">
                             <div className="space-y-4">
@@ -358,10 +366,11 @@ export default function LeadPage() {
                                                     }
                                                 </Button>
                                                 {
-                                                    leadData.lead.orderDetails?.user.placementTests[0]
-                                                    && <PlacemntTestMeetingInfo
-                                                        courseSlug={leadData.lead.orderDetails.course.slug}
-                                                        PlacementTest={leadData.lead.orderDetails.user.placementTests[0]}
+
+                                                    testSession && testSession.session && <PlacemntTestMeetingInfo
+                                                        courseName={leadData.lead.orderDetails.course.name || ""}
+                                                        isZoom={!!testSession.isZoom}
+                                                        session={testSession.session}
                                                     />
                                                 }
                                             </div>
@@ -541,23 +550,26 @@ export default function LeadPage() {
     );
 }
 
-function PlacemntTestMeetingInfo({ PlacementTest, courseSlug }: {
-    courseSlug: string;
-    PlacementTest: PlacementTest;
+function PlacemntTestMeetingInfo({ session, isZoom, courseName }: {
+    session: ZoomSession;
+    courseName: string;
+    isZoom: boolean;
 }) {
+    const sessionURL = preMeetingLinkConstructor({
+        isZoom,
+        meetingNumber: session.meetingNumber,
+        meetingPassword: session.meetingPassword,
+        sessionTitle: `Placement Test for course ${courseName}`,
+        sessionId: session.id,
+    })
 
     return (
         <div className="flex items-center gap-2">
             <div>
                 <WrapWithTooltip text="Open meeting in new tab">
-                    <Button variant="icon" customeColor="infoIcon">
+                    <Button disabled={!sessionURL} variant="icon" customeColor="infoIcon">
                         <Link
-                            href={`/${meetingLinkConstructor({
-                                meetingNumber: PlacementTest.oralTestMeeting.meetingNumber,
-                                meetingPassword: PlacementTest.oralTestMeeting.meetingPassword,
-                                sessionTitle: "Placement_Test",
-                                leaveUrl: `${env.NEXT_PUBLIC_NEXTAUTH_URL}placement_test/${courseSlug}`,
-                            })}`}
+                            href={`/${sessionURL}`}
                             target="_blank"
                         >
                             <ExternalLink className="size-4" />
@@ -566,14 +578,10 @@ function PlacemntTestMeetingInfo({ PlacementTest, courseSlug }: {
                 </WrapWithTooltip>
                 <WrapWithTooltip text="Copy meeting link">
                     <Button
+                        disabled={!sessionURL}
                         variant="icon"
                         customeColor="infoIcon"
-                        onClick={() => navigator.clipboard.writeText(`${env.NEXT_PUBLIC_NEXTAUTH_URL}${meetingLinkConstructor({
-                            meetingNumber: PlacementTest.oralTestMeeting.meetingNumber,
-                            meetingPassword: PlacementTest.oralTestMeeting.meetingPassword,
-                            sessionTitle: "Placement_Test",
-                            leaveUrl: `${env.NEXT_PUBLIC_NEXTAUTH_URL}placement_test/${courseSlug}`,
-                        })}`)}
+                        onClick={() => navigator.clipboard.writeText(`${env.NEXT_PUBLIC_NEXTAUTH_URL}${sessionURL}`)}
                     >
                         <CopyIcon className="size-4" />
                     </Button>

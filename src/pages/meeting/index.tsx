@@ -52,11 +52,11 @@ export default function MeetingPage() {
     if (userId > 0) return <MeetingRoot />
 
     return (
-        <div className="grid place-content-center min-h-screen">
+        <div className="grid place-content-center min-h-screen p-12">
             <div className="flex flex-col gap-12">
-                <Typography className="text-9xl">{sessionTitle} Session</Typography>
-                <Typography className="text-7xl">User Name: {name}</Typography>
-                <Typography className="text-7xl">User Email: {email}</Typography>
+                <Typography className="text-7xl">{sessionTitle} Session</Typography>
+                <Typography className="text-5xl">User Name: {name}</Typography>
+                <Typography className="text-5xl">User Email: {email}</Typography>
                 <Button className="text-5xl font-bold p-12" disabled={isJoining} type="button" onClick={join}>
                     <UserPlus className={cn("w-12 h-12", isJoining && "opacity-0")} />
                     <Typography className={cn(isJoining && "opacity-0")}>Join</Typography>

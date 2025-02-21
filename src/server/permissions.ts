@@ -1,4 +1,4 @@
-import { Certificate, Course, GoogleClient, Lead, LeadStage, MessageTemplate, MetaClient, Order, Parameters, PlacementTest, SupportChat, SupportTicket, SystemForm, SystemFormSubmission, Teacher, Tester, User, UserNote, UserRoles, ZoomClient, ZoomGroup } from "@prisma/client";
+import { Certificate, Course, GoogleClient, Lead, LeadStage, MessageTemplate, MetaClient, Order, Parameters, PlacementTest, SupportChat, SupportTicket, SystemForm, SystemFormSubmission, Teacher, Tester, User, UserNote, UserRoles, ZoomClient, ZoomGroup, ZoomSession } from "@prisma/client";
 
 type PartialUser = Pick<User, "id" | "email" | "userRoles">
 
@@ -87,6 +87,10 @@ type Permissions = {
         dataType: Partial<ZoomClient>
         action: "view" | "create" | "update" | "delete"
     },
+    zoomSessions: {
+        dataType: Partial<ZoomSession>
+        action: "view" | "create" | "update" | "delete"
+    },
     metaClients: {
         dataType: Partial<MetaClient>
         action: "view" | "create" | "update" | "delete"
@@ -130,6 +134,7 @@ const ROLES = {
         tester: { view: true },
         placementTests: unrestricted,
         messageTemplates: unrestricted,
+        zoomSessions: unrestricted,
     },
     "ChatAgent": {
         adminLayout: { view: true },

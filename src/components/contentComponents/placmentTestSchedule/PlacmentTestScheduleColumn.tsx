@@ -1,13 +1,9 @@
-import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowUpDown } from "lucide-react";
 import Link from "next/link";
 import { Typography } from "@/components/ui/Typoghraphy";
 import ActionCell from "./PlacmentTestScheduleActionCell";
-import { getInitials } from "@/lib/getInitials";
 import { format } from "date-fns";
-import { Meeting } from "@prisma/client";
 
 export type PlacmentTestScheduleRow = {
     id: string;
@@ -16,12 +12,13 @@ export type PlacmentTestScheduleRow = {
     courseName: string,
     courseLevels: { label: string, value: string }[],
     testLink: string,
+    oralTestLink: string | undefined,
     studentUserId: string;
     studentName: string;
     studentEmail: string;
     studentImage: string | null;
     oralTestTime: Date;
-    oralTestMeeting: Meeting;
+    // oralTestMeeting: Meeting;
     oralTestQuestions: string | null;
     testerId: string;
     testerName: string;
@@ -104,7 +101,7 @@ export const columns: ColumnDef<PlacmentTestScheduleRow>[] = [
             userId={row.original.studentUserId}
             courseId={row.original.courseId}
             courseLevels={row.original.courseLevels}
-            oralTestMeeting={row.original.oralTestMeeting}
+            oralTestLink={row.original.oralTestLink}
         />,
     },
 ];

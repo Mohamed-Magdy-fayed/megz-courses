@@ -23,7 +23,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
         <link rel="icon" href="/logo.svg" />
       </Head>
       <TooltipProvider>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="light">
           <Component {...pageProps} />
           <Toaster />
         </ThemeProvider>

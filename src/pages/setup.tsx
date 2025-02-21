@@ -69,7 +69,7 @@ const SetupPage = () => {
     </div>
   )
 
-  if (setupQuery.data?.Admin?.email) return (
+  if (setupQuery.data?.Admin?.email && !setupQuery.data?.isDebugMode) return (
     <NotFoundPage />
   )
 

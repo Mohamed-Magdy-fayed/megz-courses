@@ -6,10 +6,9 @@ import {
 import { TRPCError } from "@trpc/server";
 import { validGroupStatuses, validSessionStatuses } from "@/lib/enumsTypes";
 import { generateGroupNumnber } from "@/lib/utils";
-import { createZoomMeeting, deleteZoomMeeting, generateGroupMeetingConfig, getAvailableZoomClient, meetingLinkConstructor } from "@/lib/meetingsHelpers";
-import { env } from "@/env.mjs";
+import { createZoomMeeting, generateGroupMeetingConfig, getAvailableZoomClient } from "@/lib/meetingsHelpers";
 import { hasPermission } from "@/server/permissions";
-import { createMeeting, generateToken, getMeetingDetails, getUserRoom } from "@/lib/onMeetingApi";
+import { createMeeting, generateToken, getMeetingDetails, getUserRooms } from "@/lib/onMeetingApi";
 
 export const zoomGroupsRouter = createTRPCRouter({
     attendSession: protectedProcedure
@@ -287,15 +286,16 @@ export const zoomGroupsRouter = createTRPCRouter({
             let meetingData = { meetingNumber: "", meetingPassword: "" }
 
             if (!zoomClient.isZoom) {
+                if (!zoomClient.roomCode) throw new TRPCError({ code: "BAD_REQUEST", message: "No room in the Account!" })
                 const token = await generateToken({ api_key: zoomClient.accessToken, api_secret: zoomClient.refreshToken })
-                const room = await getUserRoom({ token })
+
                 const { meeting_no } = await createMeeting({
                     token,
                     meetingData: {
                         alert: true,
                         join_before_host: true,
                         recording: true,
-                        room_code: room.room_code,
+                        room_code: zoomClient.roomCode,
                         topic: groupNumber,
                     }
                 })
@@ -324,7 +324,8 @@ export const zoomGroupsRouter = createTRPCRouter({
                                 attenders: [],
                                 sessionStatus: "Scheduled",
                                 sessionDate: session.date,
-                                sessionLink: "",
+                                meetingNumber,
+                                meetingPassword,
                                 materialItemId: session.sessionId,
                                 zoomClientId: zoomClient.id,
                             }))
@@ -347,7 +348,7 @@ export const zoomGroupsRouter = createTRPCRouter({
                 zoomGroup.zoomSessions.map((session, idx) =>
                     ctx.prisma.zoomSession.update({
                         where: { id: session.id },
-                        data: { sessionLink: `${env.NEXTAUTH_URL}${meetingLinkConstructor({ meetingNumber, meetingPassword, sessionTitle: `Session ${idx + 1} for ${course.name} level ${level.name}`, sessionId: session.id })}` }
+                        data: { meetingNumber, meetingPassword }
                     })))
 
             await ctx.prisma.courseStatus.updateMany({
@@ -573,7 +574,7 @@ export const zoomGroupsRouter = createTRPCRouter({
         .mutation(async ({ input, ctx }) => {
             if (!hasPermission(ctx.session.user, "zoomGroups", "delete")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not allowed to take this action, Please contact your Admin!" })
 
-            const groups = await ctx.prisma.zoomGroup.findMany({
+            const deletedzoomGroups = await ctx.prisma.zoomGroup.deleteMany({
                 where: {
                     AND: {
                         id: {
@@ -582,27 +583,9 @@ export const zoomGroupsRouter = createTRPCRouter({
                         studentIds: { isEmpty: true },
                     }
                 },
-                include: { zoomSessions: { include: { zoomClient: true } } }
-            })
+            });
 
-            if (groups.length !== input.length) throw new TRPCError({ code: "BAD_REQUEST", message: "you may need to remove all stundets before deleting a group!" })
-
-            await Promise.all(
-                groups.map(async group => {
-                    const accessToken = group.zoomSessions[0]?.zoomClient?.accessToken
-                    if (!accessToken) throw new TRPCError({ code: "BAD_REQUEST", message: "No zoom client connected to the sessions!" })
-                    await deleteZoomMeeting(group.meetingNumber, accessToken)
-                })
-            )
-
-            const deletedzoomGroups = await ctx.prisma.$transaction(
-                groups.map(({ id }) => ctx.prisma.zoomGroup.delete({
-                    where: {
-                        id,
-                    },
-                }))
-            );
-
+            if (deletedzoomGroups.count !== input.length) throw new TRPCError({ code: "BAD_REQUEST", message: "you may need to remove all stundets before deleting a group!" })
 
             return { deletedzoomGroups };
         }),

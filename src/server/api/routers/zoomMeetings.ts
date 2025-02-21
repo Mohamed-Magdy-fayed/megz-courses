@@ -4,12 +4,13 @@ import {
     protectedProcedure,
 } from "@/server/api/trpc";
 import { KJUR } from "jsrsasign";
-import { TRPCError } from "@trpc/server";
+import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
 import axios from "axios";
 import QueryString from "qs";
-import { MeetingResponse, ZoomMeeting } from "@/lib/zoomTypes";
 import { format } from "date-fns";
-import { generateGroupNumnber, getZoomSessionDays } from "@/lib/utils";
+import { env } from "@/env.mjs";
+import { createZoomMeeting, refreshZoomAccountToken } from "@/lib/meetingsHelpers";
+import { createMeeting, generateToken, getMeetingDetails } from "@/lib/onMeetingApi";
 
 export const zoomMeetingsRouter = createTRPCRouter({
     generateSDKSignature: protectedProcedure
@@ -27,8 +28,8 @@ export const zoomMeetingsRouter = createTRPCRouter({
         })
         )
         .mutation(async ({ ctx, input: { meetingConfig } }) => {
-            const sdkKey = process.env.NEXT_PUBLIC_ZOOM_CLIENT_ID
-            const sdkSecret = process.env.NEXT_PUBLIC_ZOOM_CLIENT_SECRET
+            const sdkKey = env.ZOOM_CLIENT_ID
+            const sdkSecret = env.ZOOM_CLIENT_SECRET
             let signature = ""
 
             const id = ctx.session.user.id
@@ -102,70 +103,71 @@ export const zoomMeetingsRouter = createTRPCRouter({
         }),
     createMeeting: protectedProcedure
         .input(z.object({
-            zoomClientId: z.string(),
-            teacherId: z.string(),
-            courseId: z.string(),
+            topic: z.string(),
             startDate: z.date(),
-            courseLevelId: z.string(),
+            zoomClientId: z.string(),
         }))
-        .mutation(async ({ ctx, input: { startDate, courseLevelId, zoomClientId, courseId, teacherId } }) => {
-            const Teacher = await ctx.prisma.teacher.findUnique({ where: { id: teacherId }, include: { user: true } })
-            const course = await ctx.prisma.course.findUnique({ where: { id: courseId }, include: { levels: { include: { materialItems: true } } } })
-            if (!Teacher || !course) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Course or Teacher doesn't exist!" })
+        .mutation(async ({ ctx, input: { startDate, zoomClientId, topic } }) => {
+            try {
+                const zoomClient = await ctx.prisma.zoomClient.findUnique({ where: { id: zoomClientId } })
+                if (!zoomClient) throw new TRPCError({ code: "BAD_REQUEST", message: "Zoom Client not found!" })
 
-            const level = await ctx.prisma.courseLevel.findUnique({ where: { id: courseLevelId }, include: { materialItems: true } })
-            if (!level) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Level doesn't exist!" })
+                async function getMeetingData(isZoom: boolean) {
+                    if (isZoom) {
+                        const updatedZoomClient = await refreshZoomAccountToken(zoomClient!, ctx.prisma)
+                        const { meetingNumber, meetingPassword } = await createZoomMeeting({
+                            topic,
+                            agenda: topic,
+                            duration: parseInt(env.NEXT_PUBLIC_PLACEMENT_TEST_TIME),
+                            password: "abcd1234",
+                            settings: {
+                                auto_recording: "cloud",
+                                host_video: true,
+                                jbh_time: 10,
+                                join_before_host: true,
+                                waiting_room: false,
+                            },
+                            start_time: format(startDate, "yyyy-MM-dd'T'HH:mm:ss:SSS'Z'"),
+                            timezone: "Africa/Cairo",
+                            type: 2,
+                        }, updatedZoomClient?.accessToken!)
 
-            const zoomClient = await ctx.prisma.zoomClient.findUnique({ where: { id: zoomClientId } })
-            if (!zoomClient) throw new TRPCError({ code: "BAD_REQUEST", message: "no zoom account with this ID" })
+                        return { meetingNumber, meetingPassword }
+                    } else {
+                        const token = await generateToken({ api_key: zoomClient?.accessToken!, api_secret: zoomClient?.refreshToken! })
 
-            const groupNumber = generateGroupNumnber(startDate, Teacher.user.name, course.name)
-            const repeatDays = getZoomSessionDays(startDate.getDay())
+                        const { meeting_no } = await createMeeting({
+                            token,
+                            meetingData: {
+                                alert: true,
+                                join_before_host: true,
+                                recording: true,
+                                room_code: zoomClient?.roomCode!,
+                                topic,
+                            }
+                        })
 
-            const meetingData: Partial<ZoomMeeting> = {
-                topic: groupNumber,
-                agenda: `${course.name} Course @ Level ${level.name}`,
-                duration: 120,
-                password: "abcd1234",
-                recurrence: {
-                    end_times: level.materialItems.length,
-                    type: 2,
-                    repeat_interval: 1,
-                    weekly_days: repeatDays.join(","),
-                },
-                settings: {
-                    auto_recording: "cloud",
-                    host_video: true,
-                    jbh_time: 10,
-                    join_before_host: true,
-                    waiting_room: false,
-                },
-                start_time: format(startDate, "yyyy-MM-dd'T'HH:mm:ss:SSS'Z'"),
-                timezone: "Africa/Cairo",
-                type: 8,
+                        return { meetingNumber: meeting_no, meetingPassword: "" }
+                    }
+                }
+
+                const { meetingNumber, meetingPassword } = await getMeetingData(zoomClient.isZoom)
+
+                return { meetingNumber, meetingPassword }
+            } catch (error) {
+                throw new TRPCError(getTRPCErrorFromUnknown(error))
             }
-
-            const config = {
-                method: 'post',
-                maxBodyLength: Infinity,
-                url: 'https://api.zoom.us/v2/users/me/meetings',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${zoomClient.accessToken}`,
-                },
-                data: JSON.stringify(meetingData)
-            };
-
-            const response = await axios.request(config);
-
-            const meetingResponse: MeetingResponse = response.data
-            if (!meetingResponse.id) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "failed to create meeting!" })
-            const meetingNumber = meetingResponse.id.toString()
-            const meetingPassword = meetingResponse.password
-            const meetingLink = meetingResponse.join_url
-
-
-            return { meetingResponse, meetingNumber, meetingPassword, meetingLink, groupNumber }
+        }),
+    getOnMeetingData: protectedProcedure
+        .input(z.object({
+            sessionId: z.string(),
+            meetingNo: z.string(),
+        }))
+        .query(async ({ ctx, input: { sessionId, meetingNo } }) => {
+            const session = await ctx.prisma.zoomSession.findUnique({ where: { id: sessionId }, include: { zoomClient: true } })
+            if (!session?.zoomClient) throw new TRPCError({ code: "BAD_REQUEST", message: "No session found!" })
+            const { accessToken, refreshToken } = session.zoomClient
+            const token = await generateToken({ api_key: accessToken, api_secret: refreshToken })
+            return await getMeetingDetails({ token, meetingNo })
         }),
 });

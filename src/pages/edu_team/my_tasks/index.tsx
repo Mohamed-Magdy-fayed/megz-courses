@@ -5,6 +5,7 @@ import TesterPlacmentTestClient from "@/components/contentComponents/testerPlacm
 import AppLayout from "@/components/layout/AppLayout";
 import { api } from "@/lib/api";
 import { format } from "date-fns";
+import { preMeetingLinkConstructor } from "@/lib/meetingsHelpers";
 
 const MyTasksPage: NextPage = () => {
     const { data: trainerPlacementTestsData } = api.trainers.getTrainerPlacementTest.useQuery()
@@ -21,42 +22,55 @@ const MyTasksPage: NextPage = () => {
                     </div>
                     <PaperContainer>
                         <TesterPlacmentTestClient
-                            formattedData={trainerPlacementTestsData?.tests ? trainerPlacementTestsData.tests.map(test => ({
-                                id: test.id,
-                                isLevelSubmittedString: test.student.courseStatus.some(status => status.courseId === test.courseId && !!status.courseLevelId) ? "Completed" : "Waiting",
-                                isLevelSubmitted: test.student.courseStatus.some(status => status.courseId === test.courseId && !!status.courseLevelId),
-                                level: test.student.courseStatus.find(status => status.courseId === test.courseId)?.level?.name || "",
-                                courseLevels: test.course.levels,
-                                courseId: test.courseId,
-                                courseName: test.course.name,
-                                testersData: testersData?.testers.map(tester => ({
-                                    id: tester.id,
-                                    name: tester.user.name,
-                                })) || [],
-                                studentUserId: test.student.id,
-                                studentName: test.student.name,
-                                studentEmail: test.student.email,
-                                studentPhone: test.student.phone || "",
-                                studentImage: test.student.image || "",
-                                testLink: `/placement_test/${test.courseId}`,
-                                testTime: test.oralTestTime,
-                                isWrittenTestDone:
-                                    (
-                                        test.writtenTest.submissions
-                                            .some(sub => sub.studentId === test.studentUserId)
-                                    ) ? "true" : "false",
-                                writtenTestResult:
-                                    Number(
-                                        test.writtenTest.submissions
-                                            .find(sub => sub.studentId === test.studentUserId)?.totalScore
-                                    ),
-                                writtenTestTotalPoints: test.writtenTest.totalScore,
-                                oralTestMeeting: test.oralTestMeeting,
-                                oralTestQuestions: test.writtenTest.oralTestQuestions,
-                                createdBy: test.createdBy?.name || "Null",
-                                createdAt: format(test.createdAt, "PPPp"),
-                                updatedAt: format(test.updatedAt, "PPPp"),
-                            })) : []}
+                            formattedData={trainerPlacementTestsData?.tests ? trainerPlacementTestsData.tests.map(test => {
+                                const session = test.zoomSessions.find(s => s.sessionStatus !== "Cancelled")
+                                const oralTestLink = `/${preMeetingLinkConstructor({
+                                    isZoom: !!session?.zoomClient?.isZoom,
+                                    meetingNumber: session?.meetingNumber || "",
+                                    meetingPassword: session?.meetingPassword || "",
+                                    sessionTitle: `Placement test for ${test.course.name} course`,
+                                    sessionId: session?.id,
+                                })}`
+
+                                return ({
+                                    id: test.id,
+                                    isLevelSubmittedString: test.student.courseStatus.some(status => status.courseId === test.courseId && !!status.courseLevelId) ? "Completed" : "Waiting",
+                                    isLevelSubmitted: test.student.courseStatus.some(status => status.courseId === test.courseId && !!status.courseLevelId),
+                                    level: test.student.courseStatus.find(status => status.courseId === test.courseId)?.level?.name || "",
+                                    courseLevels: test.course.levels,
+                                    courseId: test.courseId,
+                                    courseName: test.course.name,
+                                    testersData: testersData?.testers.map(tester => ({
+                                        id: tester.id,
+                                        name: tester.user.name,
+                                    })) || [],
+                                    studentUserId: test.student.id,
+                                    studentName: test.student.name,
+                                    studentEmail: test.student.email,
+                                    studentPhone: test.student.phone || "",
+                                    studentImage: test.student.image || "",
+                                    testLink: `/placement_test/${test.courseId}`,
+                                    testTime: test.oralTestTime,
+                                    isWrittenTestDone:
+                                        (
+                                            test.writtenTest.submissions
+                                                .some(sub => sub.studentId === test.studentUserId)
+                                        ) ? "true" : "false",
+                                    writtenTestResult:
+                                        Number(
+                                            test.writtenTest.submissions
+                                                .find(sub => sub.studentId === test.studentUserId)?.totalScore
+                                        ),
+                                    writtenTestTotalPoints: test.writtenTest.totalScore,
+                                    // oralTestMeeting: test.oralTestMeeting,
+                                    oralTestLink,
+                                    oralTestQuestions: test.writtenTest.oralTestQuestions,
+                                    createdBy: test.createdBy?.name || "Null",
+                                    createdAt: format(test.createdAt, "PPPp"),
+                                    updatedAt: format(test.updatedAt, "PPPp"),
+                                })
+                            }) : []
+                            }
                         />
                     </PaperContainer>
                 </div>

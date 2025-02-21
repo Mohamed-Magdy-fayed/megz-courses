@@ -17,7 +17,8 @@ import { z } from "zod"
 export const formSchema = z.object({
     id: z.string(),
     sessionDate: z.date(),
-    sessionLink: z.string(),
+    meetingNumber: z.string(),
+    meetingPassword: z.string(),
     sessionStatus: z.enum(validSessionStatuses),
 })
 
@@ -33,7 +34,8 @@ const EditSessionForm = ({ setIsOpen, initialData }: { setIsOpen: Dispatch<SetSt
         defaultValues: initialData ? initialData : {
             id: "",
             sessionDate: new Date(),
-            sessionLink: "",
+            meetingNumber: "",
+            meetingPassword: "",
             sessionStatus: "Scheduled"
         }
     })
@@ -62,10 +64,26 @@ const EditSessionForm = ({ setIsOpen, initialData }: { setIsOpen: Dispatch<SetSt
             <form onSubmit={form.handleSubmit(onSubmit)} className="p-2">
                 <FormField
                     control={form.control}
-                    name="sessionLink"
+                    name="meetingNumber"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Url</FormLabel>
+                            <FormLabel>Meeting Number</FormLabel>
+                            <FormControl>
+                                <Input
+                                    disabled={!!loadingToast}
+                                    {...field}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="meetingPassword"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Meeting Password</FormLabel>
                             <FormControl>
                                 <Input
                                     disabled={!!loadingToast}

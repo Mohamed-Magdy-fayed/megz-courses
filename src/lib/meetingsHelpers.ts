@@ -67,58 +67,40 @@ export async function getZoomAccountMeetings(client: ZoomClient, startDate?: Dat
     const response = (await axios.request(config)).data;
     return response.meetings as Meeting[]
 }
-
 export async function getAvailableZoomClient(
     startDate: Date,
     prisma: PrismaClient,
     meetingDurationInMinutes = 120
 ) {
-    const zoomClients = await prisma.zoomClient.findMany({ include: { zoomSessions: true }, orderBy: { id: "desc" } })
-    const endDate = new Date(startDate)
+    const zoomClients = await prisma.zoomClient.findMany({
+        include: { zoomSessions: true },
+        orderBy: { id: "desc" }
+    });
+
+    const endDate = new Date(startDate);
     endDate.setMinutes(startDate.getMinutes() + meetingDurationInMinutes)
 
-    const availableClients = await Promise.all(zoomClients.map(async (client) => {
+    const availableClients = zoomClients.filter(client => {
         try {
-            if (client.isZoom) {
-                const refreshedClient = await refreshZoomAccountToken(client, prisma)
-                const clientMeetings = await getZoomAccountMeetings(refreshedClient, startDate, endDate)
+            const hasOverlap = client.zoomSessions.some(session => {
+                const existingStart = new Date(session.sessionDate);
+                const existingEnd = new Date(existingStart);
+                existingEnd.setMinutes(existingStart.getMinutes() + meetingDurationInMinutes);
 
-                const isOverlapping = clientMeetings.some(m => {
-                    const existingStart = new Date(m.start_time);
-                    const existingEnd = new Date(existingStart);
-                    existingEnd.setMinutes(existingEnd.getMinutes() + m.duration);
-
-                    return (startDate < existingEnd && endDate > existingStart);
-                });
-
-                return isOverlapping ? null : refreshedClient;
-            }
-
-            const token = await generateToken({ api_key: client.accessToken, api_secret: client.refreshToken })
-            const clientRooms = await getUserMeetings({ token })
-
-            const isOverlapping = clientRooms.some(room => {
-                return room.meetings.some(m => {
-                    if (!m.date || !m.start || !m.end || m.type === 1) {
-                        return false
-                    }
-                    const existingStart = m.start;
-                    const existingEnd = m.end;
-
-                    return (startDate < existingEnd && endDate > existingStart);
-                })
+                return (startDate >= existingStart && startDate < existingEnd) ||
+                    (endDate > existingStart && endDate < existingEnd) ||
+                    (startDate <= existingStart && endDate >= existingEnd)
             });
 
-            return isOverlapping ? null : client;
-        } catch (error: any) {
-            return null
+            return !hasOverlap;
+        } catch (error) {
+            return false;
         }
-    }));
+    });
 
-    const filteredClients = availableClients.filter(client => client !== null);
-    if (filteredClients.length === 0) return { zoomClient: null }
+    if (availableClients.length === 0) return { zoomClient: null };
 
-    return { zoomClient: filteredClients[0] }
+    return { zoomClient: availableClients[0] };
 }
 
 export async function createZoomMeeting(meetingData: Partial<ZoomMeeting>, accessToken: string) {
@@ -221,4 +203,15 @@ export function meetingLinkConstructor({ meetingNumber, meetingPassword, session
     leaveUrl?: string,
 }) {
     return `meeting/?mn=${meetingNumber}&pwd=${meetingPassword}&session_title=${sessionTitle}${sessionId ? `&session_id=${sessionId}` : ""}${leaveUrl ? `&leave_url=${leaveUrl}` : ""}`
+}
+
+export function preMeetingLinkConstructor({ isZoom, meetingNumber, meetingPassword, sessionTitle, leaveUrl, sessionId }: {
+    isZoom: boolean,
+    meetingNumber: string,
+    meetingPassword: string,
+    sessionTitle: string,
+    sessionId?: string,
+    leaveUrl?: string,
+}) {
+    return `${isZoom ? "meeting" : "onmeeting"}/?mn=${meetingNumber}&pwd=${meetingPassword}&session_title=${sessionTitle}${sessionId ? `&session_id=${sessionId}` : ""}${leaveUrl ? `&leave_url=${leaveUrl}` : ""}`
 }

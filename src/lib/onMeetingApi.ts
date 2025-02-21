@@ -1,3 +1,4 @@
+import { Meeting } from "@/lib/meetingsHelpers";
 import axios from "axios"
 
 const onMeetingApiBaseUrl = "https://onmeeting.co/v2"
@@ -35,12 +36,12 @@ export async function generateKeys({ email, password }: { email: string; passwor
         data: data
     };
 
-    const res = await axios(config)
-
-    if (res.data.status) {
+    try {
+        const res = await axios(config)
         return res.data.results.data
-    } else {
-        throw new Error(res.data.errorMessage)
+    } catch (error: any) {
+        console.log(error.response.data);
+        throw new Error(error.response.data.errorMessage)
     }
 }
 
@@ -60,12 +61,12 @@ export async function generateToken({ api_key, api_secret }: { api_key: string; 
         data: data
     };
 
-    const res = await axios(config)
-
-    if (res.data.status) {
+    try {
+        const res = await axios(config)
         return res.data.results.data.token
-    } else {
-        throw new Error(res.data.errorMessage)
+    } catch (error: any) {
+        console.log(error.response.data);
+        throw new Error(error.response.data.errorMessage)
     }
 }
 
@@ -79,16 +80,16 @@ export async function getUserMeetings({ token }: { token: string }) {
         },
     };
 
-    const res = await axios(config)
-
-    if (res.data.status) {
+    try {
+        const res = await axios(config)
         return res.data.results.data as Room[]
-    } else {
-        throw new Error(res.data.errorMessage)
+    } catch (error: any) {
+        console.log(error.response.data);
+        throw new Error(error.response.data.errorMessage)
     }
 }
 
-export async function getUserRoom({ token }: { token: string }) {
+export async function getUserRooms({ token }: { token: string }) {
     const config = {
         method: 'get',
         maxBodyLength: Infinity,
@@ -98,10 +99,9 @@ export async function getUserRoom({ token }: { token: string }) {
         },
     };
 
-    const res = await axios(config)
-
-    if (res.data.status) {
-        return res.data.results.data[0] as {
+    try {
+        const res = await axios(config)
+        return res.data.results.data as {
             account_id: string;
             room_code: string;
             room_name: string;
@@ -113,11 +113,13 @@ export async function getUserRoom({ token }: { token: string }) {
             subscription_end_date: Date;
             occurance: number;
             status: number; // (0 not - started, 2 waiting, 1 running)
-        }
-    } else {
-        throw new Error(res.data.errorMessage)
+        }[]
+    } catch (error: any) {
+        console.log(error.response.data);
+        throw new Error(error.response.data.errorMessage)
     }
 }
+
 export async function getMeetingDetails({ token, meetingNo }: { token: string; meetingNo: string; }) {
     const config = {
         method: 'get',
@@ -128,9 +130,8 @@ export async function getMeetingDetails({ token, meetingNo }: { token: string; m
         },
     };
 
-    const res = await axios(config)
-
-    if (res.data.status) {
+    try {
+        const res = await axios(config)
         return axios({ method: "get", url: res.data.results.data.join_url }).then(res => {
             const meetingNumberStart = res.data.split("zoom.us/j/")[1]
             const match = meetingNumberStart.match(/^(\d+)\?pwd=([^">]+)/);
@@ -139,13 +140,10 @@ export async function getMeetingDetails({ token, meetingNo }: { token: string; m
             const password = match[2];
 
             return { meetingNumber, password } as { meetingNumber: string; password: string; }
-        }).catch(e => {
-            console.log(e)
-            return { meetingNumber: null, password: null } as { meetingNumber: null; password: null; }
         })
-    } else {
-        console.log(res.data.errorMessage)
-        throw new Error(res.data.errorMessage)
+    } catch (error: any) {
+        console.log(error.response.data);
+        throw new Error(error.response.data.errorMessage)
     }
 }
 
@@ -172,9 +170,8 @@ export async function createMeeting({ meetingData, token }: {
         data: data
     };
 
-    const res = await axios(config)
-
-    if (res.data.status) {
+    try {
+        const res = await axios(config)
         return res.data.results.data as {
             id: string;
             meeting_no: string;
@@ -184,7 +181,41 @@ export async function createMeeting({ meetingData, token }: {
             alert: boolean;
             recording: boolean;
         }
-    } else {
-        throw new Error(res.data.errorMessage)
+    } catch (error: any) {
+        console.log(error.response.data);
+        throw new Error(error.response.data.errorMessage)
     }
+}
+
+export async function getMeetings({ api_key, api_secret, endDate, startDate }: { api_key: string; api_secret: string; startDate?: Date; endDate?: Date; }) {
+    const token = await generateToken({ api_key, api_secret })
+    const rooms = await getUserMeetings({ token })
+
+    const meetings: Meeting[] = rooms
+        .flatMap(r => r.meetings)
+        .filter(m => !!m.date &&
+            (!startDate || new Date(m.date) > new Date(startDate)) &&
+            (!endDate || new Date(m.date) <= new Date(endDate))
+        )
+        .map(meeting => {
+
+            return ({
+                agenda: meeting.topic,
+                created_at: meeting.date ? new Date(meeting.date).toISOString() : "",
+                duration: (meeting.end && meeting.start) ? (new Date(meeting.end).getTime() - new Date(meeting.start).getTime()) / (1000 * 60) : 0,
+                host_id: "",
+                id: Number(meeting.meeting_no),
+                join_url: `https://onmeeting.co/j/${meeting.meeting_no}`,
+                start_time: meeting.start ? new Date(meeting.start).toISOString() : "",
+                timezone: "",
+                topic: meeting.topic,
+                type: meeting.type,
+                uuid: meeting.meeting_id
+            })
+        }).sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+
+    return {
+        rooms,
+        meetings,
+    };
 }

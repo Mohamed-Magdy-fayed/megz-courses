@@ -1,13 +1,14 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import { createZoomMeeting, deleteZoomMeeting, getAvailableZoomClient, meetingLinkConstructor } from "@/lib/meetingsHelpers";
+import { createZoomMeeting, getAvailableZoomClient, meetingLinkConstructor, preMeetingLinkConstructor } from "@/lib/meetingsHelpers";
 import { ZoomMeeting } from "@/lib/zoomTypes";
 import { env } from "@/env.mjs";
 import { format } from "date-fns";
 import { sendWhatsAppMessage } from "@/lib/whatsApp";
-import { createMeeting, generateToken, getMeetingDetails, getUserRoom } from "@/lib/onMeetingApi";
+import { createMeeting, generateToken, getMeetingDetails, getUserRooms } from "@/lib/onMeetingApi";
 import { ZoomClient } from "@prisma/client";
+import { hasPermission } from "@/server/permissions";
 
 export const placementTestsRouter = createTRPCRouter({
     getUserCoursePlacementTest: protectedProcedure
@@ -28,28 +29,27 @@ export const placementTestsRouter = createTRPCRouter({
                     student: { include: { courseStatus: { include: { level: true, course: true } } } },
                     tester: { include: { user: true } },
                     writtenTest: { include: { submissions: true, items: true } },
+                    zoomSessions: { include: { zoomClient: true } },
                 }
             })
 
             return { placementTest }
         }),
-    getCoursePlacementTest: protectedProcedure
+    checkExistingPlacementTest: protectedProcedure
         .input(z.object({
             courseId: z.string(),
+            userId: z.string(),
         }))
-        .query(async ({ ctx, input: { courseId } }) => {
-            const test = await ctx.prisma.systemForm.findFirst({
+        .mutation(async ({ ctx, input: { courseId, userId } }) => {
+            const oldTest = await ctx.prisma.placementTest.findFirst({
                 where: {
-                    courseId,
-                    type: "PlacementTest",
+                    course: { id: courseId },
+                    student: { id: userId },
                 },
-                include: {
-                    items: true,
-                    submissions: true,
-                }
+                include: { zoomSessions: true }
             })
 
-            return { test }
+            return { oldTest }
         }),
     getAllPlacementTests: protectedProcedure
         .query(async ({ ctx }) => {
@@ -60,7 +60,8 @@ export const placementTestsRouter = createTRPCRouter({
                             student: { include: { courseStatus: { include: { level: true } } } },
                             tester: { include: { user: true } },
                             course: { include: { courseStatus: true, levels: true } },
-                            writtenTest: { include: { submissions: true } }
+                            writtenTest: { include: { submissions: true } },
+                            zoomSessions: { include: { zoomClient: true } },
                         }
                     }
                 }
@@ -72,24 +73,55 @@ export const placementTestsRouter = createTRPCRouter({
 
             return { tests }
         }),
-    getUserPlacementTest: protectedProcedure
+    createPlacementTest: protectedProcedure
         .input(z.object({
+            testTime: z.date(),
+            testerId: z.string(),
             userId: z.string(),
+            courseId: z.string(),
+            courseName: z.string(),
+            meetingNumber: z.string(),
+            meetingPassword: z.string(),
+            zoomClientId: z.string(),
+            evaluationFormId: z.string(),
+            isZoom: z.boolean(),
         }))
-        .query(async ({ ctx, input: { userId } }) => {
-            const tests = await ctx.prisma.placementTest.findMany({
-                where: {
-                    studentUserId: userId,
+        .mutation(async ({ ctx, input: { courseId, testTime, testerId, userId, meetingNumber, meetingPassword, zoomClientId, evaluationFormId } }) => {
+            const placementTest = await ctx.prisma.placementTest.create({
+                data: {
+                    course: { connect: { id: courseId } },
+                    student: { connect: { id: userId } },
+                    tester: { connect: { id: testerId } },
+                    createdBy: { connect: { id: ctx.session.user.id } },
+                    writtenTest: { connect: { id: evaluationFormId } },
+                    oralTestTime: testTime,
+                    zoomSessions: {
+                        create: {
+                            sessionDate: testTime,
+                            meetingNumber,
+                            meetingPassword,
+                            sessionStatus: "Scheduled",
+                            zoomClient: { connect: { id: zoomClientId } },
+                        }
+                    },
                 },
-                include: {
-                    course: true,
-                    student: true,
-                    tester: { include: { user: true } },
-                    writtenTest: { include: { submissions: true } },
-                }
+                include: { writtenTest: true, student: true }
             })
 
-            return { tests }
+            return { placementTest }
+        }),
+    deletePlacementTest: protectedProcedure
+        .input(z.object({
+            ids: z.array(z.string())
+        }))
+        .mutation(async ({ ctx, input: { ids } }) => {
+            if (!hasPermission(ctx.session.user, "placementTests", "delete")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You're not authorized to take this action!" })
+
+            const deleted = await ctx.prisma.$transaction(
+                ids.map(id => ctx.prisma.placementTest.delete({ where: { id } }))
+            )
+
+            return { deleted }
         }),
     schedulePlacementTest: protectedProcedure
         .input(z.object({
@@ -125,14 +157,15 @@ export const placementTestsRouter = createTRPCRouter({
             }) => {
                 if (!zoomClient.isZoom) {
                     const token = await generateToken({ api_key: zoomClient.accessToken, api_secret: zoomClient.refreshToken })
-                    const room = await getUserRoom({ token })
+                    if (!zoomClient.roomCode) throw new TRPCError({ code: "BAD_REQUEST", message: "Corrupted OnMeeting client, please authorize it again!" })
+
                     const { meeting_no } = await createMeeting({
                         token,
                         meetingData: {
                             alert: true,
                             join_before_host: true,
                             recording: true,
-                            room_code: room.room_code,
+                            room_code: zoomClient.roomCode,
                             topic: `Placement Test for course ${courseName} ${userEmail}`
                         }
                     })
@@ -181,7 +214,8 @@ export const placementTestsRouter = createTRPCRouter({
                     zoomSessions: {
                         create: {
                             sessionDate: testTime,
-                            sessionLink: meetingLink,
+                            meetingNumber,
+                            meetingPassword,
                             sessionStatus: "Scheduled",
                         }
                     }
@@ -203,11 +237,20 @@ export const placementTestsRouter = createTRPCRouter({
                 where: {
                     course: { id: courseId },
                     student: { id: userId },
-                }
+                },
+                include: { zoomSessions: true }
             })
 
-            if (oldTest) {
-                await deleteZoomMeeting(oldTest.oralTestMeeting.meetingNumber, zoomClient.accessToken)
+            const notCancelledTests = oldTest?.zoomSessions.filter(s => s.sessionStatus !== "Cancelled")
+
+            if (notCancelledTests && notCancelledTests?.length > 0) {
+                await ctx.prisma.$transaction(notCancelledTests.map(s => {
+                    return ctx.prisma.zoomSession.update({
+                        where: { id: s.id },
+                        data: { sessionStatus: "Cancelled" }
+                    })
+                }))
+                // await deleteZoomMeeting(oldTest.oralTestMeeting.meetingNumber, zoomClient.accessToken)
             }
 
             const PlacementTest = oldTest
@@ -217,10 +260,19 @@ export const placementTestsRouter = createTRPCRouter({
                     },
                     data: {
                         createdBy: { connect: { id: ctx.session.user.id } },
-                        oralTestMeeting: {
-                            zoomClientId: zoomClient.id,
-                            meetingNumber,
-                            meetingPassword,
+                        // oralTestMeeting: {
+                        //     zoomClientId: zoomClient.id,
+                        //     meetingNumber,
+                        //     meetingPassword,
+                        // },
+                        zoomSessions: {
+                            create: {
+                                sessionDate: testTime,
+                                meetingNumber,
+                                meetingPassword,
+                                sessionStatus: "Scheduled",
+                                zoomClient: { connect: { id: zoomClient.id } },
+                            }
                         },
                         oralTestTime: testTime,
                     },
@@ -233,10 +285,19 @@ export const placementTestsRouter = createTRPCRouter({
                         tester: { connect: { id: testerId } },
                         createdBy: { connect: { id: ctx.session.user.id } },
                         writtenTest: { connect: { id: evaluationFormId } },
-                        oralTestMeeting: {
-                            zoomClientId: zoomClient.id,
-                            meetingNumber,
-                            meetingPassword,
+                        // oralTestMeeting: {
+                        //     zoomClientId: zoomClient.id,
+                        //     meetingNumber,
+                        //     meetingPassword,
+                        // },
+                        zoomSessions: {
+                            create: {
+                                sessionDate: testTime,
+                                meetingNumber,
+                                meetingPassword,
+                                sessionStatus: "Scheduled",
+                                zoomClient: { connect: { id: zoomClient.id } },
+                            }
                         },
                         oralTestTime: testTime,
                     },
@@ -301,7 +362,8 @@ export const placementTestsRouter = createTRPCRouter({
                     zoomSessions: {
                         create: {
                             sessionDate: testTime,
-                            sessionLink: `${env.NEXTAUTH_URL}${meetingLinkConstructor({ meetingNumber, meetingPassword, sessionTitle: `Placement Test for course ${course.name}` })}`,
+                            meetingNumber,
+                            meetingPassword,
                             sessionStatus: "Scheduled",
                         }
                     }
@@ -323,11 +385,20 @@ export const placementTestsRouter = createTRPCRouter({
                 where: {
                     course: { id: courseId },
                     student: { id: userId },
-                }
+                },
+                include: { zoomSessions: true }
             })
 
-            if (oldTest) {
-                await deleteZoomMeeting(oldTest.oralTestMeeting.meetingNumber, zoomClient.accessToken)
+            const notCancelledTests = oldTest?.zoomSessions.filter(s => s.sessionStatus !== "Cancelled")
+
+            if (notCancelledTests && notCancelledTests.length > 0) {
+                await ctx.prisma.$transaction(notCancelledTests.map(s => {
+                    return ctx.prisma.zoomSession.update({
+                        where: { id: s.id },
+                        data: { sessionStatus: "Cancelled" }
+                    })
+                }))
+                // await deleteZoomMeeting(oldTest.oralTestMeeting.meetingNumber, zoomClient.accessToken)
             }
 
             const PlacementTest = oldTest
@@ -337,10 +408,19 @@ export const placementTestsRouter = createTRPCRouter({
                     },
                     data: {
                         createdBy: { connect: { id: ctx.session.user.id } },
-                        oralTestMeeting: {
-                            zoomClientId: zoomClient.id,
-                            meetingNumber,
-                            meetingPassword,
+                        // oralTestMeeting: {
+                        //     zoomClientId: zoomClient.id,
+                        //     meetingNumber,
+                        //     meetingPassword,
+                        // },
+                        zoomSessions: {
+                            create: {
+                                sessionDate: testTime,
+                                meetingNumber,
+                                meetingPassword,
+                                sessionStatus: "Scheduled",
+                                zoomClient: { connect: { id: zoomClient.id } },
+                            }
                         },
                         oralTestTime: testTime,
                     },
@@ -353,10 +433,19 @@ export const placementTestsRouter = createTRPCRouter({
                         tester: { connect: { id: testerId } },
                         createdBy: { connect: { id: ctx.session.user.id } },
                         writtenTest: { connect: { id: evaluationFormId } },
-                        oralTestMeeting: {
-                            zoomClientId: zoomClient.id,
-                            meetingNumber,
-                            meetingPassword,
+                        // oralTestMeeting: {
+                        //     zoomClientId: zoomClient.id,
+                        //     meetingNumber,
+                        //     meetingPassword,
+                        // },
+                        zoomSessions: {
+                            create: {
+                                sessionDate: testTime,
+                                meetingNumber,
+                                meetingPassword,
+                                sessionStatus: "Scheduled",
+                                zoomClient: { connect: { id: zoomClient.id } },
+                            }
                         },
                         oralTestTime: testTime,
                     },
@@ -381,26 +470,5 @@ export const placementTestsRouter = createTRPCRouter({
             })
 
             return { PlacementTest, oldTest };
-        }),
-    deletePlacementTest: protectedProcedure
-        .input(z.object({
-            id: z.string(),
-        }))
-        .mutation(async ({ input: { id }, ctx }) => {
-            const test = await ctx.prisma.placementTest.findUnique({ where: { id } })
-            if (!test) throw new TRPCError({ code: "BAD_REQUEST", message: "No Test Found!" })
-
-            const zoomClient = await ctx.prisma.zoomClient.findUnique({ where: { id: test?.oralTestMeeting.zoomClientId } })
-            if (!zoomClient) throw new TRPCError({ code: "BAD_REQUEST", message: "No available Zoom Accounts at the selected time!" })
-
-            deleteZoomMeeting(test?.oralTestMeeting.meetingNumber, zoomClient.accessToken)
-
-            const deletePlacementTest = await ctx.prisma.placementTest.delete({
-                where: {
-                    id,
-                },
-            })
-
-            return { deletePlacementTest };
         }),
 });

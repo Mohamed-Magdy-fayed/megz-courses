@@ -3,16 +3,68 @@ import {
     createTRPCRouter,
     protectedProcedure,
 } from "@/server/api/trpc";
-import { TRPCError } from "@trpc/server";
+import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
 import { env } from "@/env.mjs";
 import axios from "axios";
 import QueryString from "qs";
-import { format } from "date-fns";
-import { getAvailableZoomClient, Meeting } from "@/lib/meetingsHelpers";
-import { generateKeys, generateToken, getUserMeetings } from "@/lib/onMeetingApi";
+import { getAvailableZoomClient, getZoomAccountMeetings } from "@/lib/meetingsHelpers";
+import { generateKeys, generateToken, getMeetings, getUserRooms } from "@/lib/onMeetingApi";
 import { revokeZoomAccount } from "@/lib/zoomAccountsHelpers";
+import { SessionColumn } from "@/components/zoomAccount/zoomAccountMeetings/ZoomAccountMeetingsColumn";
 
 export const zoomAccountsRouter = createTRPCRouter({
+    getZoomAccount: protectedProcedure
+        .input(z.object({
+            id: z.string(),
+        }))
+        .query(async ({ ctx, input: { id } }) => {
+            const zoomClient = await ctx.prisma.zoomClient.findUnique({
+                where: { id },
+                select: {
+                    id: true,
+                    name: true,
+                    isZoom: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    zoomSessions: {
+                        select: {
+                            id: true,
+                            sessionStatus: true,
+                            meetingNumber: true,
+                            meetingPassword: true,
+                            sessionDate: true,
+                            materialItem: { select: { title: true } },
+                            teacher: {
+                                select: { user: { select: { name: true, id: true } } }
+                            },
+                            zoomGroup: { select: { id: true, groupNumber: true } },
+                            placementTest: { select: { id: true, course: true, student: { select: { name: true } }, tester: { select: { user: { select: { name: true, id: true } } } } } }
+                        }
+                    },
+                }
+            })
+            if (!zoomClient) throw new TRPCError({ code: "BAD_REQUEST", message: "No Zoom Account with this ID" })
+
+            const sessions: SessionColumn[] = zoomClient.zoomSessions.map(s => ({
+                id: s.id,
+                sessionTitle: s.materialItem?.title || `${s.placementTest?.student.name}'s placement test with ${s.placementTest?.tester.user.name}`,
+                sessionDate: s.sessionDate,
+                meetingNumber: s.meetingNumber,
+                meetingPassword: s.meetingPassword,
+                sessionStatus: s.sessionStatus,
+                trainerId: s.teacher?.user.id || s.placementTest?.tester.user.id || "No Trainer",
+                trainerName: s.teacher?.user.name || s.placementTest?.tester.user.name || "No Trainer",
+                groupId: s.zoomGroup?.id || s.placementTest?.id,
+                groupName: s.zoomGroup?.groupNumber || `Placement Test`,
+                isTest: !!s.placementTest?.student.name,
+                isZoom: zoomClient.isZoom,
+            }))
+
+            return {
+                zoomClient,
+                sessions,
+            }
+        }),
     getZoomAccounts: protectedProcedure
         .query(async ({ ctx }) => {
             const zoomAccounts = await ctx.prisma.zoomClient.findMany({ include: { zoomSessions: true } })
@@ -20,10 +72,11 @@ export const zoomAccountsRouter = createTRPCRouter({
         }),
     getAvailableZoomClient: protectedProcedure
         .input(z.object({
-            startDate: z.date()
+            startDate: z.date(),
+            isTest: z.boolean(),
         }))
-        .mutation(async ({ ctx, input: { startDate } }) => {
-            const { zoomClient } = await getAvailableZoomClient(startDate, ctx.prisma)
+        .mutation(async ({ ctx, input: { startDate, isTest } }) => {
+            const { zoomClient } = await getAvailableZoomClient(startDate, ctx.prisma, isTest ? parseInt(env.NEXT_PUBLIC_PLACEMENT_TEST_TIME) : 120)
             if (!zoomClient) throw new TRPCError({ code: "BAD_REQUEST", message: "No available Zoom Accounts at the selected time!" })
 
             return { zoomClient }
@@ -39,50 +92,10 @@ export const zoomAccountsRouter = createTRPCRouter({
             if (!zoomClient) throw new TRPCError({ code: "BAD_REQUEST", message: "No Zoom Account with this ID" })
 
             if (!zoomClient.isZoom) {
-                const token = await generateToken({ api_key: zoomClient.accessToken, api_secret: zoomClient.refreshToken })
-                const rooms = await getUserMeetings({ token })
-
-                const meetings: Meeting[] = rooms.flatMap(r => r.meetings).map(meeting => ({
-                    agenda: "",
-                    created_at: "",
-                    duration: 120,
-                    host_id: "",
-                    id: 123,
-                    join_url: `https://onmeeting.co/j/${meeting.meeting_no}`,
-                    start_time: meeting.start?.toDateString() || new Date()?.toDateString(),
-                    timezone: "",
-                    topic: meeting.topic,
-                    type: meeting.type,
-                    uuid: ""
-                }))
-
-                return {
-                    meetings: meetings.sort((a, b) => new Date(a.start_time || new Date()).getTime() - new Date(b.start_time || new Date()).getTime() < 0 ? 1 : -1),
-                };
+                return await getMeetings({ api_key: zoomClient.accessToken, api_secret: zoomClient.refreshToken, startDate, endDate })
             }
 
-            const config = {
-                method: 'get',
-                maxBodyLength: Infinity,
-                url: `https://api.zoom.us/v2/users/me/meetings?type=Scheduled${!startDate ? "" : `&from=${format(startDate, "yyyy-MM-dd")}`}${!endDate ? "" : `&to=${format(endDate, "yyyy-MM-dd")}`}&timezone=Africa%2FCairo`,
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${zoomClient.accessToken}`,
-                },
-            };
-
-            try {
-                const response = (await axios.request(config)).data;
-                const mtngs = response.meetings as Meeting[]
-
-                return {
-                    meetings: mtngs.sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime() < 0 ? 1 : -1) as Meeting[],
-                };
-            } catch (error: any) {
-                if (error.message.endsWith(401)) throw new TRPCError({ code: "UNAUTHORIZED", message: "account access was revoked please authorize again!" })
-                if (error.message.endsWith(400)) throw new TRPCError({ code: "UNAUTHORIZED", message: "please refresh access token first!" })
-                throw new TRPCError({ code: "BAD_REQUEST", message: error.message })
-            }
+            return await getZoomAccountMeetings(zoomClient, startDate, endDate)
         }),
     deleteZoomAccounts: protectedProcedure
         .input(z.object({
@@ -106,8 +119,8 @@ export const zoomAccountsRouter = createTRPCRouter({
             name: z.string(),
         }))
         .mutation(async ({ input: { name } }) => {
-            const clientId = env.NEXT_PUBLIC_ZOOM_CLIENT_ID
-            const redirectUri = encodeURIComponent(env.NEXT_PUBLIC_ZOOM_REDIRECT_URI);
+            const clientId = env.ZOOM_CLIENT_ID
+            const redirectUri = encodeURIComponent(env.ZOOM_REDIRECT_URI);
 
             const zoomAuthUrl = `https://zoom.us/oauth/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&state=${JSON.stringify({ name })}`;
 
@@ -120,19 +133,26 @@ export const zoomAccountsRouter = createTRPCRouter({
             password: z.string(),
         }))
         .mutation(async ({ ctx, input: { name, email, password } }) => {
-            const data = await generateKeys({ email, password })
+            try {
+                const data = await generateKeys({ email, password })
+                const token = await generateToken({ api_key: data.api_key, api_secret: data.api_secret })
+                const rooms = await getUserRooms({ token })
 
-            const zoomClient = await ctx.prisma.zoomClient.create({
-                data: {
-                    name,
-                    accessToken: data.api_key,
-                    refreshToken: data.api_secret,
-                    encodedIdSecret: data.account_id,
-                    isZoom: false,
-                }
-            })
+                const zoomClients = await ctx.prisma.$transaction(rooms.map(room => ctx.prisma.zoomClient.create({
+                    data: {
+                        name,
+                        accessToken: data.api_key,
+                        refreshToken: data.api_secret,
+                        encodedIdSecret: data.account_id,
+                        isZoom: false,
+                        roomCode: room.room_code,
+                    }
+                })))
 
-            return { zoomClient }
+                return { zoomClients }
+            } catch (error) {
+                throw new TRPCError(getTRPCErrorFromUnknown(error))
+            }
         }),
     createToken: protectedProcedure
         .input(z.object({
@@ -141,8 +161,8 @@ export const zoomAccountsRouter = createTRPCRouter({
         }))
         .mutation(async ({ ctx, input: { code, state } }) => {
             const { name } = JSON.parse(state) as { name: string }
-            const clientId = env.NEXT_PUBLIC_ZOOM_CLIENT_ID
-            const clientSecret = env.NEXT_PUBLIC_ZOOM_CLIENT_SECRET
+            const clientId = env.ZOOM_CLIENT_ID
+            const clientSecret = env.ZOOM_CLIENT_SECRET
 
             const input = `${clientId}:${clientSecret}`;
             const encoded = Buffer.from(input, 'utf-8').toString('base64');
@@ -150,7 +170,7 @@ export const zoomAccountsRouter = createTRPCRouter({
             let data = QueryString.stringify({
                 'code': code,
                 'grant_type': 'authorization_code',
-                'redirect_uri': env.NEXT_PUBLIC_ZOOM_REDIRECT_URI,
+                'redirect_uri': env.ZOOM_REDIRECT_URI,
             });
 
             let config = {
@@ -180,7 +200,7 @@ export const zoomAccountsRouter = createTRPCRouter({
                 return { zoomClient }
             }
             catch (error) {
-                throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: JSON.stringify(error) })
+                throw new TRPCError(getTRPCErrorFromUnknown(error))
             }
         }),
     refreshOnMeetingToken: protectedProcedure

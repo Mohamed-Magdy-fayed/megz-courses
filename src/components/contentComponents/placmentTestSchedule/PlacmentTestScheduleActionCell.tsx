@@ -14,8 +14,7 @@ import { env } from "@/env.mjs";
 import { createMutationOptions } from "@/lib/mutationsHelper";
 import { AlertModal } from "@/components/modals/AlertModal";
 import Link from "next/link";
-import { meetingLinkConstructor } from "@/lib/meetingsHelpers";
-import { Meeting } from "@prisma/client";
+// import { Meeting } from "@prisma/client";
 import SubmitLevelModal from "@/components/modals/SubmitLevelModal";
 
 interface ActionCellProps {
@@ -23,14 +22,15 @@ interface ActionCellProps {
     isLevelSubmitted: boolean;
     courseName: string;
     testLink: string;
+    oralTestLink: string | undefined;
     userId: string;
     courseId: string;
     courseLevels: { label: string, value: string }[]
-    oralTestMeeting: Meeting;
+    // oralTestMeeting: Meeting;
     oralTestQuestions: string | null;
 }
 
-const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, courseName, isLevelSubmitted, testLink, userId, oralTestMeeting, oralTestQuestions }) => {
+const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, courseName, isLevelSubmitted, testLink, userId, /*oralTestMeeting,*/oralTestLink, oralTestQuestions }) => {
     const { toastInfo, toast, toastError } = useToast();
     const [isOpen, setIsOpen] = useState(false)
     const [isSubmitLevelOpen, setIsSubmitLevelOpen] = useState(false)
@@ -76,7 +76,7 @@ const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, cou
     };
 
     const handleDelete = () => {
-        deleteMutation.mutate({ id })
+        deleteMutation.mutate({ ids: [id] })
     };
 
     return (
@@ -109,12 +109,8 @@ const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, cou
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem asChild>
-                        <Link href={`/${meetingLinkConstructor({
-                            meetingNumber: oralTestMeeting.meetingNumber,
-                            meetingPassword: oralTestMeeting.meetingPassword,
-                            sessionTitle: `Placement Test`
-                        })}`}>
+                    <DropdownMenuItem asChild disabled={!oralTestLink}>
+                        <Link href={oralTestLink ? oralTestLink : ""}>
                             <TargetIcon className="w-4 h-4 mr-2" />
                             Join
                         </Link>

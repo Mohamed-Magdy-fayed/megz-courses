@@ -30,7 +30,7 @@ export async function sendWhatsAppMessage<T extends MessageTemplateType>({ toNum
     const config = {
         method: "post",
         maxBodyLength: Infinity,
-        url: `https://graph.facebook.com/${env.NEXT_PUBLIC_WHATSAPP_VERSION}/${env.NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER_ID}/messages`,
+        url: `https://graph.facebook.com/${env.WHATSAPP_VERSION}/${env.WHATSAPP_PHONE_NUMBER_ID}/messages`,
         headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${metaClient.accessToken}`,
@@ -69,7 +69,7 @@ export async function sendWhatsAppCustomMessage({ toNumber, text, prisma }: { to
     const config = {
         method: "post",
         maxBodyLength: Infinity,
-        url: `https://graph.facebook.com/${env.NEXT_PUBLIC_WHATSAPP_VERSION}/${env.NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER_ID}/messages`,
+        url: `https://graph.facebook.com/${env.WHATSAPP_VERSION}/${env.WHATSAPP_PHONE_NUMBER_ID}/messages`,
         headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${metaClient.accessToken}`,
