@@ -6,12 +6,11 @@ import { cn } from "@/lib/utils";
 import CellAction from "./cell-action";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Typography } from "../ui/Typoghraphy";
-import { LeadLabel, LeadSource, LeadStage, Order, Prisma, Reminder } from "@prisma/client";
+import { LeadLabel, LeadSource, LeadStage, Order, Prisma } from "@prisma/client";
 import { format } from "date-fns";
 import Link from "next/link";
-import { SeverityPill, SeverityPillProps } from "@/components/overview/SeverityPill";
+import { SeverityPill } from "@/components/overview/SeverityPill";
 import WrapWithTooltip from "@/components/ui/wrap-with-tooltip";
-import { Button } from "@/components/ui/button";
 
 export type Lead = {
   userId: string;
@@ -128,11 +127,11 @@ export const columns: ColumnDef<Lead>[] = [
   {
     accessorKey: "assigneeName",
     header: "Agent",
-    cell: ({ row }) => (
+    cell: ({ row }) => row.original.assignee?.id ? (
       <Link href={`/account/${row.original.assignee?.id}`} className="in-table-link">
         {row.original.assigneeName}
       </Link>
-    ),
+    ) : row.original.assigneeName,
   },
   {
     accessorKey: "createdAt",
