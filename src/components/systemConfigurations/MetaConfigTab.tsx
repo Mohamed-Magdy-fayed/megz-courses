@@ -18,7 +18,7 @@ export default function MetaConfigTab() {
             <ApiAlert disabled={!currentTier?.crmFeatures} title="webhook callback url (for Facebook - Instagram - WhatsApp)" description={`${env.NEXT_PUBLIC_NEXTAUTH_URL}api/facebook`} />
             <div className="flex items-center justify-between p-4">
                 <Typography>once verified successfully your leads will be added to your database</Typography>
-                <Link href={`/leads`} className={cn(!currentTier?.crmFeatures && "pointer-events-none")}>
+                <Link href={`/admin/sales_management/leads`} className={cn(!currentTier?.crmFeatures && "pointer-events-none")}>
                     <Button className="whitespace-nowrap space-x-2" disabled={!currentTier?.crmFeatures} customeColor={"primaryOutlined"} variant={"outline"}>
                         <Typography variant={"buttonText"}>Go to Leads</Typography>
                         <ArrowRightFromLineIcon />

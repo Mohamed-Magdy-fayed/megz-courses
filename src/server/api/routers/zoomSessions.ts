@@ -15,6 +15,35 @@ import { sendWhatsAppMessage } from "@/lib/whatsApp";
 import { hasPermission } from "@/server/permissions";
 
 export const zoomSessionsRouter = createTRPCRouter({
+    getAllSessions: protectedProcedure
+        .query(async ({ ctx }) => {
+            const sessions = await ctx.prisma.zoomSession.findMany({
+                orderBy: { sessionDate: "desc" },
+                include: {
+                    zoomGroup: { include: { teacher: { include: { user: true } } } },
+                    materialItem: true,
+                    zoomClient: true,
+                    placementTest: { include: { tester: { include: { user: true } }, student: true, course: true } },
+                }
+            })
+
+            return { sessions };
+        }),
+    getAllUpcomingSessions: protectedProcedure
+        .query(async ({ ctx }) => {
+            const sessions = await ctx.prisma.zoomSession.findMany({
+                where: { sessionDate: { gte: new Date() } },
+                orderBy: { sessionDate: "asc" },
+                include: {
+                    zoomGroup: { include: { teacher: { include: { user: true } } } },
+                    materialItem: true,
+                    zoomClient: true,
+                    placementTest: { include: { tester: { include: { user: true } }, student: true, course: true } },
+                }
+            })
+
+            return { sessions };
+        }),
     attendSession: protectedProcedure
         .input(z.object({
             sessionId: z.string(),
@@ -74,7 +103,7 @@ export const zoomSessionsRouter = createTRPCRouter({
             })
 
             const zoomGroup = updatedSession.zoomGroup
-            if (!zoomGroup || !zoomGroup.courseId || !zoomGroup.courseLevelId) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "didn't find the zoom group" })
+            if (!zoomGroup || !zoomGroup.courseId || !zoomGroup.courseLevelId) return { updatedSession }
 
             const isAllSessionsScheduled = !zoomGroup.zoomSessions.some(session => session.sessionStatus === "Completed")
             if (sessionStatus === "Ongoing" && isAllSessionsScheduled) {

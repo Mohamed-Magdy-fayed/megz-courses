@@ -5,7 +5,6 @@ import { LatestCourseOverview } from "./LatestCourseOverview";
 import { LatestOrdersOverview } from "./LatestOrdersOverview";
 import { api } from "@/lib/api";
 import { useEffect, useState } from "react";
-import { formatPercentage } from "@/lib/utils";
 
 export default function Dashboard() {
   const [monthlyTotalsThisYear, setMonthlyTotalsThisYear] = useState<number[]>([]);

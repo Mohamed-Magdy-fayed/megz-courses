@@ -1,9 +1,9 @@
-import { Prisma } from "@prisma/client";
+import { User } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import UserDataForm, { UserDataFormValues } from "../UserDataForm/UserDataForm";
 
 export const AccountDetails = ({ user }: {
-  user: Prisma.UserGetPayload<{ include: { orders: true } }>;
+  user: User;
 }) => {
   const session = useSession()
 
@@ -11,7 +11,8 @@ export const AccountDetails = ({ user }: {
     email: user.email,
     id: user.id,
     name: user.name,
-    userRoles: user?.userRoles,
+    userRoles: user.userRoles,
+    userScreens: user.userScreens,
     city: user.address?.city || "",
     country: user.address?.country || "",
     state: user.address?.state || "",

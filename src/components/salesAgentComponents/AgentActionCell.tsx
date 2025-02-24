@@ -89,7 +89,7 @@ const AgentCellAction: React.FC<AgentCellActionProps> = ({ id, agent }) => {
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem>
-                        <Link className="flex items-center" href={`/account/${id}`}>
+                        <Link className="flex items-center" href={`/admin/users_management/account/${id}`}>
                             <SearchSlash className="w-4 h-4 mr-2" />
                             View
                         </Link>

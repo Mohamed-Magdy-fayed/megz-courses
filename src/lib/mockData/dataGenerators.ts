@@ -2,7 +2,7 @@ import { env } from "@/env.mjs";
 import { validLeadInteractionsType, validLeadSources, validSessionStatuses } from "@/lib/enumsTypes";
 import { courses, salesAgentsData, systemFormData, trainersData } from "@/lib/mockData/data";
 import { generateGroupNumnber, getGroupSessionDays, getSubmissionScore, leadsCodeGenerator, orderCodeGenerator } from "@/lib/utils";
-import { Course, CourseStatuses, DefaultStage, Devices, OrderStatus, PrismaClient, SessionStatus, SystemFormTypes } from "@prisma/client";
+import { Course, CourseStatuses, DefaultStage, Devices, OrderStatus, Prisma, PrismaClient, SessionStatus, SystemFormTypes } from "@prisma/client";
 
 export const generateSalesAgents = async (prisma: PrismaClient) => {
     const addedAgents = await prisma.$transaction(
@@ -392,9 +392,11 @@ export const generatePlacementTests = async (prisma: PrismaClient) => {
 
     const testers = await prisma.tester.findMany({ include: { user: true } })
 
-    await prisma.$transaction(convertedLeads.map(lead => {
+    return await prisma.$transaction(convertedLeads.map(lead => {
         const timeStamps = generateTimestamps(lead.updatedAt)
-        const oralTestTime = new Date(timeStamps.createdAt.setDate(timeStamps.createdAt.getDate() + Math.random() * 23))
+        const oralTestTime = new Date(timeStamps.createdAt)
+        oralTestTime.setDate(timeStamps.createdAt.getDate() + Math.random() * 23)
+        oralTestTime.setMinutes(oralTestTime.getTime() < 30 ? 30 : 60)
 
         return prisma.placementTest.create({
             data: {
@@ -408,7 +410,7 @@ export const generatePlacementTests = async (prisma: PrismaClient) => {
                         sessionDate: oralTestTime,
                         meetingNumber: "77569231226",
                         meetingPassword: "abcd1234",
-                        sessionStatus: oralTestTime.getTime() > new Date().getTime() ? "Scheduled" : "Completed"
+                        sessionStatus: oralTestTime.getTime() > new Date().getTime() ? "Scheduled" : "Completed",
                     }
                 },
                 oralTestTime,
@@ -550,7 +552,7 @@ export const generatePlacementTestsSubmissions = async (prisma: PrismaClient) =>
 export const generateCourseStatuses = async (prisma: PrismaClient) => {
     const orders = await prisma.order.findMany({ include: { course: { include: { levels: true } } } })
 
-    await prisma.$transaction(orders.map((order, i) => {
+    return await prisma.$transaction(orders.map((order, i) => {
         const now = new Date();
         const twoMonthsAgo = new Date();
         twoMonthsAgo.setMonth(now.getMonth() - 2);
@@ -577,13 +579,15 @@ export const generateCourseStatuses = async (prisma: PrismaClient) => {
             status = "Refunded"
         }
 
+        const timeStamps = generateTimestamps(order.updatedAt)
+
         return prisma.courseStatus.create({
             data: {
                 status,
                 course: { connect: { id: order.courseId } },
                 user: { connect: { id: order.userId } },
-                level: { connect: { id: order.course.levels[Math.floor(Math.random() * order.course.levels.length)]?.id } },
-                ...generateTimestamps(order.updatedAt),
+                level: timeStamps.updatedAt < new Date() ? { connect: { id: order.course.levels[Math.floor(Math.random() * order.course.levels.length)]?.id } } : undefined,
+                ...timeStamps,
             }
         })
     }))
@@ -699,7 +703,7 @@ export const generateZoomGroups = async (prisma: PrismaClient) => {
             const groupNumber = generateGroupNumnber(startDate, teacherGroup[0]?.teacher.name!, group.courseName);
 
             const generateZoomSessions = async (startDate: Date, level: any, zoomClientId: string) => {
-                const sessions: any[] = [];
+                const sessions: Prisma.ZoomSessionCreateManyZoomGroupInput[] = [];
                 let currentDate = new Date(startDate);
                 const startDay = currentDate.getDay();
                 const days = getGroupSessionDays(startDay)
@@ -717,7 +721,8 @@ export const generateZoomGroups = async (prisma: PrismaClient) => {
                             sessions.push({
                                 sessionStatus,
                                 sessionDate: new Date(currentDate),
-                                sessionLink: "",
+                                meetingNumber: "77569231226",
+                                meetingPassword: "abcd1234",
                                 materialItemId: materialItem.id,
                                 zoomClientId,
                                 attenders: sessionStatus === "Completed" ? {

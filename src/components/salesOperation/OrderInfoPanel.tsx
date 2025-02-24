@@ -12,7 +12,6 @@ import Modal from "@/components/ui/modal";
 import { RefundModal } from "@/components/modals/RefundModal";
 import { Prisma } from "@prisma/client";
 import Link from "next/link";
-import { Button } from "../ui/button";
 
 const OrderInfoPanel = ({ data }: {
     data: Prisma.LeadGetPayload<{
@@ -132,7 +131,7 @@ const OrderInfoPanel = ({ data }: {
                                 {
                                     accessorKey: "name",
                                     header: "Name",
-                                    cell: ({ row }) => <Link className="in-table-link" href={`/content/courses/${row.original.slug}`}>
+                                    cell: ({ row }) => <Link className="in-table-link" href={`/admin/system_management/content/courses/${row.original.slug}`}>
                                         {row.original.name}
                                     </Link>
                                 },

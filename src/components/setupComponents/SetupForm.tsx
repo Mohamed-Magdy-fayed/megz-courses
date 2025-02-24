@@ -1,3 +1,4 @@
+import Spinner from '@/components/Spinner';
 import { SpinnerButton } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import ImageUploader from '@/components/ui/ImageUploader';
@@ -5,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import MobileNumberInput from '@/components/ui/phone-number-input';
 import { toastType, useToast } from '@/components/ui/use-toast';
 import { api } from '@/lib/api';
-import { createMutationOptions } from '@/lib/mutationsHelper';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ConstructionIcon } from 'lucide-react';
 import React, { useState } from 'react'
@@ -53,19 +53,38 @@ export default function SetupForm() {
 
     const { toast } = useToast()
     const trpcUtils = api.useUtils();
-    const setupMutation = api.setup.start.useMutation(
-        createMutationOptions({
-            loadingToast,
-            setLoadingToast,
-            successMessageFormatter: () => `Setup Completed Successfully! now login with the Admin's email and password`,
-            toast,
-            trpcUtils,
-            loadingMessage: "Configuring..."
-        })
-    )
+    const setupMutation = api.setup.start.useMutation()
 
-    const onSubmit = (setupData: SetupFormValues) => {
-        setupMutation.mutate(setupData)
+    const onSubmit = async (setupData: SetupFormValues) => {
+        const loadingToastInner = toast({
+            title: "Configuring...",
+            description: <Spinner className="w-4 h-4" />,
+            variant: "info",
+            duration: 60000,
+        })
+        setLoadingToast(loadingToastInner)
+
+        try {
+            await setupMutation.mutateAsync(setupData)
+            await trpcUtils.setup.invalidate()
+
+            loadingToastInner.update({
+                id: loadingToastInner.id,
+                title: "Success",
+                description: `Setup Completed Successfully! now login with the Admin's email and password`,
+                variant: "success",
+            })
+        } catch (error: any) {
+            loadingToastInner.update({
+                id: loadingToastInner.id,
+                title: "Error",
+                description: error.message,
+                variant: "destructive",
+            })
+        } finally {
+            loadingToastInner?.dismissAfter()
+            setLoadingToast(undefined)
+        }
     }
 
     return (

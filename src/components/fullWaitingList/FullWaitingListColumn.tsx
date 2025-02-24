@@ -52,7 +52,7 @@ export const columns: ColumnDef<FullWaitingListRow>[] = [
     {
         accessorKey: "name",
         cell: ({ row }) => (
-            <Link className="in-table-link" href={`/account/${row.original.id}`}>
+            <Link className="in-table-link" href={`/admin/users_management/account/${row.original.id}`}>
                 {row.original.name}
             </Link>
         ),
@@ -62,7 +62,7 @@ export const columns: ColumnDef<FullWaitingListRow>[] = [
         header: "Course Name",
         cell: ({ row }) => {
             return (
-                <Link className="in-table-link" href={`/content/courses/${row.original.courseSlug}`}>
+                <Link className="in-table-link" href={`/admin/system_management/content/courses/${row.original.courseSlug}`}>
                     {row.original.courseName}
                 </Link>
             )

@@ -1,9 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "../ui/checkbox";
 import Link from "next/link";
-import { getInitials } from "@/lib/getInitials";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Typography } from "../ui/Typoghraphy";
 import { UserRoles } from "@prisma/client";
 import EducationalTeamActionCell from "@/components/staffComponents/EducationalTeamActionCell";
 
@@ -11,7 +8,7 @@ export type TrainerColumn = {
   id: string;
   userId: string;
   name: string;
-  userRoles: UserRoles[];
+  userRoles: UserRoles;
   email: string;
   image: string;
   phone: string;
@@ -42,7 +39,7 @@ export const columns: ColumnDef<TrainerColumn>[] = [
     accessorKey: "email",
     header: "Info",
     cell: ({ row }) => (
-      <Link className="in-table-link" href={`/account/${row.original.userId}`}>
+      <Link className="in-table-link" href={`/admin/users_management/account/${row.original.userId}`}>
         {row.original.name}
       </Link>
     ),

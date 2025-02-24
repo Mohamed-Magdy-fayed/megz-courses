@@ -208,7 +208,7 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                                         <Typography className="mr-auto">{email}</Typography>
                                         <WrapWithTooltip text="Go to account">
                                             <Link
-                                                href={`/account/${userId}`}
+                                                href={`/admin/users_management/account/${userId}`}
                                                 target="_blank"
                                                 onClick={(e) => {
                                                     e.stopPropagation()
@@ -246,7 +246,7 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                                                 <Tooltip delayDuration={10}>
                                                     <TooltipTrigger>
                                                         <Link
-                                                            href={`/account/${order?.userId}`}
+                                                            href={`/admin/users_management/account/${order?.userId}`}
                                                             target="_blank"
                                                             onClick={(e) => {
                                                                 e.stopPropagation()

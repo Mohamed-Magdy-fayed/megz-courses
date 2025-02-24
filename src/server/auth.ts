@@ -11,7 +11,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { env } from "@/env.mjs";
 import { prisma } from "@/server/db";
 import bcrypt from "bcrypt";
-import type { Devices, UserRoles } from "@prisma/client";
+import type { Devices, UserRoles, UserScreen } from "@prisma/client";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -27,6 +27,7 @@ declare module "next-auth" {
       phone: string;
       email: string;
       userRoles: UserRoles[];
+      userScreens: UserScreen[];
       device: Devices | null;
       emailVerified: Date | null;
       hasPassword: boolean;
@@ -39,6 +40,7 @@ declare module "next-auth" {
     phone: string;
     email: string;
     userRoles: UserRoles[];
+    userScreens: UserScreen[];
     device: Devices | null;
     emailVerified: Date | null;
     hasPassword: boolean;
@@ -155,12 +157,15 @@ export const authOptions: NextAuthOptions = {
           picture: session.image,
           device: session.device,
           emailVerified: session.emailVerified,
+          userRoles: session.userRoles,
+          userScreens: session.userScreens,
         }
       }
       if (user) {
         return {
           ...token,
           userRoles: user.userRoles,
+          userScreens: user.userScreens,
           name: user.name,
           email: user.email,
           phone: user.phone,
@@ -183,6 +188,7 @@ export const authOptions: NextAuthOptions = {
           hasPassword: token.hasPassword,
           picture: token.picture,
           userRoles: token.userRoles,
+          userScreens: token.userScreens,
           device: token.device,
           emailVerified: token.emailVerified,
           id: token.sub,

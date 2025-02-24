@@ -53,7 +53,7 @@ export const columns: ColumnDef<PlacmentTestScheduleRow>[] = [
     {
         accessorKey: "studentName",
         cell: ({ row }) => (
-            <Link className="in-table-link" href={`/account/${row.original.studentUserId}`}>
+            <Link className="in-table-link" href={`/admin/users_management/account/${row.original.studentUserId}`}>
                 {row.original.studentName}
             </Link>
         ),
@@ -61,7 +61,7 @@ export const columns: ColumnDef<PlacmentTestScheduleRow>[] = [
     {
         accessorKey: "testerName",
         cell: ({ row }) => (
-            <Link className="in-table-link" href={`/account/${row.original.testerId}`}>
+            <Link className="in-table-link" href={`/admin/users_management/account/${row.original.testerId}`}>
                 {row.original.testerName}
             </Link>
         ),

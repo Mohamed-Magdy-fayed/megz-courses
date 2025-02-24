@@ -19,6 +19,7 @@ import { RefreshCwIcon } from "lucide-react";
 const SetupPage = () => {
   const setupQuery = api.setup.getCurrentSetup.useQuery();
 
+  const [isResetOpen3, setIsResetOpen3] = useState(false);
   const [isResetOpen2, setIsResetOpen2] = useState(false);
   const [isResetOpen, setIsResetOpen] = useState(false);
   const [loadingToast, setLoadingToast] = useState<toastType>();
@@ -54,6 +55,20 @@ const SetupPage = () => {
       loadingMessage: "Resetting..."
     })
   )
+  const resetMutation3 = api.setup.reset3.useMutation(
+    createMutationOptions({
+      loadingToast,
+      setLoadingToast,
+      successMessageFormatter: () => {
+        setIsResetOpen(false)
+        updateSession()
+        return `Reset Completed!`
+      },
+      toast,
+      trpcUtils,
+      loadingMessage: "Resetting..."
+    })
+  )
 
   const onReset = async () => {
     resetMutation.mutate()
@@ -61,6 +76,10 @@ const SetupPage = () => {
 
   const onReset2 = async () => {
     resetMutation2.mutate()
+  }
+
+  const onReset3 = async () => {
+    resetMutation3.mutate()
   }
 
   if (setupQuery.isLoading) return (
@@ -89,6 +108,13 @@ const SetupPage = () => {
         onConfirm={onReset2}
         description="WARNING!!! you're about to reset your system, any lost data will not be recoverable!"
       />
+      <AlertModal
+        isOpen={isResetOpen3}
+        onClose={() => setIsResetOpen3(false)}
+        loading={!!loadingToast}
+        onConfirm={onReset3}
+        description="WARNING!!! you're about to reset your system, any lost data will not be recoverable!"
+      />
       <div className="p-4 flex flex-col gap-8 items-center">
         <div className="grid grid-cols-12 w-full items-center">
           <Link href="/" className="col-span-3" >
@@ -99,6 +125,7 @@ const SetupPage = () => {
             <div>
               <SpinnerButton className="ml-auto col-span-3" customeColor="destructiveOutlined" onClick={() => setIsResetOpen(true)} text="Step 1" icon={RefreshCwIcon} isLoading={!!loadingToast} />
               <SpinnerButton className="ml-auto col-span-3" customeColor="destructiveOutlined" onClick={() => setIsResetOpen2(true)} text="Step 2" icon={RefreshCwIcon} isLoading={!!loadingToast} />
+              <SpinnerButton className="ml-auto col-span-3" customeColor="destructiveOutlined" onClick={() => setIsResetOpen3(true)} text="Step 3" icon={RefreshCwIcon} isLoading={!!loadingToast} />
             </div>
           )}
         </div>

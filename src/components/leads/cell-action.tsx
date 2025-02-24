@@ -128,7 +128,7 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuItem asChild>
-            <Link href={`/leads/${data.id}`}>
+            <Link href={`/admin/sales_management/leads/${data.id}`}>
               <View className="w-4 h-4 mr-2" />
               View
             </Link>
@@ -158,7 +158,7 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
             </DropdownMenuItem>
           ) : (
             <DropdownMenuItem disabled={!data.orderDetails} asChild>
-              <Link href={`/orders/${data.orderDetails?.orderNumber}`}>
+              <Link href={`/admin/sales_management/orders/${data.orderDetails?.orderNumber}`}>
                 <ExternalLink className="w-4 h-4 mr-2" />
                 Go to order
               </Link>

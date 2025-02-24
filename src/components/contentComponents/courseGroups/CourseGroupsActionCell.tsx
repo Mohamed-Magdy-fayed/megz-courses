@@ -135,7 +135,7 @@ const CourseGroupsActionCell: React.FC<CourseRow> = ({ id, courseId, courseLevel
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem>
-                        <Link className="flex gap-2" href={`/groups/${id}`} target="_blank">
+                        <Link className="flex gap-2" href={`/admin/operations_management/groups/${id}`} target="_blank">
                             <SearchSlash className="w-4 h-4 mr-2" />
                             View
                         </Link>

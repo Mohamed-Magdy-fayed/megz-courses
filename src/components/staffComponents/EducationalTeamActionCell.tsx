@@ -9,26 +9,13 @@ import { Button } from "@/components/ui/button";
 import { EditIcon, ChevronDownIcon, Trash2Icon } from "lucide-react";
 import { toastType, useToast } from "../ui/use-toast";
 import { useState } from "react";
-import { Prisma } from "@prisma/client";
 import Modal from "@/components/ui/modal";
 import TrainerForm from "@/components/staffComponents/TrainerForm";
 import { api } from "@/lib/api";
 import { createMutationOptions } from "@/lib/mutationsHelper";
+import { TrainerColumn } from "@/components/staffComponents/StaffColumns";
 
-interface EducationalTeamActionCellProps {
-    trainerUser: Prisma.UserGetPayload<{
-        select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            image: true,
-            userRoles: true,
-        }
-    }>
-}
-
-const EducationalTeamActionCell: React.FC<EducationalTeamActionCellProps> = ({ trainerUser }) => {
+const EducationalTeamActionCell: React.FC<{ trainerUser: TrainerColumn }> = ({ trainerUser }) => {
     const { toast } = useToast();
     const [loadingToast, setLoadingToast] = useState<toastType>()
     const [isOpen, setIsOpen] = useState(false)
@@ -42,7 +29,7 @@ const EducationalTeamActionCell: React.FC<EducationalTeamActionCellProps> = ({ t
             loadingToast,
             setLoadingToast,
             trpcUtils,
-            successMessageFormatter: ({ deletedUsers }) => {
+            successMessageFormatter: () => {
                 setIsDeleteOpen(false)
                 return `Deleted!`
             }

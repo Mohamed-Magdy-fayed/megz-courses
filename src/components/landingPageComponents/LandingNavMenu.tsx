@@ -19,9 +19,6 @@ import { DesktopAuthenticatedProfileMenu, MobileAuthenticatedProfileMenu } from 
 
 export const LandingNavigationMenu = ({ siteIdentity }: { siteIdentity?: SiteIdentity }) => {
   const session = useSession()
-  const latestCoursesQuery = api.courses.getLatest.useQuery(undefined, {
-    enabled: false,
-  })
   const trpcUtils = api.useUtils()
   const { data } = api.notes.getActiveUserNotes.useQuery(undefined, { enabled: session.status === "authenticated" })
   const editNoteQuery = api.notes.editNoteStatus.useMutation({ onSettled: () => trpcUtils.notes.invalidate() })
@@ -30,10 +27,6 @@ export const LandingNavigationMenu = ({ siteIdentity }: { siteIdentity?: SiteIde
   const changeStatus = (id: string, status: UserNoteStatus) => {
     editNoteQuery.mutate({ id, status })
   }
-
-  useEffect(() => {
-    latestCoursesQuery.refetch()
-  }, [])
 
   useEffect(() => {
     if (!session.data?.user) return

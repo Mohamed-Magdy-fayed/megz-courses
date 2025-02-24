@@ -213,7 +213,7 @@ const DesktopAuthenticatedProfileMenu = () => {
             {/* Authenticated Users (Students) */}
             {session.data?.user && !hasPermission(session.data.user, "adminLayout", "view") ? (
                 <>
-                    <Link href={`/my_courses`}>
+                    <Link href={`/student/my_courses`}>
                         <Button customeColor={"primaryIcon"}>
                             <Typography className="text-foreground whitespace-nowrap">My courses</Typography>
                             <BookOpen />
@@ -227,7 +227,7 @@ const DesktopAuthenticatedProfileMenu = () => {
                     </Link>
                 </>
             ) /* Authenticated Users (non Student) */ : (
-                <Link href={`/dashboard`}>
+                <Link href={`/adimin/dashboard`}>
                     <Button customeColor={"primaryIcon"}>
                         <Typography className="text-foreground whitespace-nowrap">Dashboard</Typography>
                         <LayoutDashboard />
@@ -266,9 +266,9 @@ const DesktopAuthenticatedProfileMenu = () => {
                         </Typography>
                     </div>
                     <Separator></Separator>
-                    <div className="p-2">
+                    {/* <div className="p-2">
                         <DarkModeToggle />
-                    </div>
+                    </div> */}
                     <Separator></Separator>
                     <Button customeColor={"primaryIcon"} disabled={loading} onClick={handleLogout} className="m-2 min-w-[10rem] relative">
                         {loading && <Spinner className="w-6 h-6 absolute" />}
@@ -323,20 +323,20 @@ const MobileAuthenticatedProfileMenu = () => {
                             {session.data?.user.name}
                         </Typography>
                     </div>
-                    <Separator></Separator>
+                    {/* <Separator></Separator>
                     <div className="p-2">
                         <DarkModeToggle />
-                    </div>
+                    </div> */}
                     <Separator></Separator>
                     {session.data?.user && !hasPermission(session.data.user, "adminLayout", "view") ? (
-                        <Link href={`/my_courses`}>
+                        <Link href={`/student/my_courses`}>
                             <Button customeColor={"primaryIcon"} className="w-full my-2">
                                 <Typography className="text-foreground">My courses</Typography>
                                 <BookOpen />
                             </Button>
                         </Link>
                     ) : (
-                        <Link href={`/dashboard`}>
+                        <Link href={`/adimin/dashboard`}>
                             <Button customeColor={"primaryIcon"} className="w-full my-2">
                                 <Typography className="text-foreground">Dashboard</Typography>
                                 <LayoutDashboard />

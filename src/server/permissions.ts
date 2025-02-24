@@ -1,6 +1,7 @@
+import { NavLink } from "@/components/layout/Drawer";
 import { Certificate, Course, GoogleClient, Lead, LeadStage, MessageTemplate, MetaClient, Order, Parameters, PlacementTest, SupportChat, SupportTicket, SystemForm, SystemFormSubmission, Teacher, Tester, User, UserNote, UserRoles, ZoomClient, ZoomGroup, ZoomSession } from "@prisma/client";
 
-type PartialUser = Pick<User, "id" | "email" | "userRoles">
+type PartialUser = Pick<User, "id" | "email" | "userRoles" | "userScreens">
 
 type PermissionCheck<Key extends keyof Permissions> =
     | boolean
@@ -18,6 +19,10 @@ type Permissions = {
     adminLayout: {
         dataType: Partial<User>
         action: "view" | "update"
+    },
+    screens: {
+        dataType: Partial<(NavLink & { children?: NavLink[] })>
+        action: "view"
     },
     params: {
         dataType: Partial<Parameters>
@@ -135,6 +140,11 @@ const ROLES = {
         placementTests: unrestricted,
         messageTemplates: unrestricted,
         zoomSessions: unrestricted,
+        screens: {
+            view: ({ userScreens }, { children, url }) => {
+                return !!((url && userScreens.some(s => url?.includes(s))) || (children && children.some(({ url }) => url && userScreens.some(s => url.includes(s)))))
+            }
+        },
     },
     "ChatAgent": {
         adminLayout: { view: true },
@@ -162,6 +172,11 @@ const ROLES = {
             pay: true,
         },
         placementTests: { view: true, create: true },
+        screens: {
+            view: ({ userScreens }, { children, url }) => {
+                return !!((url && userScreens.some(s => url?.includes(s))) || (children && children.some(({ url }) => url && userScreens.some(s => url.includes(s)))))
+            }
+        },
     },
     "OperationAgent": {
         adminLayout: { view: true },
@@ -192,6 +207,11 @@ const ROLES = {
         metaClients: unrestricted,
         placementTests: { view: true, create: true, update: true, delete: true },
         messageTemplates: unrestricted,
+        screens: {
+            view: ({ userScreens }, { children, url }) => {
+                return !!((url && userScreens.some(s => url?.includes(s))) || (children && children.some(({ url }) => url && userScreens.some(s => url.includes(s)))))
+            }
+        },
     },
     "SalesAgent": {
         adminLayout: { view: true },
@@ -222,6 +242,11 @@ const ROLES = {
             pay: true,
         },
         placementTests: { view: true, create: true, update: true, delete: true },
+        screens: {
+            view: ({ userScreens }, { children, url }) => {
+                return !!((url && userScreens.some(s => url?.includes(s))) || (children && children.some(({ url }) => url && userScreens.some(s => url.includes(s)))))
+            }
+        },
     },
     "Student": {
         users: {
@@ -245,6 +270,11 @@ const ROLES = {
             view: true,
             update: (actioner, actioned) => actioned.studentUserId === actioner.id
         },
+        screens: {
+            view: ({ userScreens }, { children, url }) => {
+                return !!((url && userScreens.some(s => url?.includes(s))) || (children && children.some(({ url }) => url && userScreens.some(s => url.includes(s)))))
+            }
+        },
     },
     "Teacher": {
         adminLayout: { view: true },
@@ -267,6 +297,11 @@ const ROLES = {
             ),
         },
         placementTests: { view: true },
+        screens: {
+            view: ({ userScreens }, { children, url }) => {
+                return !!((url && userScreens.some(s => url?.includes(s))) || (children && children.some(({ url }) => url && userScreens.some(s => url.includes(s)))))
+            }
+        },
     },
     "Tester": {
         adminLayout: { view: true },
@@ -291,6 +326,11 @@ const ROLES = {
         placementTests: {
             create: true, view: true, delete: true,
             update: (actioner, actioned) => actioned.studentUserId === actioner.id,
+        },
+        screens: {
+            view: ({ userScreens }, { children, url }) => {
+                return !!((url && userScreens.some(s => url?.includes(s))) || (children && children.some(({ url }) => url && userScreens.some(s => url.includes(s)))))
+            }
         },
     },
 } as const satisfies RolesWithPermissions

@@ -39,7 +39,7 @@ export const columns: ColumnDef<ChatAgentColumn>[] = [
   {
     accessorKey: "email",
     cell: ({ row }) => (
-      <Link className="block w-fit" href={`/account/${row.original.id}`}>
+      <Link className="block w-fit" href={`/admin/users_management/account/${row.original.id}`}>
         <div className="flex items-center gap-2 space-x-2" >
           <Avatar>
             <AvatarImage src={`${row.original.image}`} />

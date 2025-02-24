@@ -110,7 +110,7 @@ const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, cou
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem asChild disabled={!oralTestLink}>
-                        <Link href={oralTestLink ? oralTestLink : ""}>
+                        <Link href={oralTestLink ? `/${oralTestLink}` : ""}>
                             <TargetIcon className="w-4 h-4 mr-2" />
                             Join
                         </Link>

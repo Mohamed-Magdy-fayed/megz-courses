@@ -21,7 +21,7 @@ const MaterialActionCell: React.FC<MaterialsRow> = ({ courseSlug, slug, subTitle
     const [isEditOpen, setIsEditOpen] = useState(false)
 
     const onCopy = () => {
-        navigator.clipboard.writeText(`${env.NEXT_PUBLIC_NEXTAUTH_URL}content/materials/${materialItemSlug}?path=uploads/content/courses/${courseSlug}/${levelSlug}/${materialItemSlug}`);
+        navigator.clipboard.writeText(`${env.NEXT_PUBLIC_NEXTAUTH_URL}admin/system_management/content/materials/${materialItemSlug}?path=uploads/content/courses/${courseSlug}/${levelSlug}/${materialItemSlug}`);
         toastInfo("View link copied to the clipboard");
     };
 
@@ -71,7 +71,7 @@ const MaterialActionCell: React.FC<MaterialsRow> = ({ courseSlug, slug, subTitle
                         Copy view link
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                        <Link target="_blank" href={`/courses/${courseSlug}`}>
+                        <Link target="_blank" href={`/student/courses/${courseSlug}`}>
                             <Eye className="w-4 h-4 mr-2" />
                             View
                         </Link>

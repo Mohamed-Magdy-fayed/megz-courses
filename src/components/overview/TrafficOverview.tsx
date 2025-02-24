@@ -72,7 +72,7 @@ export const TrafficOverview = ({
       </CardHeader>
       <CardContent>
         <Chart
-          height={300}
+          height={250}
           options={{
             ...chartOptions, tooltip: {
               fillSeriesColor: true, cssClass: "p-1", custom: (ops) => `${ops.w.globals.labels[ops.seriesIndex]} ${formatPercentage(ops.series[ops.seriesIndex])}`,

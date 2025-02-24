@@ -1,27 +1,27 @@
 import type { Question } from "@prisma/client";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-
 export type ActiveLinkType =
   | ""
   | "dashboard"
-  | "retintions"
   | "notes"
   | "groups"
+  | "waiting_list"
+  | "retintions"
+  | "placement_tests"
   | "orders"
-  | "students"
-  | "edu_team"
-  | "ops_team"
-  | "leads"
-  | "chat_agents"
-  | "content"
   | "leads"
   | "config"
+  | "content"
+  | "students"
+  | "ops_team"
+  | "edu_team"
   | "account"
   | "privacy"
   | "terms"
   | "documentation"
   | "support"
+  | "tickets"
   | "404"
   | null;
 

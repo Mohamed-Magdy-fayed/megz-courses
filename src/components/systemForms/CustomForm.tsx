@@ -273,7 +273,7 @@ const CustomForm: FC<{
                                                             methods.setValue(`items.${i}.questions`, (val === "QuestionItem" || val === "QuestionGroupItem") ? [...defaultItem.questions] : [])
                                                             field.onChange(val)
                                                         }}
-                                                        data={validItemTypes.filter(t => t !== "QuestionGroupItem" && t !== "VideoItem" && t !== "TextItem").map(type => ({
+                                                        data={validItemTypes.filter(t => t !== "QuestionGroupItem" && t !== "VideoItem").map(type => ({
                                                             label: type,
                                                             value: type,
                                                         }))}

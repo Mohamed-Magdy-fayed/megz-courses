@@ -27,8 +27,8 @@ import { toastType, useToast } from "@/components/ui/use-toast";
 import { validUserRoles } from "@/lib/enumsTypes";
 import ImageUploader from "../ui/ImageUploader";
 import MobileNumberInput from "@/components/ui/phone-number-input";
-import { Prisma } from "@prisma/client";
 import { createMutationOptions } from "@/lib/mutationsHelper";
+import { TrainerColumn } from "@/components/staffComponents/StaffColumns";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name can't be empty"),
@@ -43,16 +43,7 @@ type UsersFormValues = z.infer<typeof formSchema>;
 
 interface TrainerFormProps {
   setIsOpen: (val: boolean) => void;
-  initialData?: Prisma.UserGetPayload<{
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      phone: true,
-      image: true,
-      userRoles: true,
-    }
-  }>
+  initialData?: TrainerColumn
 }
 
 const TrainerForm: React.FC<TrainerFormProps> = ({ initialData, setIsOpen }) => {

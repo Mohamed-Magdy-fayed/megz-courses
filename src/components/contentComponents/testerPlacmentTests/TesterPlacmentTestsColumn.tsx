@@ -72,7 +72,7 @@ export const columns: ColumnDef<Column>[] = [
         accessorKey: "studentName",
         header: "Student Info",
         cell: ({ row }) => (
-            <Link className="block w-fit" href={`/account/${row.original.studentUserId}`}>
+            <Link className="block w-fit" href={`/admin/users_management/account/${row.original.studentUserId}`}>
                 <div className="flex items-center gap-2" >
                     <Avatar>
                         <AvatarImage src={`${row.original.studentImage}`} />

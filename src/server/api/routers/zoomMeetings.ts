@@ -164,10 +164,15 @@ export const zoomMeetingsRouter = createTRPCRouter({
             meetingNo: z.string(),
         }))
         .query(async ({ ctx, input: { sessionId, meetingNo } }) => {
-            const session = await ctx.prisma.zoomSession.findUnique({ where: { id: sessionId }, include: { zoomClient: true } })
-            if (!session?.zoomClient) throw new TRPCError({ code: "BAD_REQUEST", message: "No session found!" })
-            const { accessToken, refreshToken } = session.zoomClient
-            const token = await generateToken({ api_key: accessToken, api_secret: refreshToken })
-            return await getMeetingDetails({ token, meetingNo })
+            try {
+                const session = await ctx.prisma.zoomSession.findUnique({ where: { id: sessionId }, include: { zoomClient: true } })
+                if (!session?.zoomClient) throw new TRPCError({ code: "BAD_REQUEST", message: "No session found!" })
+                const { accessToken, refreshToken } = session.zoomClient
+                const token = await generateToken({ api_key: accessToken, api_secret: refreshToken })
+                const { meetingNumber, password } = await getMeetingDetails({ token, meetingNo })
+                return { meetingNumber, password }
+            } catch (error) {
+                throw new TRPCError(getTRPCErrorFromUnknown(error))
+            }
         }),
 });

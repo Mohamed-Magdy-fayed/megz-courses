@@ -50,6 +50,34 @@ enum UserRoles {
     ChatAgent
 }
 
+enum UserScreen {
+    dashboard
+    operations_management
+    notes
+    groups
+    waiting_list
+    retintions
+    placement_tests
+    sessions
+    sales_management
+    orders
+    leads
+    users_management
+    students
+    ops_team
+    edu_team
+    chat_agents
+    account
+    system_management
+    config
+    content
+    privacy
+    terms
+    documentation
+    support
+    tickets
+}
+
 enum CourseStatuses {
     OrderCreated
     OrderPaid
@@ -90,6 +118,7 @@ model User {
     tempPassword          String?
     phone                 String                 @unique
     userRoles             UserRoles[]            @default([Student])
+    userScreens           UserScreen[]
     accounts              Account[]
     sessions              Session[]
     orders                Order[]

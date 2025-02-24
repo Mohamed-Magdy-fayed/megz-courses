@@ -15,7 +15,7 @@ const AssigneeCell: FC<AssigneeCellProps> = ({ assigneeId, assigneeEmail, assign
     return (
         <div>
             {!assigneeEmail ? <>No Assignee</> : (
-                <Link href={`/account/${assigneeId}`} className="flex flex-row gap-4 items-center hover:text-primary">
+                <Link href={`/admin/users_management/account/${assigneeId}`} className="flex flex-row gap-4 items-center hover:text-primary">
                     <Avatar>
                         <AvatarImage src={`${assigneeImage}`} />
                         <AvatarFallback>

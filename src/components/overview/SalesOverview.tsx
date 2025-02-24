@@ -1,9 +1,5 @@
 import { Chart } from "@/components/overview/Chart";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { RefreshCcw } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
-import { Typography } from "../ui/Typoghraphy";
+import { Card, CardContent } from "@/components/ui/card";
 
 const useChartOptions = (): ApexCharts.ApexOptions => {
   return {
@@ -11,7 +7,7 @@ const useChartOptions = (): ApexCharts.ApexOptions => {
       text: "Sales",
       style: {
         color: "hsl(var(--muted))",
-        fontSize: "32px"
+        fontSize: "20px"
       }
     },
     chart: {
@@ -126,16 +122,15 @@ export const SalesOverview = ({ chartSeries, sync }: SalsesOverviewProps) => {
 
   return (
     <Card className="col-span-12 xl:col-span-8">
-      <CardContent>
+      <CardContent className="grid py-4">
         <Chart
-          height={350}
+          height={400}
           options={{ ...chartOptions }}
           series={chartSeries}
           type="bar"
           width="100%"
         />
       </CardContent>
-      <Separator />
     </Card >
   );
 };

@@ -6,13 +6,12 @@ import {
 import bcrypt from "bcrypt";
 import { TRPCError } from "@trpc/server";
 import { setupDefaultMessageTemplates } from "@/lib/whatsApp";
-import { validDefaultStages, validUserRoles } from "@/lib/enumsTypes";
+import { validDefaultStages, validUserRoles, validUserScreens } from "@/lib/enumsTypes";
 import { subscriptionTiers } from "@/lib/system";
 import { env } from "@/env.mjs";
 import { sendZohoEmail } from "@/lib/emailHelpers";
 import { getTotalSize } from "@/lib/firebaseStorage";
-import { PrismaClient } from "@prisma/client";
-import { LetsGo, LetsGo2 } from "@/lib/mockData";
+import { LetsGo, LetsGo2, LetsGo3 } from "@/lib/mockData";
 
 export const setupRouter = createTRPCRouter({
   start: publicProcedure
@@ -42,6 +41,7 @@ export const setupRouter = createTRPCRouter({
           image,
           hashedPassword,
           userRoles: [...validUserRoles],
+          userScreens: [...validUserScreens],
           emailVerified: new Date(),
           phone,
           SalesAgent: { create: {} },
@@ -80,6 +80,10 @@ export const setupRouter = createTRPCRouter({
     .mutation(async ({ ctx }) => {
       return await LetsGo2(ctx.prisma)
     }),
+  reset3: publicProcedure
+    .mutation(async ({ ctx }) => {
+      return await LetsGo3(ctx.prisma)
+    }),
   update: publicProcedure
     .input(
       z.object({
@@ -99,10 +103,10 @@ export const setupRouter = createTRPCRouter({
       const isDebugMode = env.DEBUG
       const Admin = await ctx.prisma.user.findFirst({ where: { userRoles: { has: "Admin" } }, orderBy: { createdAt: "asc" } })
 
-      const studentsCount = (await ctx.prisma.user.findMany({ where: { userRoles: { has: "Student" } } })).length
-      const adminsCount = (await ctx.prisma.user.findMany({ where: { userRoles: { has: "OperationAgent" } } })).length
-      const instructorsCount = (await ctx.prisma.user.findMany({ where: { userRoles: { hasSome: ["Teacher", "Tester"] } } })).length
-      const coursesCount = (await ctx.prisma.course.findMany()).length
+      const studentsCount = await ctx.prisma.user.count({ where: { userRoles: { has: "Student" } } })
+      const adminsCount = await ctx.prisma.user.count({ where: { userRoles: { has: "OperationAgent" } } })
+      const instructorsCount = await ctx.prisma.user.count({ where: { userRoles: { hasSome: ["Teacher", "Tester"] } } })
+      const coursesCount = await ctx.prisma.course.count()
       const storageUsage = await getTotalSize("uploads/")
 
       return {

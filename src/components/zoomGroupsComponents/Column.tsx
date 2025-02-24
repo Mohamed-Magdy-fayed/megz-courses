@@ -50,7 +50,7 @@ export const columns: ColumnDef<ColumnType>[] = [
         accessorKey: "groupNumber",
         header: "Group Number",
         cell: ({ row }) => (
-            <Link className="in-table-link" href={`/groups/${row.original.id}`} target="_blank">
+            <Link className="in-table-link" href={`/admin/operations_management/groups/${row.original.id}`} target="_blank">
                 {row.original.groupNumber}
             </Link>
         )
@@ -74,7 +74,7 @@ export const columns: ColumnDef<ColumnType>[] = [
         accessorKey: "teacherName",
         cell: ({ row }) => {
             return (
-                <Link className="in-table-link" href={`/account/${row.original.teacher.userId}`}>
+                <Link className="in-table-link" href={`/admin/users_management/account/${row.original.teacher.userId}`}>
                     {row.original.teacher?.user.name}
                 </Link>
             )

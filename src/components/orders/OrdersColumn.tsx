@@ -61,7 +61,7 @@ export const columns: ColumnDef<OrderRow>[] = [
   {
     accessorKey: "orderNumber",
     cell: ({ row }) => (
-      <Link className="in-table-link" href={`/orders/${row.original.orderNumber}`}>
+      <Link className="in-table-link" href={`/admin/sales_management/orders/${row.original.orderNumber}`}>
         {row.original.orderNumber}
       </Link>
     ),
@@ -72,7 +72,7 @@ export const columns: ColumnDef<OrderRow>[] = [
       if (row.original.isStudentView) return null
 
       return (
-        <Link className="in-table-link" href={`/account/${row.original.userId}`}>
+        <Link className="in-table-link" href={`/admin/users_management/account/${row.original.userId}`}>
           {row.original.userName}
         </Link>
       )
@@ -107,7 +107,7 @@ export const columns: ColumnDef<OrderRow>[] = [
       if (row.original.isStudentView) return null
 
       return (
-        <Link className="in-table-link" href={`/leads/${row.original.leadCode}`}>
+        <Link className="in-table-link" href={`/admin/sales_management/leads/${row.original.leadCode}`}>
           {row.original.leadCode}
         </Link>
       )

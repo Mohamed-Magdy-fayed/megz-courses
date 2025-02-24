@@ -66,7 +66,7 @@ const ResumeStudentsForm: FC<ResumeStudentsFormProps> = ({ setIsOpen }) => {
                                     <Tooltip delayDuration={10}>
                                         <TooltipTrigger>
                                             <Link
-                                                href={`/account/${status.user.id}`}
+                                                href={`/admin/users_management/account/${status.user.id}`}
                                                 target="_blank"
                                                 onClick={(e) => {
                                                     e.stopPropagation()

@@ -6,12 +6,11 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Copy, CopyPlus, Edit, ChevronDownIcon, PlusSquare, Trash } from "lucide-react";
+import { Copy, Edit, ChevronDownIcon, PlusSquare, Trash } from "lucide-react";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { api } from "@/lib/api";
 import { useState } from "react";
 import CourseForm from "./CourseForm";
-import { useRouter } from "next/router";
 import Modal from "@/components/ui/modal";
 import { env } from "@/env.mjs";
 import { AlertModal } from "@/components/modals/AlertModal";

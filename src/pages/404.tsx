@@ -35,10 +35,10 @@ export default function NotFoundPage() {
               <ArrowLeftToLine />
               <Typography>Go back</Typography>
             </Button>
-            <Link href={session.data?.user && hasPermission(session.data.user, "adminLayout", "view") ? "/dashboard" : "/"}>
+            <Link href={session.data?.user && hasPermission(session.data.user, "adminLayout", "view") ? "/admin/dashboard" : "/"}>
               <Button className="flex gap-2">
                 <Home />
-                <Typography>Go to {session.data?.user && hasPermission(session.data.user, "adminLayout", "view") ? "dashboard" : "home page"}</Typography>
+                <Typography>Go to {session.data?.user && hasPermission(session.data.user, "adminLayout", "view") ? "Dashboard" : "home page"}</Typography>
               </Button>
             </Link>
           </div>

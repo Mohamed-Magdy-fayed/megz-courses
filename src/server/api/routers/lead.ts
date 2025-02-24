@@ -133,20 +133,19 @@ export const leadsRouter = createTRPCRouter({
                     labels: true,
                     notes: true,
                     interactions: { include: { customer: true, salesAgent: { include: { user: true } } } },
-                    user: true,
                     orderDetails: {
                         include: {
+                            course: { include: { systemForms: true } },
                             user: {
                                 include: {
                                     placementTests: {
                                         where: {
-                                            course: { placementTests: { some: { course: { orders: { some: { lead: { code } } } } } } }
+                                            course: { orders: { some: { lead: { code } } } }
                                         },
                                         include: { zoomSessions: { include: { zoomClient: true } } },
                                     }
                                 }
                             },
-                            course: { include: { systemForms: true } },
                         }
                     },
                 }

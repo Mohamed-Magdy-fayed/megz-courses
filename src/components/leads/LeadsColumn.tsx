@@ -68,7 +68,7 @@ export const columns: ColumnDef<Lead>[] = [
     header: "Code",
     cell: ({ row }) => (
       <WrapWithTooltip text="Process lead">
-        <Link className="in-table-link" href={`/leads/${row.original.code}`}>{row.original.code}</Link>
+        <Link className="in-table-link" href={`/admin/sales_management/leads/${row.original.code}`}>{row.original.code}</Link>
       </WrapWithTooltip>
     )
   },
@@ -128,7 +128,7 @@ export const columns: ColumnDef<Lead>[] = [
     accessorKey: "assigneeName",
     header: "Agent",
     cell: ({ row }) => row.original.assignee?.id ? (
-      <Link href={`/account/${row.original.assignee?.id}`} className="in-table-link">
+      <Link href={`/admin/users_management/account/${row.original.assignee?.id}`} className="in-table-link">
         {row.original.assigneeName}
       </Link>
     ) : row.original.assigneeName,

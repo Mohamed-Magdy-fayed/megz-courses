@@ -71,7 +71,7 @@ const RemoveStudentsForm: FC<RemoveStudentsFormProps> = ({ setIsOpen, id, studen
                                         <Tooltip delayDuration={10}>
                                             <TooltipTrigger>
                                                 <Link
-                                                    href={`/account/${user.id}`}
+                                                    href={`/admin/users_management/account/${user.id}`}
                                                     target="_blank"
                                                     onClick={(e) => {
                                                         e.stopPropagation()

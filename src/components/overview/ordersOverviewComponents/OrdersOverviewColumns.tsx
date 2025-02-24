@@ -17,7 +17,7 @@ export const columns: ColumnDef<OrderColmun>[] = [
   {
     accessorKey: "orderNumber",
     cell: ({ row }) => (
-      <Link className="block w-fit" href={`/orders/${row.original.orderId}`}>
+      <Link className="block w-fit" href={`/admin/sales_management/orders/${row.original.orderId}`}>
         <Typography>
           {row.original.orderNumber}
         </Typography>
@@ -27,7 +27,7 @@ export const columns: ColumnDef<OrderColmun>[] = [
   {
     accessorKey: "userName",
     cell: ({ row }) => (
-      <Link className="block w-fit" href={`/account/${row.original.userId}`}>
+      <Link className="block w-fit" href={`/admin/users_management/account/${row.original.userId}`}>
         <Typography>
           {row.original.userName}
         </Typography>

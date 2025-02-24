@@ -121,7 +121,7 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, courseLevel, startDate,
                                 variant: "success",
                             })
                             setOpen(false);
-                            isGroupPage && router.push(`/groups`)
+                            isGroupPage && router.push(`/admin/operations_management/groups`)
                         })
                 },
             }
@@ -249,7 +249,7 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, courseLevel, startDate,
                         null
                     ) : (
                         <DropdownMenuItem>
-                            <Link className="flex gap-2" href={`/groups/${id}`} target="_blank">
+                            <Link className="flex gap-2" href={`/admin/operations_management/groups/${id}`} target="_blank">
                                 <SearchSlash className="w-4 h-4 mr-2" />
                                 View
                             </Link>

@@ -91,7 +91,7 @@ const MoveStudentsForm: FC<MoveStudentsFormProps> = ({ setIsOpen, id, courseId }
                                             <Tooltip delayDuration={10}>
                                                 <TooltipTrigger>
                                                     <Link
-                                                        href={`/account/${user.id}`}
+                                                        href={`/admin/users_management/account/${user.id}`}
                                                         target="_blank"
                                                         onClick={(e) => {
                                                             e.stopPropagation()

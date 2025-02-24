@@ -1,12 +1,10 @@
 import NotesActions from "@/components/notesComponents/NotesActions";
 import { SeverityPillProps, SeverityPill } from "@/components/overview/SeverityPill";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Typography } from "@/components/ui/Typoghraphy";
-import { getInitials } from "@/lib/getInitials";
 import { NoteUpdate, User, UserNoteStatus, UserNoteTypes } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
@@ -53,7 +51,7 @@ export const notesColumns: ColumnDef<NotesColumn>[] = [
         accessorKey: "title",
         header: "Note Title",
         cell: ({ row }) => (
-            <Link href={`/notes/${row.original.id}`} className="in-table-link">
+            <Link href={`/admin/operations_management/notes/${row.original.id}`} className="in-table-link">
                 {row.original.title}
             </Link>
         )
@@ -96,7 +94,7 @@ export const notesColumns: ColumnDef<NotesColumn>[] = [
         accessorKey: "createdForStudentName",
         header: ({ table }) => table.getCoreRowModel().rows.some(row => row.original.createdForStudent) ? "Student" : "",
         cell: ({ row }) => row.original.createdForStudent ? (
-            <Link className="in-table-link" href={`/account/${row.original.createdForStudent.id}`}>
+            <Link className="in-table-link" href={`/admin/users_management/account/${row.original.createdForStudent.id}`}>
                 {row.original.createdForStudent.email}
             </Link>
         ) : ""

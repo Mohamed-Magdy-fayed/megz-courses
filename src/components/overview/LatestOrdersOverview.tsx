@@ -17,7 +17,7 @@ export const LatestOrdersOverview = () => {
       </CardContent>
       <Separator />
       <CardFooter className="justify-end p-4">
-        <Link href={`/orders`}>
+        <Link href={`/admin/sales_management/orders`}>
           <Button>
             <ArrowRight />
             <Typography variant={"buttonText"}>View all</Typography>

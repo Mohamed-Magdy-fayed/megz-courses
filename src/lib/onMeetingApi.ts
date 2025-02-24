@@ -132,8 +132,9 @@ export async function getMeetingDetails({ token, meetingNo }: { token: string; m
 
     try {
         const res = await axios(config)
-        return axios({ method: "get", url: res.data.results.data.join_url }).then(res => {
+        return await axios({ method: "get", url: res.data.results.data.join_url }).then(res => {
             const meetingNumberStart = res.data.split("zoom.us/j/")[1]
+            if (!meetingNumberStart) throw new Error("Another meeting may be ongoing now on this zoom room!")
             const match = meetingNumberStart.match(/^(\d+)\?pwd=([^">]+)/);
 
             const meetingNumber = match[1];
@@ -142,8 +143,7 @@ export async function getMeetingDetails({ token, meetingNo }: { token: string; m
             return { meetingNumber, password } as { meetingNumber: string; password: string; }
         })
     } catch (error: any) {
-        console.log(error.response.data);
-        throw new Error(error.response.data.errorMessage)
+        throw new Error(error)
     }
 }
 

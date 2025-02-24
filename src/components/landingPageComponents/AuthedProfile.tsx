@@ -29,7 +29,7 @@ export const DesktopAuthenticatedProfileMenu = () => {
             {/* Authenticated Users (Students) */}
             {session.data?.user && !hasPermission(session.data.user, "adminLayout", "view") ? (
                 <>
-                    <Link href={`/my_courses`}>
+                    <Link href={`/student/my_courses`}>
                         <Button customeColor={"primaryIcon"}>
                             <Typography className="text-foreground whitespace-nowrap">My courses</Typography>
                             <BookOpen />
@@ -43,7 +43,7 @@ export const DesktopAuthenticatedProfileMenu = () => {
                     </Link>
                 </>
             ) /* Authenticated Users (non Student) */ : (
-                <Link href={`/dashboard`}>
+                <Link href={`/admin/dashboard`}>
                     <Button customeColor={"primaryIcon"}>
                         <Typography className="text-foreground whitespace-nowrap">Dashboard</Typography>
                         <LayoutDashboard />
@@ -76,10 +76,9 @@ export const DesktopAuthenticatedProfileMenu = () => {
                             {session.data?.user.name}
                         </Typography>
                     </div>
-                    <Separator></Separator>
-                    <div className="p-2">
+                    {/* <div className="p-2">
                         <DarkModeToggle />
-                    </div>
+                    </div> */}
                     <Separator></Separator>
                     <Button customeColor={"primaryIcon"} disabled={loading} onClick={handleLogout} className="m-2 min-w-[10rem] relative">
                         {loading && <Spinner className="w-6 h-6 absolute" />}
@@ -129,15 +128,15 @@ export const MobileAuthenticatedProfileMenu = () => {
                             {session.data?.user.name}
                         </Typography>
                     </div>
-                    <Separator></Separator>
+                    {/* <Separator></Separator>
                     <div className="p-2">
                         <DarkModeToggle />
-                    </div>
+                    </div> */}
                     <Separator></Separator>
                     <div className="flex flex-col gap-2">
                         {session.data?.user && !hasPermission(session.data.user, "adminLayout", "view") ? (
                             <>
-                                <Link href={`/my_courses`}>
+                                <Link href={`/student/my_courses`}>
                                     <Button customeColor={"primaryIcon"} className="w-full">
                                         <Typography className="text-foreground">My courses</Typography>
                                         <BookOpen />
@@ -151,7 +150,7 @@ export const MobileAuthenticatedProfileMenu = () => {
                                 </Link>
                             </>
                         ) : (
-                            <Link href={`/dashboard`}>
+                            <Link href={`/admin/dashboard`}>
                                 <Button customeColor={"primaryIcon"} className="w-full my-2">
                                     <Typography className="text-foreground">Dashboard</Typography>
                                     <LayoutDashboard />

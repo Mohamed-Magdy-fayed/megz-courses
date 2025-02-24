@@ -46,7 +46,7 @@ export default function LearningDrawer({ level, course, user, siteIdentity }: {
             onClick={() => {
               navStore.closeNav();
             }}
-            href={`/my_courses/${course.slug}/${lvl.slug}`}
+            href={`/student/my_courses/${course.slug}/${lvl.slug}`}
             key={lvl.id}
             className="hover:no-underline whitespace-nowrap w-full rounded-lg bg-transparent p-2 my-2 font-bold hover:bg-primary hover:text-primary-foreground"
           >
@@ -86,7 +86,7 @@ export default function LearningDrawer({ level, course, user, siteIdentity }: {
                                 "flex items-center justify-between gap-2 whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-primary hover:text-primary-foreground",
                                 zoomSession?.sessionStatus === "Scheduled" && "pointer-events-none text-muted",
                               )}
-                              href={`/my_courses/${course.slug}/${level.slug}/Quiz/${item.slug}`}
+                              href={`/student/my_courses/${course.slug}/${level.slug}/Quiz/${item.slug}`}
                               onClick={() => {
                                 navStore.closeNav();
                               }}
@@ -101,7 +101,7 @@ export default function LearningDrawer({ level, course, user, siteIdentity }: {
                                 "flex items-center justify-between gap-2 whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-primary hover:text-primary-foreground",
                                 (zoomSession?.sessionStatus && ["Starting", "Scheduled"].includes(zoomSession.sessionStatus)) && "pointer-events-none text-muted",
                               )}
-                              href={`/my_courses/${course.slug}/${level.slug}/session/${item.slug}`}
+                              href={`/student/my_courses/${course.slug}/${level.slug}/session/${item.slug}`}
                               onClick={() => {
                                 navStore.closeNav();
                               }}
@@ -116,7 +116,7 @@ export default function LearningDrawer({ level, course, user, siteIdentity }: {
                                 "flex items-center justify-between gap-2 whitespace-nowrap w-full rounded-lg bg-transparent p-2 font-bold hover:bg-primary hover:text-primary-foreground",
                                 zoomSession?.sessionStatus !== "Completed" && "pointer-events-none text-muted",
                               )}
-                              href={`/my_courses/${course.slug}/${level.slug}/Assignment/${item.slug}`}
+                              href={`/student/my_courses/${course.slug}/${level.slug}/Assignment/${item.slug}`}
                               onClick={() => {
                                 navStore.closeNav();
                               }}
@@ -147,7 +147,7 @@ export default function LearningDrawer({ level, course, user, siteIdentity }: {
                           onClick={() => {
                             navStore.closeNav();
                           }}
-                          href={`/my_courses/${course.slug}/${level.slug}/final_test`}
+                          href={`/student/my_courses/${course.slug}/${level.slug}/final_test`}
                         >
                           <Typography>
                             Final Test
@@ -161,7 +161,7 @@ export default function LearningDrawer({ level, course, user, siteIdentity }: {
                               !user.certificates.find(cert => cert.courseLevel?.slug === level?.slug)?.id && "pointer-events-none text-muted",
                             )
                           }
-                          href={`/my_courses/${course.slug}/${level.slug}/certificate`}
+                          href={`/student/my_courses/${course.slug}/${level.slug}/certificate`}
                         >
                           <Typography>
                             Certificate

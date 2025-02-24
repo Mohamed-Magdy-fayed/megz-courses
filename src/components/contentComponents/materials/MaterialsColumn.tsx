@@ -61,7 +61,7 @@ export const columns: ColumnDef<MaterialsRow>[] = [
             );
         },
         cell: ({ row }) => (
-            <Link className="block w-fit" href={`/content/materials/${row.original.materialItemSlug}?path=uploads/content/courses/${row.original.courseSlug}/${row.original.levelSlug}/${row.original.materialItemSlug}`}>
+            <Link className="block w-fit" href={`/admin/system_management/content/materials/${row.original.materialItemSlug}?path=uploads/content/courses/${row.original.courseSlug}/${row.original.levelSlug}/${row.original.materialItemSlug}`}>
                 <Typography
                     className="underline decoration-slate-300 hover:text-primary hover:decoration-primary"
                 >

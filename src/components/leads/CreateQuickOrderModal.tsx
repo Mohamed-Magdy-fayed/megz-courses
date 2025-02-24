@@ -146,7 +146,7 @@ const CreateQuickOrderModal = ({ isOpen, setIsOpen, email, name, phone, defaultC
                                         <CopyPlus className="w-4 h-4" />
                                     </Button>
                                 </WrapWithTooltip>
-                                <Link href={`/leads/${userDetails.leadCode}`}>
+                                <Link href={`/admin/sales_management/leads/${userDetails.leadCode}`}>
                                     <Button customeColor={"success"}>
                                         <Typography>Go to lead</Typography>
                                         <Link2 className="w-4 h-4" />

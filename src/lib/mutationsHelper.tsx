@@ -36,12 +36,12 @@ export function createMutationOptions<TSuccessData, TSuccessVars>(
             title: loadingMessage ?? "Loading...",
             description: <Spinner className="w-4 h-4" />,
             variant: "info",
-            duration: 30000,
+            duration: 60000,
         }) : setLoadingToast(toast({
             title: loadingMessage ?? "Loading...",
             description: <Spinner className="w-4 h-4" />,
             variant: "info",
-            duration: 30000,
+            duration: 60000,
         })),
         onSuccess: (data: TSuccessData, variables: TSuccessVars) => trpcUtils.invalidate().then(() => {
             loadingToast?.update({

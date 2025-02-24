@@ -40,7 +40,7 @@ export const columns: ColumnDef<PlacementTestSubmissionsRow>[] = [
     {
         accessorKey: "studentName",
         cell: ({ row }) => (
-            <Link className="in-table-link" href={`/account/${row.original.student.id}`}>
+            <Link className="in-table-link" href={`/admin/users_management/account/${row.original.student.id}`}>
                 {row.original.student.name}
             </Link>
         ),

@@ -16,8 +16,6 @@ import { useRouter } from 'next/router'
 import { useToast } from '../ui/use-toast'
 import LoginModal from '../modals/LoginModal'
 import MobileNumberInput from '@/components/ui/phone-number-input'
-import { env } from '@/env.mjs'
-import { subscriptionTiers } from '@/lib/system'
 
 interface EnrollmentModalProps {
     setOpen: Dispatch<SetStateAction<boolean>>

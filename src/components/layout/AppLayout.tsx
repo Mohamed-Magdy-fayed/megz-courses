@@ -9,9 +9,13 @@ import Spinner from "../Spinner";
 import UnauthorizedAccess from "./UnauthorizedAccess";
 import { api } from "@/lib/api";
 import { hasPermission } from "@/server/permissions";
+import { useRouter } from "next/router";
+
+const allowedByDefault = ["/redirects"]
 
 const AppLayout = ({ children }: { children: ReactNode }) => {
   const { Opened, openNav, closeNav } = useNavStore();
+  const { pathname } = useRouter();
 
   const { data: session, status } = useSession({ required: true })
   const { data, refetch } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: false })
@@ -25,6 +29,9 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
   )
 
   if (!hasPermission(session.user, "adminLayout", "view")) return <UnauthorizedAccess />
+  if (!hasPermission(session.user, "screens", "view", { url: pathname })
+    && (!allowedByDefault.some(url => pathname.startsWith(url))
+      && pathname !== "/admin")) return <UnauthorizedAccess />
 
   return (
     <div className="flex">

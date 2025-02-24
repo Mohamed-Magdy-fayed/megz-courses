@@ -17,7 +17,7 @@ const LandingLayout = ({ children }: { children: ReactNode }) => {
                     {children}
                 </div>
                 <LandingFooter siteIdentity={data?.siteIdentity} />
-                <ChatWithUs />
+                {/* <ChatWithUs /> */}
             </div>
         </div>
     )

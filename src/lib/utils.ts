@@ -129,7 +129,7 @@ export const getLevelWaitingList = (course: CourseType, levelId: string): number
 }
 
 export const generateGroupNumnber = (startDate: Date, trainerUserName: string, courseName: string): string => {
-  return `${format(startDate, "E_do_MMM_hh:mm_aaa")}_${getInitials(trainerUserName)}_${courseName.replaceAll(" ", "_")}`
+  return `${format(startDate, "do_hh:mm")} ${trainerUserName} ${courseName}`
 }
 
 export const calculateAttendancePercentages = (group: ZoomGroup & { zoomSessions: ZoomSession[] }) => {

@@ -40,7 +40,7 @@ export const columns: ColumnDef<CourseRow>[] = [
       );
     },
     cell: ({ row }) => (
-      <Link href={`/my_courses/${row.original.slug}`} className="hover:text-primary">
+      <Link href={`/student/my_courses/${row.original.slug}`} className="hover:text-primary">
         <Typography>
           {row.original.name}
         </Typography>
@@ -106,7 +106,7 @@ export const columns: ColumnDef<CourseRow>[] = [
       return (
         <div className="flex flex-col gap-2 items-center">
           <Typography>{row.original.oralTestTime}</Typography>
-          <Link href={`/placement_test/${row.original.slug}`}>
+          <Link href={`/student/placement_test/${row.original.slug}`}>
             <Button customeColor={"primary"}>
               Start
             </Button>
@@ -120,7 +120,7 @@ export const columns: ColumnDef<CourseRow>[] = [
     header: "Written Test",
     cell: ({ row }) => {
       if (!row.original.isSubmitted) return (
-        <Link href={`/placement_test/${row.original.slug}`}>
+        <Link href={`/student/placement_test/${row.original.slug}`}>
           <Button customeColor={"primary"}>
             Start
           </Button>

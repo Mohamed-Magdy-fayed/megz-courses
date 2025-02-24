@@ -39,7 +39,7 @@ const MyCoursesClient = () => {
             id,
             slug,
             name,
-            placementTestLink: `/placement_test/${slug}`,
+            placementTestLink: `/student/placement_test/${slug}`,
             isSubmitted,
             score: isSubmitted ? `Score: ${formatPercentage((studentPoints || 0) / (totalPoints || 0) * 100)}` : "Not Submitted",
             isOralTestScheduled,

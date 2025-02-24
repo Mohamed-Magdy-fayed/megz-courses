@@ -68,7 +68,7 @@ export const columns: ColumnDef<FinalTestRow>[] = [
     {
         accessorKey: "systemForm",
         cell: ({ row }) => (
-            <Link href={`/my_courses/${row.original.courseSlug}/${row.original.levelSlug}/final_test`}>
+            <Link href={`/student/my_courses/${row.original.courseSlug}/${row.original.levelSlug}/final_test`}>
                 {row.original.systemForm.googleFormUrl ? "Google Form" : "System Form"}
             </Link>
         )

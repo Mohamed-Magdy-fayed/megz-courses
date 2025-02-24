@@ -5,16 +5,31 @@ import { meetingsColumns, SessionColumn } from '@/components/zoomAccount/zoomAcc
 import { api } from '@/lib/api';
 import { useState } from 'react';
 
-export default function ZoomAccountMeetings({ meetings, isLoading }: {
-    meetings: SessionColumn[];
-    isLoading: boolean;
+export default function ZoomAccountMeetings({ clientId, isUpcoming }: {
+    clientId: string;
+    isUpcoming?: boolean;
 }) {
     const { toast } = useToast();
+    const { data: accountMeetings, isLoading } = api.zoomAccounts.getAccountMeetings.useQuery({ id: clientId, isUpcoming })
 
     const [data, setData] = useState<SessionColumn[]>([])
     const [loadingToast, setLoadingToast] = useState<toastType>()
 
     const trpcUtils = api.useUtils();
+    const meetings = accountMeetings?.zoomSessions.map(session => ({
+        id: session.id,
+        sessionTitle: session.materialItem?.title || `${session.placementTest?.course.name} Placement test`,
+        sessionDate: session.sessionDate,
+        meetingNumber: session.meetingNumber,
+        meetingPassword: session.meetingPassword,
+        sessionStatus: session.sessionStatus,
+        trainerId: session.zoomGroup?.teacher?.user.id || session.placementTest?.tester.user.id || "No Trainer",
+        trainerName: session.zoomGroup?.teacher?.user.name || session.placementTest?.tester.user.name || "No Trainer",
+        groupId: session.zoomGroup?.id || session.placementTest?.id,
+        groupName: session.zoomGroup?.groupNumber || `Placement Test`,
+        isTest: !!session.placementTest?.student.name,
+        isZoom: !!session.zoomClient?.isZoom,
+    })) || []
 
     const deleteMutation = api.zoomSessions.deleteZoomSessions.useMutation({
         onMutate: () => setLoadingToast(toast({
@@ -78,7 +93,17 @@ export default function ZoomAccountMeetings({ meetings, isLoading }: {
                             value: val,
                         }))
                 },
+                {
+                    filterName: "Session Status", key: "sessionStatus", values: meetings
+                        .map(m => m.sessionStatus)
+                        .filter((value, index, self) => self.indexOf(value) === index)
+                        .map(val => ({
+                            label: val,
+                            value: val,
+                        }))
+                },
             ]}
+            exportConfig={{ fileName: "Account Meetings", sheetName: "Meetings" }}
         />
     )
 }

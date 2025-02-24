@@ -1,19 +1,21 @@
 import Spinner from '@/components/Spinner';
-import { useToast } from '@/components/ui/use-toast';
 import { api } from '@/lib/api';
 import { preMeetingLinkConstructor } from '@/lib/meetingsHelpers';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 
 function OnMeetingPage({ meetingNo, sessionId, sessionTitle }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     const router = useRouter()
 
-    const { data: meetingData } = api.zoomMeetings.getOnMeetingData.useQuery({ meetingNo, sessionId })
+    const { data: meetingData, error } = api.zoomMeetings.getOnMeetingData.useQuery({ meetingNo, sessionId }, {
+        retry(failureCount) {
+            return failureCount > 2
+        },
+    })
 
     useEffect(() => {
-        if (meetingData) {
+        if (meetingData && meetingData.meetingNumber.length) {
             const sessionUrl = preMeetingLinkConstructor({
                 isZoom: true,
                 sessionTitle,
@@ -24,6 +26,12 @@ function OnMeetingPage({ meetingNo, sessionId, sessionTitle }: InferGetServerSid
             router.push(`/${sessionUrl}`)
         }
     }, [meetingData])
+
+    if (error) return (
+        <div className="grid place-content-center min-h-screen p-12">
+            {error.message}
+        </div>
+    )
 
     return (
         <div className="grid place-content-center min-h-screen p-12">

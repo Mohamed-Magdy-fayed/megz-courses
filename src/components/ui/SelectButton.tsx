@@ -1,6 +1,8 @@
 import { ButtonHTMLAttributes, FC, ReactNode, useState } from 'react'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from './select'
 import Spinner from '../Spinner'
+import { Button } from '@/components/ui/button'
+import { XIcon } from 'lucide-react'
 
 type DataType = {
     label: string
@@ -28,7 +30,10 @@ const SelectButton: FC<SelectButtonProps> = ({ placeholder, listTitle, data, val
             </SelectTrigger>
             <SelectContent>
                 <SelectGroup>
-                    <SelectLabel>{listTitle}</SelectLabel>
+                    <SelectGroup className='flex items-center justify-between gap-4'>
+                        <SelectLabel>{listTitle}</SelectLabel>
+                        <Button onClick={() => setValue("")} variant={'x'}><XIcon /></Button>
+                    </SelectGroup>
                     <SelectSeparator />
                     {!data ? (
                         <Spinner size={420} />

@@ -6,7 +6,6 @@ import { Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import AuthForm from "@/components/authComponents/AuthForm";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ImageIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import ResetPasswordForm from "@/components/authComponents/ResetPasswordForm";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -28,7 +27,9 @@ const AuthenticationPage = () => {
 
   useEffect(() => {
     setLoading(true)
-    if (session.status === "authenticated") !hasPermission(session.data.user, "adminLayout", "view") ? router.push("/") : router.push("/dashboard");
+    if (session.status === "authenticated") !hasPermission(session.data.user, "adminLayout", "view")
+      ? router.push("/")
+      : router.push(hasPermission(session.data.user, "screens", "view", { url: "dashboard" }) ? "/admin/dashboard" : "/admin");
     if (session.status !== "loading" && session.status !== "authenticated") setLoading(false)
   }, [session.status]);
 

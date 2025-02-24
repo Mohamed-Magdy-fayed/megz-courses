@@ -140,18 +140,6 @@ export const trainersRouter = createTRPCRouter({
 
       return { sessions };
     }),
-  getAllSessions: protectedProcedure
-    .query(async ({ ctx }) => {
-      const sessions = await ctx.prisma.zoomSession.findMany({
-        orderBy: { sessionDate: "desc" },
-        include: {
-          zoomGroup: { include: { teacher: { include: { user: true } } } },
-          materialItem: true
-        }
-      })
-
-      return { sessions };
-    }),
   getTrainerPlacementTest: protectedProcedure
     .query(async ({ ctx }) => {
       const tests = await ctx.prisma.placementTest.findMany({

@@ -55,7 +55,7 @@ const TrainersClient = () => {
   const formattedData: TrainerColumn[] = data?.trainers.map((trainer) => ({
     id: trainer.id,
     userId: trainer.userId,
-    userRoles: trainer.user.userRoles,
+    userRoles: trainer.user.userRoles.some(r => r === "Teacher") ? "Teacher" : "Tester",
     name: trainer.user.name || "no name",
     email: trainer.user.email || "no email",
     image: trainer.user.image || "no image",

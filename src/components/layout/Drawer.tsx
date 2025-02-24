@@ -9,96 +9,140 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { LogoForeground } from "@/components/layout/Logo";
 import { SiteIdentity } from "@prisma/client";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { hasPermission } from "@/server/permissions";
+import { useSession } from "next-auth/react";
 
-export const mainNavLinks = [
+export type NavLink = { label: string; url?: string; }
+
+export const mainNavLinks: (NavLink & { children?: NavLink[] })[] = [
   {
     label: "Dashboard",
-    url: "dashboard",
+    url: "admin/dashboard",
   },
   {
-    label: "Notes",
-    url: "notes",
+    label: "Operations Management",
+    children: [
+      {
+        label: "Notes",
+        url: "admin/operations_management/notes",
+      },
+      {
+        label: "Groups",
+        url: "admin/operations_management/groups",
+      },
+      {
+        label: "Waiting List",
+        url: "admin/operations_management/waiting_list",
+      },
+      {
+        label: "Retintions List",
+        url: "admin/operations_management/retintions",
+      },
+      {
+        label: "Placement Tests",
+        url: "admin/operations_management/placement_tests",
+      },
+      {
+        label: "Sessions",
+        url: "admin/operations_management/sessions",
+      },
+    ],
   },
   {
-    label: "Groups",
-    url: "groups",
+    label: "Sales Management",
+    children: [
+      {
+        label: "Orders",
+        url: "admin/sales_management/orders",
+      },
+      {
+        label: "Leads",
+        url: "admin/sales_management/leads",
+      },
+    ],
   },
   {
-    label: "Waiting List",
-    url: "waiting_list",
+    label: "Users Management",
+    children: [
+      {
+        label: "Students",
+        url: "admin/users_management/students",
+      },
+      {
+        label: "Operational Team",
+        url: "admin/users_management/ops_team",
+      },
+      {
+        label: "Educational Team",
+        url: "admin/users_management/edu_team",
+      },
+      // {
+      //   label: "Chat Team",
+      //   url: "admin/users_management/chat_agents",
+      // },
+      {
+        label: "Account",
+        url: "admin/users_management/account",
+      },
+    ],
   },
   {
-    label: "Retintions List",
-    url: "retintions",
+    label: "System Management",
+    children: [
+      {
+        label: "Configurations",
+        url: "admin/system_management/config",
+      },
+      {
+        label: "Content Management",
+        url: "admin/system_management/content",
+      },
+    ],
   },
   {
-    label: "Orders",
-    url: "orders",
-  },
-  {
-    label: "Leads",
-    url: "leads",
-  },
-  {
-    label: "Students",
-    url: "students",
-  },
-  {
-    label: "Configurations",
-    url: "config",
-  },
-  {
-    label: "Content Management",
-    url: "content",
-  },
-  {
-    label: "Operational Team",
-    url: "ops_team",
-  },
-  {
-    label: "Educational Team",
-    url: "edu_team",
-  },
-  // {
-  //   label: "Chat Team",
-  //   url: "chat_agents",
-  // },
-  {
-    label: "Placement Tests",
-    url: "placement_tests",
-  },
-  {
-    label: "Account",
-    url: "account",
-  },
-  {
-    label: "Privacy Policy",
-    url: "privacy",
-  },
-  {
-    label: "Terms of Use",
-    url: "terms",
-  },
-  {
-    label: "Documentation",
-    url: "documentation",
-  },
-  {
-    label: "Support",
-    url: "support",
-  },
-  {
-    label: "Tickets",
-    url: "tickets",
+    label: "General",
+    children: [
+
+      {
+        label: "Privacy Policy",
+        url: "privacy",
+      },
+      {
+        label: "Terms of Use",
+        url: "terms",
+      },
+      {
+        label: "Documentation",
+        url: "documentation",
+      },
+      {
+        label: "Support",
+        url: "support",
+      },
+      {
+        label: "Tickets",
+        url: "admin/tickets",
+      },
+    ],
   },
 ];
 
 export default function MegzDrawer({ siteIdentity }: { siteIdentity?: SiteIdentity }) {
   const pathname = usePathname();
   const navStore = useNavStore();
+  const session = useSession();
 
+  const [openLinksGroup, setOpenLinksGroup] = useState("");
   const [isMounted, setIsMounted] = useState(false);
   const activeLinkRef = useRef<HTMLAnchorElement>(null);
+
+  const allowedNavLinks = mainNavLinks
+    .filter(link => session.data?.user && hasPermission(session.data.user, "screens", "view", link))
+    .map(link => ({
+      ...link,
+      children: link.children?.filter(ch => session.data?.user && hasPermission(session.data.user, "screens", "view", ch))
+    }))
 
   useEffect(() => {
     if (activeLinkRef.current) {
@@ -108,6 +152,7 @@ export default function MegzDrawer({ siteIdentity }: { siteIdentity?: SiteIdenti
 
   useEffect(() => {
     if (!isMounted) setIsMounted(true);
+    setOpenLinksGroup(allowedNavLinks.find(link => pathname === `/${link.url}` || link.children?.some(ch => `/${ch.url}` === pathname))?.label || "")
   }, []);
 
   if (!isMounted) return null;
@@ -131,8 +176,79 @@ export default function MegzDrawer({ siteIdentity }: { siteIdentity?: SiteIdenti
         <div>Version: {getVersion()}</div>
       </div>
       <Separator />
-      <ScrollArea className="w-min h-full pr-4">
-        <div className="flex flex-col items-center gap-2">
+      <ScrollArea className="w-full h-full pr-2">
+        <Accordion type="single" collapsible value={openLinksGroup} onValueChange={(val) => setOpenLinksGroup(val)}>
+          <div className="flex flex-col items-center gap-2 ">
+            {allowedNavLinks.map((link) => {
+              const isActive = pathname === link.url || link.children?.some(l => `/${l.url}` === pathname);
+              const linkProps = {
+                key: link.label,
+                className: cn(
+                  "whitespace-nowrap w-full rounded-lg bg-transparent p-2 py-1 font-bold hover:bg-muted-foreground/80 hover:text-muted",
+                  isActive && "bg-muted-foreground text-muted"
+                ),
+                ...(isActive ? { ref: activeLinkRef } : {}),
+              };
+
+              if (link.url) {
+                return (
+                  <Link
+                    onClick={() => {
+                      navStore.closeNav();
+                    }}
+                    href={`/${link.url}`}
+                    {...linkProps}
+                  >
+                    {link.label}
+                  </Link>
+                )
+              }
+
+              if (link.children) {
+                return (
+                  <AccordionItem value={link.label} key={link.label} className="border-b-0 w-full">
+                    <AccordionTrigger
+                      className={cn(
+                        "whitespace-nowrap [&[data-state=open]]:bg-muted-foreground/80 [&[data-state=open]]:text-muted w-full rounded-lg gap-2 bg-transparent p-2 py-1 font-bold hover:bg-muted-foreground/80 hover:text-muted hover:no-underline",
+                        isActive && "bg-muted-foreground/80 text-muted"
+                      )}
+                    >
+                      {link.label}
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="flex flex-col items-center gap-2 pt-2">
+                        {link.children.map(child => {
+                          const isChildActive = pathname === `/${child.url}`;
+                          const childLinkProps = {
+                            key: child.url,
+                            className: cn(
+                              "whitespace-nowrap w-full rounded-lg bg-transparent p-2 py-1 font-bold hover:bg-muted-foreground/80 hover:text-muted",
+                              isChildActive && "bg-muted-foreground text-muted"
+                            ),
+                            ...(isChildActive ? { ref: activeLinkRef } : {}),
+                          };
+
+                          return (
+                            <Link
+                              onClick={() => {
+                                navStore.closeNav();
+                              }}
+                              href={`/${child.url}`}
+                              {...childLinkProps}
+                            >
+                              {child.label}
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )
+              }
+            })}
+          </div>
+        </Accordion>
+        {/* <div className="flex flex-col items-center gap-2">
           {mainNavLinks.map((link) => {
             const isActive = pathname && pathname.split("/")[1] === link.url;
             const linkProps = {
@@ -156,7 +272,7 @@ export default function MegzDrawer({ siteIdentity }: { siteIdentity?: SiteIdenti
               </Link>
             )
           })}
-        </div>
+        </div> */}
       </ScrollArea>
       <Separator />
       <div className="py-4">

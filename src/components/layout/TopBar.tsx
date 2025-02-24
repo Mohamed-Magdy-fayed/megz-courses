@@ -73,8 +73,7 @@ export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdenti
     >
       <div className="flex justify-between p-2">
         <div className="flex items-center gap-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
+          <WrapWithTooltip text="Menu">
               <Button
                 variant="icon"
                 customeColor={"foregroundIcon"}
@@ -85,8 +84,7 @@ export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdenti
               >
                 <MenuIcon className="w-4 h-4" />
               </Button>
-            </TooltipTrigger>
-          </Tooltip>
+          </WrapWithTooltip>
           <div className="col-span-6 flex items-center justify-center">
             <Link href={'/'} className="flex items-center gap-2 justify-center w-fit">
               {siteIdentity?.logoForeground ? (
@@ -104,31 +102,30 @@ export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdenti
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {session.data?.user.userRoles.includes("SalesAgent")
-            && session.data.user.userRoles.includes("Admin") ? (
+          {session.data?.user.userRoles.includes("Admin") ? (
             <WrapWithTooltip
               text="Leads"
               children={(
-                <Link href={`/leads`}>
+                <Link href={`/admin/sales_management/leads`}>
                   <Button variant="icon" customeColor={"mutedIcon"} >
                     <ListChecks className="w-4 h-4" />
                   </Button>
                 </Link>
               )}
             />
-          ) : (
+          ) : session.data?.user.userRoles.includes("SalesAgent") ? (
             <WrapWithTooltip
               text="My leads"
               children={(
-                <Link href={`/leads/my_leads`}>
+                <Link href={`/admin/sales_management/leads/my_leads`}>
                   <Button variant="icon" customeColor={"mutedIcon"} >
                     <ListChecks className="w-4 h-4" />
                   </Button>
                 </Link>
               )}
             />
-          )}
-          {session.data?.user.userRoles.includes("ChatAgent")
+          ) : null}
+          {/* {session.data?.user.userRoles.includes("ChatAgent")
             && session.data.user.userRoles.includes("Admin") ? (
             <WrapWithTooltip text="Chats">
               <Link href={`/chats`}>
@@ -145,11 +142,11 @@ export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdenti
                 </Button>
               </Link>
             </WrapWithTooltip>
-          )}
+          )} */}
           {session.data?.user.userRoles.includes("Admin")
             ? (
               <WrapWithTooltip text="Sessions">
-                <Link href={`/edu_team/sessions`}>
+                <Link href={`/admin/operations_management/sessions`}>
                   <Button variant="icon" customeColor={"mutedIcon"} >
                     <ScreenShareIcon className="w-4 h-4" />
                   </Button>
@@ -158,7 +155,7 @@ export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdenti
             )
             : session.data?.user.userRoles.includes("Teacher") ? (
               <WrapWithTooltip text="My Sessions">
-                <Link href={`/edu_team/my_sessions`}>
+                <Link href={`/admin/users_management/edu_team/my_sessions`}>
                   <Button variant="icon" customeColor={"mutedIcon"} >
                     <ScreenShareIcon className="w-4 h-4" />
                   </Button>
@@ -166,7 +163,7 @@ export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdenti
               </WrapWithTooltip>
             ) : session.data?.user.userRoles.includes("Tester") && (
               <WrapWithTooltip text="My Tasks">
-                <Link href={`/edu_team/my_tasks`}>
+                <Link href={`/admin/users_management/edu_team/my_tasks`}>
                   <Button variant="icon" customeColor={"mutedIcon"} >
                     <ListChecks className="w-4 h-4" />
                   </Button>
@@ -194,7 +191,7 @@ export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdenti
                         onClick={(e) => {
                           e.preventDefault()
                           note.status !== "Closed" && changeStatus(note.id, "Closed")
-                          router.push(`/notes/${note.id}`)
+                          router.push(`/admin/operations_management/notes/${note.id}`)
                         }}
                         className={cn("flex items-center justify-between w-full gap-4 hover:!bg-muted/10 hover:!text-foreground focus-visible:bg-muted/10 focus-visible:text-foreground", note.status !== "Closed" && "bg-muted/10 text-foreground hover:!bg-muted/20")}
                       >
@@ -226,41 +223,31 @@ export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdenti
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link href={`/account`}>
-                <Button variant="icon" customeColor={"primaryIcon"} >
-                  <UserCircle className="w-4 h-4"></UserCircle>
-                </Button>
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent>
-              My Account
-            </TooltipContent>
-          </Tooltip>
+          <WrapWithTooltip text="My Account">
+            <Link href={`/admin/users_management/account`}>
+              <Button variant="icon" customeColor={"primaryIcon"} >
+                <UserCircle className="w-4 h-4"></UserCircle>
+              </Button>
+            </Link>
+          </WrapWithTooltip>
           <DropdownMenu
             open={open}
             onOpenChange={(val) => setOpen(val)}
           >
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="icon" aria-label="menuButton" onClick={() => setOpen(true)}>
-                    <Avatar
-                      className="h-8 w-8 cursor-pointer outline outline-primary/30 hover:outline-primary/70"
-                    >
-                      <AvatarImage
-                        alt={session.data?.user.name || "NA"}
-                        src={session.data?.user.image || ""} />
-                      <AvatarFallback>{getInitials(session.data?.user.name || "NA")}</AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-              </TooltipTrigger>
-              <TooltipContent>
-                Profile Menu
-              </TooltipContent>
-            </Tooltip>
+            <WrapWithTooltip text="Profile Menu">
+              <DropdownMenuTrigger asChild>
+                <Button variant="icon" aria-label="menuButton" onClick={() => setOpen(true)}>
+                  <Avatar
+                    className="h-8 w-8 cursor-pointer outline outline-primary/30 hover:outline-primary/70"
+                  >
+                    <AvatarImage
+                      alt={session.data?.user.name || "NA"}
+                      src={session.data?.user.image || ""} />
+                    <AvatarFallback>{getInitials(session.data?.user.name || "NA")}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+            </WrapWithTooltip>
             <DropdownMenuContent className="p-2">
               <div className="flex flex-col p-2">
                 <Typography
@@ -272,10 +259,10 @@ export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdenti
                   {session.data?.user.name}
                 </Typography>
               </div>
-              <Separator></Separator>
+              {/* <Separator></Separator>
               <div className="p-2">
                 <DarkModeToggle />
-              </div>
+              </div> */}
               <Separator></Separator>
               <Button disabled={loading} onClick={handleLogout} className="m-2 min-w-[10rem] relative">
                 {loading && <Spinner className="w-6 h-6 absolute" />}

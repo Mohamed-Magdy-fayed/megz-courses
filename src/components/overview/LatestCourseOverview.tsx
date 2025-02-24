@@ -39,7 +39,7 @@ export const LatestCourseOverview = () => {
 
           return (
             <div key={course.id}>
-              <div className="flex items-center justify-between px-4 py-2">
+              <div className="flex items-center justify-between px-4 py-1">
                 <div className="flex flex-col">
                   <Typography variant={"secondary"} className="!text-sm">
                     {course.name}
@@ -55,13 +55,13 @@ export const LatestCourseOverview = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <Link href={`/courses/${course.slug}`}>
+                    <Link href={`/student/courses/${course.slug}`}>
                       <DropdownMenuItem>
                         <Eye />
                         <Typography>View</Typography>
                       </DropdownMenuItem>
                     </Link>
-                    <Link href={`/content/courses/${course.slug}`}>
+                    <Link href={`/admin/system_management/content/courses/${course.slug}`}>
                       <DropdownMenuItem>
                         <Edit />
                         <Typography>Edit</Typography>
@@ -78,7 +78,7 @@ export const LatestCourseOverview = () => {
       </div>
       <Separator className="mt-auto" />
       <CardFooter className="p-4 justify-end">
-        <Link href="/content">
+        <Link href="/admin/system_management/content">
           <Button>
             <ArrowRight />
             <Typography variant={"buttonText"}>View all</Typography>

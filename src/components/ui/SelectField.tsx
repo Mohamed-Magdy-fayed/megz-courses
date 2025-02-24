@@ -44,15 +44,17 @@ const SelectField: FC<SelectFieldProps<any>> = ({ placeholder, listTitle, data, 
                     className={cn('flex flex-wrap w-full items-center h-fit gap-2 justify-between', className)}
                     {...props}
                 >
-                    {values.length === 0 ? (
-                        <Typography>
-                            {placeholder}
-                        </Typography>
-                    ) : data.filter(entry => values.includes(entry.value)).map(item => (
-                        <Typography key={item.label} className='bg-primary/10 whitespace-nowrap truncate rounded-full px-2 text-sm'>
-                            {item.label}
-                        </Typography>
-                    ))}
+                    <div className='flex flex-wrap items-center h-fit gap-2'>
+                        {values.length === 0 ? (
+                            <Typography>
+                                {placeholder}
+                            </Typography>
+                        ) : data.filter(entry => values.includes(entry.value)).map(item => (
+                            <Typography key={item.label} className='bg-primary/10 whitespace-nowrap truncate rounded-full px-2 text-sm'>
+                                {item.label}
+                            </Typography>
+                        ))}
+                    </div>
                     <ChevronDownIcon className="h-4 w-4 opacity-50 ml-auto" />
                 </Button>
             </DropdownMenuTrigger>

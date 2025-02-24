@@ -121,7 +121,7 @@ const OrderReceipt: FC<OrderReceiptProps> = ({ order, adminView }) => {
                                 {order.course.name}
                                 <Tooltip>
                                     <TooltipTrigger>
-                                        <Link href={`/my_courses/${order.course.slug}`} target='_blank'>
+                                        <Link href={`/student/my_courses/${order.course.slug}`} target='_blank'>
                                             <ExternalLink className='w-4 h-4 text-info' />
                                         </Link>
                                     </TooltipTrigger>

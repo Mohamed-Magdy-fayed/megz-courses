@@ -6,7 +6,7 @@ import {
 import { TRPCError } from "@trpc/server";
 import { validGroupStatuses, validSessionStatuses } from "@/lib/enumsTypes";
 import { generateGroupNumnber } from "@/lib/utils";
-import { createZoomMeeting, generateGroupMeetingConfig, getAvailableZoomClient } from "@/lib/meetingsHelpers";
+import { createZoomMeeting, generateGroupMeetingConfig, getAvailableZoomClient, refreshZoomAccountToken } from "@/lib/meetingsHelpers";
 import { hasPermission } from "@/server/permissions";
 import { createMeeting, generateToken, getMeetingDetails, getUserRooms } from "@/lib/onMeetingApi";
 
@@ -300,12 +300,10 @@ export const zoomGroupsRouter = createTRPCRouter({
                     }
                 })
 
-                const { meetingNumber, password } = await getMeetingDetails({ token, meetingNo: meeting_no })
-                if (!meetingNumber || !password) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "An error occured while getting the meeting number and password, please check the server logs!" })
-
-                meetingData = { meetingNumber, meetingPassword: password }
+                meetingData = { meetingNumber: meeting_no, meetingPassword: "" }
             } else {
-                const { meetingNumber, meetingPassword } = await createZoomMeeting(meetingConfig, zoomClient?.accessToken)
+                const refreshedClient = await refreshZoomAccountToken(zoomClient, ctx.prisma)
+                const { meetingNumber, meetingPassword } = await createZoomMeeting(meetingConfig, refreshedClient.accessToken)
                 meetingData = { meetingNumber, meetingPassword }
             }
 
@@ -375,7 +373,6 @@ export const zoomGroupsRouter = createTRPCRouter({
                     }
                 })
             )))
-
 
             return {
                 zoomGroup,

@@ -69,7 +69,7 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, systemForm, levelSlug }) =>
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem asChild>
-                        <Link href={`/my_courses/${courseSlug}/${levelSlug}/Assignment/${systemForm.materialItem?.slug}`}>
+                        <Link href={`/student/my_courses/${courseSlug}/${levelSlug}/Assignment/${systemForm.materialItem?.slug}`}>
                             <EyeIcon className="w-4 h-4 mr-2" />
                             View
                         </Link>

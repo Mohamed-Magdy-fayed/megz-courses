@@ -51,7 +51,7 @@ export const columns: ColumnDef<CourseRow>[] = [
         accessorKey: "name",
         header: "Info",
         cell: ({ row }) => (
-            <Link href={`/content/courses/${row.original.slug}`} className="in-table-link">
+            <Link href={`/admin/system_management/content/courses/${row.original.slug}`} className="in-table-link">
                 {row.original.name}
             </Link>
         ),

@@ -12,7 +12,7 @@ const UserRolesField = ({ form, loading }: {
     form: UseFormReturn<UserDataFormValues>
     loading: boolean
 }) => {
-    const isOwnAccount = useRouter().pathname === "/account"
+    const isOwnAccount = useRouter().pathname === "/admin/users_management/account"
 
     if (isOwnAccount) return null
 

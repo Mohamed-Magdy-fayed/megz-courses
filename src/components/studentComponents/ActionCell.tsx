@@ -53,7 +53,7 @@ const CellAction: React.FC<CellActionProps> = ({ id, coursesData, userData }) =>
                         Create Order
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                        <Link href={`/account/${id}`}>
+                        <Link href={`/admin/users_management/account/${id}`}>
                             <EyeIcon className="w-4 h-4 mr-2" />
                             View
                         </Link>

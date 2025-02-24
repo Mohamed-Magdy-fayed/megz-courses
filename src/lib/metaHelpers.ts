@@ -1,4 +1,3 @@
-import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
 import axios, { AxiosResponse } from "axios";
 
 export type GetConversationsResponse = {

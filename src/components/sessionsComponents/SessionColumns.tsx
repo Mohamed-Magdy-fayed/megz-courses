@@ -93,7 +93,7 @@ export const columns: ColumnDef<SessionColumn>[] = [
     cell: ({ row }) => (
       <Tooltip>
         <TooltipTrigger>
-          <Link href={`/groups/${row.original.groupId}`}>
+          <Link href={`/admin/operations_management/groups/${row.original.groupId}`}>
             <Button variant={"outline"} customeColor={"infoIcon"}>
               <Link2 className="w-4 h-4" />
             </Button>

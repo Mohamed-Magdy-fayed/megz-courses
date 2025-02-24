@@ -55,7 +55,7 @@ export const columns: ColumnDef<CourseRow>[] = [
     {
         accessorKey: "groupNumber",
         cell: ({ row }) => (
-            <Link className="in-table-link" href={`/groups/${row.original.id}`}>
+            <Link className="in-table-link" href={`/admin/operations_management/groups/${row.original.id}`}>
                 {row.original.groupNumber}
             </Link>
         )

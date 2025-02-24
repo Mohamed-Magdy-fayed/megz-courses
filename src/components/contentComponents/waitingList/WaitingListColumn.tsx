@@ -48,7 +48,7 @@ export const columns: ColumnDef<WaitingListRow>[] = [
     {
         accessorKey: "email",
         cell: ({ row }) => (
-            <Link className="in-table-link" href={`/account/${row.original.id}`}>
+            <Link className="in-table-link" href={`/admin/users_management/account/${row.original.id}`}>
                 {row.original.name}
             </Link>
         ),

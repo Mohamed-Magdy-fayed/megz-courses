@@ -6,7 +6,7 @@ import {
 import bcrypt from "bcrypt";
 import { TRPCError } from "@trpc/server";
 import { Prisma } from "@prisma/client";
-import { validDeviceTypes, validUserRoles } from "@/lib/enumsTypes";
+import { validDeviceTypes, validUserRoles, validUserScreens } from "@/lib/enumsTypes";
 import { env } from "@/env.mjs";
 import { hasPermission } from "@/server/permissions";
 
@@ -346,6 +346,7 @@ export const usersRouter = createTRPCRouter({
         email: z.string().email(),
         password: z.string().optional(),
         userRoles: z.array(z.enum(validUserRoles)).optional(),
+        userScreens: z.array(z.enum(validUserScreens)).optional(),
         phone: z.string().optional(),
         state: z.string().optional(),
         country: z.string().optional(),
@@ -357,7 +358,7 @@ export const usersRouter = createTRPCRouter({
     .mutation(
       async ({
         ctx,
-        input: { id, name, email, password, userRoles, phone, state, country, street, city, device },
+        input: { id, name, email, password, userScreens, userRoles, phone, state, country, street, city, device },
       }) => {
         if (!hasPermission(ctx.session.user, "users", "update", { id })) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
 
@@ -380,6 +381,7 @@ export const usersRouter = createTRPCRouter({
             },
             device,
             userRoles,
+            userScreens,
             teacher: userRoles?.includes("Teacher") ? {
               connectOrCreate: { where: { userId: user.id }, create: {} }
             } : undefined,

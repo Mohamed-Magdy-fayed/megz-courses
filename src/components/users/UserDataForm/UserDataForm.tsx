@@ -1,25 +1,25 @@
 import { api } from "@/lib/api";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { SpinnerButton } from "@/components/ui/button";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Separator } from "@/components/ui/separator";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Typography } from "../../ui/Typoghraphy";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
-import Spinner from "@/components/Spinner";
 import { useToast } from "@/components/ui/use-toast";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
-import { validUserRoles } from "@/lib/enumsTypes";
+import { validUserRoles, validUserScreens } from "@/lib/enumsTypes";
 import MobileNumberInput from "@/components/ui/phone-number-input";
 import { render } from "@react-email/components";
 import EmailConfirmation from "@/components/emails/EmailConfirmation";
 import { hasPermission } from "@/server/permissions";
 import SelectField from "@/components/ui/SelectField";
 import { upperFirst } from "lodash";
+import { SaveAllIcon } from "lucide-react";
 
 const userDataFormSchema = z.object({
     id: z.string().min(1),
@@ -33,6 +33,7 @@ const userDataFormSchema = z.object({
     city: z.string().optional(),
     country: z.string().optional(),
     userRoles: z.array(z.enum(validUserRoles)),
+    userScreens: z.array(z.enum(validUserScreens)),
 });
 
 export type UserDataFormValues = z.infer<typeof userDataFormSchema>;
@@ -46,11 +47,11 @@ interface UserDataFormProps {
 
 const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsOpen, initialData }) => {
     const pathname = useRouter().pathname
-    const isOwnAccount = pathname === "/account" || pathname === "/my_account"
+    const isOwnAccount = pathname === "/admin/users_management/account" || pathname === "/students/my_account"
     const session = useSession()
 
     const [loading, setLoading] = useState(false)
-    const { id, email, name, password, userRoles, city, country, image, phone, state, street } = initialData
+    const { id, email, name, password, userRoles, city, country, image, phone, state, street, userScreens } = initialData
 
     const defaultValues: z.infer<typeof userDataFormSchema> = {
         id,
@@ -64,6 +65,7 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
         city,
         country,
         userRoles,
+        userScreens,
     };
 
     const form = useForm<UserDataFormValues>({
@@ -76,35 +78,38 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
     const sendEmailMutation = api.emails.sendZohoEmail.useMutation()
     const editUser = api.users.editUser.useMutation();
 
-    const onSubmit = (data: UserDataFormValues) => {
-        setLoading(true);
-        editUser.mutate(
-            { ...data },
-            {
-                onSuccess: (data) => {
-                    session.update()
-                    if (data.emailProps) {
-                        const html = render(
-                            <EmailConfirmation
-                                {...data.emailProps}
-                            />, { pretty: true }
-                        )
+    const onSubmit = async (data: UserDataFormValues) => {
+        try {
+            setLoading(true);
+            const { emailProps, updatedUser } = await editUser.mutateAsync(data)
 
-                        sendEmailMutation.mutate({
-                            email: data.emailProps.userEmail,
-                            subject: `Confirm your new email ${data.emailProps.userEmail}`,
-                            html,
-                        })
-                    }
-                    toastSuccess(`User with the email: ${data.updatedUser.email} has been updated`)
-                },
-                onError: ({ message }) => toastError(message),
-                onSettled() {
-                    trpcUrils.invalidate()
-                        .then(() => setLoading(false));
-                },
+            if (isOwnAccount) {
+                await session.update({
+                    ...updatedUser,
+                    picture: updatedUser.image,
+                })
             }
-        )
+
+            if (emailProps) {
+                const html = render(
+                    <EmailConfirmation
+                        {...emailProps}
+                    />, { pretty: true }
+                )
+
+                await sendEmailMutation.mutateAsync({
+                    email: emailProps.userEmail,
+                    subject: `Confirm your new email ${emailProps.userEmail}`,
+                    html,
+                })
+            }
+            toastSuccess(`User with the email: ${updatedUser.email} has been updated`)
+
+            await trpcUrils.invalidate()
+            setLoading(false)
+        } catch (error: any) {
+            toastError(error.message)
+        }
     }
 
     return (
@@ -137,7 +142,6 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
                                                     disabled={loading}
                                                     placeholder="Jon Doe"
                                                     {...field}
-                                                    className="pl-8"
                                                 />
                                             </FormControl>
                                             <FormMessage />
@@ -182,7 +186,6 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
                                                     disabled={loading}
                                                     placeholder="Example@mail.com"
                                                     {...field}
-                                                    className="pl-8"
                                                 />
                                             </FormControl>
                                             <FormMessage />
@@ -202,7 +205,6 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
                                                         disabled={loading}
                                                         placeholder="Password"
                                                         {...field}
-                                                        className="pl-8"
                                                     />
                                                 </FormControl>
                                                 <FormMessage />
@@ -212,9 +214,9 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
                                 )}
                             </div>
                             {session.data?.user && hasPermission(session.data.user, "users", "update", initialData) && (
-                                <div className="col-span-12">
+                                <div className="col-span-12 space-y-4">
                                     <Separator />
-                                    <Typography className="my-2" variant={'secondary'}>User Roles</Typography>
+                                    <Typography className="my-2" variant={'secondary'}>User Access</Typography>
                                     <FormField
                                         control={form.control}
                                         name="userRoles"
@@ -229,6 +231,27 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
                                                     }))}
                                                     listTitle="User Roles"
                                                     placeholder="Select User Roles"
+                                                    setValues={(roles) => field.onChange(roles)}
+                                                    values={field.value}
+                                                />
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="userScreens"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <SelectField
+                                                    multiSelect
+                                                    data={validUserScreens.map(screen => ({
+                                                        Active: true,
+                                                        label: upperFirst(screen),
+                                                        value: screen,
+                                                    }))}
+                                                    listTitle="Screens"
+                                                    placeholder="Select User Screens"
                                                     setValues={(roles) => field.onChange(roles)}
                                                     values={field.value}
                                                 />
@@ -254,7 +277,6 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
                                                         disabled={loading}
                                                         placeholder="Street Name"
                                                         {...field}
-                                                        className="pl-8"
                                                     />
                                                 </FormControl>
                                                 <FormMessage />
@@ -273,7 +295,6 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
                                                         disabled={loading}
                                                         placeholder="City Name"
                                                         {...field}
-                                                        className="pl-8"
                                                     />
                                                 </FormControl>
                                                 <FormMessage />
@@ -292,7 +313,6 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
                                                         disabled={loading}
                                                         placeholder="State Name"
                                                         {...field}
-                                                        className="pl-8"
                                                     />
                                                 </FormControl>
                                                 <FormMessage />
@@ -311,7 +331,6 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
                                                         disabled={loading}
                                                         placeholder="Country Name"
                                                         {...field}
-                                                        className="pl-8"
                                                     />
                                                 </FormControl>
                                                 <FormMessage />
@@ -324,16 +343,10 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
                     </fieldset>
                     <Separator />
                     <CardFooter className="p-4 justify-end">
-                        <Button disabled={loading} formTarget="account-data" className="relative" type="submit">
-                            {loading && <Spinner className="w-6 h-6 absolute" />}
-                            <Typography className={loading ? "opacity-0" : ""}>
-                                Update
-                            </Typography>
-                        </Button>
+                        <SpinnerButton isLoading={loading} icon={SaveAllIcon} type="submit" text="Update" />
                     </CardFooter>
                 </form>
             </Form>
-            <Separator></Separator>
         </Card>
     );
 };

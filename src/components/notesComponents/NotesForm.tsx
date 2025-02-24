@@ -63,7 +63,7 @@ export const NotesForm = ({ setIsOpen, initialData, addMessage }: NotesFormProps
             duration: 30000,
             variant: "info",
         })),
-        onSuccess: ({ note }) => trpcUtils.notes.invalidate()
+        onSuccess: ({ note }) => trpcUtils.invalidate()
             .then(() => {
                 setIsOpen(false);
                 loadingToast?.update({

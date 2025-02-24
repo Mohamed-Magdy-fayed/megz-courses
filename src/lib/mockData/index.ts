@@ -13,9 +13,7 @@ export const LetsGo = async (prisma: PrismaClient) => {
     const assignments = await generateAssignments(prisma)
     const leads = await generateLeads(courses, prisma)
     const courseStatuses = await generateCourseStatuses(prisma)
-    const userNotes = await generateUserNotes(prisma)
-    const zoomGroups = await generateZoomGroups(prisma)
-    const placementTests = await generatePlacementTests(prisma)
+
 
     return {
         agents,
@@ -29,15 +27,13 @@ export const LetsGo = async (prisma: PrismaClient) => {
         assignments,
         leads,
         courseStatuses,
-        userNotes,
-        zoomGroups,
-        placementTests,
     }
 }
 
 export const LetsGo2 = async (prisma: PrismaClient) => {
-    const placementTestsSubmissions = await generatePlacementTestsSubmissions(prisma)
-
+    const userNotes = await generateUserNotes(prisma)
+    const zoomGroups = await generateZoomGroups(prisma)
+    const placementTests = await generatePlacementTests(prisma)
     const leads = await prisma.lead.findMany({ include: { orderDetails: true } })
     const updatedLeads = await prisma.$transaction(
         leads.map(lead => prisma.lead.update({
@@ -47,7 +43,17 @@ export const LetsGo2 = async (prisma: PrismaClient) => {
     )
 
     return {
-        placementTestsSubmissions,
+        userNotes,
+        zoomGroups,
+        placementTests,
         updatedLeads,
+    }
+}
+
+export const LetsGo3 = async (prisma: PrismaClient) => {
+    const placementTestsSubmissions = await generatePlacementTestsSubmissions(prisma)
+
+    return {
+        placementTestsSubmissions,
     }
 }

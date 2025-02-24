@@ -80,13 +80,13 @@ export const meetingsColumns: ColumnDef<SessionColumn>[] = [
     },
     {
         accessorKey: "trainerName",
-        cell: ({ row }) => <Link className="in-table-link" href={`/account/${row.original.trainerId}`} children={row.original.trainerName} />
+        cell: ({ row }) => <Link className="in-table-link" href={`/admin/users_management/account/${row.original.trainerId}`} children={row.original.trainerName} />
     },
     {
         accessorKey: "groupName",
         cell: ({ row }) => row.original.isTest
-            ? <Link className="in-table-link" href={`/placement_tests`} children={row.original.groupName} />
-            : <Link className="in-table-link" href={`/groups/${row.original.groupId}`} children={row.original.groupName} />
+            ? <Link className="in-table-link" href={`/admin/operations_management/placement_tests`} children={row.original.groupName} />
+            : <Link className="in-table-link" href={`/admin/operations_management/groups/${row.original.groupId}`} children={row.original.groupName} />
     },
     {
         id: "actions",
@@ -97,7 +97,7 @@ export const meetingsColumns: ColumnDef<SessionColumn>[] = [
                 isZoom: row.original.isZoom,
                 meetingNumber: row.original.meetingNumber,
                 meetingPassword: row.original.meetingPassword,
-                sessionTitle: row.original.groupName || "",
+                sessionTitle: row.original.sessionTitle,
                 sessionId: row.original.id,
             })}`}
             isZoom={row.original.isZoom}

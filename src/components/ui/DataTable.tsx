@@ -39,6 +39,7 @@ import { useDropFile } from "@/hooks/useDropFile";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { hasPermission } from "@/server/permissions";
+import WrapWithTooltip from "@/components/ui/wrap-with-tooltip";
 
 type Cursor = Prisma.UserFindManyArgs["cursor"]
 type OrderBy = Prisma.UserFindManyArgs["orderBy"]
@@ -181,29 +182,24 @@ export function DataTable<TData, TValue>({
           <div className="flex items-center gap-8">
             <Typography>Total records {table.getCoreRowModel().rows.length}</Typography>
             {exportConfig && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={"icon"}
-                    customeColor={"mutedIcon"}
-                    onClick={() => {
-                      const rows = table.getFilteredSelectedRowModel().rows.length === 0 ? table.getFilteredRowModel().rows : table.getFilteredSelectedRowModel().rows
-                      const exportData = rows.map(r => r.original)
-                      console.log(exportData);
+              <WrapWithTooltip text="Export">
+                <Button
+                  variant={"icon"}
+                  customeColor={"mutedIcon"}
+                  onClick={() => {
+                    const rows = table.getFilteredSelectedRowModel().rows.length === 0 ? table.getFilteredRowModel().rows : table.getFilteredSelectedRowModel().rows
+                    const exportData = rows.map(r => r.original)
+                    console.log(exportData);
 
-                      exportToExcel(
-                        exportData,
-                        exportConfig.fileName,
-                        exportConfig.sheetName
-                      )
-                    }}>
-                    <DownloadCloud className="text-primary" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  Export
-                </TooltipContent>
-              </Tooltip>
+                    exportToExcel(
+                      exportData,
+                      exportConfig.fileName,
+                      exportConfig.sheetName
+                    )
+                  }}>
+                  <DownloadCloud className="text-primary" />
+                </Button>
+              </WrapWithTooltip>
             )}
             {importConfig && (
               <Tooltip>
@@ -375,6 +371,8 @@ export function DataTable<TData, TValue>({
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
+                  const currentFilter = filters?.find(f => f.key === header.id)
+
                   return (
                     <TableHead className="px-2" key={header.id}>
                       {searches?.some(s => s.key === header.id) ? (
@@ -397,11 +395,11 @@ export function DataTable<TData, TValue>({
                             )}
                           </Button>
                         </div>
-                      ) : filters?.some(f => f.key === header.id) ? (
+                      ) : currentFilter ? (
                         <div className="space-y-2">
                           <div className="flex items-center gap-4">
                             <TableSelectField
-                              data={filters.find(f => f.key === header.id)?.values.map(val => ({
+                              data={currentFilter.values.map(val => ({
                                 Active: true,
                                 label: val.label,
                                 value: val.value,
@@ -411,8 +409,8 @@ export function DataTable<TData, TValue>({
                                     <Typography>
                                       {
                                         table.getFilteredRowModel().rows.length > 0
-                                          ? table.getFilteredRowModel().rows.filter(row => row.original[filters.find(f => f.key === header.id)?.key as Extract<keyof TData, string>] === val.value).length
-                                          : table.getCoreRowModel().rows.filter(row => row.original[filters.find(f => f.key === header.id)?.key as Extract<keyof TData, string>] === val.value).length
+                                          ? table.getFilteredRowModel().rows.filter(row => row.original[currentFilter.key as Extract<keyof TData, string>] === val.value).length
+                                          : table.getCoreRowModel().rows.filter(row => row.original[currentFilter.key as Extract<keyof TData, string>] === val.value).length
                                       }
                                     </Typography>
                                   </div>
@@ -422,16 +420,13 @@ export function DataTable<TData, TValue>({
                                 ? null
                                 : (
                                   <div className="flex items-center justify-between">
-                                    {flexRender(
-                                      header.column.columnDef.header,
-                                      header.getContext()
-                                    )}
+                                    <Typography>{currentFilter.filterName}</Typography>
                                     <Typography className="text-info">
                                       {table.getCoreRowModel().rows.length}
                                     </Typography>
                                   </div>
                                 )}
-                              placeholder={filters.find(f => f.key === header.id)?.filterName || ""}
+                              placeholder={currentFilter.filterName || ""}
                               handleChange={(val) => {
                                 const isSameFilter = table.getColumn(header.id)?.getFilterValue() === val
                                 table.getColumn(header.id)?.setFilterValue(isSameFilter ? "" : val)

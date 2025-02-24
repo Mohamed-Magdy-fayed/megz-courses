@@ -5,8 +5,8 @@ import { SessionColumn, columns } from "./SessionColumns";
 import { validSessionStatuses } from "@/lib/enumsTypes";
 import { uniqBy, upperFirst } from "lodash";
 
-const SessionsClient = ({ isAdmin }: { isAdmin?: boolean }) => {
-  const { data } = isAdmin ? api.trainers.getAllSessions.useQuery() : api.trainers.getCurrentTrainerSessions.useQuery()
+const SessionsClient = () => {
+  const { data } = api.trainers.getCurrentTrainerSessions.useQuery()
 
   const formattedData: SessionColumn[] = data?.sessions.map(session => ({
     id: session.id,

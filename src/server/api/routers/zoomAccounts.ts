@@ -70,6 +70,30 @@ export const zoomAccountsRouter = createTRPCRouter({
             const zoomAccounts = await ctx.prisma.zoomClient.findMany({ include: { zoomSessions: true } })
             return { zoomAccounts }
         }),
+    getAccountMeetings: protectedProcedure
+        .input(z.object({
+            id: z.string(),
+            isUpcoming: z.boolean().optional(),
+        }))
+        .query(async ({ ctx, input: { id, isUpcoming } }) => {
+            const select = {
+                id: true,
+                sessionStatus: true,
+                meetingNumber: true,
+                meetingPassword: true,
+                sessionDate: true,
+                materialItem: { select: { title: true } },
+                zoomClient: true,
+                zoomGroup: { select: { teacher: { select: { user: { select: { id: true, name: true } } } }, id: true, groupNumber: true } },
+                placementTest: { select: { id: true, course: true, student: { select: { name: true } }, tester: { select: { user: { select: { name: true, id: true } } } } } }
+            }
+            if (isUpcoming) {
+                const zoomSessions = await ctx.prisma.zoomSession.findMany({ where: { zoomClientId: id, sessionDate: { gte: new Date() } }, select })
+                return { zoomSessions }
+            }
+            const zoomSessions = await ctx.prisma.zoomSession.findMany({ where: { zoomClientId: id }, select })
+            return { zoomSessions }
+        }),
     getAvailableZoomClient: protectedProcedure
         .input(z.object({
             startDate: z.date(),

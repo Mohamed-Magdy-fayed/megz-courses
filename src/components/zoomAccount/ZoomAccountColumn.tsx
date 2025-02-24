@@ -40,7 +40,7 @@ export const columns: ColumnDef<AccountColumn>[] = [
     {
         accessorKey: "name",
         cell: ({ row }) => (
-            <Link className="in-table-link" href={`/config/zoom/${row.original.id}`}>
+            <Link className="in-table-link" href={`/admin/system_management/config/zoom/${row.original.id}`}>
                 {row.original.name}
             </Link>
         )

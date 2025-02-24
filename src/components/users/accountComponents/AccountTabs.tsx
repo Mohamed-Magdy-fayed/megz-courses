@@ -1,5 +1,4 @@
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import AccountHistory from "@/components/users/accountComponents/AccountHistory";
 import AccountNotes from "@/components/users/accountComponents/AccountNotes";
@@ -108,7 +107,7 @@ export const UserAccountTabs = ({ user }: {
                                         oralTestTime,
                                         // oralTestMeeting,
                                         oralTestQuestions: writtenTest.oralTestQuestions,
-                                        testLink: `/placement_test/${course.slug}`,
+                                        testLink: `/student/placement_test/${course.slug}`,
                                         oralTestLink: sessionLink,
                                         testerId: tester.user.id,
                                         testerName: tester.user.name,
