@@ -830,7 +830,7 @@ model ItemQuestion {
 
     options ItemQuestionOption[]
     item    SystemFormItem       @relation(fields: [itemId], references: [id], onDelete: Cascade)
-    itemId  String               @unique @db.ObjectId
+    itemId  String               @db.ObjectId
 }
 
 type SystemFormSubmissionAnswer {

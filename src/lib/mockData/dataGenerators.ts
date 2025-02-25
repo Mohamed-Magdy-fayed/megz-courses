@@ -596,7 +596,7 @@ export const generateCourseStatuses = async (prisma: PrismaClient) => {
 export const generateUserNotes = async (prisma: PrismaClient) => {
     const orders = await prisma.order.findMany({ include: { course: true, user: true, lead: { include: { assignee: { include: { user: true } } } } } })
 
-    await prisma.$transaction(orders.map(order => prisma.userNote.create({
+    return await prisma.$transaction(orders.map(order => prisma.userNote.create({
         data: {
             sla: 0,
             status: "Closed",
@@ -755,7 +755,7 @@ export const generateZoomGroups = async (prisma: PrismaClient) => {
             const zoomGroup = await prisma.zoomGroup.create({
                 data: {
                     startDate: startDate,
-                    meetingNumber: "1234",
+                    meetingNumber: "77569231226",
                     meetingPassword: "1234",
                     groupNumber,
                     groupStatus,
