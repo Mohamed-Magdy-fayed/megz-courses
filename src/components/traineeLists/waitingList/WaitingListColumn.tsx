@@ -3,7 +3,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { format } from "date-fns";
 import { Typography } from "@/components/ui/Typoghraphy";
-import { Devices } from "@prisma/client";
+import { filterFn } from "@/lib/dataTableUtils";
 
 export type FullWaitingListRow = {
     id: string,
@@ -15,19 +15,17 @@ export type FullWaitingListRow = {
     levelSlug: string,
     levelName: string,
     image: string | null,
-    device: Devices | null,
     email: string,
+    isPrivate: "Group" | "Private",
     phone: string | null,
-    orderDate: Date,
+    courseId: string,
     courseName: string,
     courseSlug: string,
-    courseId: string,
-    isPrivate: string,
     createdAt: Date,
     updatedAt: Date,
 };
 
-export const columns: ColumnDef<FullWaitingListRow>[] = [
+export const traineeColumns: ColumnDef<FullWaitingListRow>[] = [
     {
         id: "select",
         header: ({ table }) => (
@@ -56,7 +54,7 @@ export const columns: ColumnDef<FullWaitingListRow>[] = [
         ),
     },
     {
-        accessorKey: "courseName",
+        accessorKey: "courseSlug",
         header: "Course Name",
         cell: ({ row }) => {
             return (
@@ -81,18 +79,12 @@ export const columns: ColumnDef<FullWaitingListRow>[] = [
         )
     },
     {
-        accessorKey: "orderDate",
+        accessorKey: "updatedAt",
         cell: ({ row }) => {
             return (
-                <>{format(row.original.orderDate, "PP")}</>
+                <>{format(row.original.updatedAt, "PP")}</>
             )
         },
-        filterFn: (row, columnId, filterValue) => {
-            const val = row.original.orderDate
-            if (!val) return true
-            const startDate = new Date(filterValue.split("|")[0])
-            const endDate = new Date(filterValue.split("|")[1])
-            return val.getTime() >= startDate.getTime() && val.getTime() <= endDate.getTime()
-        },
+        filterFn,
     },
 ];

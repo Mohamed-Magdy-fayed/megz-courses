@@ -36,9 +36,10 @@ const MultiSelectCourses: FC<MultiSelectProps> = ({ courses, setCourses, loading
                 <Button
                     disabled={loading}
                     variant="outline"
+                    customeColor={"foregroundOutlined"}
                     role="combobox"
                     aria-expanded={open}
-                    className="flex gap-2 justify-between hover:bg-slate-50 hover:text-primary hover:border-primary"
+                    className="flex gap-2 justify-between  hover:text-primary hover:border-primary"
                 >
                     {courses.length === 1
                         ? `${courses[0]}`

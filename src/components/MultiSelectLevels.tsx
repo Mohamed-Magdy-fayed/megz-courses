@@ -14,35 +14,22 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
-import { Dispatch, FC, SetStateAction, useMemo, useState } from "react"
+import { Dispatch, FC, SetStateAction, useState } from "react"
 import { api } from "@/lib/api"
 import { ScrollArea } from "./ui/scroll-area"
 import Spinner from "./Spinner"
 
-interface SingleSelectProps {
+interface MultiSelectProps {
+    courses: string[]
     loading: boolean
-    courseId: string
-    setCourseId: Dispatch<SetStateAction<string>>
+    levels: string[]
+    setLevels: Dispatch<SetStateAction<string[]>>
 }
 
-const SingleSelectCourse: FC<SingleSelectProps> = ({ courseId, setCourseId, loading }) => {
-    const { data, isLoading, isError } = api.courses.getAll.useQuery()
+const MultiSelectCourses: FC<MultiSelectProps> = ({ courses, levels, setLevels, loading }) => {
+    const { data, isLoading, isError } = api.levels.getAll.useQuery({ where: { id: { in: courses } } })
 
     const [open, setOpen] = useState(false)
-    const [searchVal, setSearchVal] = useState("")
-
-    const selectedCourseName = useMemo(() => data?.courses.find(c => c.id === courseId)?.name, [courseId, data?.courses])
-
-    // Filtered courses based on the search value
-    const filteredCourses = useMemo(() => {
-        if (!data?.courses) return [];
-        if (!searchVal.trim()) return data.courses;
-
-        // Filter courses based on course name
-        return data.courses.filter(course =>
-            course.name.toLowerCase().includes(searchVal.toLowerCase())
-        );
-    }, [data?.courses, searchVal]);
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
@@ -50,45 +37,46 @@ const SingleSelectCourse: FC<SingleSelectProps> = ({ courseId, setCourseId, load
                 <Button
                     disabled={loading}
                     variant="outline"
+                    customeColor={"foregroundOutlined"}
                     role="combobox"
                     aria-expanded={open}
-                    className="flex gap-2 bg-background hover:bg-background justify-between text-inherit hover:text-primary hover:border-primary"
+                    className="flex gap-2 justify-between  hover:text-primary hover:border-primary"
                 >
-                    {selectedCourseName
-                        ? `${selectedCourseName}`
-                        : "Select course..."}
+                    {levels.length === 1
+                        ? `${levels[0]}`
+                        : levels.length === 2
+                            ? `${levels[0]} and 1 other`
+                            : levels.length > 2
+                                ? `${levels[0]} and ${levels.length - 1} others`
+                                : "Select course..."}
                     <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="p-0 mx-4" avoidCollisions>
-                <Command label="Select Course" shouldFilter={false} loop={true} >
-                    <CommandInput
-                        value={searchVal}
-                        onValueChange={(val) => setSearchVal(val)}
-                        placeholder="Search courses..."
-                    />
-                    <CommandEmpty>No courses found.</CommandEmpty>
+            <PopoverContent className="p-0 mx-4">
+                <Command>
+                    <CommandInput placeholder="Search levels..." />
+                    <CommandEmpty>No levels found.</CommandEmpty>
                     <CommandGroup>
-                        <ScrollArea className="max-h-60">
+                        <ScrollArea>
                             {isLoading ? (
                                 <div className="grid place-content-center">
                                     <Spinner></Spinner>
                                 </div>
                             ) : isError ? (
                                 <>Error!</>
-                            ) : filteredCourses.map((course) => (
+                            ) : data.levels.map((course) => (
                                 <CommandItem
                                     key={course.id}
-                                    value={course.id}
                                     onSelect={(currentValue) => {
-                                        setCourseId(currentValue)
-                                        setOpen(false)
+                                        setLevels((prevValue) => {
+                                            return prevValue.includes(currentValue) ? prevValue.filter(v => v !== currentValue) : [...prevValue, currentValue]
+                                        })
                                     }}
                                 >
                                     <Check
                                         className={cn(
                                             "mr-2 h-4 w-4",
-                                            courseId === course.id ? "opacity-100" : "opacity-0"
+                                            levels.includes(course.name.toLocaleLowerCase()) ? "opacity-100" : "opacity-0"
                                         )}
                                     />
                                     {course.name}
@@ -102,4 +90,4 @@ const SingleSelectCourse: FC<SingleSelectProps> = ({ courseId, setCourseId, load
     )
 }
 
-export default SingleSelectCourse
+export default MultiSelectCourses

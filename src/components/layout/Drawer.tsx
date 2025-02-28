@@ -32,12 +32,8 @@ export const mainNavLinks: (NavLink & { children?: NavLink[] })[] = [
         url: "admin/operations_management/groups",
       },
       {
-        label: "Waiting List",
-        url: "admin/operations_management/waiting_list",
-      },
-      {
-        label: "Retintions List",
-        url: "admin/operations_management/retintions",
+        label: "Trainee Lists",
+        url: "admin/operations_management/trainee_lists",
       },
       {
         label: "Placement Tests",
@@ -98,6 +94,10 @@ export const mainNavLinks: (NavLink & { children?: NavLink[] })[] = [
         label: "Content Management",
         url: "admin/system_management/content",
       },
+      {
+        label: "Products Management",
+        url: "admin/system_management/products",
+      },
     ],
   },
   {
@@ -152,7 +152,7 @@ export default function MegzDrawer({ siteIdentity }: { siteIdentity?: SiteIdenti
 
   useEffect(() => {
     if (!isMounted) setIsMounted(true);
-    setOpenLinksGroup(allowedNavLinks.find(link => pathname === `/${link.url}` || link.children?.some(ch => `/${ch.url}` === pathname))?.label || "")
+    setOpenLinksGroup(allowedNavLinks.find(link => pathname.startsWith(`/${link.url}`) || link.children?.some(ch => pathname.startsWith(`/${ch.url}`)))?.label || "")
   }, []);
 
   if (!isMounted) return null;
@@ -180,7 +180,7 @@ export default function MegzDrawer({ siteIdentity }: { siteIdentity?: SiteIdenti
         <Accordion type="single" collapsible value={openLinksGroup} onValueChange={(val) => setOpenLinksGroup(val)}>
           <div className="flex flex-col items-center gap-2 ">
             {allowedNavLinks.map((link) => {
-              const isActive = pathname === link.url || link.children?.some(l => `/${l.url}` === pathname);
+              const isActive = pathname === link.url || link.children?.some(l => pathname.startsWith(`/${l.url}`));
               const linkProps = {
                 key: link.label,
                 className: cn(
@@ -218,7 +218,7 @@ export default function MegzDrawer({ siteIdentity }: { siteIdentity?: SiteIdenti
                     <AccordionContent>
                       <div className="flex flex-col items-center gap-2 pt-2">
                         {link.children.map(child => {
-                          const isChildActive = pathname === `/${child.url}`;
+                          const isChildActive = pathname.startsWith(`/${child.url}`);
                           const childLinkProps = {
                             key: child.url,
                             className: cn(

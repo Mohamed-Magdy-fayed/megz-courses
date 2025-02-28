@@ -29,8 +29,6 @@ export const productsRouter = createTRPCRouter({
         .query(async ({ ctx }) => {
             const products = await ctx.prisma.product.findMany({
                 include: {
-                    courses: true,
-                    levels: true,
                     orders: true,
                 }
             });

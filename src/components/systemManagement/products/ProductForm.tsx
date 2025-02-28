@@ -1,15 +1,13 @@
-import { ProductColumn } from "@/components/admin/systemManagement/products/ProductsColumn"
-import MultiSelectCourses from "@/components/MultiSelectCourses"
 import { SpinnerButton } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
 import { toastType, useToast } from "@/components/ui/use-toast"
 import { api } from "@/lib/api"
 import { createMutationOptions } from "@/lib/mutationsHelper"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Edit3Icon, PlusSquare } from "lucide-react"
+import { Prisma } from "@prisma/client"
+import { PlusSquare } from "lucide-react"
 import { Dispatch, SetStateAction, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -21,14 +19,11 @@ export const productSchema = z.object({
     price: z.number(),
     description: z.string().optional(),
     discountedPrice: z.number().optional(),
-    courses: z.array(z.object({ id: z.string(), name: z.string() })),
-    levels: z.array(z.object({ id: z.string(), name: z.string() })),
-    orders: z.array(z.object({ id: z.string() })),
 })
 
 type FormValues = z.infer<typeof productSchema>
 
-export default function ProductForm({ setIsOpen, initialData }: { initialData?: ProductColumn; setIsOpen: Dispatch<SetStateAction<boolean>>; }) {
+export default function ProductForm({ setIsOpen, initialData }: { initialData?: Prisma.ProductGetPayload<{}>; setIsOpen: Dispatch<SetStateAction<boolean>>; }) {
     const { toast } = useToast()
 
     const [loadingToast, setLoadingToast] = useState<toastType>()
@@ -37,7 +32,7 @@ export default function ProductForm({ setIsOpen, initialData }: { initialData?: 
         resolver: zodResolver(productSchema),
         defaultValues: {
             id: initialData?.id ?? "",
-            active: initialData?.active === "Active" ? true : false,
+            active: initialData?.active ?? false,
             name: initialData?.name ?? "",
             price: initialData?.price ?? undefined,
             discountedPrice: initialData?.discountedPrice ?? undefined,
@@ -64,7 +59,7 @@ export default function ProductForm({ setIsOpen, initialData }: { initialData?: 
             loadingToast,
             setLoadingToast,
             toast,
-            trpcUtils: trpcUtils.products,
+            trpcUtils,
             loadingMessage: "Updating product...",
             successMessageFormatter: ({ product }) => {
                 setIsOpen(false)
@@ -80,12 +75,12 @@ export default function ProductForm({ setIsOpen, initialData }: { initialData?: 
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="p-2">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-2">
                 <FormField
                     control={form.control}
                     name="name"
                     render={({ field }) => (
-                        <FormItem className="p-2">
+                        <FormItem className="p-4">
                             <FormLabel>Product Name</FormLabel>
                             <FormControl>
                                 <Input
@@ -102,10 +97,10 @@ export default function ProductForm({ setIsOpen, initialData }: { initialData?: 
                     control={form.control}
                     name="description"
                     render={({ field }) => (
-                        <FormItem className="p-2">
+                        <FormItem className="p-4">
                             <FormLabel>Product Description</FormLabel>
                             <FormControl>
-                                <Textarea
+                                <Input
                                     disabled={!!loadingToast}
                                     placeholder="Product Description"
                                     {...field}
@@ -120,7 +115,7 @@ export default function ProductForm({ setIsOpen, initialData }: { initialData?: 
                         control={form.control}
                         name="price"
                         render={({ field }) => (
-                            <FormItem className="p-2">
+                            <FormItem className="p-4">
                                 <FormLabel>Price</FormLabel>
                                 <FormControl>
                                     <Input
@@ -139,7 +134,7 @@ export default function ProductForm({ setIsOpen, initialData }: { initialData?: 
                         control={form.control}
                         name="discountedPrice"
                         render={({ field }) => (
-                            <FormItem className="p-2">
+                            <FormItem className="p-4">
                                 <FormLabel>Discount Price</FormLabel>
                                 <FormControl>
                                     <Input
@@ -160,7 +155,7 @@ export default function ProductForm({ setIsOpen, initialData }: { initialData?: 
                     control={form.control}
                     name="active"
                     render={({ field }) => (
-                        <FormItem className="p-2">
+                        <FormItem className="p-4">
                             <FormControl>
                                 <div className="flex items-center gap-4">
                                     <Switch
@@ -178,7 +173,7 @@ export default function ProductForm({ setIsOpen, initialData }: { initialData?: 
                     )}
                 />
                 <div className="flex justify-end">
-                    <SpinnerButton icon={initialData ? Edit3Icon : PlusSquare} isLoading={!!loadingToast} text={initialData ? "Update" : "Create"} type="submit" />
+                    <SpinnerButton icon={PlusSquare} isLoading={!!loadingToast} text={initialData ? "Update" : "Create"} type="submit" />
                 </div>
             </form>
         </Form>

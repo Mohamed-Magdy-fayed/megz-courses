@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { twMerge } from "tailwind-merge";
 import { getInitials } from "./getInitials";
 import { env } from "@/env.mjs";
-import { Row } from "@tanstack/react-table";
+import { FilterFn, Row } from "@tanstack/react-table";
 import packageJson from "../../package.json";
 
 export const getVersion = () => packageJson.version;
@@ -250,9 +250,37 @@ export const getRating = (questions: (ItemQuestion & { options: ItemQuestionOpti
   return points
 }
 
-export function filterFn<T>(row: Row<T & { createdAt: Date }>, columnId: string, filterValue: any) {
-  const val = row.original.createdAt
-  const startDate = new Date(filterValue.split("|")[0])
-  const endDate = new Date(filterValue.split("|")[1])
-  return val.getTime() >= startDate.getTime() && val.getTime() <= endDate.getTime()
-}
+
+export const filterFn: FilterFn<any> = (row, columnId, filterValue) => {
+  const val = row.original[columnId];
+
+  // Handle null or undefined values
+  if (val === null || val === undefined) return true;
+
+  // Handle Date fields
+  if (val instanceof Date) {
+    const [startDateStr, endDateStr] = filterValue.split('|');
+    const startDate = new Date(startDateStr);
+    const endDate = new Date(endDateStr);
+    return val.getTime() >= startDate.getTime() && val.getTime() <= endDate.getTime();
+  }
+
+  // Handle string fields
+  if (typeof val === 'string') {
+    return val.toLowerCase().includes(filterValue.toLowerCase());
+  }
+
+  // Handle number fields
+  if (typeof val === 'number') {
+    return val.toFixed(0).includes(filterValue.toLowerCase());
+  }
+
+  // Handle object fields
+  if (typeof val === 'object') {
+    const stringifiedVal = JSON.stringify(val).toLowerCase();
+    return stringifiedVal.includes(filterValue.toLowerCase());
+  }
+
+  // Default: include the row
+  return true;
+};

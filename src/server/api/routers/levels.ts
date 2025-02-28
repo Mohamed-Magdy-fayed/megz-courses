@@ -28,14 +28,23 @@ export const levelsRouter = createTRPCRouter({
 
       return { coursesWaitingUsers };
     }),
-  getAll: protectedProcedure.query(async ({ ctx }) => {
-    const levels = await ctx.prisma.courseLevel.findMany({
-      include: { courseStatus: { include: { user: true } } },
-      orderBy: { createdAt: "desc" }
-    });
+  getAll: protectedProcedure
+    .input(z.object({
+      where: z.object({
+        id: z.object({
+          in: z.array(z.string())
+        })
+      })
+    }).optional())
+    .query(async ({ ctx, input }) => {
+      const levels = await ctx.prisma.courseLevel.findMany({
+        where: input?.where,
+        include: { courseStatus: { include: { user: true } } },
+        orderBy: { createdAt: "desc" }
+      });
 
-    return { levels };
-  }),
+      return { levels };
+    }),
   getById: protectedProcedure
     .input(
       z.object({
@@ -78,6 +87,22 @@ export const levelsRouter = createTRPCRouter({
         },
       });
       return { level };
+    }),
+  getByCourseId: protectedProcedure
+    .input(
+      z.object({
+        courseId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input: { courseId } }) => {
+      const levels = await ctx.prisma.courseLevel.findMany({
+        where: {
+          course: {
+            id: courseId
+          }
+        },
+      });
+      return { levels };
     }),
   getByCourseSlug: protectedProcedure
     .input(

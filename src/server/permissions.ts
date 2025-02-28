@@ -1,5 +1,5 @@
 import { NavLink } from "@/components/layout/Drawer";
-import { Certificate, Course, GoogleClient, Lead, LeadStage, MessageTemplate, MetaClient, Order, Parameters, PlacementTest, SupportChat, SupportTicket, SystemForm, SystemFormSubmission, Teacher, Tester, User, UserNote, UserRoles, ZoomClient, ZoomGroup, ZoomSession } from "@prisma/client";
+import { Certificate, Course, GoogleClient, Lead, LeadStage, MessageTemplate, MetaClient, Order, Parameters, PlacementTest, Product, SupportChat, SupportTicket, SystemForm, SystemFormSubmission, Teacher, Tester, User, UserNote, UserRoles, ZoomClient, ZoomGroup, ZoomSession } from "@prisma/client";
 
 type PartialUser = Pick<User, "id" | "email" | "userRoles" | "userScreens">
 
@@ -108,6 +108,14 @@ type Permissions = {
         dataType: Partial<MessageTemplate>
         action: "view" | "create" | "update" | "delete"
     },
+    products: {
+        dataType: Partial<Product>
+        action: "view" | "create" | "update" | "delete"
+    },
+    productItems: {
+        dataType: Partial<Product>
+        action: "view" | "create" | "update" | "delete"
+    },
 }
 
 const unrestricted = {
@@ -145,6 +153,8 @@ const ROLES = {
                 return !!((url && userScreens.some(s => url?.includes(s))) || (children && children.some(({ url }) => url && userScreens.some(s => url.includes(s)))))
             }
         },
+        products: unrestricted,
+        productItems: unrestricted,
     },
     "ChatAgent": {
         adminLayout: { view: true },

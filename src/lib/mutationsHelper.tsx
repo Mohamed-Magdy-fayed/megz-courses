@@ -1,6 +1,5 @@
 import Spinner from '@/components/Spinner';
 import { ToastFunctionType, toastType } from '@/components/ui/use-toast';
-import { api } from '@/lib/api';
 import { AppRouter } from '@/server/api/root';
 import { TRPCClientErrorLike } from '@trpc/client';
 import { Dispatch, SetStateAction } from 'react';
@@ -11,7 +10,7 @@ export function createMutationOptions<TSuccessData, TSuccessVars>(
     { setLoadingToast, successMessageFormatter, toast, trpcUtils, loadingToast, loadingMessage, disableToast }: {
         loadingToast: toastType | undefined,
         setLoadingToast: Dispatch<SetStateAction<toastType | undefined>>,
-        trpcUtils: ReturnType<typeof api.useUtils>;
+        trpcUtils: { invalidate: () => Promise<void> };
         toast: ToastFunctionType;
         successMessageFormatter: (data: TSuccessData, variables: TSuccessVars) => string;
         loadingMessage?: string;

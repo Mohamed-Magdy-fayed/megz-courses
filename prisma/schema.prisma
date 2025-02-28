@@ -55,8 +55,7 @@ enum UserScreen {
     operations_management
     notes
     groups
-    waiting_list
-    retintions
+    trainee_lists
     placement_tests
     sessions
     sales_management
@@ -71,6 +70,7 @@ enum UserScreen {
     system_management
     config
     content
+    products
     privacy
     terms
     documentation
@@ -208,6 +208,8 @@ model CourseLevel {
     id            String         @id @default(auto()) @map("_id") @db.ObjectId
     name          String
     slug          String
+    product       Product?       @relation(fields: [productId], references: [id])
+    productId     String?        @db.ObjectId
     course        Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
     courseId      String         @db.ObjectId
     systemForms   SystemForm[]
@@ -215,6 +217,7 @@ model CourseLevel {
     certificates  Certificate[]
     courseStatus  CourseStatus[]
     materialItems MaterialItem[]
+    productItems  ProductItem[]
     updatedAt     DateTime       @updatedAt
     createdAt     DateTime       @default(now())
 
@@ -230,6 +233,8 @@ model Course {
     groupPrice      Float
     privatePrice    Float
     instructorPrice Float
+    product         Product?        @relation(fields: [productId], references: [id])
+    productId       String?         @db.ObjectId
     levels          CourseLevel[]
     placementTests  PlacementTest[]
     zoomGroups      ZoomGroup[]
@@ -237,6 +242,7 @@ model Course {
     certificates    Certificate[]
     courseStatus    CourseStatus[]
     orders          Order[]
+    productItems    ProductItem[]
     updatedAt       DateTime        @updatedAt
     createdAt       DateTime        @default(now())
 }
@@ -334,6 +340,8 @@ model Order {
     courseId                 String      @db.ObjectId
     status                   OrderStatus @default(Pending)
     refundRequester          String?     @db.ObjectId
+    product                  Product?    @relation(fields: [productId], references: [id])
+    productId                String?     @db.ObjectId
     refundId                 String?
     paymentId                String?
     paymentLink              String?
@@ -860,4 +868,35 @@ model SystemFormSubmission {
     assignmentZoomSessionId String?      @db.ObjectId
     zoomGroup               ZoomGroup?   @relation(fields: [zoomGroupId], references: [id])
     zoomGroupId             String?      @db.ObjectId
+}
+
+model Product {
+    id              String        @id @default(auto()) @map("_id") @db.ObjectId
+    price           Int
+    discountedPrice Int?
+    name            String
+    description     String?
+    active          Boolean
+    orders          Order[]
+    courses         Course[]
+    levels          CourseLevel[]
+    PProductItems   ProductItem[]
+
+    updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
+}
+
+model ProductItem {
+    id            String      @id @default(auto()) @map("_id") @db.ObjectId
+    product       Product     @relation(fields: [productId], references: [id])
+    productId     String      @db.ObjectId
+    course        Course      @relation(fields: [courseId], references: [id])
+    courseId      String      @db.ObjectId
+    level         CourseLevel @relation(fields: [courseLevelId], references: [id])
+    courseLevelId String      @db.ObjectId
+
+    updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
+
+    @@unique([productId, courseId, courseLevelId])
 }

@@ -1,5 +1,4 @@
 import { ProductColumn } from "@/components/admin/systemManagement/products/ProductsColumn"
-import MultiSelectCourses from "@/components/MultiSelectCourses"
 import { SpinnerButton } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
@@ -21,9 +20,6 @@ export const productSchema = z.object({
     price: z.number(),
     description: z.string().optional(),
     discountedPrice: z.number().optional(),
-    courses: z.array(z.object({ id: z.string(), name: z.string() })),
-    levels: z.array(z.object({ id: z.string(), name: z.string() })),
-    orders: z.array(z.object({ id: z.string() })),
 })
 
 type FormValues = z.infer<typeof productSchema>

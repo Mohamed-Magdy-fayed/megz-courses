@@ -34,6 +34,9 @@ import { zoomSessionsRouter } from "@/server/api/routers/zoomSessions";
 import { paramsRouter } from "@/server/api/routers/params";
 import { systemFormsRouter } from "@/server/api/routers/systemForms";
 import { systemFormSubmissionsRouter } from "@/server/api/routers/systemFormSubmissions";
+import { traineeListRouter } from "@/server/api/routers/traineeList";
+import { productsRouter } from "@/server/api/routers/products";
+import { productItemsRouter } from "@/server/api/routers/productItems";
 
 /**
  * This is the primary router for your server.
@@ -76,6 +79,9 @@ export const appRouter = createTRPCRouter({
   leadInteractions: leadInteractionsRouter,
   params: paramsRouter,
   systemForms: systemFormsRouter,
+  traineeList: traineeListRouter,
+  products: productsRouter,
+  productItems: productItemsRouter,
 });
 
 // export type definition of API

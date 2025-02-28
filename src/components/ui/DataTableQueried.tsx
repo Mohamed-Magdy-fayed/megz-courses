@@ -39,74 +39,84 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { hasPermission } from "@/server/permissions";
 import WrapWithTooltip from "@/components/ui/wrap-with-tooltip";
-import SelectField from "@/components/ui/SelectField";
-import { upperFirst } from "lodash";
+import { FetchNextPageOptions, FetchPreviousPageOptions, InfiniteQueryObserverResult } from "@tanstack/react-query";
+import { getProperty, NestedKey } from "@/lib/dataTableUtils";
+import { api } from "@/lib/api";
 
-interface DataTableProps<TData, TValue> {
+interface DataTableQueriedProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
-  data: TData[];
   setData: (data: TData[]) => void;
   onDelete?: (callback?: () => void) => void;
   handleImport?: (data: TData[]) => void;
   importConfig?: {
     templateName: string;
     sheetName: string;
-    reqiredFields: Extract<keyof TData, string>[]
+    reqiredFields: NestedKey<TData>[]
     extraDetails?: React.ReactNode;
   },
   exportConfig?: {
     fileName: string;
     sheetName: string;
-    fields?: Extract<keyof TData, string>[];
   },
-  skele?: boolean,
   sum?: {
-    key: Extract<keyof TData, string>,
+    key: NestedKey<TData>,
     label: string,
   };
   dateRanges?: {
-    key: Extract<keyof TData, string>,
+    key: NestedKey<TData>,
     label: string,
   }[];
   searches?: {
-    key: Extract<keyof TData, string>,
+    key: NestedKey<TData>,
     label: string,
   }[];
   filters?: {
     filterName: string
-    values: { label: string, value: (Extract<TData[keyof TData], string>) }[]
-    key: Extract<keyof TData, string>
+    values: { label: string, value: (NestedKey<TData>) }[]
+    key: NestedKey<TData>
   }[];
   isSuperSimple?: boolean;
   resetSelection?: boolean;
 }
 
-export function DataTable<TData, TValue>({
+export function DataTableQueried<TData, TValue>({
   columns,
-  data,
   setData,
   onDelete,
   handleImport,
   importConfig,
   exportConfig,
-  skele,
   sum,
   dateRanges,
   searches,
   filters,
   isSuperSimple,
   resetSelection,
-}: DataTableProps<TData, TValue>) {
+}: DataTableQueriedProps<TData, TValue>) {
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [isImportOpen, setIsImportOpen] = React.useState<boolean>(false);
-  const [isExportOpen, setIsExportOpen] = React.useState<boolean>(false);
-  const [exportKeys, setExportKeys] = React.useState<Extract<keyof TData, string>[]>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = React.useState({});
 
-  const table = useReactTable({
+  const {
     data,
+    fetchNextPage,
+    isLoading,
+    isFetching,
+  } = api.leads.queryLeads.useInfiniteQuery(
+    { limit: pagination.pageSize },
+    { getNextPageParam: (lastPage) => lastPage.nextCursor }
+  )
+
+  React.useEffect(() => {
+    if (data && data.pages.length < pagination.pageIndex + 1) {
+      fetchNextPage()
+    }
+  }, [data?.pages.length, pagination.pageIndex])
+
+  const table = useReactTable({
+    data: data?.pages.flatMap(page => page.rows) as TData[] || [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -117,6 +127,7 @@ export function DataTable<TData, TValue>({
     onRowSelectionChange: setRowSelection,
     onPaginationChange: setPagination,
     autoResetPageIndex: false,
+    rowCount: data?.pages[0]?.totalCount || 0,
     state: {
       sorting,
       columnFilters,
@@ -149,6 +160,7 @@ export function DataTable<TData, TValue>({
   } = useDropFile();
   const inputRef = React.useRef<HTMLInputElement>(null)
 
+
   React.useEffect(() => setData(table.getSelectedRowModel().rows.map(row => row.original)), [rowSelection])
   React.useEffect(() => {
     setData([])
@@ -173,70 +185,38 @@ export function DataTable<TData, TValue>({
       <div className="flex flex-col py-4 lg:flex-row lg:py-0 items-center justify-between gap-4">
         {sessionData?.user && hasPermission(sessionData?.user, "adminLayout", "view") && !isSuperSimple && (
           <div className="flex items-center gap-8">
-            <Typography>Total records {table.getCoreRowModel().rows.length}</Typography>
+            <Typography>Total records {table.getRowCount()}</Typography>
             {exportConfig && (
               <WrapWithTooltip text="Export">
                 <Button
                   variant={"icon"}
                   customeColor={"mutedIcon"}
-                  onClick={() => setIsExportOpen(true)}>
+                  onClick={() => {
+                    const rows = table.getFilteredSelectedRowModel().rows.length === 0 ? table.getFilteredRowModel().rows : table.getFilteredSelectedRowModel().rows
+                    const exportData = rows.map(r => r.original)
+                    console.log(exportData);
+
+                    exportToExcel(
+                      exportData,
+                      exportConfig.fileName,
+                      exportConfig.sheetName
+                    )
+                  }}>
                   <DownloadCloud className="text-primary" />
                 </Button>
               </WrapWithTooltip>
             )}
-            <Modal
-              title="Export Data"
-              description="Select the fields to export"
-              isOpen={isExportOpen}
-              onClose={() => setIsExportOpen(false)}
-              children={
-                !exportConfig || !data[0]
-                  ? (
-                    <div className="flex flex-col items-center gap-4 p-8">
-                      <Typography>No export configuration</Typography>
-                    </div>
-                  )
-                  : (
-                    <div className="space-y-4">
-                      <SelectField
-                        multiSelect
-                        data={Object.keys(data[0]).map(key => ({
-                          Active: true,
-                          label: upperFirst(key),
-                          value: key,
-                        }))}
-                        listTitle="Fields"
-                        placeholder="Select fields"
-                        setValues={setExportKeys}
-                        values={exportKeys}
-                      />
-                      <Button
-                        onClick={() => {
-                          const rows =
-                            table.getFilteredSelectedRowModel().rows.length === 0
-                              ? table.getFilteredRowModel().rows
-                              : table.getFilteredSelectedRowModel().rows;
-
-                          const exportData = rows.map((r) =>
-                            exportKeys.reduce((acc, key) => {
-                              acc[key] = r.original[key];
-                              return acc;
-                            }, {} as Partial<TData>)
-                          );
-
-                          exportToExcel(exportData, exportConfig.fileName, exportConfig.sheetName);
-                        }}>
-                        Export
-                      </Button>
-                    </div>
-                  )}
-            />
             {importConfig && (
-              <WrapWithTooltip text="Import">
-                <Button variant={"icon"} customeColor={"mutedIcon"} onClick={() => setIsImportOpen(true)}>
-                  <UploadCloud className="text-primary" />
-                </Button>
-              </WrapWithTooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant={"icon"} customeColor={"mutedIcon"} onClick={() => setIsImportOpen(true)}>
+                    <UploadCloud className="text-primary" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Import
+                </TooltipContent>
+              </Tooltip>
             )}
             <Modal
               title="Import Data"
@@ -362,10 +342,10 @@ export function DataTable<TData, TValue>({
                   pageSize={10}
                   setPageSize={table.setPageSize}
                   options={
-                    table.getCoreRowModel().rows.length > 100 ? [5, 10, 50, 100]
-                      : table.getCoreRowModel().rows.length > 50 ? [5, 10, 50]
-                        : table.getCoreRowModel().rows.length > 10 ? [5, 10]
-                          : table.getCoreRowModel().rows.length > 5 ? [5] : []
+                    table.getRowCount() > 100 ? [5, 10, 50, 100]
+                      : table.getRowCount() > 50 ? [5, 10, 50]
+                        : table.getRowCount() > 10 ? [5, 10]
+                          : table.getRowCount() > 5 ? [5] : []
                   }
                 />
               </div>
@@ -400,10 +380,10 @@ export function DataTable<TData, TValue>({
 
                   return (
                     <TableHead className="px-2" key={header.id}>
-                      {searches?.some(s => s.key === header.id) ? (
+                      {searches?.some(s => s.key === header.id || s.key.replace(".", "_") === header.id) ? (
                         <div className="flex items-center gap-2 justify-between">
                           <TableInput
-                            placeholder={searches?.find(s => s.key === header.id)?.label}
+                            placeholder={searches?.find(s => s.key === header.id || s.key.replace(".", "_") === header.id)?.label}
                             value={(table.getColumn(header.id)?.getFilterValue() as string) ?? ""}
                             onChange={(event) =>
                               table.getColumn(header.id)?.setFilterValue(event.target.value)
@@ -434,8 +414,8 @@ export function DataTable<TData, TValue>({
                                     <Typography>
                                       {
                                         table.getFilteredRowModel().rows.length > 0
-                                          ? table.getFilteredRowModel().rows.filter(row => row.original[currentFilter.key as Extract<keyof TData, string>] === val.value).length
-                                          : table.getCoreRowModel().rows.filter(row => row.original[currentFilter.key as Extract<keyof TData, string>] === val.value).length
+                                          ? table.getFilteredRowModel().rows.filter(row => getProperty(row.original, currentFilter.key.replace("_", ".") as keyof TData) === val.value).length
+                                          : table.getCoreRowModel().rows.filter(row => getProperty(row.original, currentFilter.key.replace("_", ".") as keyof TData) === val.value).length
                                       }
                                     </Typography>
                                   </div>
@@ -546,9 +526,9 @@ export function DataTable<TData, TValue>({
                             <div className="flex items-center gap-4">
                               <Typography className="text-muted">{sum.label}</Typography>
                               <Typography className="text-muted">
-                                {formatPrice(table.getFilteredSelectedRowModel().rows.length > 0 ? table.getFilteredSelectedRowModel().rows.map(r => r.original[sum.key]).reduce((a, b) => {
+                                {formatPrice(table.getFilteredSelectedRowModel().rows.length > 0 ? table.getFilteredSelectedRowModel().rows.map(r => getProperty(r.original, sum.key.replace("_", ".") as keyof TData)).reduce((a, b) => {
                                   return Number(a) + Number(b)
-                                }, 0) : table.getFilteredRowModel().rows.map(r => r.original[sum.key]).reduce((a, b) => {
+                                }, 0) : table.getFilteredRowModel().rows.map(r => getProperty(r.original, sum.key.replace("_", ".") as keyof TData)).reduce((a, b) => {
                                   return Number(a) + Number(b)
                                 }, 0))}
                               </Typography>
@@ -582,7 +562,7 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody className={skele ? "bg-muted/20 animate-pulse" : ""}>
+          <TableBody className={isLoading ? "bg-muted/20 animate-pulse" : ""}>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
@@ -599,7 +579,7 @@ export function DataTable<TData, TValue>({
                   ))}
                 </TableRow>
               ))
-            ) : skele ? (
+            ) : isLoading || isFetching ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
@@ -673,7 +653,7 @@ export const PaginationPageSizeSelectors: React.FC<PaginationPageSizeSelectorsPr
       <div className="flex items-center gap-2 px-4">
         {options.map(item => (
           <Button
-            key={`${item}DataTablePageSize`}
+            key={`${item}DataTableQueriedPageSize`}
             variant={item === localPageSize ? "default" : "outline"}
             customeColor={item === localPageSize ? "primary" : "primaryOutlined"}
             className="h-4 w-8 p-0 transition-all duration-100"

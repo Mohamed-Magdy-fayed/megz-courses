@@ -88,6 +88,34 @@ export const leadsRouter = createTRPCRouter({
 
             return { leads };
         }),
+    queryLeads: protectedProcedure
+        .input(z.object({
+            limit: z.number().min(1).max(100).default(10),
+            cursor: z.string().nullish(),
+        }))
+        .query(async ({ ctx, input: { limit, cursor } }) => {
+            const items = await ctx.prisma.lead.findMany({
+                include: {
+                    leadStage: true, assignee: { include: { user: true } },
+                    labels: true,
+                    notes: true,
+                    user: true,
+                },
+                take: limit + 1,
+                cursor: cursor ? { id: cursor } : undefined,
+                orderBy: { id: "desc" },
+            });
+
+            let nextCursor: typeof cursor | undefined = undefined;
+            if (items.length > limit) {
+                const nextItem = items.pop();
+                nextCursor = nextItem!.id;
+            }
+
+            const totalCount = await ctx.prisma.courseStatus.count();
+
+            return { rows: items, totalCount, nextCursor };
+        }),
     getMyLeads: protectedProcedure
         .query(async ({ ctx }) => {
             const assigneeId = ctx.session.user.id
