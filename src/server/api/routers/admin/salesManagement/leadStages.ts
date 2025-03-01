@@ -18,10 +18,10 @@ export const leadStagesRouter = createTRPCRouter({
 
             await ctx.prisma.lead.updateMany({
                 where: {
-                    OR: {
-                        email: { in: usersWithEamil.map(u => u.email).filter(l => l !== null) },
-                        phone: { in: usersWithPhone.map(u => u.phone).filter(l => l !== null) },
-                    }
+                    OR: [
+                        { email: { in: usersWithEamil.map(u => u.email).filter(l => l !== null) } },
+                        { phone: { in: usersWithPhone.map(u => u.phone).filter(l => l !== null) } },
+                    ]
                 },
                 data: {
                     isInvalid: true,

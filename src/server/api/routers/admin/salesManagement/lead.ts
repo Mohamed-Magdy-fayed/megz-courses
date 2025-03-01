@@ -14,9 +14,6 @@ import { CredentialsEmail } from "@/components/emails/CredintialsEmail";
 import { sendZohoEmail } from "@/lib/emailHelpers";
 import { sendWhatsAppMessage } from "@/lib/whatsApp";
 import { hasPermission } from "@/server/permissions";
-import { createUser, getUserById } from "@/server/api/services/users";
-import { getCourseById } from "@/server/api/services/courses";
-import { getLeadStage } from "@/server/api/services/leadStages";
 
 export const leadsRouter = createTRPCRouter({
     createLead: protectedProcedure
@@ -328,15 +325,15 @@ export const leadsRouter = createTRPCRouter({
                 message: "You are not authorized to create orders, Please contact your Admin!"
             })
 
-            const salesAgentUser = await getUserById(ctx.prisma, ctx.session.user.id, { SalesAgent: true })
+            const salesAgentUser = await ctx.prisma.user.findUnique({ where: { id: ctx.session.user.id }, include: { SalesAgent: true } })
             if (!salesAgentUser) throw new TRPCError({ code: "BAD_REQUEST", message: "No salesagent user found!" })
 
-            const course = await getCourseById(ctx.prisma, courseId)
+            const course = await ctx.prisma.course.findUnique({ where: { id: courseId } })
             if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "Course not found!" })
 
             const password = "@P" + randomUUID().toString().split("-")[0] as string;
-
-            const user = await createUser(ctx.prisma, { name, email, phone, password, emailVerified: true })
+            const hashedPassword = await bcrypt.hash(password, 10)
+            const user = await ctx.prisma.user.findUnique({ where: { name, email, phone, hashedPassword, emailVerified: new Date() } })
             if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to create user" })
 
             const totalPrice = isPrivate ? course.privatePrice : course.groupPrice
@@ -347,7 +344,7 @@ export const leadsRouter = createTRPCRouter({
 
             const paymentLink = `${env.PAYMOB_BASE_URL}/unifiedcheckout/?publicKey=${env.PAYMOB_PUBLIC_KEY}&clientSecret=${intentResponse.client_secret}`
 
-            const convertedStage = await getLeadStage(ctx.prisma, { defaultStage: "Converted" })
+            const convertedStage = await ctx.prisma.leadStage.findUnique({ where: { defaultStage: "Converted" } })
             if (!convertedStage) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Default Stage Missing!" })
 
             const [order] = await ctx.prisma.$transaction([

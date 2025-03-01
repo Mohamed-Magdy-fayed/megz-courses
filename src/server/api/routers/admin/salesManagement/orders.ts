@@ -15,10 +15,6 @@ import { EmailsWrapper } from "@/components/emails/EmailsWrapper";
 import PaymentConfEmail from "@/components/emails/PaymentConfEmail";
 import { sendWhatsAppMessage } from "@/lib/whatsApp";
 import { hasPermission } from "@/server/permissions";
-import { createUser, getUserById } from "@/server/api/services/users";
-import { getCourseById } from "@/server/api/services/courses";
-import { getLeadStage } from "@/server/api/services/leadStages";
-import { createLead } from "@/server/api/services/leads";
 import { subscriptionTiers } from "@/lib/system";
 
 export const ordersRouter = createTRPCRouter({
@@ -385,14 +381,14 @@ export const ordersRouter = createTRPCRouter({
             })
 
             const password = "@P" + randomUUID().toString().split("-")[0] as string;
-            const user = await createUser(ctx.prisma, { name, email, phone, password, emailVerified: true })
+            const hashedPassword = await bcrypt.hash(password, 10)
+            const user = await ctx.prisma.user.findUnique({ where: { name, email, phone, hashedPassword, emailVerified: new Date() } })
             if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to get user" })
-
-            const salesAgentUser = await getUserById(ctx.prisma, ctx.session.user.id, { SalesAgent: true })
+            const salesAgentUser = await ctx.prisma.user.findUnique({ where: { id: ctx.session.user.id }, include: { SalesAgent: true } })
             if (!salesAgentUser) throw new TRPCError({ code: "BAD_REQUEST", message: "No user found!" })
             const salesAgentId = salesAgentUser.id
 
-            const course = await getCourseById(ctx.prisma, courseDetails.courseId)
+            const course = await ctx.prisma.course.findUnique({ where: { id: courseDetails.courseId } })
             if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "Course not found!" })
 
             const totalPrice = courseDetails.isPrivate ? course.privatePrice : course.groupPrice
@@ -403,22 +399,24 @@ export const ordersRouter = createTRPCRouter({
 
             const paymentLink = `${env.PAYMOB_BASE_URL}/unifiedcheckout/?publicKey=${env.PAYMOB_PUBLIC_KEY}&clientSecret=${intentResponse.client_secret}`
 
-            const convertedStageId = (await getLeadStage(ctx.prisma, { defaultStage: "Converted" }))?.id
+            const convertedStageId = (await ctx.prisma.leadStage.findUnique({ where: { defaultStage: "Converted" } }))?.id
             if (!convertedStageId) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No converted stage found!" })
 
-            const lead = await createLead(ctx.prisma, {
-                assignee: { connect: { userId: salesAgentId } },
-                code: leadsCodeGenerator(),
-                isAssigned: true,
-                isAutomated: false,
-                isReminderSet: false,
-                source: "Manual",
-                email: user.email,
-                name: user.name,
-                phone: user.phone,
-                leadStage: { connect: { id: convertedStageId } },
-                labels: { connectOrCreate: { where: { value: "Quick Order" }, create: { value: "Quick Order" } } },
-                message: "Quick Order",
+            const lead = await ctx.prisma.lead.create({
+                data: {
+                    assignee: { connect: { userId: salesAgentId } },
+                    code: leadsCodeGenerator(),
+                    isAssigned: true,
+                    isAutomated: false,
+                    isReminderSet: false,
+                    source: "Manual",
+                    email: user.email,
+                    name: user.name,
+                    phone: user.phone,
+                    leadStage: { connect: { id: convertedStageId } },
+                    labels: { connectOrCreate: { where: { value: "Quick Order" }, create: { value: "Quick Order" } } },
+                    message: "Quick Order",
+                }
             })
             if (!lead) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "create lead failed" })
 

@@ -8,7 +8,7 @@ import { validGroupStatuses, validSessionStatuses } from "@/lib/enumsTypes";
 import { generateGroupNumnber } from "@/lib/utils";
 import { createZoomMeeting, generateGroupMeetingConfig, getAvailableZoomClient, refreshZoomAccountToken } from "@/lib/meetingsHelpers";
 import { hasPermission } from "@/server/permissions";
-import { createMeeting, generateToken, getMeetingDetails, getUserRooms } from "@/lib/onMeetingApi";
+import { createMeeting, generateToken } from "@/lib/onMeetingApi";
 
 export const zoomGroupsRouter = createTRPCRouter({
     attendSession: protectedProcedure
@@ -169,10 +169,10 @@ export const zoomGroupsRouter = createTRPCRouter({
         .query(async ({ ctx, input }) => {
             const zoomGroups = await ctx.prisma.zoomGroup.findMany({
                 where: {
-                    OR: input ? {
-                        id: { in: input.ids },
-                        courseId: input.courseId,
-                    } : undefined,
+                    OR: input ? [
+                        { id: { in: input.ids } },
+                        { courseId: input.courseId },
+                    ] : undefined,
                 },
                 orderBy: { createdAt: "desc" },
                 include: {
