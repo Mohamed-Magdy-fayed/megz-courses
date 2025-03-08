@@ -60,9 +60,11 @@ interface DataTableProps<TData, TValue> {
     fields?: Extract<keyof TData, string>[];
   },
   skele?: boolean,
+  error?: string,
   sum?: {
     key: Extract<keyof TData, string>,
     label: string,
+    isNegative?: boolean,
   };
   dateRanges?: {
     key: Extract<keyof TData, string>,
@@ -90,6 +92,7 @@ export function DataTable<TData, TValue>({
   importConfig,
   exportConfig,
   skele,
+  error,
   sum,
   dateRanges,
   searches,
@@ -422,7 +425,7 @@ export function DataTable<TData, TValue>({
                         </div>
                       ) : currentFilter ? (
                         <div className="space-y-2">
-                          <div className="flex items-center gap-4">
+                          <div className="flex items-center w-fit gap-4">
                             <TableSelectField
                               data={currentFilter.values.map(val => ({
                                 Active: true,
@@ -543,14 +546,14 @@ export function DataTable<TData, TValue>({
                           </div>
                         ) : header.id === sum?.key
                           ? (
-                            <div className="flex items-center gap-4">
-                              <Typography className="text-muted">{sum.label}</Typography>
-                              <Typography className="text-muted">
-                                {formatPrice(table.getFilteredSelectedRowModel().rows.length > 0 ? table.getFilteredSelectedRowModel().rows.map(r => r.original[sum.key]).reduce((a, b) => {
+                            <div className="flex items-center gap-4 flex-shrink">
+                              <Typography className={cn(sum.isNegative ? "text-destructive" : "text-muted")}>{sum.label}</Typography>
+                              <Typography className={cn(sum.isNegative ? "text-destructive" : "text-muted")}>
+                                {sum.isNegative && "("}{formatPrice(table.getFilteredSelectedRowModel().rows.length > 0 ? table.getFilteredSelectedRowModel().rows.map(r => r.original[sum.key]).reduce((a, b) => {
                                   return Number(a) + Number(b)
                                 }, 0) : table.getFilteredRowModel().rows.map(r => r.original[sum.key]).reduce((a, b) => {
                                   return Number(a) + Number(b)
-                                }, 0))}
+                                }, 0))}{sum.isNegative && ")"}
                               </Typography>
                               <Button
                                 className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
@@ -608,6 +611,15 @@ export function DataTable<TData, TValue>({
                   <div className="flex w-fit mx-auto items-center gap-2">
                     <Typography>Loading...</Typography><Spinner className="w-4 h-4" />
                   </div>
+                </TableCell>
+              </TableRow>
+            ) : error ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  {error}
                 </TableCell>
               </TableRow>
             ) : (

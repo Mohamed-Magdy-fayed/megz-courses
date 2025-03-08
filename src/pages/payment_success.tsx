@@ -1,65 +1,79 @@
 import Spinner from "@/components/Spinner"
 import LandingLayout from "@/components/landingPageComponents/LandingLayout"
-import OrderReceipt from "@/components/orders/OrderReceipt"
+import OrderReceipt from "@/components/admin/salesManagement/orders/OrderReceipt"
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toastType, useToast } from "@/components/ui/use-toast"
 import { api } from "@/lib/api"
 import { createMutationOptions } from "@/lib/mutationsHelper"
-import { Prisma } from "@prisma/client"
 import Head from "next/head"
-import { useRouter } from "next/router"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { GetServerSideProps, InferGetServerSidePropsType } from "next"
 
-type OrderDetailsType = Prisma.OrderGetPayload<{
-    include: {
-        user: true,
-        lead: true,
-        course: true,
+export type PaymentData = {
+    id: string;
+    amount_cents: string;
+    success: string;
+    merchant_order_id: string;
+};
+
+export const getServerSideProps: GetServerSideProps<PaymentData> = async (context) => {
+    const { query } = context;
+
+    if (typeof query.id !== "string" || typeof query.amount_cents !== "string" || typeof query.success !== "string" || typeof query.merchant_order_id !== "string") {
+        throw new Error(`Incorrect response! something is missing or not a string.`);
     }
-}>
 
-const SuccessfullPaymentPage = () => {
-    const router = useRouter()
-    const transactionId = router.query.id as string
-    const orderNumber = router.query.merchant_order_id as string
+    return {
+        props: {
+            id: query.id,
+            amount_cents: query.amount_cents,
+            success: query.success,
+            merchant_order_id: query.merchant_order_id,
+        },
+    };
+};
+
+export default function SuccessfullPaymentPage({ amount_cents, id, merchant_order_id, success }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     const { toast } = useToast()
     const [loadingToast, setLoadingToast] = useState<toastType>()
-    const [orderData, setOrderData] = useState<OrderDetailsType>()
 
-    const { data: siteData, refetch: refetchSiteData } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: (!!transactionId && !!orderNumber) })
+    const { data: siteData, refetch: refetchSiteData } = api.siteIdentity.getSiteIdentity.useQuery()
     const trpcUtils = api.useUtils()
-    const payOrderMutation = api.orders.payOrder.useMutation(
+    const createMutation = api.payments.create.useMutation(
         createMutationOptions({
             trpcUtils,
             loadingToast,
             setLoadingToast,
             toast,
-            successMessageFormatter: ({ updatedOrder, courseLink }) => {
-                setOrderData(updatedOrder)
-                if (!courseLink) return "This order is already Paid!"
-                return `Thanks for completing the payment for order: ${updatedOrder.orderNumber}`
+            successMessageFormatter: ({ payment }) => {
+                if (!payment) return "This payment is already proccessed!"
+                return `Thanks for your payment of ${payment.paymentAmount} for order: ${merchant_order_id}`
             },
         })
     )
 
-    useEffect(() => {
-        if (!siteData?.siteIdentity.logoPrimary) {
-            refetchSiteData()
-            return
-        }
-        if (!!transactionId && !!orderNumber) payOrderMutation.mutate({ orderNumber, transactionId })
-    }, [orderNumber, transactionId, siteData?.siteIdentity.logoPrimary])
+    const paymentAmount = useMemo(() => (Number(amount_cents) / 100), [amount_cents])
+
+    // useEffect(() => {
+    //     if (!siteData?.siteIdentity.logoPrimary) {
+    //         refetchSiteData()
+    //         return
+    //     }
+    //     createMutation.mutate({ orderId, paymentAmount: , paymentId: id })
+    // }, [merchant_order_id, id, siteData?.siteIdentity.logoPrimary])
 
     return (
         <LandingLayout>
             <Head>
-                <title>{`Order | ${!!orderNumber ? orderNumber : "Loading..."}`}</title>
-                <meta name="description" content={`Order Details for order ${orderNumber}`} />
+                <title>{`Order | ${!!merchant_order_id ? merchant_order_id : "Loading..."}`}</title>
+                <meta name="description" content={`Order Details for order ${merchant_order_id}`} />
                 <meta name="robots" content="index, follow" />
             </Head>
             <ConceptTitle className="mb-4">Payment Successfull</ConceptTitle>
-            {!!loadingToast || !orderData
+            {!success ? (
+                <Typography>Payment Failed!</Typography>
+            ) : !!loadingToast
                 ? (
                     <Skeleton className="max-w-4xl mx-auto h-96 grid place-content-center">
                         <div className="flex items-center gap-2">
@@ -70,10 +84,8 @@ const SuccessfullPaymentPage = () => {
                         </div>
                     </Skeleton>
                 ) : (
-                    <OrderReceipt adminView={false} order={orderData} />
+                    <OrderReceipt adminView={false} orderNumber={merchant_order_id} />
                 )}
         </LandingLayout>
     )
 }
-
-export default SuccessfullPaymentPage

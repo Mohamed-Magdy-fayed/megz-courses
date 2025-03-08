@@ -6,7 +6,7 @@ import {
 import { TRPCError } from "@trpc/server";
 
 import { hasPermission } from "@/server/permissions";
-import { productSchema } from "@/components/systemManagement/products/ProductForm";
+import { productSchema } from "@/components/admin/systemManagement/products/ProductForm";
 
 export const productsRouter = createTRPCRouter({
     getById: protectedProcedure
@@ -17,8 +17,6 @@ export const productsRouter = createTRPCRouter({
             const product = await ctx.prisma.product.findUnique({
                 where: { id },
                 include: {
-                    courses: true,
-                    levels: true,
                     orders: true,
                 }
             });
@@ -37,10 +35,11 @@ export const productsRouter = createTRPCRouter({
         }),
     create: protectedProcedure
         .input(productSchema)
-        .mutation(async ({ input: { active, name, price, description, discountedPrice }, ctx }) => {
+        .mutation(async ({ input: { isActive,isPrivate, name, price, description, discountedPrice }, ctx }) => {
             const product = await ctx.prisma.product.create({
                 data: {
-                    active,
+                    isActive,
+                    isPrivate,
                     name,
                     price,
                     description,
@@ -56,9 +55,10 @@ export const productsRouter = createTRPCRouter({
         .input(z.array(productSchema))
         .mutation(async ({ input, ctx }) => {
             const products = await ctx.prisma.$transaction(
-                input.map(({ active, name, price, description, discountedPrice }) => ctx.prisma.product.create({
+                input.map(({ isActive,isPrivate, name, price, description, discountedPrice }) => ctx.prisma.product.create({
                     data: {
-                        active,
+                        isActive,
+                        isPrivate,
                         name,
                         price,
                         description,
@@ -76,14 +76,15 @@ export const productsRouter = createTRPCRouter({
         .mutation(
             async ({
                 ctx,
-                input: { id, active, name, price, description, discountedPrice },
+                input: { id, isActive,isPrivate, name, price, description, discountedPrice },
             }) => {
                 const product = await ctx.prisma.product.update({
                     where: {
                         id,
                     },
                     data: {
-                        active,
+                        isActive,
+                        isPrivate,
                         name,
                         price,
                         description,

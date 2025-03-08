@@ -23,11 +23,11 @@ import LevelForm from "@/components/contentComponents/levels/LevelForm";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import LevelClient from "@/components/contentComponents/levels/LevelClient";
 import MaterialsClient from "@/components/contentComponents/materials/MaterialsClient";
-import CreateQuickOrderModal from "@/components/leads/CreateQuickOrderModal";
 import { preMeetingLinkConstructor } from "@/lib/meetingsHelpers";
 import { createMutationOptions } from "@/lib/mutationsHelper";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { AlertModal } from "@/components/modals/AlertModal";
+import CreateOrderModal from "@/components/admin/salesManagement/modals/CreateOrderModal";
 
 const tabs = [
     { value: "levels", label: "Levels" },
@@ -186,7 +186,11 @@ const CoursePage = () => {
                     )}
                 />
                 <CustomFormModal isOpen={isAddFormOpen} setIsOpen={setIsAddFormOpen} />
-                <CreateQuickOrderModal isOpen={isAddOrderOpen} setIsOpen={setIsAddOrderOpen} />
+                {/* <CreateQuickOrderModal isOpen={isAddOrderOpen} setIsOpen={setIsAddOrderOpen} /> */}
+                <CreateOrderModal
+                    isOpen={isAddOrderOpen}
+                    setIsOpen={setIsAddOrderOpen}
+                />
                 {isLoading ? (
                     <Spinner className="w-full h-40" />
                 ) : isError ? (

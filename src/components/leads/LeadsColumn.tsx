@@ -22,7 +22,6 @@ export type Lead = {
   message?: string;
   phone?: string;
   source: LeadSource;
-  orderDetails: Order | null;
   isOverdue: "Overdue" | "Due today" | "Not set" | "Due later";
   stage: LeadStage | null;
   stages: LeadStage[] | undefined;

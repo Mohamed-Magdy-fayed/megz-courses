@@ -8,7 +8,8 @@ import Link from "next/link";
 
 export type ProductColumn = {
     id: string;
-    active: "Active" | "Inactive";
+    isActive: "Active" | "Inactive";
+    isPrivate: "Private" | "Group";
     description: string | null;
     discountedPrice: number | null;
     name: string;
@@ -40,7 +41,8 @@ export const productColumns: ColumnDef<ProductColumn>[] = [
         enableHiding: false
     },
     { accessorKey: "name", cell: ({ row }) => <Link className="in-table-link" href={`/admin/system_management/products/${row.original.id}`}>{row.original.name}</Link> },
-    { accessorKey: "active", cell: ({ row }) => <SeverityPill color={row.original.active === "Active" ? "success" : "destructive"} children={row.original.active} /> },
+    { accessorKey: "isActive", cell: ({ row }) => <SeverityPill color={row.original.isActive === "Active" ? "success" : "destructive"} children={row.original.isActive} /> },
+    { accessorKey: "isprivate", cell: ({ row }) => <SeverityPill color={row.original.isPrivate === "Private" ? "primary" : "info"} children={row.original.isPrivate} /> },
     { accessorKey: "price", cell: ({ row }) => formatPrice(row.original.price), filterFn },
     { accessorKey: "discountedPrice", cell: ({ row }) => row.original.discountedPrice ? formatPrice(row.original.discountedPrice) : "No discount", filterFn },
     { accessorKey: "amounts", cell: ({ row }) => `${row.original.orders.length} Orders` },

@@ -1,16 +1,16 @@
-import { ButtonHTMLAttributes, Dispatch, FC, SetStateAction, useState } from "react"
+import { ButtonHTMLAttributes, FC } from "react"
 import { buttonVariants } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { DayPicker } from "react-day-picker"
-import { ZoomClient, ZoomSession } from "@prisma/client"
+import { ZoomSession } from "@prisma/client"
 
 interface DateMultiplePickerProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     maxDays: number;
     hours: number;
     minutes: number;
     trainerSessions: Date[];
-    zoomClients: (ZoomClient & { zoomSessions: ZoomSession[] })[];
+    zoomClients: ({ zoomSessions: ZoomSession[] })[];
     days: Date[];
     setDays: (dates: Date[]) => void;
 }

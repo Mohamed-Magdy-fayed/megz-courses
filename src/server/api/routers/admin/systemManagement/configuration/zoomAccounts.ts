@@ -67,7 +67,7 @@ export const zoomAccountsRouter = createTRPCRouter({
         }),
     getZoomAccounts: protectedProcedure
         .query(async ({ ctx }) => {
-            const zoomAccounts = await ctx.prisma.zoomClient.findMany({ include: { zoomSessions: true } })
+            const zoomAccounts = await ctx.prisma.zoomClient.findMany({ include: { zoomSessions: true }, omit: { accessToken: true, refreshToken: true, encodedIdSecret: true } })
             return { zoomAccounts }
         }),
     getAccountMeetings: protectedProcedure
@@ -83,12 +83,16 @@ export const zoomAccountsRouter = createTRPCRouter({
                 meetingPassword: true,
                 sessionDate: true,
                 materialItem: { select: { title: true } },
-                zoomClient: true,
+                zoomClient: { omit: { accessToken: true, refreshToken: true, } },
                 zoomGroup: { select: { teacher: { select: { user: { select: { id: true, name: true } } } }, id: true, groupNumber: true } },
                 placementTest: { select: { id: true, course: true, student: { select: { name: true } }, tester: { select: { user: { select: { name: true, id: true } } } } } }
             }
+
             if (isUpcoming) {
-                const zoomSessions = await ctx.prisma.zoomSession.findMany({ where: { zoomClientId: id, sessionDate: { gte: new Date() } }, select })
+                const zoomSessions = await ctx.prisma.zoomSession.findMany({
+                    where: { zoomClientId: id, sessionDate: { gte: new Date() } },
+                    select,
+                })
                 return { zoomSessions }
             }
             const zoomSessions = await ctx.prisma.zoomSession.findMany({ where: { zoomClientId: id }, select })
@@ -112,7 +116,7 @@ export const zoomAccountsRouter = createTRPCRouter({
             endDate: z.date().optional(),
         }))
         .mutation(async ({ ctx, input: { id, startDate, endDate } }) => {
-            const zoomClient = await ctx.prisma.zoomClient.findUnique({ where: { id } })
+            const zoomClient = await ctx.prisma.zoomClient.findUnique({ where: { id }, omit: { accessToken: true, refreshToken: true } })
             if (!zoomClient) throw new TRPCError({ code: "BAD_REQUEST", message: "No Zoom Account with this ID" })
 
             if (!zoomClient.isZoom) {

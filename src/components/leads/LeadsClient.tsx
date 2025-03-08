@@ -7,7 +7,7 @@ import { createMutationOptions } from "@/lib/mutationsHelper";
 import { toastType, useToast } from "@/components/ui/use-toast";
 
 type LeadsClientProps = {
-  stage: Prisma.LeadStageGetPayload<{ include: { leads: { include: { orderDetails: true, labels: true, assignee: { include: { user: true } } } } } }>;
+  stage: Prisma.LeadStageGetPayload<{ include: { leads: { include: { orders: true, labels: true, assignee: { include: { user: true } } } } } }>;
   stagesData: LeadStage[];
   resetSelection: boolean;
   handleImport: (data: { name: string, email: string, phone: string }[]) => void;
@@ -35,7 +35,6 @@ const LeadsClient: FC<LeadsClientProps> = ({ resetSelection, stage, stagesData, 
     assignee,
     labels,
     reminders,
-    orderDetails,
     createdAt,
     updatedAt,
   }) => {
@@ -58,7 +57,6 @@ const LeadsClient: FC<LeadsClientProps> = ({ resetSelection, stage, stagesData, 
       assignee,
       labels,
       isOverdue: !lastReminder ? "Not set" : isOverdue ? "Overdue" : dueToday ? "Due today" : "Due later",
-      orderDetails,
       assigneeName: assignee?.user.name || "Not Assigned",
       image: image || "",
       userId: userId || "",

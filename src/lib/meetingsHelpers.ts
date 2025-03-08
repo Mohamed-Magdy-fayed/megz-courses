@@ -74,7 +74,8 @@ export async function getAvailableZoomClient(
 ) {
     const zoomClients = await prisma.zoomClient.findMany({
         include: { zoomSessions: true },
-        orderBy: { id: "desc" }
+        orderBy: { id: "desc" },
+        omit: { accessToken: true, refreshToken: true }
     });
 
     const endDate = new Date(startDate);

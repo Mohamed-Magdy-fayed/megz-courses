@@ -15,7 +15,8 @@ import { z } from "zod"
 
 export const productSchema = z.object({
     id: z.string(),
-    active: z.boolean(),
+    isActive: z.boolean(),
+    isPrivate: z.boolean(),
     name: z.string(),
     price: z.number(),
     description: z.string().optional(),
@@ -33,7 +34,8 @@ export default function ProductForm({ setIsOpen, initialData }: { initialData?: 
         resolver: zodResolver(productSchema),
         defaultValues: {
             id: initialData?.id ?? "",
-            active: initialData?.active === "Active" ? true : false,
+            isActive: initialData?.isActive === "Active" ? true : false,
+            isPrivate: initialData?.isPrivate === "Private" ? true : false,
             name: initialData?.name ?? "",
             price: initialData?.price ?? undefined,
             discountedPrice: initialData?.discountedPrice ?? undefined,
@@ -152,27 +154,50 @@ export default function ProductForm({ setIsOpen, initialData }: { initialData?: 
                         )}
                     />
                 </div>
-                <FormField
-                    control={form.control}
-                    name="active"
-                    render={({ field }) => (
-                        <FormItem className="p-2">
-                            <FormControl>
-                                <div className="flex items-center gap-4">
-                                    <Switch
-                                        name={field.name}
-                                        ref={field.ref}
-                                        disabled={!!loadingToast}
-                                        checked={field.value}
-                                        onCheckedChange={(val) => field.onChange(val)}
-                                    />
-                                    <FormLabel>Is Active?</FormLabel>
-                                </div>
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                <div className="flex items-center gap-4 justify-between">
+                    <FormField
+                        control={form.control}
+                        name="isActive"
+                        render={({ field }) => (
+                            <FormItem className="p-2">
+                                <FormControl>
+                                    <div className="flex items-center gap-4">
+                                        <Switch
+                                            name={field.name}
+                                            ref={field.ref}
+                                            disabled={!!loadingToast}
+                                            checked={field.value}
+                                            onCheckedChange={(val) => field.onChange(val)}
+                                        />
+                                        <FormLabel>Is Active?</FormLabel>
+                                    </div>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="isPrivate"
+                        render={({ field }) => (
+                            <FormItem className="p-2">
+                                <FormControl>
+                                    <div className="flex items-center gap-4">
+                                        <Switch
+                                            name={field.name}
+                                            ref={field.ref}
+                                            disabled={!!loadingToast}
+                                            checked={field.value}
+                                            onCheckedChange={(val) => field.onChange(val)}
+                                        />
+                                        <FormLabel>Is Private?</FormLabel>
+                                    </div>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
                 <div className="flex justify-end">
                     <SpinnerButton icon={initialData ? Edit3Icon : PlusSquare} isLoading={!!loadingToast} text={initialData ? "Update" : "Create"} type="submit" />
                 </div>

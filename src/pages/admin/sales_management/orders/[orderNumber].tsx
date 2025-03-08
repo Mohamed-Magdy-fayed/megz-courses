@@ -1,26 +1,24 @@
-import Spinner from '@/components/Spinner'
 import AppLayout from '@/components/layout/AppLayout'
-import OrderReceipt from '@/components/orders/OrderReceipt'
-import { api } from '@/lib/api'
-import { useRouter } from 'next/router'
+import OrderReceipt from '@/components/admin/salesManagement/orders/OrderReceipt'
+import { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 
-const OrderPage = () => {
-    const router = useRouter()
-    const orderNumber = router.query.orderNumber as string
-
-    const orderQuery = api.orders.getByOrderNumber.useQuery({ orderNumber })
-
+const OrderPage = ({ orderNumber }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     return (
         <AppLayout>
-            {!orderNumber || !orderQuery.data?.order ? (
-                <div className='w-full h-full grid place-content-center'>
-                    <Spinner />
-                </div>
-            ) : (
-                <OrderReceipt order={orderQuery.data.order} adminView />
-            )}
+            <OrderReceipt orderNumber={orderNumber} adminView />
         </AppLayout>
     )
+}
+
+export const getServerSideProps: GetServerSideProps<{ orderNumber: string }> = async (ctx) => {
+    const orderNumber = ctx.query.orderNumber
+    if (typeof orderNumber !== "string") return { notFound: true }
+
+    return {
+        props: {
+            orderNumber,
+        }
+    }
 }
 
 export default OrderPage

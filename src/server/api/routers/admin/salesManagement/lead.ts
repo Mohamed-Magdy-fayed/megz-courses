@@ -85,6 +85,25 @@ export const leadsRouter = createTRPCRouter({
 
             return { leads };
         }),
+    getLeadOrders: protectedProcedure
+        .input(z.object({
+            leadId: z.string(),
+        }))
+        .query(async ({ ctx, input: { leadId } }) => {
+            const orders = await ctx.prisma.order.findMany({
+                where: { leadId },
+                include: {
+                    user: true,
+                    lead: { include: { assignee: { include: { user: true } } } },
+                    course: true,
+                    product: true,
+                    payments: true,
+                    refunds: true,
+                }
+            });
+
+            return { orders };
+        }),
     queryLeads: protectedProcedure
         .input(z.object({
             limit: z.number().min(1).max(100).default(10),
@@ -158,7 +177,7 @@ export const leadsRouter = createTRPCRouter({
                     labels: true,
                     notes: true,
                     interactions: { include: { customer: true, salesAgent: { include: { user: true } } } },
-                    orderDetails: {
+                    orders: {
                         include: {
                             course: { include: { systemForms: true } },
                             user: {
@@ -352,7 +371,6 @@ export const leadsRouter = createTRPCRouter({
                     data: {
                         amount: totalPrice,
                         orderNumber,
-                        paymentId: intentResponse.id,
                         paymentLink,
                         lead: { connect: { id: leadId } },
                         course: { connect: { id: courseId } },

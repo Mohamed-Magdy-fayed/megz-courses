@@ -128,7 +128,6 @@ export const coursesRouter = createTRPCRouter({
       const user = await ctx.prisma.user.findUnique({
         where: { id: ctx.session.user.id },
         include: {
-          orders: true,
           placementTests: { include: { tester: true, writtenTest: true } },
           systemFormSubmissions: true,
           zoomGroups: { include: { zoomSessions: { include: { materialItem: true } } } },
@@ -141,7 +140,7 @@ export const coursesRouter = createTRPCRouter({
       const courses = await ctx.prisma.course.findMany({
         where: {
           id: {
-            in: user.orders.map(order => order.courseId),
+            in: user.courseStatus.map(status => status.courseId),
           }
         },
         include: { levels: true, systemForms: true },
@@ -171,6 +170,7 @@ export const coursesRouter = createTRPCRouter({
             }
           },
           levels: { include: { materialItems: { include: { systemForms: true, zoomSessions: true } } } },
+          systemForms: true,
         },
       });
       return { course };

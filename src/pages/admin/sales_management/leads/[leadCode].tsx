@@ -21,21 +21,18 @@ import LabelsForm from "@/components/leads/LabelsForm";
 import RemindersForm from "@/components/leads/RemindersForm";
 import NotesForm from "@/components/leads/NotesForm";
 import GoBackButton from "@/components/ui/go-back";
-import SchedulePlacementTestModal from "@/components/modals/SchedulePlacementTestModal";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import Link from "next/link";
-import CreateOrderModal from "@/components/modals/CreateOrderModal";
-import OrderInfoPanel from "@/components/salesOperation/OrderInfoPanel";
 import InteractionsForm from "@/components/leads/InteractionsForm";
 import { validLeadInteractionsColors } from "@/lib/enumColors";
 import WrapWithTooltip from "@/components/ui/wrap-with-tooltip";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { CreatedUserData } from "@/components/leads/CreateQuickOrderModal";
-import OrderDetailsModal from "@/components/leads/OrderDetailsModal";
 import { ZoomSession } from "@prisma/client";
 import { preMeetingLinkConstructor } from "@/lib/meetingsHelpers";
 import { env } from "@/env.mjs";
+import CreateOrderModal from "@/components/admin/salesManagement/modals/CreateOrderModal";
+import LeadOrdersClient from "@/components/admin/salesManagement/leads/LeadOrdersClient";
 
 export default function LeadPage() {
     const router = useRouter()
@@ -55,7 +52,6 @@ export default function LeadPage() {
     const [isScheduleTestOpen, setIsScheduleTestOpen] = useState(false)
     const [isCreateOrderOpen, setIsCreateOrderOpen] = useState(false)
     const [orderDetailsOpen, setOrderDetailsOpen] = useState(false)
-    const [userDetails, setUserDetails] = useState<CreatedUserData>({ email: "", password: "", leadCode: "", writtenTestUrl: "" })
 
     const [loadingToast, setLoadingToast] = useState<toastType>();
     const { toast } = useToast()
@@ -194,14 +190,6 @@ export default function LeadPage() {
         return undefined
     }, [leadData?.lead?.reminders])
 
-    const testSession = useMemo(() => {
-        const session = leadData?.lead?.orderDetails?.user?.placementTests[0]?.zoomSessions.find(s => s.sessionStatus !== "Cancelled")
-        return {
-            session,
-            isZoom: session?.zoomClient?.isZoom,
-        }
-    }, [leadData?.lead])
-
     return (
         <AppLayout>
             <AssignModal
@@ -218,18 +206,17 @@ export default function LeadPage() {
                 onConfirm={handleDelete}
                 description="The lead data can not be restored after this action, are you sure?"
             />
-            <OrderDetailsModal
-                isOpen={orderDetailsOpen}
-                setIsOpen={(val) => setOrderDetailsOpen(val)}
-                userDetails={userDetails}
-            />
-            <SchedulePlacementTestModal leadCode={code} setIsScheduleTestOpen={setIsScheduleTestOpen} isScheduleTestOpen={isScheduleTestOpen} />
-            <CreateOrderModal
-                isOpen={isCreateOrderOpen}
-                setIsOpen={setIsCreateOrderOpen}
-                email={userData?.user?.email}
-                leadId={leadData?.lead?.id}
-            />
+            {leadData?.lead?.id && userData?.user && (
+                <CreateOrderModal
+                    isOpen={isCreateOrderOpen}
+                    setIsOpen={setIsCreateOrderOpen}
+                    userExists={{
+                        leadId: leadData?.lead?.id,
+                        studentId: userData?.user.id,
+                        studentName: userData?.user.name,
+                    }}
+                />
+            )}
             <GoBackButton />
             {isLoading ? (
                 <Spinner className="mx-auto" />
@@ -352,9 +339,8 @@ export default function LeadPage() {
                                 </DropdownMenu>
                             </div>
                             <div className="grid gap-2 whitespace-nowrap">
-                                <Label>{leadData.lead.orderDetails?.user?.placementTests[0] ? "Placement Test" : "Order"}</Label>
-                                {leadData.lead.orderDetails?.user?.placementTests[0]?.oralTestTime && <Label>{format(leadData.lead.orderDetails?.user?.placementTests[0].oralTestTime, "PPPPp")}</Label>}
-                                {
+                                <Label>Order</Label>
+                                {/* {
                                     leadData.lead.orderDetails
                                         ? (
                                             <div className="flex items-center gap-2">
@@ -368,7 +354,7 @@ export default function LeadPage() {
                                                 {
 
                                                     testSession && testSession.session && <PlacemntTestMeetingInfo
-                                                        courseName={leadData.lead.orderDetails.course.name || ""}
+                                                        courseName={leadData.lead.orderDetails.course?.name || ""}
                                                         isZoom={!!testSession.isZoom}
                                                         session={testSession.session}
                                                     />
@@ -381,7 +367,11 @@ export default function LeadPage() {
                                                 <Typography>Create Order</Typography>
                                             </Button>
                                         )
-                                }
+                                } */}
+                                <Button disabled={!userData?.user?.email} onClick={() => setIsCreateOrderOpen(true)}>
+                                    <Calendar className="w-4 h-4" />
+                                    <Typography>Place an Order</Typography>
+                                </Button>
                             </div>
                         </CardContent>
                     </Card>
@@ -529,10 +519,10 @@ export default function LeadPage() {
                             </Accordion>
                         </CardFooter>
                     </Card>
-                    {leadData.lead.orderDetails && (
+                    {leadData.lead.orders.length > 0 && (
                         <Card className="col-span-full">
                             <CardContent className="py-4">
-                                <OrderInfoPanel data={leadData.lead} />
+                                <LeadOrdersClient leadId={leadData.lead.id} />
                             </CardContent>
                         </Card>
                     )}

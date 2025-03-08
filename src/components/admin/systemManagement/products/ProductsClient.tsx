@@ -47,9 +47,10 @@ export default function ProductsClient() {
     }
 
     const formattedData: ProductColumn[] = data?.products
-        .map(({ id, active, description, discountedPrice, name, price, orders, createdAt, updatedAt }) => ({
+        .map(({ id, isActive, isPrivate, description, discountedPrice, name, price, orders, createdAt, updatedAt }) => ({
             id,
-            active: active ? "Active" : "Inactive",
+            isActive: isActive ? "Active" : "Inactive",
+            isPrivate: isPrivate ? "Private" : "Group",
             description,
             discountedPrice,
             name,
@@ -74,9 +75,15 @@ export default function ProductsClient() {
                 ]}
                 filters={[
                     {
-                        key: "active", filterName: "Is Active", values: [
+                        key: "isActive", filterName: "Is Active", values: [
                             { label: "Active", value: "Active" },
                             { label: "Inactive", value: "Inactive" },
+                        ]
+                    },
+                    {
+                        key: "isPrivate", filterName: "Is Private", values: [
+                            { label: "Private", value: "Private" },
+                            { label: "Group", value: "Group" },
                         ]
                     },
                 ]}
@@ -88,13 +95,14 @@ export default function ProductsClient() {
                 sum={{ key: "amounts", label: "Orders" }}
                 skele={isLoading}
                 exportConfig={{ fileName: "Products", sheetName: "Products" }}
-                importConfig={{ reqiredFields: ["name", "price", "discountedPrice", "description", "active"], sheetName: "Products", templateName: "Products Template" }}
+                importConfig={{ reqiredFields: ["name", "price", "discountedPrice", "description", "isActive", "isPrivate"], sheetName: "Products", templateName: "Products Template" }}
                 handleImport={(input) => {
-                    const importData = input.map(({ name, price, active, description, discountedPrice }) => ({
+                    const importData = input.map(({ name, price, isActive, isPrivate, description, discountedPrice }) => ({
                         id: "",
                         name,
                         price: Number(price),
-                        active: active === "Active" ? true : false,
+                        isActive: isActive === "Active" ? true : false,
+                        isPrivate: isPrivate === "Private" ? true : false,
                         description: description ?? undefined,
                         discountedPrice: discountedPrice ? Number(discountedPrice) : undefined,
                     }))

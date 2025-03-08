@@ -53,8 +53,8 @@ export default function ProductItemsClient({ productId }: { productId: string })
             courseId: course.id,
             courseName: course.name,
             courseSlug: course.slug,
-            levelId: level.id,
-            levelName: level.name,
+            levelId: level?.id,
+            levelName: level?.name,
             createdAt,
             updatedAt,
         })) ?? []

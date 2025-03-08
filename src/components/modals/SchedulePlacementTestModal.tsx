@@ -10,7 +10,7 @@ import { DateSinglePicker } from "@/components/ui/DateSinglePicker"
 import { format } from "date-fns"
 import Spinner from "@/components/Spinner"
 
-function SchedulePlacementTestModal({ leadCode, isScheduleTestOpen, setIsScheduleTestOpen }: { leadCode: string; isScheduleTestOpen: boolean; setIsScheduleTestOpen: Dispatch<SetStateAction<boolean>> }) {
+function SchedulePlacementTestModal({ courseId, userId, isScheduleTestOpen, setIsScheduleTestOpen }: { courseId: string; userId: string; isScheduleTestOpen: boolean; setIsScheduleTestOpen: Dispatch<SetStateAction<boolean>> }) {
     const [testTime, setTestTime] = useState<Date | undefined>(new Date(new Date().getMinutes() >= 30 ? new Date().setHours(new Date().getHours() + 1, 0) : new Date().setMinutes(30)))
     const [testDate, setTestDate] = useState<Date | undefined>(new Date())
     const [testerId, setTrainerId] = useState<string>()
@@ -21,7 +21,7 @@ function SchedulePlacementTestModal({ leadCode, isScheduleTestOpen, setIsSchedul
     const { data: zoomClients } = api.zoomAccounts.getZoomAccounts.useQuery();
 
     const trpcUtils = api.useUtils()
-    const leadQuery = api.leads.getByCode.useQuery({ code: leadCode }, { enabled: false })
+    const courseQuery = api.courses.getById.useQuery({ id: courseId }, { enabled: false })
 
     const checkExistingPlacementTestMutation = api.placementTests.checkExistingPlacementTest.useMutation()
     const createPlacementTestMutation = api.placementTests.createPlacementTest.useMutation()
@@ -45,11 +45,10 @@ function SchedulePlacementTestModal({ leadCode, isScheduleTestOpen, setIsSchedul
 
             testDate.setHours(testTime.getHours(), testTime.getMinutes(), 0, 0)
 
-            const { data } = await leadQuery.refetch()
-            const userId = data?.lead?.orderDetails?.userId
-            const courseId = data?.lead?.orderDetails?.courseId
-            const courseName = data?.lead?.orderDetails?.course.name
-            const evaluationFormId = data?.lead?.orderDetails?.course.systemForms.find(form => form.type === "PlacementTest")?.id
+            const { data } = await courseQuery.refetch()
+            const courseId = data?.course?.id
+            const courseName = data?.course?.name
+            const evaluationFormId = data?.course?.systemForms.find(form => form.type === "PlacementTest")?.id
             if (!userId || !courseId || !courseName || !evaluationFormId) return innerLoadingToast.update({ id: innerLoadingToast.id, title: "Error", action: undefined, variant: "destructive", description: "No order found!" })
 
             const { zoomClient } = await getAvialableClientMutation.mutateAsync({ startDate: testDate, isTest: true })

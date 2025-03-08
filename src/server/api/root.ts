@@ -14,6 +14,8 @@ import { leadLabelsRouter } from "@/server/api/routers/admin/salesManagement/lea
 import { leadNotesRouter } from "@/server/api/routers/admin/salesManagement/leadNotes";
 import { leadStagesRouter } from "@/server/api/routers/admin/salesManagement/leadStages";
 import { ordersRouter } from "@/server/api/routers/admin/salesManagement/orders";
+import { paymentsRouter } from "@/server/api/routers/admin/salesManagement/payments";
+import { refundsRouter } from "@/server/api/routers/admin/salesManagement/refunds";
 import { googleAccountsRouter } from "@/server/api/routers/admin/systemManagement/configuration/googleAccounts";
 import { metaAccountRouter } from "@/server/api/routers/admin/systemManagement/configuration/metaAccount";
 import { paramsRouter } from "@/server/api/routers/admin/systemManagement/configuration/params";
@@ -25,12 +27,12 @@ import { coursesRouter } from "@/server/api/routers/admin/systemManagement/conte
 import { levelsRouter } from "@/server/api/routers/admin/systemManagement/content/levels";
 import { materialItemsRouter } from "@/server/api/routers/admin/systemManagement/content/materialItems";
 import { productItemsRouter } from "@/server/api/routers/admin/systemManagement/content/productItems";
+import { productsRouter } from "@/server/api/routers/admin/systemManagement/content/products";
 import { systemFormsRouter } from "@/server/api/routers/admin/systemManagement/content/systemForms";
 import { chatAgentsRouter } from "@/server/api/routers/admin/usersManagement/chatAgents";
 import { salesAgentsRouter } from "@/server/api/routers/admin/usersManagement/salesAgents";
 import { trainersRouter } from "@/server/api/routers/admin/usersManagement/trainers";
 import { usersRouter } from "@/server/api/routers/admin/usersManagement/users";
-import { productsRouter } from "@/server/api/routers/crudTemplate";
 import { authRouter } from "@/server/api/routers/general/auth";
 import { emailsRouter } from "@/server/api/routers/general/emails";
 import { certificatesRouter } from "@/server/api/routers/student/certificates";
@@ -82,6 +84,8 @@ export const appRouter = createTRPCRouter({
   traineeList: traineeListRouter,
   products: productsRouter,
   productItems: productItemsRouter,
+  payments: paymentsRouter,
+  refunds: refundsRouter,
 });
 
 // export type definition of API

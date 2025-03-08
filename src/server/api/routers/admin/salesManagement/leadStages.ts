@@ -37,7 +37,7 @@ export const leadStagesRouter = createTRPCRouter({
                             assignee: { include: { user: true } },
                             notes: true,
                             leadStage: true,
-                            orderDetails: true,
+                            orders: true,
                         }
                     }
                 },

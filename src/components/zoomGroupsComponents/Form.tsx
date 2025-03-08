@@ -233,7 +233,7 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
                                 .filter((stat, index, self) => index === self.findIndex(({ userId }) => stat.userId === userId))
                                 .map((stat, i) => {
                                     const order = course?.orders.find(or => or.userId === stat.userId && or.courseId === stat.courseId)
-                                    const isPrivate = order?.courseType.isPrivate
+                                    const isPrivate = stat.isPrivate
 
                                     return ({
                                         Active: true,

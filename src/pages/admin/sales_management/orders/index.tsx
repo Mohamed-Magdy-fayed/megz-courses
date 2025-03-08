@@ -1,7 +1,7 @@
 import AppLayout from "@/components/layout/AppLayout";
 import type { NextPage } from "next";
 import { PaperContainer } from "@/components/ui/PaperContainers";
-import OrdersClient from "@/components/orders/OrdersClient";
+import OrdersClient from "@/components/admin/salesManagement/orders/OrdersClient";
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 
 const OrderPage: NextPage = () => {

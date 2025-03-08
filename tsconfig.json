@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "target": "es2017",
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "lib": [
       "dom",
       "dom.iterable",
@@ -29,7 +30,8 @@
     "types": [
       "webpack",
       "node"
-    ]
+    ],
+    "target": "ES2017"
   },
   "include": [
     ".eslintrc.cjs",
@@ -37,9 +39,11 @@
     "**/*.ts",
     "**/*.tsx",
     "**/*.cjs",
-    "**/*.mjs",
+    "**/*.mjs"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "dist",
+    ".next"
   ]
 }

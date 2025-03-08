@@ -9,7 +9,7 @@ interface DateSinglePickerProps extends ButtonHTMLAttributes<HTMLButtonElement> 
     hours: number;
     minutes: number;
     trainerSessions: Date[];
-    zoomClients: (ZoomClient & { zoomSessions: ZoomSession[] })[];
+    zoomClients: { zoomSessions: ZoomSession[] }[];
     date: Date | undefined;
     setDate: (dates: Date | undefined) => void;
     isTest?: boolean

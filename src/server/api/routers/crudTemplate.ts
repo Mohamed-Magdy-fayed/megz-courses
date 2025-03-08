@@ -1,114 +1,107 @@
-import { z } from "zod";
-import {
-    createTRPCRouter,
-    protectedProcedure,
-} from "@/server/api/trpc";
-import { TRPCError } from "@trpc/server";
+// import { z } from "zod";
+// import {
+//     createTRPCRouter,
+//     protectedProcedure,
+// } from "@/server/api/trpc";
+// import { TRPCError } from "@trpc/server";
 
-import { hasPermission } from "@/server/permissions";
-import { productSchema } from "@/components/systemManagement/products/ProductForm";
+// import { hasPermission } from "@/server/permissions";
+// import { productSchema } from "@/components/ui/FormTemplate";
 
-export const productsRouter = createTRPCRouter({
-    getById: protectedProcedure
-        .input(z.object({
-            id: z.string()
-        }))
-        .query(async ({ ctx, input: { id } }) => {
-            const product = await ctx.prisma.product.findUnique({
-                where: { id },
-                include: {
-                    courses: true,
-                    levels: true,
-                    orders: true,
-                }
-            });
+// export const productsRouter = createTRPCRouter({
+//     getById: protectedProcedure
+//         .input(z.object({
+//             id: z.string()
+//         }))
+//         .query(async ({ ctx, input: { id } }) => {
+//             const product = await ctx.prisma.product.findUnique({
+//                 where: { id },
+//                 include: {
+//                     orders: true,
+//                 }
+//             });
 
-            return { product };
-        }),
-    getAll: protectedProcedure
-        .query(async ({ ctx }) => {
-            const products = await ctx.prisma.product.findMany({
-                include: {
-                    courses: true,
-                    levels: true,
-                    orders: true,
-                }
-            });
+//             return { product };
+//         }),
+//     getAll: protectedProcedure
+//         .query(async ({ ctx }) => {
+//             const products = await ctx.prisma.product.findMany({
+//                 include: {
+//                     orders: true,
+//                 }
+//             });
 
-            return { products };
-        }),
-    create: protectedProcedure
-        .input(productSchema)
-        .mutation(async ({ input: { active, name, price, description, discountedPrice }, ctx }) => {
-            const product = await ctx.prisma.product.create({
-                data: {
-                    active,
-                    name,
-                    price,
-                    description,
-                    discountedPrice,
-                },
-            });
+//             return { products };
+//         }),
+//     create: protectedProcedure
+//         .input(productSchema)
+//         .mutation(async ({ input: {  }, ctx }) => {
+//             const product = await ctx.prisma.product.create({
+//                 data: {
+//                 },
+//             });
 
-            return {
-                product,
-            };
-        }),
-    import: protectedProcedure
-        .input(z.array(productSchema))
-        .mutation(async ({ input, ctx }) => {
-            const products = await ctx.prisma.$transaction(
-                input.map(({ active, name, price, description, discountedPrice }) => ctx.prisma.product.create({
-                    data: {
-                        active,
-                        name,
-                        price,
-                        description,
-                        discountedPrice,
-                    },
-                }))
-            );
+//             return {
+//                 product,
+//             };
+//         }),
+//     import: protectedProcedure
+//         .input(z.array(productSchema))
+//         .mutation(async ({ input, ctx }) => {
+//             const products = await ctx.prisma.$transaction(
+//                 input.map(({ isActive, isPrivate, name, price, description, discountedPrice }) => ctx.prisma.product.create({
+//                     data: {
+//                         isActive,
+//                         isPrivate,
+//                         name,
+//                         price,
+//                         description,
+//                         discountedPrice,
+//                     },
+//                 }))
+//             );
 
-            return {
-                products,
-            };
-        }),
-    update: protectedProcedure
-        .input(productSchema)
-        .mutation(
-            async ({
-                ctx,
-                input: { id, active, name, price, description, discountedPrice },
-            }) => {
-                const product = await ctx.prisma.product.update({
-                    where: {
-                        id,
-                    },
-                    data: {
-                        active,
-                        name,
-                        price,
-                        description,
-                        discountedPrice,
-                    },
-                });
+//             return {
+//                 products,
+//             };
+//         }),
+//     update: protectedProcedure
+//         .input(productSchema)
+//         .mutation(
+//             async ({
+//                 ctx,
+//                 input: { id, isActive, isPrivate, name, price, description, discountedPrice },
+//             }) => {
+//                 const product = await ctx.prisma.product.update({
+//                     where: {
+//                         id,
+//                     },
+//                     data: {
+//                         isActive,
+//                         isPrivate,
+//                         name,
+//                         price,
+//                         description,
+//                         discountedPrice,
+//                     },
+//                 });
 
-                return { product };
-            }
-        ),
-    delete: protectedProcedure
-        .input(z.array(z.string()))
-        .mutation(async ({ input, ctx }) => {
-            if (!hasPermission(ctx.session.user, "products", "delete")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
+//                 return { product };
+//             }
+//         ),
+//     delete: protectedProcedure
+//         .input(z.array(z.string()))
+//         .mutation(async ({ input, ctx }) => {
+//             if (!hasPermission(ctx.session.user, "products", "delete")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
 
-            const products = await ctx.prisma.product.deleteMany({
-                where: {
-                    id: {
-                        in: input,
-                    },
-                },
-            });
+//             const products = await ctx.prisma.product.deleteMany({
+//                 where: {
+//                     id: {
+//                         in: input,
+//                     },
+//                 },
+//             });
 
-            return { products };
-        }),
-});
+//             return { products };
+//         }),
+// });

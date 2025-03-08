@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { ScrollArea } from '../ui/scroll-area'
 import { advancedSearch } from '@/lib/advancedSearch'
 import { Typography } from '../ui/Typoghraphy'
+import Spinner from '@/components/Spinner'
 
 type DataType<T> = {
     label: string
@@ -55,7 +56,7 @@ const SelectField: FC<SelectFieldProps<any>> = ({ placeholder, listTitle, data, 
                             </Typography>
                         ))}
                     </div>
-                    <ChevronDownIcon className="h-4 w-4 opacity-50 ml-auto" />
+                    {props.disabled ? <Spinner size={20} /> : <ChevronDownIcon className="h-4 w-4 opacity-50 ml-auto" />}
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>

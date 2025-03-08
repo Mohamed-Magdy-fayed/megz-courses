@@ -7,7 +7,7 @@ import { createMutationOptions } from "@/lib/mutationsHelper";
 import { toastType, useToast } from "@/components/ui/use-toast";
 
 type AllLeadsClientProps = {
-  leads: Prisma.LeadGetPayload<{ include: { orderDetails: true, leadStage: true, labels: true, assignee: { include: { user: true } } } }>[];
+  leads: Prisma.LeadGetPayload<{ include: { orders: true, leadStage: true, labels: true, assignee: { include: { user: true } } } }>[];
   stagesData: LeadStage[];
   resetSelection: boolean;
   handleImport: (data: { name: string, email: string, phone: string }[]) => void;
@@ -30,7 +30,6 @@ const AllLeadsClient: FC<AllLeadsClientProps> = ({ resetSelection, stagesData, h
     formId,
     message,
     leadStage,
-    orderDetails,
     phone,
     source,
     image,
@@ -54,7 +53,6 @@ const AllLeadsClient: FC<AllLeadsClientProps> = ({ resetSelection, stagesData, h
       message: message || "",
       phone: phone || "",
       source,
-      orderDetails,
       stage: leadStage,
       stages: stagesData,
       stageName: leadStage?.name || "Intake",

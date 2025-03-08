@@ -8,7 +8,6 @@ import { Typography } from "@/components/ui/Typoghraphy";
 import { CourseLevel, Order, User } from "@prisma/client";
 import { formatPrice } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import Image from "next/image";
 import { SeverityPill } from "@/components/overview/SeverityPill";
 
 export type CourseRow = {

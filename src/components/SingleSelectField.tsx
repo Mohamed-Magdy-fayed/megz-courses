@@ -1,4 +1,4 @@
-import { Check, ChevronsUpDown } from "lucide-react"
+import { Check, ChevronDownIcon, ChevronsDownIcon, ChevronsUpDown } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -8,8 +8,6 @@ import {
     CommandGroup,
     CommandInput,
     CommandItem,
-    CommandList,
-    CommandSeparator,
 } from "@/components/ui/command"
 import {
     Popover,
@@ -18,6 +16,7 @@ import {
 } from "@/components/ui/popover"
 import { Dispatch, ReactNode, SetStateAction, useState } from "react"
 import { ScrollArea } from "./ui/scroll-area"
+import Spinner from "@/components/Spinner"
 
 interface SingleSelectFieldProps<T> {
     title: string | ReactNode;
@@ -50,15 +49,15 @@ function SingleSelectField<T>({ selected, setSelected, isLoading, placeholder, d
                     {selected !== undefined
                         ? data.find(d => d.value === selected)?.label
                         : placeholder}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
+                    {isLoading ? <Spinner size={20} /> : <ChevronDownIcon className="h-4 w-4 opacity-50 ml-auto" />}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="p-0 mx-4">
+            <PopoverContent className="p-0 mx-4" avoidCollisions collisionPadding={20}>
                 <Command>
                     {!disableSearch && <CommandInput placeholder={placeholder} />}
                     <CommandEmpty>No redults.</CommandEmpty>
                     <CommandGroup>
-                        <ScrollArea>
+                        <ScrollArea className="h-60">
                             {data.map((item, i) => (
                                 <CommandItem
                                     key={`${item.value}`}

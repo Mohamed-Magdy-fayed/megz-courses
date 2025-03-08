@@ -17,7 +17,7 @@ export const getAddress = (address: Address) => `${address?.city || "no city"} -
 
 export const leadsCodeGenerator = (createdAt?: Date) => `Lead-${createdAt?.getTime() || Date.now()}`
 
-export const orderCodeGenerator = () => `CO-${Date.now()}`
+export const orderCodeGenerator = () => `SO-${Date.now()}`
 
 export const hasAccess = (currentUserRole: UserRoles, userRoles: UserRoles[]) => {
   return userRoles.some(t => t === currentUserRole)

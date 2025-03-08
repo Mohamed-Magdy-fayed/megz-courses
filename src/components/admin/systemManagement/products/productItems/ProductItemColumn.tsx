@@ -11,8 +11,8 @@ export type ProductItemColumn = {
     courseId: string;
     courseName: string;
     courseSlug: string;
-    levelId: string;
-    levelName: string;
+    levelId?: string;
+    levelName?: string;
     createdAt: Date;
     updatedAt: Date;
 }

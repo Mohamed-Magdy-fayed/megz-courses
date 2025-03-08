@@ -1,16 +1,11 @@
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
-import { api } from "@/lib/api";
 import AppLayout from "@/components/layout/AppLayout";
 import { validCourseStatuses } from "@/lib/enumsTypes";
 import { upperFirst } from "lodash";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
-import WaitingListClient from "@/components/traineeLists/waitingList/WaitingListClient";
+import TraineeListClient from "@/components/admin/operationsManagement/traineeLists/TraineeListClient";
 
 export default function TraineeListPage() {
-    // const [isResumeFormOpen, setIsResumeFormOpen] = useState(false);
-
-    const { data } = api.traineeList.getListsCount.useQuery();
-
     return (
         <AppLayout>
             <main>
@@ -27,27 +22,8 @@ export default function TraineeListPage() {
                                     <div className="flex flex-col gap-2">
                                         <ConceptTitle>{upperFirst(st)} List</ConceptTitle>
                                     </div>
-                                    {/* {status === "Postponded" && (
-                                        <div className="flex flex-col gap-2">
-                                            <Modal
-                                                title="Resume studnets"
-                                                description="move studnets to back to Waiting list"
-                                                isOpen={isResumeFormOpen}
-                                                onClose={() => setIsResumeFormOpen(false)}
-                                                children={(
-                                                    <ResumeStudentsForm setIsOpen={setIsResumeFormOpen} />
-                                                )}
-                                            />
-                                            <Button onClick={() => {
-                                                setIsResumeFormOpen(true)
-                                            }}>
-                                                <PlayCircle className="w-4 h-4 mr-2" />
-                                                Resume students
-                                            </Button>
-                                        </div>
-                                    )} */}
                                 </div>
-                                <WaitingListClient status={st} />
+                                <TraineeListClient status={st} />
                             </TabsContent>
                         ))}
                     </Tabs>

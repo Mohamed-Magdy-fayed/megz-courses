@@ -147,15 +147,15 @@ export default function MegzDrawer({ siteIdentity }: { siteIdentity?: SiteIdenti
   useEffect(() => {
     if (activeLinkRef.current) {
       activeLinkRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      setOpenLinksGroup(allowedNavLinks.find(link => pathname.startsWith(`/${link.url}`) || link.children?.some(ch => pathname.startsWith(`/${ch.url}`)))?.label || "")
     }
   }, [pathname, activeLinkRef.current, activeLinkRef]);
 
   useEffect(() => {
     if (!isMounted) setIsMounted(true);
-    setOpenLinksGroup(allowedNavLinks.find(link => pathname.startsWith(`/${link.url}`) || link.children?.some(ch => pathname.startsWith(`/${ch.url}`)))?.label || "")
   }, []);
 
-  if (!isMounted) return null;
+  if (!isMounted || !pathname) return null;
 
   return (
     <div className="sticky left-0 top-0 flex items-center h-screen flex-col gap-2 overflow-auto bg-muted text-muted-foreground p-4">

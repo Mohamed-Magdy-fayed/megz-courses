@@ -86,7 +86,6 @@ export const selfServeRouter = createTRPCRouter({
                 data: {
                     amount: price,
                     orderNumber,
-                    paymentId: intentResponse.id,
                     course: { connect: { id: course.id } },
                     lead: { connect: { id: lead.id } },
                     user: { connect: { email } },
@@ -119,7 +118,7 @@ export const selfServeRouter = createTRPCRouter({
                     type: "Info",
                     createdForStudent: { connect: { id: user.id } },
                     messages: [{
-                        message: `An order was placed by for the Student by the system regarding course ${course?.name} for a ${order.courseType.isPrivate ? "private" : "group"} purchase the order is now awaiting payment\nPayment Link: ${paymentLink}`,
+                        message: `An order was placed by for the Student by the system regarding course ${course?.name} for a ${isPrivate ? "private" : "group"} purchase the order is now awaiting payment\nPayment Link: ${paymentLink}`,
                         updatedAt: new Date(),
                         updatedBy: "System"
                     }],

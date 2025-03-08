@@ -20,7 +20,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Workflow } from "lucide-react";
 import { hasPermission } from "@/server/permissions";
-import CreateOrderModal from "@/components/modals/CreateOrderModal";
+import CreateOrderModal from "@/components/admin/salesManagement/modals/CreateOrderModal";
 
 interface CellActionProps {
   data: Lead;
@@ -118,7 +118,7 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
         onConfirm={handleDelete}
         description="The lead data can not be restored after this action, are you sure?"
       />
-      <CreateOrderModal email={data.email} leadId={data.id} isOpen={isCreateOrderOpen} setIsOpen={setIsCreateOrderOpen} />
+      <CreateOrderModal userExists={{ studentId: data.userId, studentName: data.name, leadId: data.id }} isOpen={isCreateOrderOpen} setIsOpen={setIsCreateOrderOpen} />
       <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
         <DropdownMenuTrigger asChild>
           <Button customeColor={"mutedOutlined"} variant={"outline"} className="h-fit w-full p-0">
@@ -151,19 +151,10 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
               Assign to me
             </DropdownMenuItem>
           )}
-          {!data.orderDetails?.orderNumber ? (
-            <DropdownMenuItem disabled={data.stage?.defaultStage !== "Qualified"} onClick={() => (setIsOpen(false), setIsCreateOrderOpen(true))}>
-              <PackagePlus className="w-4 h-4 mr-2" />
-              Create Order
-            </DropdownMenuItem>
-          ) : (
-            <DropdownMenuItem disabled={!data.orderDetails} asChild>
-              <Link href={`/admin/sales_management/orders/${data.orderDetails?.orderNumber}`}>
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Go to order
-              </Link>
-            </DropdownMenuItem>
-          )}
+          <DropdownMenuItem disabled={data.stage?.defaultStage !== "Qualified"} onClick={() => (setIsOpen(false), setIsCreateOrderOpen(true))}>
+            <PackagePlus className="w-4 h-4 mr-2" />
+            Create Order
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuLabel>Move To</DropdownMenuLabel>
           {data.stages?.filter(s => s.name !== data.stageName).map(stage => (

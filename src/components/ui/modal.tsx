@@ -41,7 +41,7 @@ export default function Modal({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <ScrollArea className="max-h-[70vh]">{children}</ScrollArea>
+        <ScrollArea className="max-h-[70vh] py-1">{children}</ScrollArea>
       </DialogContent>
     </Dialog>
   );

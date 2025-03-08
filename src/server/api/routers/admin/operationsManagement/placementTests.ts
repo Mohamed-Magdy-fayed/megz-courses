@@ -127,25 +127,19 @@ export const placementTestsRouter = createTRPCRouter({
         .input(z.object({
             testTime: z.date(),
             testerId: z.string(),
-            leadCode: z.string(),
+            courseId: z.string(),
+            userId: z.string(),
         }))
-        .mutation(async ({ ctx, input: { testTime, leadCode, testerId } }) => {
+        .mutation(async ({ ctx, input: { testTime, courseId, userId, testerId } }) => {
             const { zoomClient } = await getAvailableZoomClient(testTime, ctx.prisma, 30)
             if (!zoomClient) throw new TRPCError({ code: "BAD_REQUEST", message: "No available Zoom Accounts at the selected time!" })
 
-            const lead = await ctx.prisma.lead.findUnique({
-                where: { code: leadCode },
-                include: {
-                    orderDetails: { include: { course: true, user: true } }
-                }
-            })
-            if (!lead) throw new TRPCError({ code: "BAD_REQUEST", message: "Lead not found!" })
-            if (!lead.orderDetails) throw new TRPCError({ code: "BAD_REQUEST", message: "No order for current lead!" })
-            const courseId = lead.orderDetails.courseId
-            const userId = lead.orderDetails.userId
+            const course = await ctx.prisma.course.findUnique({where: { id: courseId }})
+            if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "Lead not found!" })
+            const student = await ctx.prisma.user.findUnique({where: { id: userId }})
+            if (!student) throw new TRPCError({ code: "BAD_REQUEST", message: "Student not found!" })
 
             const tester = await ctx.prisma.tester.findUnique({ where: { id: testerId }, include: { user: true } })
-            const course = await ctx.prisma.course.findUnique({ where: { id: courseId } })
             if (!tester || !course) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Course or Tester doesn't exist!" })
 
             const generateTheMeeting = async ({ courseName, testTime, testerName, userEmail, zoomClient }: {
@@ -200,7 +194,7 @@ export const placementTestsRouter = createTRPCRouter({
                 courseName: course.name,
                 testerName: tester.user.name,
                 testTime,
-                userEmail: lead.orderDetails.user.email,
+                userEmail: student.email,
                 zoomClient,
             })
 

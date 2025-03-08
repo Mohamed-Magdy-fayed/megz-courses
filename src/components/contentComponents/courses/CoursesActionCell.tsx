@@ -15,7 +15,7 @@ import Modal from "@/components/ui/modal";
 import { env } from "@/env.mjs";
 import { AlertModal } from "@/components/modals/AlertModal";
 import { createMutationOptions } from "@/lib/mutationsHelper";
-import CreateQuickOrderModal from "@/components/leads/CreateQuickOrderModal";
+import CreateOrderModal from "@/components/admin/salesManagement/modals/CreateOrderModal";
 
 interface CellActionProps {
     id: string;
@@ -90,7 +90,7 @@ const CoursesActionCell: React.FC<CellActionProps> = ({ id, slug, description, g
                     />
                 )}
             />
-            <CreateQuickOrderModal defaultCourse={id} isOpen={isAddOrderOpen} setIsOpen={setIsAddOrderOpen} />
+            <CreateOrderModal isOpen={isAddOrderOpen} setIsOpen={setIsAddOrderOpen} />
             <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
                 <DropdownMenuTrigger asChild>
                     <Button customeColor="mutedOutlined" variant={"outline"} className="w-full h-fit p-0" >

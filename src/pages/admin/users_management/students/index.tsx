@@ -1,13 +1,12 @@
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
-import { api } from "@/lib/api";
 import { useState } from "react";
 import { PlusIcon } from "lucide-react";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
-import StudentForm from "@/components/studentComponents/StudentForm";
-import StudentClient from "@/components/studentComponents/StudentClient";
 import Modal from "@/components/ui/modal";
+import StudentForm from "@/components/admin/usersManagement/students/StudentForm";
+import StudentClient from "@/components/admin/usersManagement/students/StudentClient";
 
 const StudentsPage = () => {
   const [isOpen, setIsOpen] = useState(false);
