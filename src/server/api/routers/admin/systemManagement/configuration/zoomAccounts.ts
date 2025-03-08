@@ -116,7 +116,7 @@ export const zoomAccountsRouter = createTRPCRouter({
             endDate: z.date().optional(),
         }))
         .mutation(async ({ ctx, input: { id, startDate, endDate } }) => {
-            const zoomClient = await ctx.prisma.zoomClient.findUnique({ where: { id }, omit: { accessToken: true, refreshToken: true } })
+            const zoomClient = await ctx.prisma.zoomClient.findUnique({ where: { id } })
             if (!zoomClient) throw new TRPCError({ code: "BAD_REQUEST", message: "No Zoom Account with this ID" })
 
             if (!zoomClient.isZoom) {
