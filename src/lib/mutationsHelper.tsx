@@ -1,4 +1,4 @@
-import Spinner from '@/components/Spinner';
+import Spinner from '@/components/ui/Spinner';
 import { ToastFunctionType, toastType } from '@/components/ui/use-toast';
 import { AppRouter } from '@/server/api/root';
 import { TRPCClientErrorLike } from '@trpc/client';

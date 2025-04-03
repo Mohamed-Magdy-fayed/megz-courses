@@ -1,7 +1,7 @@
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { PaperContainer } from "@/components/ui/PaperContainers";
-import AppLayout from "@/components/layout/AppLayout";
-import RetintionsClient from "@/components/retintionsComponents/RetintionsClient";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
+import RetintionsClient from "@/components/admin/operationsManagement/retintionsComponents/RetintionsClient";
 
 const RetintionsPage = () => {
 
@@ -15,9 +15,7 @@ const RetintionsPage = () => {
               <Typography variant={"secondary"}>Students who Completed one or more courses</Typography>
             </div>
           </div>
-          <PaperContainer>
-            <RetintionsClient />
-          </PaperContainer>
+          <RetintionsClient />
         </div>
       </main>
     </AppLayout>

@@ -108,7 +108,7 @@ export const DateMultiplePicker: FC<DateMultiplePickerProps> = ({
                 day_range_end: "day-range-end",
                 day_selected:
                     "!bg-primary !text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-                day_today: "bg-primary-foreground text-foreground",
+                day_today: "border-primary",
                 day_outside:
                     "day-outside text-primary opacity-50 aria-selected:bg-primary/50 aria-selected:text-primary aria-selected:opacity-30",
                 day_disabled: "text-primary opacity-50",

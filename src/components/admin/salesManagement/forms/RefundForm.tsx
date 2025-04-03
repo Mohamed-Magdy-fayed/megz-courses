@@ -54,7 +54,7 @@ export const RefundForm = ({
             loadingToast,
             setLoadingToast,
             toast,
-            trpcUtils: trpcUtils.orders,
+            trpcUtils,
             successMessageFormatter: ({ }) => {
                 onClose()
                 return ``

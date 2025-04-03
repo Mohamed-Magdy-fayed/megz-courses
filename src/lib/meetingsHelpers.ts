@@ -205,13 +205,14 @@ export function meetingLinkConstructor({ meetingNumber, meetingPassword, session
     return `meeting/?mn=${meetingNumber}&pwd=${meetingPassword}&session_title=${sessionTitle}${sessionId ? `&session_id=${sessionId}` : ""}${leaveUrl ? `&leave_url=${leaveUrl}` : ""}`
 }
 
-export function preMeetingLinkConstructor({ isZoom, meetingNumber, meetingPassword, sessionTitle, leaveUrl, sessionId }: {
+export function preMeetingLinkConstructor({ isZoom, zakToken, meetingNumber, meetingPassword, sessionTitle, leaveUrl, sessionId }: {
     isZoom: boolean,
     meetingNumber: string,
     meetingPassword: string,
     sessionTitle: string,
+    zakToken?: string,
     sessionId?: string,
     leaveUrl?: string,
 }) {
-    return `${isZoom ? "meeting" : "onmeeting"}/?mn=${meetingNumber}&pwd=${meetingPassword}&session_title=${sessionTitle}${sessionId ? `&session_id=${sessionId}` : ""}${leaveUrl ? `&leave_url=${leaveUrl}` : ""}`
+    return `${isZoom ? "meeting" : "onmeeting"}/?mn=${meetingNumber}&pwd=${meetingPassword}&session_title=${sessionTitle}${sessionId ? `&session_id=${sessionId}` : ""}${leaveUrl ? `&leave_url=${leaveUrl}` : ""}${zakToken ? `&zak=${zakToken}` : ""}`
 }

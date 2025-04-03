@@ -1,33 +1,33 @@
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
-import AppLayout from "@/components/layout/AppLayout";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
 import { api } from "@/lib/api";
 import { ArrowLeftToLine, ChevronDownIcon, FilePlus2Icon, PackageCheckIcon, PlusIcon, Trash2Icon, UploadCloudIcon } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import Spinner from "@/components/Spinner";
+import Spinner from "@/components/ui/Spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import Link from "next/link";
 import Modal from "@/components/ui/modal";
-import UploadMaterialForm from "@/components/contentComponents/materials/uploadForm/UploadMaterialForm";
 import { formatPercentage } from "@/lib/utils";
-import AssignmentsTabContent from "@/components/contentComponents/assignments/AssignmentsTabContent";
-import QuizzesTabContent from "@/components/contentComponents/quizzes/QuizzesTabContent";
-import PlacementTestsTabContent from "@/components/contentComponents/placmentTests/PlacementTestsTabContent";
-import FinalTestsTabContent from "@/components/contentComponents/finalTests/FinalTestsTabContent";
-import WaitingListTabContent from "@/components/contentComponents/waitingList/WaitingListTabContent";
-import CourseGroupsTabContent from "@/components/contentComponents/courseGroups/CourseGroupsTabContent";
-import { CustomFormModal } from "@/components/systemForms/CustomFormModal";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import LevelForm from "@/components/contentComponents/levels/LevelForm";
 import { PaperContainer } from "@/components/ui/PaperContainers";
-import LevelClient from "@/components/contentComponents/levels/LevelClient";
-import MaterialsClient from "@/components/contentComponents/materials/MaterialsClient";
 import { preMeetingLinkConstructor } from "@/lib/meetingsHelpers";
 import { createMutationOptions } from "@/lib/mutationsHelper";
 import { toastType, useToast } from "@/components/ui/use-toast";
-import { AlertModal } from "@/components/modals/AlertModal";
+import { AlertModal } from "@/components/general/modals/AlertModal";
 import CreateOrderModal from "@/components/admin/salesManagement/modals/CreateOrderModal";
+import AssignmentsTabContent from "@/components/admin/systemManagement/contentComponents/assignments/AssignmentsTabContent";
+import CourseGroupsTabContent from "@/components/admin/systemManagement/contentComponents/courseGroups/CourseGroupsTabContent";
+import FinalTestsTabContent from "@/components/admin/systemManagement/contentComponents/finalTests/FinalTestsTabContent";
+import LevelClient from "@/components/admin/systemManagement/contentComponents/levels/LevelClient";
+import LevelForm from "@/components/admin/systemManagement/contentComponents/levels/LevelForm";
+import MaterialsClient from "@/components/admin/systemManagement/contentComponents/materials/MaterialsClient";
+import UploadMaterialForm from "@/components/admin/systemManagement/contentComponents/materials/uploadForm/UploadMaterialForm";
+import PlacementTestsTabContent from "@/components/admin/systemManagement/contentComponents/placmentTests/PlacementTestsTabContent";
+import QuizzesTabContent from "@/components/admin/systemManagement/contentComponents/quizzes/QuizzesTabContent";
+import WaitingListTabContent from "@/components/admin/systemManagement/contentComponents/waitingList/WaitingListTabContent";
+import { CustomFormModal } from "@/components/admin/systemManagement/systemForms/CustomFormModal";
 
 const tabs = [
     { value: "levels", label: "Levels" },
@@ -403,7 +403,7 @@ const CoursePage = () => {
 
                                         return ({
                                             id,
-                                            isLevelSubmitted: student.courseStatus.some(status => status.courseId === test.courseId && !!status.level),
+                                            isLevelSubmitted: student.courseStatus.some(status => status.courseId === test.courseId && !!status.level) ? "Completed" : "Pending",
                                             courseLevels: course.levels.map(level => ({
                                                 label: level.name,
                                                 value: level.id,

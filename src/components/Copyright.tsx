@@ -1,6 +1,6 @@
-import { Typography } from "./ui/Typoghraphy";
+import { Typography } from "@/components/ui/Typoghraphy";
 import Link from "next/link";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 
 export default function Copyright(props: any) {
   return (

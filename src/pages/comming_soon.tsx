@@ -1,4 +1,4 @@
-import LandingLayout from "@/components/landingPageComponents/LandingLayout"
+import LandingLayout from "@/components/pages/landingPageComponents/LandingLayout"
 import { Typography } from "@/components/ui/Typoghraphy"
 
 const Comming_soon = () => {

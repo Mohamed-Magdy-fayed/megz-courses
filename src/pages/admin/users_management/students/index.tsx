@@ -1,9 +1,8 @@
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { useState } from "react";
 import { PlusIcon } from "lucide-react";
-import { PaperContainer } from "@/components/ui/PaperContainers";
 import { Button } from "@/components/ui/button";
-import AppLayout from "@/components/layout/AppLayout";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
 import Modal from "@/components/ui/modal";
 import StudentForm from "@/components/admin/usersManagement/students/StudentForm";
 import StudentClient from "@/components/admin/usersManagement/students/StudentClient";
@@ -33,9 +32,7 @@ const StudentsPage = () => {
               <StudentForm setIsOpen={setIsOpen}></StudentForm>
             )}
           />
-          <PaperContainer>
-            <StudentClient />
-          </PaperContainer>
+          <StudentClient />
         </div>
       </main>
     </AppLayout>

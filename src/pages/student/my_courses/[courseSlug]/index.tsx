@@ -1,4 +1,4 @@
-import LearningLayout from "@/components/LearningLayout/LearningLayout"
+import LearningLayout from "@/components/pages/LearningLayout/LearningLayout"
 import { Typography } from "@/components/ui/Typoghraphy"
 import { format } from "date-fns"
 import useLoadLearningData from "@/hooks/useLoadLearningData"
@@ -7,8 +7,8 @@ import { ExternalLink } from "lucide-react"
 import Link from "next/link"
 import { ArrowLeftToLine } from "lucide-react"
 import { useRouter } from "next/router"
-import Spinner from "@/components/Spinner"
-import LandingLayout from "@/components/landingPageComponents/LandingLayout"
+import Spinner from "@/components/ui/Spinner"
+import LandingLayout from "@/components/pages/landingPageComponents/LandingLayout"
 
 const CoursePage = () => {
     const { course, user } = useLoadLearningData()

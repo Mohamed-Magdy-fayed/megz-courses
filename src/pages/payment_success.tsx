@@ -1,14 +1,14 @@
-import Spinner from "@/components/Spinner"
-import LandingLayout from "@/components/landingPageComponents/LandingLayout"
-import OrderReceipt from "@/components/admin/salesManagement/orders/OrderReceipt"
+import Spinner from "@/components/ui/Spinner"
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toastType, useToast } from "@/components/ui/use-toast"
 import { api } from "@/lib/api"
 import { createMutationOptions } from "@/lib/mutationsHelper"
 import Head from "next/head"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { GetServerSideProps, InferGetServerSidePropsType } from "next"
+import OrderReceipt from "@/components/admin/salesManagement/orders/OrderReceipt"
+import LandingLayout from "@/components/pages/landingPageComponents/LandingLayout"
 
 export type PaymentData = {
     id: string;

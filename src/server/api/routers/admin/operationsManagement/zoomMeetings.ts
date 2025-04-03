@@ -19,6 +19,7 @@ export const zoomMeetingsRouter = createTRPCRouter({
                 mn: z.string(),
                 name: z.string(),
                 pwd: z.string(),
+                zak: z.string().optional(),
                 role: z.number(),
                 email: z.string(),
                 lang: z.string(),
@@ -36,10 +37,8 @@ export const zoomMeetingsRouter = createTRPCRouter({
             const user = await ctx.prisma.user.findUnique({ where: { id } })
             if (!user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Please login to continue!" })
 
-            const role = user.userRoles.includes("Student") ? 0 : 1
             meetingConfig.name = user.name
             meetingConfig.email = user.email
-            meetingConfig.role = role
 
             const iat = Math.round(new Date().getTime() / 1000) - 30;
             const exp = iat + 60 * 60 * 2;
@@ -50,7 +49,7 @@ export const zoomMeetingsRouter = createTRPCRouter({
                 iat,
                 exp,
                 mn: meetingConfig.mn,
-                role,
+                role: meetingConfig.role,
             };
 
             const sHeader = JSON.stringify(oHeader);
@@ -169,8 +168,8 @@ export const zoomMeetingsRouter = createTRPCRouter({
                 if (!session?.zoomClient) throw new TRPCError({ code: "BAD_REQUEST", message: "No session found!" })
                 const { accessToken, refreshToken } = session.zoomClient
                 const token = await generateToken({ api_key: accessToken, api_secret: refreshToken })
-                const { meetingNumber, password } = await getMeetingDetails({ token, meetingNo })
-                return { meetingNumber, password }
+                const { meetingNumber, password, zakToken } = await getMeetingDetails({ token, meetingNo })
+                return { meetingNumber, password, zakToken }
             } catch (error) {
                 throw new TRPCError(getTRPCErrorFromUnknown(error))
             }

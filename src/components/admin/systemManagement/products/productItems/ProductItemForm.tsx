@@ -1,6 +1,6 @@
 import { ProductItemColumn } from "@/components/admin/systemManagement/products/productItems/ProductItemColumn"
-import SingleSelectLevel from "@/components/selectFields/SingleSelectLevel"
-import SingleSelectCourse from "@/components/SingleSelectCourse"
+import SingleSelectLevel from "@/components/general/selectFields/SingleSelectLevel"
+import SingleSelectCourse from "@/components/general/selectFields/SingleSelectCourse"
 import { SpinnerButton } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { toastType, useToast } from "@/components/ui/use-toast"

@@ -1,8 +1,7 @@
-import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
+import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import type { NextPage } from "next";
-import { PaperContainer } from "@/components/ui/PaperContainers";
-import AppLayout from "@/components/layout/AppLayout";
-import ZoomSessionsClient from "@/components/zoomSessions/ZoomSessionsClient";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
+import ZoomSessionsClient from "@/components/admin/operationsManagement/zoomSessions/ZoomSessionsClient";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 
 const SessionsPage: NextPage = () => {
@@ -21,14 +20,10 @@ const SessionsPage: NextPage = () => {
                             <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
                         </TabsList>
                         <TabsContent value="all">
-                            <PaperContainer>
-                                <ZoomSessionsClient />
-                            </PaperContainer>
+                            <ZoomSessionsClient />
                         </TabsContent>
                         <TabsContent value="upcoming">
-                            <PaperContainer>
-                                <ZoomSessionsClient isUpcoming />
-                            </PaperContainer>
+                            <ZoomSessionsClient isUpcoming />
                         </TabsContent>
                     </Tabs>
                 </div>

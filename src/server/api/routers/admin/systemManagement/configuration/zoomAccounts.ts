@@ -10,7 +10,7 @@ import QueryString from "qs";
 import { getAvailableZoomClient, getZoomAccountMeetings } from "@/lib/meetingsHelpers";
 import { generateKeys, generateToken, getMeetings, getUserRooms } from "@/lib/onMeetingApi";
 import { revokeZoomAccount } from "@/lib/zoomAccountsHelpers";
-import { SessionColumn } from "@/components/zoomAccount/zoomAccountMeetings/ZoomAccountMeetingsColumn";
+import { SessionColumn } from "@/components/admin/systemManagement/config/zoomAccount/zoomAccountMeetings/ZoomAccountMeetingsColumn";
 
 export const zoomAccountsRouter = createTRPCRouter({
     getZoomAccount: protectedProcedure

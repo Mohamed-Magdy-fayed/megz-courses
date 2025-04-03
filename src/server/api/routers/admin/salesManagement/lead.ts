@@ -9,8 +9,8 @@ import bcrypt from "bcrypt";
 import { z } from "zod";
 import { createPaymentIntent } from "@/lib/paymobHelpers";
 import { env } from "@/env.mjs";
-import { EmailsWrapper } from "@/components/emails/EmailsWrapper";
-import { CredentialsEmail } from "@/components/emails/CredintialsEmail";
+import { EmailsWrapper } from "@/components/general/emails/EmailsWrapper";
+import { CredentialsEmail } from "@/components/general/emails/CredintialsEmail";
 import { sendZohoEmail } from "@/lib/emailHelpers";
 import { sendWhatsAppMessage } from "@/lib/whatsApp";
 import { hasPermission } from "@/server/permissions";
@@ -366,23 +366,24 @@ export const leadsRouter = createTRPCRouter({
             const convertedStage = await ctx.prisma.leadStage.findUnique({ where: { defaultStage: "Converted" } })
             if (!convertedStage) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Default Stage Missing!" })
 
-            const [order] = await ctx.prisma.$transaction([
-                ctx.prisma.order.create({
-                    data: {
-                        amount: totalPrice,
-                        orderNumber,
-                        paymentLink,
-                        lead: { connect: { id: leadId } },
-                        course: { connect: { id: courseId } },
-                        user: { connect: { id: user.id } },
-                        courseType: { id: courseId, isPrivate }
-                    },
-                    include: {
-                        course: true,
-                        user: true,
-                        lead: { include: { assignee: { include: { user: true } } } }
-                    },
-                }),
+            const order = await ctx.prisma.order.create({
+                data: {
+                    amount: totalPrice,
+                    orderNumber,
+                    paymentLink,
+                    lead: { connect: { id: leadId } },
+                    course: { connect: { id: courseId } },
+                    user: { connect: { id: user.id } },
+                    courseType: { id: courseId, isPrivate }
+                },
+                include: {
+                    course: true,
+                    user: true,
+                    lead: { include: { assignee: { include: { user: true } } } }
+                },
+            })
+
+            await ctx.prisma.$transaction([
                 ctx.prisma.lead.update({
                     where: { id: leadId },
                     data: {
@@ -394,6 +395,7 @@ export const leadsRouter = createTRPCRouter({
                         status: "OrderCreated",
                         course: { connect: { id: courseId } },
                         user: { connect: { id: user.id } },
+                        order: { connect: { id: order.id } }
                     }
                 }),
                 ctx.prisma.userNote.create({
@@ -413,7 +415,7 @@ export const leadsRouter = createTRPCRouter({
                 })
             ])
 
-            const courseLink = `${env.NEXT_PUBLIC_NEXTAUTH_URL}my_courses`
+            const courseLink = `${env.NEXT_PUBLIC_NEXTAUTH_URL}student/my_courses`
             const html = await EmailsWrapper({
                 EmailComp: CredentialsEmail,
                 prisma: ctx.prisma,

@@ -1,4 +1,4 @@
-import LandingLayout from '@/components/landingPageComponents/LandingLayout';
+import LandingLayout from '@/components/pages/landingPageComponents/LandingLayout';
 import Head from 'next/head';
 
 const DocumentationPage = () => {

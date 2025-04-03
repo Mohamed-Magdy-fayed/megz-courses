@@ -68,6 +68,8 @@ export const waitingListRouter = createTRPCRouter({
                 where: {
                     courseId,
                     userId,
+                    courseLevelId: { isSet: false },
+                    status: { in: ["PlacementTest", "OrderPaid"] },
                 }
             })
             if (!status[0]) throw new TRPCError({ code: "BAD_REQUEST", message: "No courses status found!" })

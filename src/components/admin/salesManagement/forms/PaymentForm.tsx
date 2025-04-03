@@ -54,7 +54,7 @@ export const PaymentForm = ({
             loadingToast,
             setLoadingToast,
             toast,
-            trpcUtils: trpcUtils.orders,
+            trpcUtils,
             successMessageFormatter: ({ }) => {
                 onClose()
                 return ``

@@ -1,5 +1,5 @@
 import ProductActions from "@/components/admin/systemManagement/products/ProductActions";
-import { SeverityPill } from "@/components/overview/SeverityPill";
+import { SeverityPill } from "@/components/ui/SeverityPill";
 import { Checkbox } from "@/components/ui/checkbox";
 import { filterFn, formatPrice } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
@@ -42,7 +42,7 @@ export const productColumns: ColumnDef<ProductColumn>[] = [
     },
     { accessorKey: "name", cell: ({ row }) => <Link className="in-table-link" href={`/admin/system_management/products/${row.original.id}`}>{row.original.name}</Link> },
     { accessorKey: "isActive", cell: ({ row }) => <SeverityPill color={row.original.isActive === "Active" ? "success" : "destructive"} children={row.original.isActive} /> },
-    { accessorKey: "isprivate", cell: ({ row }) => <SeverityPill color={row.original.isPrivate === "Private" ? "primary" : "info"} children={row.original.isPrivate} /> },
+    { accessorKey: "isPrivate", cell: ({ row }) => <SeverityPill color={row.original.isPrivate === "Private" ? "primary" : "info"} children={row.original.isPrivate} /> },
     { accessorKey: "price", cell: ({ row }) => formatPrice(row.original.price), filterFn },
     { accessorKey: "discountedPrice", cell: ({ row }) => row.original.discountedPrice ? formatPrice(row.original.discountedPrice) : "No discount", filterFn },
     { accessorKey: "amounts", cell: ({ row }) => `${row.original.orders.length} Orders` },

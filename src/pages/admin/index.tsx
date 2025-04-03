@@ -1,4 +1,4 @@
-import AppLayout from '@/components/layout/AppLayout';
+import AppLayout from '@/components/pages/adminLayout/AppLayout';
 import { GetServerSideProps } from 'next';
 import { useSession } from 'next-auth/react';
 

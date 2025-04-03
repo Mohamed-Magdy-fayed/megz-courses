@@ -1,4 +1,4 @@
-import { SiteIdentityFormSchema } from "@/components/siteIdentity/SiteIdentityForm";
+import { SiteIdentityFormSchema } from "@/components/admin/operationsManagement/siteIdentity/SiteIdentityForm";
 import {
   createTRPCRouter,
   protectedProcedure,

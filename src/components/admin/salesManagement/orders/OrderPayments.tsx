@@ -18,7 +18,7 @@ export default function OrderPayments({ orderId }: { orderId: string }) {
                 })).filter((item, index, self) => self.findIndex(t => t.value === item.value) === index) || []
             }]}
             isSuperSimple
-            skele={isLoading}
+            isLoading={isLoading}
             error={error?.message}
             data={data?.payments || []}
             columns={[

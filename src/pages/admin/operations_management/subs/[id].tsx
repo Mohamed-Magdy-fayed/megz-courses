@@ -1,6 +1,6 @@
-import LandingLayout from "@/components/landingPageComponents/LandingLayout"
-import Spinner from "@/components/Spinner"
-import SystemFormCard from "@/components/systemForms/SystemFormCard"
+import SystemFormCard from "@/components/admin/systemManagement/systemForms/SystemFormCard"
+import LandingLayout from "@/components/pages/landingPageComponents/LandingLayout"
+import Spinner from "@/components/ui/Spinner"
 import { api } from "@/lib/api"
 import { useRouter } from "next/router"
 

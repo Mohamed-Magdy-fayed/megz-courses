@@ -1,13 +1,13 @@
 import { api } from "@/lib/api";
-import { Account } from "@/components/users/accountComponents/Account";
-import { AccountDetails } from "@/components/users/accountComponents/AccountDetails";
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
-import Spinner from "@/components/Spinner";
-import LandingLayout from "@/components/landingPageComponents/LandingLayout";
+import Spinner from "@/components/ui/Spinner";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSession } from "next-auth/react";
 import GoBackButton from "@/components/ui/go-back";
-import AccountPaymentClient from "@/components/users/accountComponents/AccountPaymentClient";
+import { AccountDetails } from "@/components/admin/usersManagement/users/accountComponents/AccountDetails";
+import AccountPaymentClient from "@/components/admin/usersManagement/users/accountComponents/AccountPaymentClient";
+import LandingLayout from "@/components/pages/landingPageComponents/LandingLayout";
+import { Account } from "@/components/admin/usersManagement/users/accountComponents/Account";
 
 const Page = () => {
   const session = useSession();

@@ -1,4 +1,4 @@
-import Spinner from '@/components/Spinner';
+import Spinner from '@/components/ui/Spinner';
 import { api } from '@/lib/api';
 import { preMeetingLinkConstructor } from '@/lib/meetingsHelpers';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
@@ -17,6 +17,7 @@ function OnMeetingPage({ meetingNo, sessionId, sessionTitle }: InferGetServerSid
     useEffect(() => {
         if (meetingData && meetingData.meetingNumber.length) {
             const sessionUrl = preMeetingLinkConstructor({
+                zakToken: meetingData.zakToken,
                 isZoom: true,
                 sessionTitle,
                 sessionId,

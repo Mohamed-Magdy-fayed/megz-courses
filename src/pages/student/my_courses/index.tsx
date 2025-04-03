@@ -1,12 +1,12 @@
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import type { NextPage } from "next";
 import { PaperContainer } from "@/components/ui/PaperContainers";
-import LandingLayout from "@/components/landingPageComponents/LandingLayout";
+import LandingLayout from "@/components/pages/landingPageComponents/LandingLayout";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import LoginModal from "@/components/modals/LoginModal";
+import LoginModal from "@/components/general/modals/LoginModal";
 import GoBackButton from "@/components/ui/go-back";
-import MyCoursesClient from "@/components/myCoursesComponents/MyCoursesClient";
+import MyCoursesClient from "@/components/student/myCoursesComponents/MyCoursesClient";
 
 const CoursesPage: NextPage = () => {
     const session = useSession()

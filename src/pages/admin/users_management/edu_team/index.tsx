@@ -2,13 +2,12 @@ import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { api } from "@/lib/api";
 import { useState } from "react";
 import { ListChecks, PlusIcon } from "lucide-react";
-import { PaperContainer } from "@/components/ui/PaperContainers";
 import { Button } from "@/components/ui/button";
-import AppLayout from "@/components/layout/AppLayout";
-import TrainerForm from "@/components/staffComponents/TrainerForm";
-import TrainersClient from "@/components/staffComponents/TrainersClient";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
 import Link from "next/link";
 import Modal from "@/components/ui/modal";
+import TrainerForm from "@/components/admin/usersManagement/staffComponents/TrainerForm";
+import TrainersClient from "@/components/admin/usersManagement/staffComponents/TrainersClient";
 
 const EducationalTeamPage = () => {
   const { data: currentTrainerData } = api.trainers.getCurrentTrainer.useQuery();
@@ -54,9 +53,7 @@ const EducationalTeamPage = () => {
               <TrainerForm setIsOpen={setIsOpen}></TrainerForm>
             )}
           />
-          <PaperContainer>
-            <TrainersClient />
-          </PaperContainer>
+          <TrainersClient />
         </div>
       </main>
     </AppLayout>

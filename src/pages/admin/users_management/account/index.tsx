@@ -1,12 +1,12 @@
 import { api } from "@/lib/api";
-import { Account } from "@/components/users/accountComponents/Account";
-import { AccountDetails } from "@/components/users/accountComponents/AccountDetails";
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
-import AppLayout from "@/components/layout/AppLayout";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { ArrowLeftFromLine } from "lucide-react";
 import { useRouter } from "next/router";
-import Spinner from "@/components/Spinner";
+import Spinner from "@/components/ui/Spinner";
+import { AccountDetails } from "@/components/admin/usersManagement/users/accountComponents/AccountDetails";
+import { Account } from "@/components/admin/usersManagement/users/accountComponents/Account";
 
 const Page = () => {
   const router = useRouter();

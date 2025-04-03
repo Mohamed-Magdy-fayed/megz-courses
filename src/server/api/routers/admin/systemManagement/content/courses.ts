@@ -116,7 +116,7 @@ export const coursesRouter = createTRPCRouter({
         },
         systemForms: true,
         levels: { include: { materialItems: true } },
-        courseStatus: true,
+        courseStatus: { include: { user: true } },
       },
       orderBy: { createdAt: "desc" }
     });
@@ -130,7 +130,7 @@ export const coursesRouter = createTRPCRouter({
         include: {
           placementTests: { include: { tester: true, writtenTest: true } },
           systemFormSubmissions: true,
-          zoomGroups: { include: { zoomSessions: { include: { materialItem: true } } } },
+          zoomGroups: { include: { zoomSessions: { include: { materialItem: true, zoomClient: { select: { isZoom: true } } } } } },
           courseStatus: { include: { level: true } },
         },
       });

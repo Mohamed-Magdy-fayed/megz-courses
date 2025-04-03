@@ -1,3 +1,4 @@
+import { FilterColumn, FilterOption, StringValueOf } from "@/components/ui/ServerDataTable/utils/types";
 import { FilterFn } from "@tanstack/react-table";
 
 export type NestedKey<T> = T extends Date | Array<any>
@@ -10,7 +11,7 @@ export type NestedKey<T> = T extends Date | Array<any>
     }[keyof T]
     : never;
 
-export function getProperty<TData, K extends keyof TData>(obj: TData, key: K): TData[K] {
+export function getProperty<TData, K extends Extract<keyof TData, string>>(obj: TData, key: K): TData[K] {
     return obj[key];
 }
 
@@ -41,4 +42,37 @@ export const filterFn: FilterFn<any> = (row, columnId, filterValue) => {
 
     // Default: include the row
     return true;
+};
+
+export const dateFilterFn = <TData>(key: Extract<{ [K in Extract<keyof TData, string>]: TData[K] extends Date ? K : never }[Extract<keyof TData, string>], string>, filterValue: any) => {
+    const [startDateStr, endDateStr] = filterValue.split('|');
+    if (!startDateStr || !endDateStr) throw new Error("Not a correct date format!")
+    const startDate = new Date(startDateStr);
+    const endDate = new Date(endDateStr);
+    return { key, from: startDate, to: endDate };
+};
+
+export const searchFilterFn = <TData>(key: Extract<keyof TData, string>, filterValue: any) => {
+    return { key, value: filterValue };
+};
+
+export const selectFilterFn = <TData>(key: Extract<keyof TData, string>, filterValue: any) => {
+    return { key, value: filterValue };
+};
+
+export const addFiltersCounts = <TData>(
+    filterName: string,
+    key: Extract<keyof TData, string>, // Key to access TData
+    options: FilterOption<TData>[], // Predefined selection options
+    counts: Record<StringValueOf<TData>, number> // Count object from TRPC query
+): FilterColumn<TData> => {
+    return {
+        filterName,
+        key,
+        values: options.map((option) => ({
+            label: option.label,
+            value: option.value,
+            count: counts[option.value] || 0, // Retrieve count or default to 0
+        })),
+    };
 };

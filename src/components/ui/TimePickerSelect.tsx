@@ -57,7 +57,7 @@ export function TimePickerSelect({ date, setDate }: TimePickerSelectProps) {
             <SelectTrigger className="w-fit">
                 <SelectValue placeholder="Select time" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="h-80">
                 {timeOptions.map((time, index) => (
                     <SelectItem key={index} value={time}>
                         {time}

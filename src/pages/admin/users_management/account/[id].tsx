@@ -1,14 +1,14 @@
-import { Account } from "@/components/users/accountComponents/Account";
-import { AccountDetails } from "@/components/users/accountComponents/AccountDetails";
 import { api } from "@/lib/api";
 import { useRouter } from "next/router";
-import AppLayout from "@/components/layout/AppLayout";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
 import { ArrowLeftFromLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
-import Spinner from "@/components/Spinner";
-import { UserAccountTabs } from "@/components/users/accountComponents/AccountTabs";
+import Spinner from "@/components/ui/Spinner";
 import { Prisma } from "@prisma/client";
+import { Account } from "@/components/admin/usersManagement/users/accountComponents/Account";
+import { AccountDetails } from "@/components/admin/usersManagement/users/accountComponents/AccountDetails";
+import { UserAccountTabs } from "@/components/admin/usersManagement/users/accountComponents/AccountTabs";
 
 export type UserGetPayload = Prisma.UserGetPayload<{
   include: {

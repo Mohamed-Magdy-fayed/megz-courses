@@ -112,11 +112,19 @@ export type CourseType = Course & {
       orders: Order[];
     };
   })[];
-  courseStatus: CourseStatus[];
+  courseStatus: (CourseStatus & { user: User })[];
 }
+
 export const getWaitingList = (course: CourseType): number => {
   return course.courseStatus
     .filter(stat => stat.status === "Waiting" && stat.courseId === course.id)
+    .filter((stat, i, self) => i === self.findIndex(({ userId }) => stat.userId === userId))
+    .length;
+}
+
+export const getOrderPaidList = (course: CourseType): number => {
+  return course.courseStatus
+    .filter(stat => stat.status === "OrderPaid" && stat.courseId === course.id)
     .filter((stat, i, self) => i === self.findIndex(({ userId }) => stat.userId === userId))
     .length;
 }

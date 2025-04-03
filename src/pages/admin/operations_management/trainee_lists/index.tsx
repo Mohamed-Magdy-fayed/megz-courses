@@ -1,5 +1,5 @@
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
-import AppLayout from "@/components/layout/AppLayout";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
 import { validCourseStatuses } from "@/lib/enumsTypes";
 import { upperFirst } from "lodash";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";

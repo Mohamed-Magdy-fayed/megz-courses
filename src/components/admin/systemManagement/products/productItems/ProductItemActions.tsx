@@ -1,6 +1,6 @@
 import { ProductItemColumn } from "@/components/admin/systemManagement/products/productItems/ProductItemColumn";
 import ProductItemForm from "@/components/admin/systemManagement/products/productItems/ProductItemForm";
-import { AlertModal } from "@/components/modals/AlertModal";
+import { AlertModal } from "@/components/general/modals/AlertModal";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import Modal from "@/components/ui/modal";

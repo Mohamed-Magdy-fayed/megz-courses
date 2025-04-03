@@ -1,4 +1,4 @@
-import AppLayout from '@/components/layout/AppLayout'
+import AppLayout from '@/components/pages/adminLayout/AppLayout'
 import OrderReceipt from '@/components/admin/salesManagement/orders/OrderReceipt'
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 

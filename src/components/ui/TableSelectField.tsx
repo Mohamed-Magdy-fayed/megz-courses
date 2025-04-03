@@ -6,25 +6,25 @@ import { cn } from '@/lib/utils'
 import { ScrollArea } from './scroll-area'
 import { Typography } from './Typoghraphy'
 
-type DataType = {
-    label: string
-    customLabel?: ReactNode
-    value: string
-    Active: boolean
+type DataType<T> = {
+    label: string;
+    customLabel?: ReactNode;
+    value: T;
+    Active: boolean;
 }
 
 interface TableSelectFieldProps<T> extends ButtonHTMLAttributes<HTMLButtonElement> {
     placeholder: string
     listTitle: string | ReactNode
-    data: DataType[]
+    data: DataType<T>[]
     handleChange: (val: T) => void
     customLabel?: ReactNode
 }
 
-const TableSelectField: FC<TableSelectFieldProps<any>> = ({ placeholder, listTitle, data, handleChange, className, ...props }) => {
+const TableSelectField = <T,>({ placeholder, listTitle, data, handleChange, className, ...props }: TableSelectFieldProps<T>) => {
     const [isOpen, setIsOpen] = useState(false)
     const [filteredData, setFilteredData] = useState(data)
-    const [value, setValue] = useState("")
+    const [value, setValue] = useState<T>()
 
     useEffect(() => {
         setFilteredData(data)
@@ -36,19 +36,19 @@ const TableSelectField: FC<TableSelectFieldProps<any>> = ({ placeholder, listTit
                 <Button
                     variant="outline"
                     customeColor={"foregroundOutlined"}
-                    className={cn('max-w-sm flex border p-1 border-transparent hover:border-muted items-center h-fit gap-2 justify-start focus-visible:ring-0 focus-visible:ring-offset-0', isOpen ? "border-primary" : "", className)}
+                    className={cn('max-w-sm flex border p-1 border-transparent hover:border-foreground items-center h-fit gap-2 justify-start focus-visible:ring-0 focus-visible:ring-offset-0', isOpen ? "border-primary" : "", className)}
                     {...props}
                 >
-                    {value.length === 0 ? (
-                        <Typography className='text-muted'>
+                    {!value ? (
+                        <Typography className='text-foreground'>
                             {placeholder}
                         </Typography>
                     ) : (
-                        <Typography className='text-muted'>
-                            {value}
+                        <Typography className='text-foreground'>
+                            {`${filteredData.find(d => d.value === value)?.label}`}
                         </Typography>
                     )}
-                    <ChevronDown className="h-4 w-4 opacity-50 ml-auto" />
+                    <ChevronDown className="h-4 w-4 opacity-50 ml-auto text-foreground" />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -58,11 +58,11 @@ const TableSelectField: FC<TableSelectFieldProps<any>> = ({ placeholder, listTit
                     {filteredData.map(item => {
                         return (
                             <DropdownMenuItem
-                                key={item.value}
+                                key={`${item.value}`}
                                 disabled={!item.Active}
                                 onClick={() => {
                                     handleChange(item.value)
-                                    setValue(item.label === value ? "" : item.label)
+                                    setValue(item.value === value ? undefined : item.value)
                                 }}>
                                 <Check
                                     className={cn(

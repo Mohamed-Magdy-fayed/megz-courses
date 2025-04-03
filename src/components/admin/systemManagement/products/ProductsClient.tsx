@@ -93,7 +93,7 @@ export default function ProductsClient() {
                     { key: "discountedPrice", label: "Discount Price" },
                 ]}
                 sum={{ key: "amounts", label: "Orders" }}
-                skele={isLoading}
+                isLoading={isLoading}
                 exportConfig={{ fileName: "Products", sheetName: "Products" }}
                 importConfig={{ reqiredFields: ["name", "price", "discountedPrice", "description", "isActive", "isPrivate"], sheetName: "Products", templateName: "Products Template" }}
                 handleImport={(input) => {

@@ -1,22 +1,21 @@
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
-import AppLayout from "@/components/layout/AppLayout";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
 import { PlusSquare } from "lucide-react";
 import type { NextPage } from "next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import Modal from "@/components/ui/modal";
 import { useEffect, useState } from "react";
-import ZoomAccountForm from "@/components/zoomAccount/ZoomAccountForm";
-import { PaperContainer } from "@/components/ui/PaperContainers";
-import ZoomAccountsClient from "@/components/zoomAccount/ZoomAccountsClient";
-import { SiteIdentityForm } from "@/components/siteIdentity/SiteIdentityForm";
+import { SiteIdentityForm } from "@/components/admin/operationsManagement/siteIdentity/SiteIdentityForm";
 import { api } from "@/lib/api";
-import GoogleAccountsClient from "@/components/googleAccount/GoogleAccountsClient";
-import GoogleAccountForm from "@/components/googleAccount/GoogleAccountForm";
-import MetaConfigTab from "@/components/systemConfigurations/MetaConfigTab";
-import WhatsappConfigTab from "@/components/systemConfigurations/WhatsappConfigTab";
-import ParamsConfigTab from "@/components/systemConfigurations/ParamsConfigTab";
-import OnMeetingAccountForm from "@/components/onMeetingAccount/OnMeetingAccountForm";
+import MetaConfigTab from "@/components/admin/systemManagement/systemConfigurations/MetaConfigTab";
+import WhatsappConfigTab from "@/components/admin/systemManagement/systemConfigurations/WhatsappConfigTab";
+import ParamsConfigTab from "@/components/admin/systemManagement/systemConfigurations/ParamsConfigTab";
+import OnMeetingAccountForm from "@/components/admin/systemManagement/config/onMeetingAccount/OnMeetingAccountForm";
+import ZoomAccountForm from "@/components/admin/systemManagement/config/zoomAccount/ZoomAccountForm";
+import ZoomAccountsClient from "@/components/admin/systemManagement/config/zoomAccount/ZoomAccountsClient";
+import GoogleAccountForm from "@/components/admin/systemManagement/config/googleAccount/GoogleAccountForm";
+import GoogleAccountsClient from "@/components/admin/systemManagement/config/googleAccount/GoogleAccountsClient";
 
 const tabs = [
     { value: "site_identity", label: "Site Identity" },
@@ -82,9 +81,7 @@ const ConfigPage: NextPage = () => {
                                 </Button>
                             </div>
                         </div>
-                        <PaperContainer>
-                            <ZoomAccountsClient />
-                        </PaperContainer>
+                        <ZoomAccountsClient />
                     </div>
                 </TabsContent>
                 <TabsContent value="google_accounts">
@@ -105,9 +102,7 @@ const ConfigPage: NextPage = () => {
                                 Add an account
                             </Button>
                         </div>
-                        <PaperContainer>
-                            <GoogleAccountsClient />
-                        </PaperContainer>
+                        <GoogleAccountsClient />
                     </div>
                 </TabsContent>
                 <TabsContent value="site_identity">
@@ -115,11 +110,9 @@ const ConfigPage: NextPage = () => {
                         <div className="flex items-center justify-between w-full">
                             <ConceptTitle>Site Identity</ConceptTitle>
                         </div>
-                        <PaperContainer>
-                            {
-                                data?.siteIdentity && <SiteIdentityForm initialData={data.siteIdentity} />
-                            }
-                        </PaperContainer>
+                        {
+                            data?.siteIdentity && <SiteIdentityForm initialData={data.siteIdentity} />
+                        }
                     </div>
                 </TabsContent>
                 <TabsContent value="sales_channels">

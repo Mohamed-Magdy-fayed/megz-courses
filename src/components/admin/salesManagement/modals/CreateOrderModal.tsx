@@ -1,5 +1,5 @@
-import CourseSelectField from "@/components/selectFields/CourseSelectField";
-import ProductSelectField from "@/components/selectFields/ProductSelectField";
+import CourseSelectField from "@/components/general/selectFields/CourseSelectField";
+import ProductSelectField from "@/components/general/selectFields/ProductSelectField";
 import { Button, SpinnerButton } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -61,12 +61,11 @@ export default function CreateOrderModal({ userExists, isOpen, setIsOpen }: Crea
             loadingToast,
             setLoadingToast,
             successMessageFormatter: ({ order, password }) => {
-                navigator.clipboard.writeText(`${studentEmail}\n${password}`)
                 toast({
                     variant: "info",
                     title: "Student sign in",
                     description: `${studentEmail}\n${password}`,
-                    action: <Button variant="icon" customeColor="info" children={<CopyIcon size={20} />} />,
+                    action: <Button onClick={() => navigator.clipboard.writeText(`${studentEmail}\n${password}`)} variant="icon" customeColor="info" children={<CopyIcon size={20} />} />,
                     duration: 30000,
                 })
                 setIsOpen(false)
@@ -81,12 +80,11 @@ export default function CreateOrderModal({ userExists, isOpen, setIsOpen }: Crea
             loadingToast,
             setLoadingToast,
             successMessageFormatter: ({ order, password }) => {
-                navigator.clipboard.writeText(`${studentEmail}\n${password}`)
                 toast({
                     variant: "info",
                     title: "Student sign in",
                     description: `${studentEmail}\n${password}`,
-                    action: <Button variant="icon" customeColor="info" children={<CopyIcon size={20} />} />,
+                    action: <Button onClick={() => navigator.clipboard.writeText(`${studentEmail}\n${password}`)} variant="icon" customeColor="info" children={<CopyIcon size={20} />} />,
                     duration: 30000,
                 })
                 setIsOpen(false)
@@ -96,7 +94,7 @@ export default function CreateOrderModal({ userExists, isOpen, setIsOpen }: Crea
     )
     const createProductOrderMutation = api.orders.createProductOrder.useMutation(
         createMutationOptions({
-            trpcUtils: trpcUtils.orders,
+            trpcUtils,
             toast,
             loadingToast,
             setLoadingToast,
@@ -105,7 +103,7 @@ export default function CreateOrderModal({ userExists, isOpen, setIsOpen }: Crea
     )
     const createCourseOrderMutation = api.orders.createCourseOrder.useMutation(
         createMutationOptions({
-            trpcUtils: trpcUtils.orders,
+            trpcUtils,
             toast,
             loadingToast,
             setLoadingToast,

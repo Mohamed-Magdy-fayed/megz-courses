@@ -1,6 +1,6 @@
-import AppLayout from "@/components/layout/AppLayout";
-import { TicketsClient } from "@/components/ticketsComponents/TicketsClient";
-import { TicketsForm } from "@/components/ticketsComponents/TicketsForm";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
+import { TicketsClient } from "@/components/admin/operationsManagement/ticketsComponents/TicketsClient";
+import { TicketsForm } from "@/components/admin/operationsManagement/ticketsComponents/TicketsForm";
 import { Button } from "@/components/ui/button";
 import CommingSoon from "@/components/ui/CommingSoon";
 import Modal from "@/components/ui/modal";

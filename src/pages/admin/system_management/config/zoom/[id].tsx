@@ -1,10 +1,9 @@
-import AppLayout from '@/components/layout/AppLayout';
+import ZoomAccountMeetings from '@/components/admin/systemManagement/config/zoomAccount/zoomAccountMeetings/ZoomAccountMeetings';
+import AppLayout from '@/components/pages/adminLayout/AppLayout';
 import GoBackButton from '@/components/ui/go-back';
-import { PaperContainer } from '@/components/ui/PaperContainers';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { ConceptTitle, Typography } from '@/components/ui/Typoghraphy';
-import ZoomAccountMeetings from '@/components/zoomAccount/zoomAccountMeetings/ZoomAccountMeetings';
 import { api } from '@/lib/api';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 
@@ -22,14 +21,10 @@ const ZoomClientPage = ({ id }: InferGetServerSidePropsType<typeof getServerSide
                     <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
                 </TabsList>
                 <TabsContent value="all">
-                    <PaperContainer>
-                        <ZoomAccountMeetings clientId={id} />
-                    </PaperContainer>
+                    <ZoomAccountMeetings clientId={id} />
                 </TabsContent>
                 <TabsContent value="upcoming">
-                    <PaperContainer>
-                        <ZoomAccountMeetings clientId={id} isUpcoming />
-                    </PaperContainer>
+                    <ZoomAccountMeetings clientId={id} isUpcoming />
                 </TabsContent>
             </Tabs>
         </AppLayout>

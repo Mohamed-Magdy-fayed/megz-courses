@@ -1,6 +1,6 @@
-import EmailConfirmationSuccess from "@/components/emails/EmailConfirmed";
-import LandingLayout from "@/components/landingPageComponents/LandingLayout";
-import Spinner from "@/components/Spinner";
+import EmailConfirmationSuccess from "@/components/general/emails/EmailConfirmed";
+import LandingLayout from "@/components/pages/landingPageComponents/LandingLayout";
+import Spinner from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/button";
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import { api } from "@/lib/api";

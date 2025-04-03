@@ -1,0 +1,255 @@
+import { api } from "@/lib/api";
+import { Lock } from "lucide-react";
+import { Typography } from "@/components/ui/Typoghraphy";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Dispatch, FC, SetStateAction, useState } from "react";
+import { toastType, useToast } from "@/components/ui/use-toast";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import Spinner from "@/components/ui/Spinner";
+import { Input } from "@/components/ui/input";
+import { render } from "@react-email/render";
+import ResetPasswordEmail from "../emails/ResetPasswordEmail";
+import { createMutationOptions } from "@/lib/mutationsHelper";
+import { passwordSchema } from "@/components/general/authComponents/AuthForm";
+import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
+
+// Schema for requesting the reset password code
+export const requestResetPasswordSchema = z.object({
+    email: z.string().email().min(5, "Please enter a valid email"),
+});
+
+// Schema for resetting the password
+export const resetPasswordSchema = z.object({
+    code: z.string().min(4, "Security code is required"), // Security code length validation
+    password: passwordSchema,
+    passwordConfirmation: z.string().optional()
+}).superRefine(({ password, passwordConfirmation }) => password === passwordConfirmation);
+
+type RequestResetPasswordFormValues = z.infer<typeof requestResetPasswordSchema>;
+type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
+
+// Union type for the form values
+type FormValues = RequestResetPasswordFormValues | ResetPasswordFormValues;
+
+type ResetPasswordFormProps = {
+    setOpen: Dispatch<SetStateAction<boolean>>
+}
+
+const ResetPasswordForm: FC<ResetPasswordFormProps> = ({ setOpen }) => {
+    const [passwordForm, setPasswordForm] = useState(false);
+    const [loadingToast, setLoadingToast] = useState<toastType>();
+    const { toastError, toast, toastSuccess } = useToast()
+
+    const defaultValues: FormValues = passwordForm
+        ? {
+            code: "",
+            password: "",
+            passwordConfirmation: "",
+        }
+        : {
+            email: "",
+        };
+
+    const formSchema = passwordForm ? resetPasswordSchema : requestResetPasswordSchema;
+    const form = useForm<FormValues>({
+        resolver: zodResolver(formSchema),
+        defaultValues,
+    });
+
+    const { data: siteData } = api.siteIdentity.getSiteIdentity.useQuery()
+    const trpcUtils = api.useUtils()
+    const resetPasswordEmailMutation = api.auth.resetPasswordEmail.useMutation();
+    const resetPasswordRequestMutation = api.auth.resetPasswordRequest.useMutation()
+
+    const resetPasswordWithCodeMutation = api.auth.resetPasswordWithCode.useMutation(
+        createMutationOptions({
+            trpcUtils,
+            loadingToast,
+            setLoadingToast,
+            toast,
+            successMessageFormatter: ({ updated }) => {
+                setOpen(false)
+                return `Password for ${updated.email} has been updated successfully!`
+            },
+        })
+    )
+
+    const handleResetPassword = async (data: FormValues) => {
+        if (!passwordForm) {
+            const innerLoadingToast = toast({
+                title: "Loading...",
+                description: <Spinner className="w-4 h-4" />,
+                variant: "info",
+                duration: 60000,
+            })
+            setLoadingToast(innerLoadingToast)
+
+            try {
+                // Data is of type RequestResetPasswordFormValues
+                const { email } = data as RequestResetPasswordFormValues;
+                if (!email) {
+                    return toastError("Please enter your email");
+                }
+                const { user, tempPassword } = await resetPasswordRequestMutation.mutateAsync({ email });
+                const message = render(<ResetPasswordEmail logoUrl={siteData?.siteIdentity.logoPrimary || ""} securityCode={tempPassword} username={user.name} />)
+                await resetPasswordEmailMutation.mutateAsync({ email: user.email, message })
+
+                innerLoadingToast?.update({
+                    id: innerLoadingToast.id,
+                    title: "Success",
+                    description: `please check your email ${user.email} for the security code!`,
+                    variant: "success",
+                })
+                setPasswordForm(true)
+            } catch (error) {
+                innerLoadingToast?.update({
+                    id: innerLoadingToast.id,
+                    title: "Error",
+                    description: error instanceof TRPCError ? error.message : getTRPCErrorFromUnknown(error).message,
+                    variant: "destructive",
+                })
+            } finally {
+                innerLoadingToast?.dismissAfter()
+                setLoadingToast(undefined);
+            }
+        } else {
+            // Data is of type ResetPasswordFormValues
+            const { code, password, passwordConfirmation } = data as ResetPasswordFormValues;
+            const email = form.getValues("email") as string;
+
+            if (!code) {
+                return toastError("Please provide the security code from your email!");
+            }
+            if (!password) {
+                return toastError("Please provide a new password!");
+            }
+            if (password !== passwordConfirmation) {
+                return toastError("Passwords don't match!");
+            }
+
+            resetPasswordWithCodeMutation.mutate({
+                email,
+                newPassword: password,
+                code,
+            });
+        }
+    };
+
+    return (
+        <div className="mt-2 flex flex-col items-center mx-auto">
+            <div className="flex flex-col items-center p-4">
+                <Lock />
+                <Typography variant={"primary"}>
+                    {"Reset Password"}
+                </Typography>
+            </div>
+            <Form {...form}>
+                <form
+                    onSubmit={form.handleSubmit(handleResetPassword)}
+                    aria-disabled={!!loadingToast}
+                    className="flex w-full max-w-md flex-col justify-between p-4 space-y-4"
+                >
+                    <div className="flex-col flex gap-2">
+                        {!passwordForm ? (<FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Email</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            type="text"
+                                            disabled={!!loadingToast}
+                                            placeholder="Example@mail.com"
+                                            {...field}
+                                            className="pl-8"
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />) :
+                            (
+                                <>
+                                    <FormField
+                                        control={form.control}
+                                        name="code"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Security Code</FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        type="text"
+                                                        disabled={!!loadingToast}
+                                                        placeholder="1234"
+                                                        {...field}
+                                                        className="pl-8"
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="password"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Password</FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        type="password"
+                                                        disabled={!!loadingToast}
+                                                        placeholder="new password"
+                                                        {...field}
+                                                        className="pl-8"
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="passwordConfirmation"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Password Confirmation</FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        type="password"
+                                                        disabled={!!loadingToast}
+                                                        placeholder="confrim new password"
+                                                        {...field}
+                                                        className="pl-8"
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </>
+                            )}
+                    </div>
+                    <Button
+                        disabled={!!loadingToast}
+                        type="submit"
+                        className="relative"
+                    >
+                        {!!loadingToast && (
+                            <Spinner className="w-6 h-6 absolute" />
+                        )}
+                        <Typography className={!!loadingToast ? "opacity-0" : ""}>
+                            {passwordForm ? "Reset" : "Get code"}
+                        </Typography>
+                    </Button>
+                </form>
+            </Form>
+        </div>
+    );
+}
+
+export default ResetPasswordForm

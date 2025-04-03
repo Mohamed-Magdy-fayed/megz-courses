@@ -5,8 +5,8 @@ import { TRPCError } from "@trpc/server";
 import { format } from "date-fns";
 import { env } from "@/env.mjs";
 import { createPaymentIntent } from "@/lib/paymobHelpers";
-import { EmailsWrapper } from "@/components/emails/EmailsWrapper";
-import Email from "@/components/emails/Email";
+import { EmailsWrapper } from "@/components/general/emails/EmailsWrapper";
+import Email from "@/components/general/emails/Email";
 import { sendZohoEmail } from "@/lib/emailHelpers";
 import { subscriptionTiers } from "@/lib/system";
 
@@ -107,6 +107,7 @@ export const selfServeRouter = createTRPCRouter({
                     status: "OrderCreated",
                     course: { connect: { id: courseId } },
                     user: { connect: { id: user.id } },
+                    order: { connect: { id: order.id } },
                 }
             })
 

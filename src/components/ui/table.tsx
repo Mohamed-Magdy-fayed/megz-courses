@@ -1,19 +1,20 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
-import Scrollbar from "../Scrollbar";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 const Table = React.forwardRef<
   HTMLTableElement,
   React.HTMLAttributes<HTMLTableElement>
 >(({ className, ...props }, ref) => (
-  <Scrollbar>
+  <ScrollArea className="grid p-0 rounded-md overflow-hidden pb-2" >
     <table
       ref={ref}
-      className={cn("w-full caption-bottom text-sm", className)}
+      className={cn("w-full caption-bottom text-sm rounded-md overflow-hidden", className)}
       {...props}
     />
-  </Scrollbar>
+    <ScrollBar orientation="horizontal" className="bg-accent" />
+  </ScrollArea>
 ));
 Table.displayName = "Table";
 
@@ -21,7 +22,7 @@ const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props} />
+  <thead ref={ref} className={cn("[&_tr]:border-b bg-accent", className)} {...props} />
 ));
 TableHeader.displayName = "TableHeader";
 
@@ -44,7 +45,7 @@ const TableFooter = React.forwardRef<
   <tfoot
     ref={ref}
     className={cn(
-      "bg-slate-900 font-medium text-slate-50 dark:bg-slate-50 dark:text-slate-900",
+      "bg-foreground font-medium text-background",
       className
     )}
     {...props}
@@ -59,7 +60,7 @@ const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "border-b transition-colors data-[state=selected]:bg-slate-100 hover:bg-slate-100/50 dark:data-[state=selected]:bg-slate-800 dark:hover:bg-slate-800/50",
+      "border-b transition-colors data-[state=selected]:bg-accent hover:bg-accent/50",
       className
     )}
     {...props}
@@ -74,7 +75,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-12 px-4 text-left align-middle font-medium text-slate-500 dark:text-slate-400 [&:has([role=checkbox])]:pr-0",
+      "h-12 px-4 text-left align-middle font-medium text-foreground [&:has([role=checkbox])]:pr-0",
       className
     )}
     {...props}
@@ -88,7 +89,7 @@ const TableCell = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <td
     ref={ref}
-    className={cn("p-4 align-middle [&:has([role=checkbox])]:pr-0", className)}
+    className={cn("p-4 align-middle [&:has([role=checkbox])]:pr-0 whitespace-nowrap", className)}
     {...props}
   />
 ));
@@ -100,7 +101,7 @@ const TableCaption = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <caption
     ref={ref}
-    className={cn("mt-4 text-sm text-slate-500 dark:text-slate-400", className)}
+    className={cn("mt-4 text-sm text-primary", className)}
     {...props}
   />
 ));

@@ -1,10 +1,9 @@
 import ProductItemsClient from '@/components/admin/systemManagement/products/productItems/ProductItemClient';
 import ProductItemForm from '@/components/admin/systemManagement/products/productItems/ProductItemForm';
-import AppLayout from '@/components/layout/AppLayout';
+import AppLayout from '@/components/pages/adminLayout/AppLayout';
 import { Button } from '@/components/ui/button';
 import GoBackButton from '@/components/ui/go-back';
 import Modal from '@/components/ui/modal';
-import { PaperContainer } from '@/components/ui/PaperContainers';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ConceptTitle, Typography } from '@/components/ui/Typoghraphy';
 import { api } from '@/lib/api';
@@ -39,9 +38,7 @@ export default function index({ id }: InferGetServerSidePropsType<typeof getServ
                         <PlusIcon size={20} />
                     </Button>
                 </div>
-                <PaperContainer>
-                    <ProductItemsClient productId={id} />
-                </PaperContainer>
+                <ProductItemsClient productId={id} />
             </div>
         </AppLayout>
     );

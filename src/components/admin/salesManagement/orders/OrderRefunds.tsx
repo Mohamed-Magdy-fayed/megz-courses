@@ -19,7 +19,7 @@ export default function OrderRefunds({ orderId }: { orderId: string }) {
                     label: refund.agent.user.name,
                 })).filter((item, index, self) => self.findIndex(t => t.value === item.value) === index) || []
             }]}
-            skele={isLoading}
+            isLoading={isLoading}
             error={error?.message}
             data={data?.refunds || []}
             columns={[

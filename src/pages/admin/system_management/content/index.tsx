@@ -1,13 +1,12 @@
-import AppLayout from "@/components/layout/AppLayout";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
-import CourseForm from "@/components/contentComponents/courses/CourseForm";
-import CoursesClient from "@/components/contentComponents/courses/CoursesClient";
 import Modal from "@/components/ui/modal";
 import { PaperContainer } from "@/components/ui/PaperContainers";
+import CourseForm from "@/components/admin/systemManagement/contentComponents/courses/CourseForm";
+import CoursesClient from "@/components/admin/systemManagement/contentComponents/courses/CoursesClient";
 
 const ContentPage = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -39,9 +38,7 @@ const ContentPage = () => {
               <Typography variant={"buttonText"}>Add</Typography>
             </Button>
           </div>
-          <PaperContainer>
-            <CoursesClient />
-          </PaperContainer>
+          <CoursesClient />
         </div>
       </div>
     </AppLayout>

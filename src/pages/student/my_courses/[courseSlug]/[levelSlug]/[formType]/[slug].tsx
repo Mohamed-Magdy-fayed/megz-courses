@@ -1,9 +1,9 @@
-import LearningLayout from "@/components/LearningLayout/LearningLayout";
+import LearningLayout from "@/components/pages/LearningLayout/LearningLayout";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import SystemFormCard from "@/components/systemForms/SystemFormCard";
+import SystemFormCard from "@/components/admin/systemManagement/systemForms/SystemFormCard";
 import { SystemFormTypes } from "@prisma/client";
-import Spinner from "@/components/Spinner";
+import Spinner from "@/components/ui/Spinner";
 
 const AssignmentPage: NextPage = () => {
     const router = useRouter()

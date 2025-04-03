@@ -1,4 +1,4 @@
-import AppLayout from "@/components/layout/AppLayout";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
 import type { NextPage } from "next";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import OrdersClient from "@/components/admin/salesManagement/orders/OrdersClient";
@@ -10,9 +10,7 @@ const OrderPage: NextPage = () => {
             <main className="flex">
                 <div className="flex w-full flex-col gap-4">
                     <ConceptTitle>Orders</ConceptTitle>
-                    <PaperContainer>
-                        <OrdersClient />
-                    </PaperContainer>
+                    <OrdersClient />
                 </div>
             </main>
         </AppLayout>

@@ -3,9 +3,9 @@ import { useState } from "react";
 import { PlusIcon } from "lucide-react";
 import { PaperContainer } from "@/components/ui/PaperContainers";
 import { Button } from "@/components/ui/button";
-import AppLayout from "@/components/layout/AppLayout";
-import ChatAgentForm from "@/components/chatAgentsComponents/ChatAgentForm";
-import ChatAgentsClient from "@/components/chatAgentsComponents/ChatAgentsClient";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
+import ChatAgentForm from "@/components/admin/usersManagement/chatAgentsComponents/ChatAgentForm";
+import ChatAgentsClient from "@/components/admin/usersManagement/chatAgentsComponents/ChatAgentsClient";
 import Modal from "@/components/ui/modal";
 
 const ChatAgentsPage = () => {
@@ -33,9 +33,7 @@ const ChatAgentsPage = () => {
               <ChatAgentForm setIsOpen={setIsOpen}></ChatAgentForm>
             )}
           />
-          <PaperContainer>
-            <ChatAgentsClient />
-          </PaperContainer>
+          <ChatAgentsClient />
         </div>
       </main>
     </AppLayout>

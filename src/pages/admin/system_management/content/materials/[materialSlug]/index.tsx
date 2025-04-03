@@ -1,6 +1,6 @@
-import Spinner from "@/components/Spinner";
-import MaterialsEditForm from "@/components/contentComponents/materials/MaterialsEditForm";
-import AppLayout from "@/components/layout/AppLayout";
+import Spinner from "@/components/ui/Spinner";
+import MaterialsEditForm from "@/components/admin/systemManagement/contentComponents/materials/MaterialsEditForm";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
 import { api } from "@/lib/api";
 import { useRouter } from "next/router";
 import { ref, listAll, ListResult, getDownloadURL } from "firebase/storage";

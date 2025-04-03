@@ -1,16 +1,16 @@
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
-import AppLayout from "@/components/layout/AppLayout";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
 import type { NextPage } from "next";
 import { PaperContainer } from "@/components/ui/PaperContainers";
-import LeadsClient from "@/components/leads/LeadsClient";
+import LeadsClient from "@/components/admin/salesManagement/leads/LeadsClient";
 import { Button, SpinnerButton } from "@/components/ui/button";
 import { Edit, ListChecks, ChevronDownIcon, PlusSquare, Trash } from "lucide-react";
 import { useState } from "react";
 import Modal from "@/components/ui/modal";
-import LeadsForm from "@/components/leads/LeadsForm";
-import StageForm from "@/components/leads/StageForm";
-import DeleteStageForm from "@/components/leads/DeleteStageForm";
-import MoveStageForm from "@/components/leads/MoveStageForm";
+import LeadsForm from "@/components/admin/salesManagement/leads/LeadsForm";
+import StageForm from "@/components/admin/salesManagement/leads/StageForm";
+import DeleteStageForm from "@/components/admin/salesManagement/leads/DeleteStageForm";
+import MoveStageForm from "@/components/admin/salesManagement/leads/MoveStageForm";
 import { api } from "@/lib/api";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { Accordion, AccordionContent, AccordionItem } from "@/components/ui/accordion";
@@ -20,10 +20,10 @@ import SelectField from "@/components/ui/SelectField";
 import { formatPercentage } from "@/lib/utils";
 import { ArrowRightToLine } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Lead } from "@/components/leads/LeadsColumn";
+import { Lead } from "@/components/admin/salesManagement/leads/LeadsColumn";
 import { useSession } from "next-auth/react";
 import WrapWithTooltip from "@/components/ui/wrap-with-tooltip";
-import { SeverityPill } from "@/components/overview/SeverityPill";
+import { SeverityPill } from "@/components/ui/SeverityPill";
 import GoBackButton from "@/components/ui/go-back";
 
 const MyLeadsPage: NextPage = () => {
@@ -182,67 +182,65 @@ const MyLeadsPage: NextPage = () => {
                         </Accordion>
                         {stagesData?.stages.map(stage => (
                             <TabsContent key={stage.id} value={stage.name}>
-                                <PaperContainer>
-                                    <div className="flex items-end justify-between gap-4 md:justify-start">
-                                        <div className="flex flex-col gap-4 md:flex-row">
-                                            <DropdownMenu>
-                                                <WrapWithTooltip text={selectedLeads.length === 0 ? "Select Leads to bulk move" : "Move selected leads to another stage"}>
-                                                    <DropdownMenuTrigger asChild disabled={selectedLeads.length === 0} >
-                                                        <SpinnerButton
-                                                            disabled={selectedLeads.length === 0}
-                                                            icon={ListChecks}
-                                                            text="Bulk Move"
-                                                            isLoading={!!loadingToast} customeColor={"primary"}
-                                                        />
-                                                    </DropdownMenuTrigger>
-                                                </WrapWithTooltip>
-                                                <DropdownMenuContent>
-                                                    <DropdownMenuLabel>Move To Stage</DropdownMenuLabel>
-                                                    {stagesData.stages.map(toStage => (
-                                                        <DropdownMenuItem key={toStage.id} disabled={toStage.name === stage.name} onClick={() => onMoveAll(toStage.id)}>
-                                                            {toStage.name}
-                                                        </DropdownMenuItem>
-                                                    ))}
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </div>
-                                        <SelectField
-                                            data={[...(labelsData?.leadLabels.map(label => ({
-                                                Active: true,
-                                                label: label.value,
-                                                value: label.value,
-                                            })) || []), {
-                                                Active: true,
-                                                label: "No Labels",
-                                                value: "No Labels",
-                                            }]}
-                                            listTitle="Labels"
-                                            placeholder="Select Label"
-                                            setValues={setValues}
-                                            values={values}
-                                            multiSelect
-                                        />
+                                <div className="flex items-end justify-between gap-4 md:justify-start">
+                                    <div className="flex flex-col gap-4 md:flex-row">
+                                        <DropdownMenu>
+                                            <WrapWithTooltip text={selectedLeads.length === 0 ? "Select Leads to bulk move" : "Move selected leads to another stage"}>
+                                                <DropdownMenuTrigger asChild disabled={selectedLeads.length === 0} >
+                                                    <SpinnerButton
+                                                        disabled={selectedLeads.length === 0}
+                                                        icon={ListChecks}
+                                                        text="Bulk Move"
+                                                        isLoading={!!loadingToast} customeColor={"primary"}
+                                                    />
+                                                </DropdownMenuTrigger>
+                                            </WrapWithTooltip>
+                                            <DropdownMenuContent>
+                                                <DropdownMenuLabel>Move To Stage</DropdownMenuLabel>
+                                                {stagesData.stages.map(toStage => (
+                                                    <DropdownMenuItem key={toStage.id} disabled={toStage.name === stage.name} onClick={() => onMoveAll(toStage.id)}>
+                                                        {toStage.name}
+                                                    </DropdownMenuItem>
+                                                ))}
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
                                     </div>
-                                    <div className="flex items-center gap-4 justify-between p-4 md:justify-start md:gap-8">
-                                        <Typography className="text-info">Intake {stagesData.stages.flatMap(stage => stage.leads.filter(l => l.assignee?.userId === sessionData?.user.id)).length}</Typography>
-                                        <ArrowRightToLine />
-                                        <Typography className="text-success">Converted {stagesData.stages.filter(stage => stage.defaultStage === "Converted").flatMap(stage => stage.leads.filter(l => l.assignee?.userId === sessionData?.user.id)).length}</Typography>
-                                        <ArrowRightToLine />
-                                        <Typography className="text-destructive">Convertion Rate {formatPercentage(stagesData.stages.filter(stage => stage.defaultStage === "Converted").flatMap(stage => stage.leads.filter(l => l.assignee?.userId === sessionData?.user.id)).length / stagesData.stages.flatMap(stage => stage.leads.filter(l => l.assignee?.userId === sessionData?.user.id)).length * 100)}</Typography>
-                                    </div>
-                                    <LeadsClient
-                                        stage={{
-                                            ...stage,
-                                            leads: values.length > 0
-                                                ? stage.leads.filter(lead => lead.labels.some(label => values.some(val => label.value === val)) && lead.assignee?.userId === sessionData?.user.id)
-                                                : stage.leads.filter(lead => lead.assignee?.userId === sessionData?.user.id)
-                                        }}
-                                        resetSelection={resetSelection}
-                                        stagesData={stagesData.stages}
-                                        handleImport={handleImport}
-                                        setSelectedLeads={setSelectedLeads}
+                                    <SelectField
+                                        data={[...(labelsData?.leadLabels.map(label => ({
+                                            Active: true,
+                                            label: label.value,
+                                            value: label.value,
+                                        })) || []), {
+                                            Active: true,
+                                            label: "No Labels",
+                                            value: "No Labels",
+                                        }]}
+                                        listTitle="Labels"
+                                        placeholder="Select Label"
+                                        setValues={setValues}
+                                        values={values}
+                                        multiSelect
                                     />
-                                </PaperContainer>
+                                </div>
+                                <div className="flex items-center gap-4 justify-between p-4 md:justify-start md:gap-8">
+                                    <Typography className="text-info">Intake {stagesData.stages.flatMap(stage => stage.leads.filter(l => l.assignee?.userId === sessionData?.user.id)).length}</Typography>
+                                    <ArrowRightToLine />
+                                    <Typography className="text-success">Converted {stagesData.stages.filter(stage => stage.defaultStage === "Converted").flatMap(stage => stage.leads.filter(l => l.assignee?.userId === sessionData?.user.id)).length}</Typography>
+                                    <ArrowRightToLine />
+                                    <Typography className="text-destructive">Convertion Rate {formatPercentage(stagesData.stages.filter(stage => stage.defaultStage === "Converted").flatMap(stage => stage.leads.filter(l => l.assignee?.userId === sessionData?.user.id)).length / stagesData.stages.flatMap(stage => stage.leads.filter(l => l.assignee?.userId === sessionData?.user.id)).length * 100)}</Typography>
+                                </div>
+                                <LeadsClient
+                                    stage={{
+                                        ...stage,
+                                        leads: values.length > 0
+                                            ? stage.leads.filter(lead => lead.labels.some(label => values.some(val => label.value === val)) && lead.assignee?.userId === sessionData?.user.id)
+                                            : stage.leads.filter(lead => lead.assignee?.userId === sessionData?.user.id)
+                                    }}
+                                    resetSelection={resetSelection}
+                                    stagesData={stagesData.stages}
+                                    handleImport={handleImport}
+                                    setSelectedLeads={setSelectedLeads}
+                                />
                             </TabsContent>
                         ))}
                     </Tabs>

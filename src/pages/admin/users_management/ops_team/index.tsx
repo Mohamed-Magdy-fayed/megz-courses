@@ -1,12 +1,11 @@
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { useState } from "react";
 import { PlusIcon } from "lucide-react";
-import { PaperContainer } from "@/components/ui/PaperContainers";
 import { Button } from "@/components/ui/button";
-import AppLayout from "@/components/layout/AppLayout";
-import SalesAgentsClient from "@/components/salesAgentComponents/SalesAgentsClient";
-import SalesAgentForm from "@/components/salesAgentComponents/SalesAgentForm";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
 import Modal from "@/components/ui/modal";
+import SalesAgentForm from "@/components/admin/usersManagement/salesAgentComponents/SalesAgentForm";
+import SalesAgentClient from "@/components/admin/usersManagement/salesAgentComponents/SalesAgentsClient";
 
 const SalesAgentsPage = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -33,9 +32,7 @@ const SalesAgentsPage = () => {
               <SalesAgentForm setIsOpen={setIsOpen}></SalesAgentForm>
             )}
           />
-          <PaperContainer>
-            <SalesAgentsClient />
-          </PaperContainer>
+          <SalesAgentClient />
         </div>
       </main>
     </AppLayout>

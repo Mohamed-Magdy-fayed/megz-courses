@@ -8,10 +8,10 @@ import bcrypt from "bcrypt";
 import { env } from "@/env.mjs";
 import { TRPCError } from "@trpc/server";
 import { sendZohoEmail } from "@/lib/emailHelpers";
-import { EmailsWrapper } from "@/components/emails/EmailsWrapper";
-import EmailConfirmation from "@/components/emails/EmailConfirmation";
+import { EmailsWrapper } from "@/components/general/emails/EmailsWrapper";
+import EmailConfirmation from "@/components/general/emails/EmailConfirmation";
 import { sendWhatsAppMessage } from "@/lib/whatsApp";
-import EmailConfirmationSuccess from "@/components/emails/EmailConfirmed";
+import EmailConfirmationSuccess from "@/components/general/emails/EmailConfirmed";
 
 export const authRouter = createTRPCRouter({
   register: publicProcedure
@@ -99,7 +99,7 @@ export const authRouter = createTRPCRouter({
         EmailComp: EmailConfirmationSuccess,
         prisma: ctx.prisma,
         props: {
-          accountLink: `${env.NEXTAUTH_URL}my_account`,
+          accountLink: `${env.NEXTAUTH_URL}student/my_account`,
           customerName: user.name,
           userEmail: user.email,
         }

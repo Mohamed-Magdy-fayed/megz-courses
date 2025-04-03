@@ -1,5 +1,5 @@
-import Dashboard from "@/components/overview/Dashboard";
-import AppLayout from "@/components/layout/AppLayout";
+import Dashboard from "@/components/admin/dashboard/overview/Dashboard";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
 
 const Page = () => {
 

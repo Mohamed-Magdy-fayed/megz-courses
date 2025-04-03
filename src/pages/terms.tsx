@@ -1,4 +1,4 @@
-import LandingLayout from '@/components/landingPageComponents/LandingLayout';
+import LandingLayout from '@/components/pages/landingPageComponents/LandingLayout';
 import { ToggleSection } from '@/components/ui/ToggleSection';
 import { Typography, ConceptTitle } from '@/components/ui/Typoghraphy';
 import Head from 'next/head';

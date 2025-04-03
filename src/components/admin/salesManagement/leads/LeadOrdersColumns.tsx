@@ -1,6 +1,6 @@
 import LeadOrderActions from "@/components/admin/salesManagement/leads/LeadOrderActions";
 import TransactionsModal from "@/components/admin/salesManagement/modals/TransactionsModal";
-import { SeverityPill } from "@/components/overview/SeverityPill";
+import { SeverityPill } from "@/components/ui/SeverityPill";
 import { Checkbox } from "@/components/ui/checkbox";
 import WrapWithTooltip from "@/components/ui/wrap-with-tooltip";
 import { validOrderStatusesColors } from "@/lib/enumColors";

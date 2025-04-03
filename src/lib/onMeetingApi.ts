@@ -132,6 +132,8 @@ export async function getMeetingDetails({ token, meetingNo }: { token: string; m
 
     try {
         const res = await axios(config)
+        const zakToken = res.data.results.data.start_url.split("zak=")[1];
+
         return await axios({ method: "get", url: res.data.results.data.join_url }).then(res => {
             const meetingNumberStart = res.data.split("zoom.us/j/")[1]
             if (!meetingNumberStart) throw new Error("Another meeting may be ongoing now on this zoom room!")
@@ -140,7 +142,7 @@ export async function getMeetingDetails({ token, meetingNo }: { token: string; m
             const meetingNumber = match[1];
             const password = match[2];
 
-            return { meetingNumber, password } as { meetingNumber: string; password: string; }
+            return { meetingNumber, password, zakToken } as { meetingNumber: string; password: string; zakToken: string; }
         })
     } catch (error: any) {
         throw new Error(error)

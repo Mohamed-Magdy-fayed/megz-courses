@@ -1,9 +1,8 @@
 import ProductForm from '@/components/admin/systemManagement/products/ProductForm';
 import ProductsClient from '@/components/admin/systemManagement/products/ProductsClient';
-import AppLayout from '@/components/layout/AppLayout';
+import AppLayout from '@/components/pages/adminLayout/AppLayout';
 import { Button } from '@/components/ui/button';
 import Modal from '@/components/ui/modal';
-import { PaperContainer } from '@/components/ui/PaperContainers';
 import { ConceptTitle, Typography } from '@/components/ui/Typoghraphy';
 import { PlusIcon } from 'lucide-react';
 import { useState } from 'react';
@@ -33,9 +32,7 @@ export default function ProductsPage() {
                         <PlusIcon size={20} />
                     </Button>
                 </div>
-                <PaperContainer>
-                    <ProductsClient />
-                </PaperContainer>
+                <ProductsClient />
             </div>
         </AppLayout>
     );

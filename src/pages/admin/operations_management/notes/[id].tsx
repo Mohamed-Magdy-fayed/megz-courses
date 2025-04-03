@@ -1,13 +1,12 @@
-import AppLayout from "@/components/layout/AppLayout";
-import UnauthorizedAccess from "@/components/layout/UnauthorizedAccess";
-import { NotesForm } from "@/components/notesComponents/NotesForm";
-import { SeverityPill, SeverityPillProps } from "@/components/overview/SeverityPill";
-import Spinner from "@/components/Spinner";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
+import UnauthorizedAccess from "@/components/pages/adminLayout/UnauthorizedAccess";
+import { NotesForm } from "@/components/admin/operationsManagement/notesComponents/NotesForm";
+import { SeverityPill, SeverityPillProps } from "@/components/ui/SeverityPill";
+import Spinner from "@/components/ui/Spinner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Modal from "@/components/ui/modal";
-import { PaperContainer } from "@/components/ui/PaperContainers";
 import { Separator } from "@/components/ui/separator";
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { toastType, useToast } from "@/components/ui/use-toast";
@@ -180,7 +179,7 @@ export default function NotePage() {
                     <Typography>By {data.note.messages[-1]?.updatedBy}</Typography>
                 </div>
             </div>
-            <PaperContainer className="space-y-8">
+            <div className="space-y-8">
                 <div className="flex flex-col gap-4">
                     <div className="flex items-start justify-between">
                         <div className="flex items-start gap-2 whitespace-nowrap border-b w-fit py-2">
@@ -267,7 +266,7 @@ export default function NotePage() {
                         )}
                     </div>
                 </div>
-            </PaperContainer>
+            </div>
         </AppLayout>
     );
 }

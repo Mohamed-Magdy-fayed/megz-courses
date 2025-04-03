@@ -21,8 +21,11 @@ export const zoomGroupsRouter = createTRPCRouter({
 
             if (!studentType.includes("Student")) return { updatedSession: null }
 
-            const session = await ctx.prisma.zoomSession.findUnique({ where: { id: sessionId } })
-            if (session?.attenders.includes(studentId)) return { updatedSession: null }
+            const session = await ctx.prisma.zoomSession.findUnique({ where: { id: sessionId }, include: { zoomGroup: { select: { studentIds: true } } } })
+            if (
+                session?.attenders.includes(studentId)
+                || !session?.zoomGroup?.studentIds.includes(studentId)
+            ) return { updatedSession: null }
 
             const updatedSession = await ctx.prisma.zoomSession.update({
                 where: { id: sessionId },
@@ -188,6 +191,21 @@ export const zoomGroupsRouter = createTRPCRouter({
 
             return { zoomGroups };
         }),
+    getGroupSessions: protectedProcedure
+        .input(z.string())
+        .query(async ({ ctx, input }) => {
+            return await ctx.prisma.zoomSession.findMany({ where: { groupId: input }, include: { assignments: true, quizzes: true, materialItem: true, zoomClient: { select: { isZoom: true } } } })
+        }),
+    getSessionQuizSubmissions: protectedProcedure
+        .input(z.string())
+        .query(async ({ ctx, input }) => {
+            return (await ctx.prisma.zoomSession.findUnique({ where: { id: input }, select: { quizzes: { select: { totalScore: true, student: true, systemForm: true } } } }))?.quizzes || []
+        }),
+    getSessionAssignmentSubmissions: protectedProcedure
+        .input(z.string())
+        .query(async ({ ctx, input }) => {
+            return (await ctx.prisma.zoomSession.findUnique({ where: { id: input }, select: { assignments: { select: { totalScore: true, student: true, systemForm: true } } } }))?.assignments || []
+        }),
     getZoomGroupById: protectedProcedure
         .input(
             z.object({
@@ -204,6 +222,7 @@ export const zoomGroupsRouter = createTRPCRouter({
                             assignments: { include: { student: true, systemForm: true } },
                             quizzes: { include: { student: true, systemForm: true } },
                             materialItem: true,
+                            zoomClient: { select: { isZoom: true } },
                         },
                         orderBy: {
                             sessionDate: "asc"
@@ -253,13 +272,15 @@ export const zoomGroupsRouter = createTRPCRouter({
             })
         )
         .mutation(async ({ input: { sessionDates, studentIds, courseId, teacherId, courseLevelId }, ctx }) => {
-            if (sessionDates.some(d => !d.sessionId)) throw new TRPCError({ code: "BAD_REQUEST", message: "Some sessions are not found!" })
             if (!hasPermission(ctx.session.user, "zoomGroups", "create")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not allowed to take this action, Please contact your Admin!" })
+            if (sessionDates.some(d => !d.sessionId)) throw new TRPCError({ code: "BAD_REQUEST", message: "Some sessions are not found!" })
 
-            const teacher = await ctx.prisma.teacher.findUnique({ where: { id: teacherId }, include: { user: true } })
-            if (!teacher) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Course doesn't exist!" })
-
-            const course = await ctx.prisma.course.findUnique({ where: { id: courseId }, include: { levels: { include: { materialItems: true } } } })
+            const [teacher, course, courseStatuses] = await ctx.prisma.$transaction([
+                ctx.prisma.teacher.findUnique({ where: { id: teacherId }, include: { user: true } }),
+                ctx.prisma.course.findUnique({ where: { id: courseId }, include: { levels: { include: { materialItems: true } } } }),
+                ctx.prisma.courseStatus.findMany({ where: { userId: { in: studentIds }, courseId, courseLevelId }, orderBy: { updatedAt: "desc" }, distinct: "userId" }),
+            ])
+            if (!teacher) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Teacher doesn't exist!" })
             if (!course) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Course doesn't exist!" })
 
             const level = course.levels.find(({ id }) => id === courseLevelId)
@@ -309,73 +330,67 @@ export const zoomGroupsRouter = createTRPCRouter({
 
             const { meetingNumber, meetingPassword } = meetingData
 
-            const zoomGroup = await ctx.prisma.zoomGroup.create({
-                data: {
-                    startDate: new Date(startDate),
-                    meetingNumber,
-                    meetingPassword,
-                    groupNumber,
-                    groupStatus: "Waiting",
-                    zoomSessions: {
-                        createMany: {
-                            data: sessionDates.map(session => ({
-                                attenders: [],
-                                sessionStatus: "Scheduled",
-                                sessionDate: session.date,
-                                meetingNumber,
-                                meetingPassword,
-                                materialItemId: session.sessionId,
-                                zoomClientId: zoomClient.id,
-                            }))
-                        }
-                    },
-                    students: { connect: studentIds.map(c => ({ id: c })) },
-                    teacher: { connect: { id: teacherId } },
-                    course: { connect: { id: courseId } },
-                    courseLevel: { connect: { id: courseLevelId } },
-                },
-                include: {
-                    course: true,
-                    zoomSessions: { include: { materialItem: true, zoomClient: true } },
-                    students: true,
-                    teacher: { include: { user: true } },
-                },
-            });
-
-            await ctx.prisma.$transaction(
-                zoomGroup.zoomSessions.map((session, idx) =>
-                    ctx.prisma.zoomSession.update({
-                        where: { id: session.id },
-                        data: { meetingNumber, meetingPassword }
-                    })))
-
-            await ctx.prisma.courseStatus.updateMany({
-                where: { userId: { in: studentIds }, courseId },
-                data: {
-                    status: "Ongoing",
-                }
-            })
-
-            await ctx.prisma.$transaction(zoomGroup.students.map((student) => (
-                ctx.prisma.userNote.create({
+            const [zoomGroup, ...rest] = await ctx.prisma.$transaction([
+                ctx.prisma.zoomGroup.create({
                     data: {
-                        sla: 0,
-                        status: "Closed",
-                        title: `Zoom Group Created for the Student`,
-                        type: "Info",
-                        createdForStudent: { connect: { id: student.id } },
-                        messages: [{
-                            message: `The Student was added to a zoom group ${zoomGroup.groupNumber}`,
-                            updatedAt: new Date(),
-                            updatedBy: "System"
-                        }],
-                        createdByUser: { connect: { id: ctx.session.user.id } },
+                        startDate: new Date(startDate),
+                        meetingNumber,
+                        meetingPassword,
+                        groupNumber,
+                        groupStatus: "Waiting",
+                        zoomSessions: {
+                            createMany: {
+                                data: sessionDates.map(session => ({
+                                    attenders: [],
+                                    sessionStatus: "Scheduled",
+                                    sessionDate: session.date,
+                                    meetingNumber,
+                                    meetingPassword,
+                                    materialItemId: session.sessionId,
+                                    zoomClientId: zoomClient.id,
+                                }))
+                            }
+                        },
+                        students: { connect: studentIds.map(c => ({ id: c })) },
+                        teacher: { connect: { id: teacherId } },
+                        course: { connect: { id: courseId } },
+                        courseLevel: { connect: { id: courseLevelId } },
+                    },
+                    include: {
+                        course: true,
+                        zoomSessions: { include: { materialItem: true, zoomClient: true } },
+                        students: true,
+                        teacher: { include: { user: true } },
+                    },
+                }),
+                ctx.prisma.courseStatus.updateMany({
+                    where: { id: { in: courseStatuses.map(s => s.id) } },
+                    data: {
+                        status: "Ongoing",
                     }
-                })
-            )))
+                }),
+                ...studentIds.map((studentId) => (
+                    ctx.prisma.userNote.create({
+                        data: {
+                            sla: 0,
+                            status: "Closed",
+                            title: `Zoom Group Created for the Student`,
+                            type: "Info",
+                            createdForStudent: { connect: { id: studentId } },
+                            messages: [{
+                                message: `The Student was added to a zoom group ${groupNumber}`,
+                                updatedAt: new Date(),
+                                updatedBy: "System"
+                            }],
+                            createdByUser: { connect: { id: ctx.session.user.id } },
+                        }
+                    })
+                ))
+            ])
 
             return {
                 zoomGroup,
+                rest,
             };
         }),
     editZoomGroup: protectedProcedure
@@ -435,8 +450,10 @@ export const zoomGroupsRouter = createTRPCRouter({
 
             if (!updatedZoomGroup.courseId) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "can't update the zoom group" })
 
+            const courseStatuses = await ctx.prisma.courseStatus.findMany({ where: { userId: { in: studentIds }, courseId: updatedZoomGroup.courseId, courseLevelId: updatedZoomGroup.courseLevelId }, orderBy: { updatedAt: "desc" } })
+
             const updatedCourseStatus = await ctx.prisma.courseStatus.updateMany({
-                where: { userId: { in: studentIds } },
+                where: { id: { in: courseStatuses.map(s => s.id) } },
                 data: {
                     status: "Ongoing"
                 }
@@ -462,10 +479,12 @@ export const zoomGroupsRouter = createTRPCRouter({
 
             if (!updatedZoomGroup.courseId) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "can't update the zoom group" })
 
+            const courseStatuses = await ctx.prisma.courseStatus.findMany({ where: { userId: { in: studentIds }, courseId: updatedZoomGroup.courseId, courseLevelId: updatedZoomGroup.courseLevelId }, orderBy: { updatedAt: "desc" } })
+
             const updatedCourseStatus = await ctx.prisma.courseStatus.updateMany({
-                where: { userId: { in: studentIds } },
+                where: { id: { in: courseStatuses.map(s => s.id) } },
                 data: {
-                    status: "Waiting",
+                    status: "Waiting"
                 }
             })
 
@@ -516,10 +535,12 @@ export const zoomGroupsRouter = createTRPCRouter({
 
             if (!updatedZoomGroup.courseId) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "can't update the zoom group" })
 
+            const courseStatuses = await ctx.prisma.courseStatus.findMany({ where: { userId: { in: studentIds }, courseId: updatedZoomGroup.courseId, courseLevelId: updatedZoomGroup.courseLevelId }, orderBy: { updatedAt: "desc" } })
+
             const updatedCourseStatus = await ctx.prisma.courseStatus.updateMany({
-                where: { userId: { in: studentIds } },
+                where: { id: { in: courseStatuses.map(s => s.id) } },
                 data: {
-                    status: "Refunded",
+                    status: "Refunded"
                 }
             })
 
@@ -543,10 +564,12 @@ export const zoomGroupsRouter = createTRPCRouter({
 
             if (!updatedZoomGroup.courseId) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "can't update the zoom group" })
 
+            const courseStatuses = await ctx.prisma.courseStatus.findMany({ where: { userId: { in: studentIds }, courseId: updatedZoomGroup.courseId, courseLevelId: updatedZoomGroup.courseLevelId }, orderBy: { updatedAt: "desc" } })
+
             const updatedCourseStatus = await ctx.prisma.courseStatus.updateMany({
-                where: { userId: { in: studentIds } },
+                where: { id: { in: courseStatuses.map(s => s.id) } },
                 data: {
-                    status: "Postponded",
+                    status: "Postponded"
                 }
             })
 
@@ -554,13 +577,27 @@ export const zoomGroupsRouter = createTRPCRouter({
         }),
     resumeStudents: protectedProcedure
         .input(z.object({
+            id: z.string(),
             studentIds: z.array(z.string()),
         }))
-        .mutation(async ({ ctx, input: { studentIds } }) => {
-            const updatedCourseStatus = await ctx.prisma.courseStatus.updateMany({
-                where: { userId: { in: studentIds } },
+        .mutation(async ({ ctx, input: { id, studentIds } }) => {
+            const studentIdsForPrisma = studentIds.map(id => ({ id }))
+
+            const zoomGroup = await ctx.prisma.zoomGroup.update({
+                where: { id },
                 data: {
-                    status: "Waiting",
+                    students: { disconnect: studentIdsForPrisma }
+                },
+                include: { course: true, students: true, teacher: { include: { user: true } } }
+            })
+            if (!zoomGroup.courseId) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "can't find the zoom group" })
+
+            const courseStatuses = await ctx.prisma.courseStatus.findMany({ where: { userId: { in: studentIds }, courseId: zoomGroup.courseId, courseLevelId: zoomGroup.courseLevelId }, orderBy: { updatedAt: "desc" } })
+
+            const updatedCourseStatus = await ctx.prisma.courseStatus.updateMany({
+                where: { id: { in: courseStatuses.map(s => s.id) } },
+                data: {
+                    status: "Waiting"
                 }
             })
 

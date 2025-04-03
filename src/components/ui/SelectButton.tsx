@@ -1,6 +1,6 @@
 import { ButtonHTMLAttributes, FC, ReactNode, useState } from 'react'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from './select'
-import Spinner from '../Spinner'
+import Spinner from './Spinner'
 import { Button } from '@/components/ui/button'
 import { XIcon } from 'lucide-react'
 

@@ -1,8 +1,8 @@
-import AppLayout from "@/components/layout/AppLayout";
-import { SeverityPill } from "@/components/overview/SeverityPill";
-import Spinner from "@/components/Spinner";
-import { TicketsClient } from "@/components/ticketsComponents/TicketsClient";
-import { TicketsForm } from "@/components/ticketsComponents/TicketsForm";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
+import { SeverityPill } from "@/components/ui/SeverityPill";
+import Spinner from "@/components/ui/Spinner";
+import { TicketsClient } from "@/components/admin/operationsManagement/ticketsComponents/TicketsClient";
+import { TicketsForm } from "@/components/admin/operationsManagement/ticketsComponents/TicketsForm";
 import { Button, SpinnerButton } from "@/components/ui/button";
 import GoBackButton from "@/components/ui/go-back";
 import { Input } from "@/components/ui/input";

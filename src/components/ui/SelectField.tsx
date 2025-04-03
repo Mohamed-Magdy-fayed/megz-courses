@@ -1,13 +1,13 @@
 import { ButtonHTMLAttributes, Dispatch, FC, ReactNode, SetStateAction, useEffect, useState } from 'react'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu'
-import { Button } from '../ui/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Button } from '@/components/ui/button'
 import { Check, ChevronDownIcon, ChevronsDownIcon, ChevronsUpDown, XIcon } from 'lucide-react'
-import { Input } from '../ui/input'
+import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import { ScrollArea } from '../ui/scroll-area'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { advancedSearch } from '@/lib/advancedSearch'
-import { Typography } from '../ui/Typoghraphy'
-import Spinner from '@/components/Spinner'
+import { Typography } from '@/components/ui/Typoghraphy'
+import Spinner from '@/components/ui/Spinner'
 
 type DataType<T> = {
     label: string
@@ -22,12 +22,12 @@ interface SelectFieldProps<T> extends ButtonHTMLAttributes<HTMLButtonElement> {
     listTitle: string | ReactNode
     data: DataType<T>[]
     values: T[]
-    setValues: (val: T) => void;
+    setValues: (val: T[]) => void;
     customLabel?: ReactNode
     disableSearch?: boolean
 }
 
-const SelectField: FC<SelectFieldProps<any>> = ({ placeholder, listTitle, data, values, setValues, multiSelect, disableSearch, className, ...props }) => {
+const SelectField = <T,>({ placeholder, listTitle, data, values, setValues, multiSelect, disableSearch, className, ...props }: SelectFieldProps<T>) => {
     const [isOpen, setIsOpen] = useState(false)
     const [filteredData, setFilteredData] = useState(data)
     const [searchQuery, setSearchQuery] = useState("")
@@ -38,28 +38,26 @@ const SelectField: FC<SelectFieldProps<any>> = ({ placeholder, listTitle, data, 
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
-            <DropdownMenuTrigger asChild>
-                <Button
-                    variant="outline"
-                    customeColor={"foregroundOutlined"}
-                    className={cn('flex flex-wrap w-full items-center h-fit gap-2 justify-between', className)}
-                    {...props}
-                >
-                    <div className='flex flex-wrap items-center h-fit gap-2'>
-                        {values.length === 0 ? (
-                            <Typography>
-                                {placeholder}
-                            </Typography>
-                        ) : data.filter(entry => values.includes(entry.value)).map(item => (
-                            <Typography key={item.label} className='bg-primary/10 whitespace-nowrap truncate rounded-full px-2 text-sm'>
-                                {item.label}
-                            </Typography>
-                        ))}
-                    </div>
+            <DropdownMenuTrigger asChild className={cn(
+                "flex h-10 w-full items-center cursor-pointer justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+                className
+            )}>
+                <div className='flex flex-wrap items-center h-fit gap-2'>
+                    {values.length === 0 ? (
+                        <Typography>
+                            {placeholder}
+                        </Typography>
+                    ) : data.filter(entry => values.includes(entry.value)).map(item => (
+                        <Typography key={item.label} className='bg-primary/10 whitespace-nowrap truncate rounded-full px-2 text-sm'>
+                            {item.label}
+                        </Typography>
+                    ))}
                     {props.disabled ? <Spinner size={20} /> : <ChevronDownIcon className="h-4 w-4 opacity-50 ml-auto" />}
-                </Button>
+                </div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent className={cn(
+                "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border border-foreground bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=Closed]:animate-out data-[state=Closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=Closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+            )}>
                 {disableSearch ? null : (
                     <div className='p-2'>
                         <Input
@@ -99,7 +97,7 @@ const SelectField: FC<SelectFieldProps<any>> = ({ placeholder, listTitle, data, 
                     {filteredData.map(item => {
                         return (
                             <DropdownMenuItem
-                                key={item.value}
+                                key={`${item.value}`}
                                 disabled={!item.Active}
                                 onClick={(e) => {
                                     if (multiSelect) {

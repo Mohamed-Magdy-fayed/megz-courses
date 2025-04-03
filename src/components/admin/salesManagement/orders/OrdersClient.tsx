@@ -71,7 +71,7 @@ const OrdersClient = ({ userId }: { userId?: string }) => {
 
   return (
     <DataTable
-      skele={isLoading}
+      isLoading={isLoading}
       columns={orderColumns}
       data={formattedData}
       setData={setOrders}

@@ -1,8 +1,7 @@
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import type { NextPage } from "next";
-import { PaperContainer } from "@/components/ui/PaperContainers";
-import AppLayout from "@/components/layout/AppLayout";
-import SessionsClient from "@/components/sessionsComponents/SessionClient";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
+import SessionsClient from "@/components/admin/operationsManagement/sessionsComponents/SessionClient";
 
 const MyTasksPage: NextPage = () => {
     return (
@@ -14,9 +13,7 @@ const MyTasksPage: NextPage = () => {
                             <ConceptTitle>My Sessions</ConceptTitle>
                         </div>
                     </div>
-                    <PaperContainer>
-                        <SessionsClient />
-                    </PaperContainer>
+                    <SessionsClient />
                 </div>
             </main>
         </AppLayout>

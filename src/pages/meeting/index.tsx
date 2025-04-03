@@ -1,4 +1,4 @@
-import Spinner from "@/components/Spinner";
+import Spinner from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/button";
 import MeetingRoot from "@/components/ui/MeetingRoot";
 import { Typography } from "@/components/ui/Typoghraphy";
@@ -21,6 +21,7 @@ export default function MeetingPage() {
     const sessionTitle = router.query.session_title as string
     const sessionId = router.query.session_id as string
     const leaveUrl = router.query.leave_url as string
+    const zak = router.query.zak as string | undefined
 
     const { createClient, isJoining, userId } = useZoomMeeting()
 
@@ -37,7 +38,8 @@ export default function MeetingPage() {
             mn,
             name,
             pwd,
-            role: 0,
+            zak,
+            role: data?.user.userRoles.some(role => role === "Teacher" || role === "Tester") ? 1 : 0,
             email,
             lang: "en-US",
             signature: "",

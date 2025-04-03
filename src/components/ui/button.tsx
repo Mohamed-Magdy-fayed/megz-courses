@@ -3,7 +3,7 @@ import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn, formatPercentage } from "@/lib/utils"
-import Spinner from "../Spinner"
+import Spinner from "./Spinner"
 import { Typography } from "./Typoghraphy"
 import { Progress } from "./progress"
 import { LucideIcon, PlusSquare } from "lucide-react"

@@ -1,6 +1,5 @@
-import AppLayout from "@/components/layout/AppLayout";
-import NotesClient from "@/components/notesComponents/NotesClient";
-import { PaperContainer } from "@/components/ui/PaperContainers";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
+import NotesClient from "@/components/admin/operationsManagement/notesComponents/NotesClient";
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 
 export default function NotesPage() {
@@ -11,9 +10,7 @@ export default function NotesPage() {
                     Notes
                 </ConceptTitle>
             </div>
-            <PaperContainer>
-                <NotesClient />
-            </PaperContainer>
+            <NotesClient />
         </AppLayout>
     );
 }

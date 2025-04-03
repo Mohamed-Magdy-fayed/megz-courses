@@ -1,5 +1,4 @@
-import SupportChatMessages from "@/components/landingPageComponents/ChatComponents/SupportChatMessages";
-import AppLayout from "@/components/layout/AppLayout";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { api } from "@/lib/api";
@@ -9,8 +8,9 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { Howl } from 'howler';
-import ChatForm from "@/components/landingPageComponents/ChatComponents/ChatForm";
-import ChatControls from "@/components/landingPageComponents/ChatComponents/ChatControles";
+import ChatControls from "@/components/pages/landingPageComponents/ChatComponents/ChatControles";
+import ChatForm from "@/components/pages/landingPageComponents/ChatComponents/ChatForm";
+import SupportChatMessages from "@/components/pages/landingPageComponents/ChatComponents/SupportChatMessages";
 
 const ChatPage = () => {
     const router = useRouter()

@@ -2,7 +2,7 @@ import { talkback } from "@/lib/talkback";
 import { cn } from "@/lib/utils";
 import { PlayCircle } from "lucide-react";
 import { ReactNode } from "react";
-import { Button, ButtonProps } from "./ui/button";
+import { Button, ButtonProps } from "@/components/ui/button";
 
 interface TextToSpeechProps extends ButtonProps {
   text: string;

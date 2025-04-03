@@ -21,6 +21,7 @@ const useZoomMeeting = () => {
         email: string;
         pwd: string;
         mn: string;
+        zak?: string;
         role: number;
         lang: string;
         china: number;
@@ -39,7 +40,12 @@ const useZoomMeeting = () => {
                 leaveUrl,
                 defaultView: "speaker",
                 success: () => {
+                    console.log({
+                        zak: meetingConfig.zak,
+                    });
+
                     ZoomMtg.join({
+                        zak: meetingConfig.zak,
                         meetingNumber: meetingConfig.mn,
                         userName: meetingConfig.name,
                         signature: meetingConfig.signature,
@@ -72,6 +78,7 @@ const useZoomMeeting = () => {
 
                                         ZoomMtg.inMeetingServiceListener("onUserLeave", () => {
                                             ZoomMtg.endMeeting({})
+                                            editSessionStatusMutation.mutate({ id: sessionId, sessionStatus: "Completed" });
                                         })
                                     }
                                 }

@@ -1,4 +1,4 @@
-import LearningLayout from "@/components/LearningLayout/LearningLayout"
+import LearningLayout from "@/components/pages/LearningLayout/LearningLayout"
 import { Typography } from "@/components/ui/Typoghraphy"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
@@ -8,12 +8,15 @@ import { format } from "date-fns"
 import { ArrowLeftToLine, BookMinus, BookOpen, BookOpenCheck, FileBadge } from "lucide-react"
 import Link from "next/link"
 import useLoadLearningData from "@/hooks/useLoadLearningData"
-import Spinner from "@/components/Spinner"
+import Spinner from "@/components/ui/Spinner"
 import { useRouter } from "next/router"
+import { useMemo } from "react"
 
 const LevelPage = () => {
     const router = useRouter()
     const { course, level, levelSlugs, user } = useLoadLearningData()
+
+    const courseStatus = useMemo(() => user?.courseStatus.find(cs => cs.courseId === course?.id && cs.courseLevelId === level?.id), [user])
 
     if (!course || !level || !user) return (
         <LearningLayout>
@@ -46,7 +49,7 @@ const LevelPage = () => {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    {user.courseStatus.some(s => s.course.slug === course.slug && s.status === "Waiting") ? (
+                                    {!courseStatus || courseStatus.status === "Waiting" ? (
                                         <>
                                             Group not started yet
                                         </>

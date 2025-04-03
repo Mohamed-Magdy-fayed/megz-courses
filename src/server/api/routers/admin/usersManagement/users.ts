@@ -5,10 +5,12 @@ import {
 } from "@/server/api/trpc";
 import bcrypt from "bcrypt";
 import { TRPCError } from "@trpc/server";
-import { Prisma } from "@prisma/client";
+import { Devices, Prisma, UserRoles } from "@prisma/client";
 import { validDeviceTypes, validUserRoles, validUserScreens } from "@/lib/enumsTypes";
 import { env } from "@/env.mjs";
 import { hasPermission } from "@/server/permissions";
+import { createGenericExportSchema, createGenericSchema, createWhereConditions, transformSortingForPrisma } from "@/lib/serverDataTable/utils";
+import { StudentColumns } from "@/components/admin/usersManagement/students/StudentColumn";
 
 export const usersRouter = createTRPCRouter({
   queryUsers: protectedProcedure
@@ -57,6 +59,151 @@ export const usersRouter = createTRPCRouter({
       });
 
       return { users };
+    }),
+  exportUsers: protectedProcedure
+    .input(createGenericExportSchema<StudentColumns>())
+    .mutation(async ({ ctx, input: { dateRanges, filters, searches, select, sorting } }) => {
+      if (!hasPermission(ctx.session.user, "users", "view")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" });
+
+      const whereConditions: Prisma.UserWhereInput = {
+        ...createWhereConditions({ dateRanges, filters, searches }),
+        userRoles: { equals: ["Student" as UserRoles] },
+      }
+
+      const filteredWhere: Prisma.UserWhereInput = {
+        ...whereConditions,
+        device: !whereConditions.device ? undefined : validDeviceTypes.includes(whereConditions.device as Devices) ? whereConditions.device : { isSet: false },
+      }
+
+      const users = await ctx.prisma.user.findMany({
+        where: filteredWhere,
+        orderBy: sorting.length > 0 ? transformSortingForPrisma(sorting) : [{ createdAt: "desc" }],
+        select: Object.fromEntries(select.map(key => [key, true])),
+      });
+
+      return users
+    }),
+  getUsersTest: protectedProcedure
+    .input(createGenericSchema<StudentColumns>())
+    .query(async ({ ctx, input: { dateRanges, filters, searches, pageIndex, pageSize, sorting } }) => {
+      if (!hasPermission(ctx.session.user, "users", "view")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" });
+
+      const whereConditions: Prisma.UserWhereInput = {
+        ...createWhereConditions({ dateRanges, filters, searches }),
+        userRoles: { equals: ["Student" as UserRoles] },
+      }
+
+      const filteredWhere: Prisma.UserWhereInput = {
+        ...whereConditions,
+        device: !whereConditions.device ? undefined : validDeviceTypes.includes(whereConditions.device as Devices) ? whereConditions.device : { isSet: false },
+      }
+
+      const users = await ctx.prisma.user.findMany({
+        where: filteredWhere,
+        orderBy: sorting.length > 0 ? transformSortingForPrisma(sorting) : [{ createdAt: "desc" }],
+        select: {
+          _count: true, name: true, email: true, phone: true, address: true, id: true, image: true, emailVerified: true,
+          payments: true, createdAt: true, device: true,
+        },
+        take: pageSize,
+        skip: pageSize * pageIndex
+      });
+
+      const [totalCount, filteredCount, ...deviceCounts] = await ctx.prisma.$transaction([
+        ctx.prisma.user.count({ where: { userRoles: { equals: ["Student" as UserRoles] } } }),
+        ctx.prisma.user.count({ where: filteredWhere }),
+        ...[...validDeviceTypes, null].map(dt => ctx.prisma.user.count({
+          where: {
+            ...filteredWhere,
+            device: dt ? dt : { isSet: false },
+          }
+        }))
+      ]);
+
+      const counts = {
+        totalCount,
+        filteredCount,
+        deviceCounts: Object.fromEntries([...validDeviceTypes, null].map((dt, i) => [dt, deviceCounts[i]])) as Record<Devices, number>,
+      };
+
+      return {
+        users,
+        counts,
+      };
+    }),
+  getUsersFunc: protectedProcedure
+    .input(createGenericSchema<StudentColumns>())
+    .mutation(async ({ ctx, input: { dateRanges, filters, searches, pageIndex, pageSize, sorting } }) => {
+      if (!hasPermission(ctx.session.user, "users", "view")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" });
+
+      const whereConditions: Prisma.UserWhereInput = {
+        ...createWhereConditions({ dateRanges, filters, searches }),
+        userRoles: { equals: ["Student" as UserRoles] },
+      }
+
+      const filteredWhere: Prisma.UserWhereInput = {
+        ...whereConditions,
+        device: !whereConditions.device ? undefined : validDeviceTypes.includes(whereConditions.device as Devices) ? whereConditions.device : { isSet: false },
+      }
+
+      const users = await ctx.prisma.user.findMany({
+        where: filteredWhere,
+        orderBy: sorting.length > 0 ? transformSortingForPrisma(sorting) : [{ createdAt: "desc" }],
+        select: {
+          _count: true, name: true, email: true, phone: true, address: true, id: true, image: true, emailVerified: true,
+          payments: true, createdAt: true, device: true,
+        },
+        take: pageSize,
+        skip: pageSize * pageIndex
+      });
+
+      const [totalCount, filteredCount, ...deviceCounts] = await ctx.prisma.$transaction([
+        ctx.prisma.user.count({ where: { userRoles: { equals: ["Student" as UserRoles] } } }),
+        ctx.prisma.user.count({ where: filteredWhere }),
+        ...[...validDeviceTypes, null].map(dt => ctx.prisma.user.count({
+          where: {
+            ...filteredWhere,
+            device: dt ? dt : { isSet: false },
+          }
+        }))
+      ]);
+
+      const counts = {
+        totalCount,
+        filteredCount,
+        deviceCounts: Object.fromEntries([...validDeviceTypes, null].map((dt, i) => [dt, deviceCounts[i]])) as Record<Devices, number>,
+      };
+
+      return {
+        users,
+        counts,
+      };
+    }),
+  getDeviceCounts: protectedProcedure
+    .input(createGenericSchema<StudentColumns>())
+    .mutation(async ({ ctx, input: { dateRanges, filters, searches, pageIndex, pageSize, sorting } }) => {
+      if (!hasPermission(ctx.session.user, "users", "view")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" });
+
+      const [totalCount, filteredCount, ...deviceCounts] = await ctx.prisma.$transaction([
+        ctx.prisma.user.count({ where: { userRoles: { equals: ["Student" as UserRoles] } } }),
+        ctx.prisma.user.count({ where: { userRoles: { equals: ["Student" as UserRoles] } } }),
+        ...[...validDeviceTypes, null].map(dt => ctx.prisma.user.count({
+          where: {
+            userRoles: { equals: ["Student" as UserRoles] },
+            device: dt ? dt : { isSet: false },
+          }
+        }))
+      ]);
+
+      const counts = {
+        totalCount,
+        filteredCount,
+        deviceCounts: Object.fromEntries([...validDeviceTypes, null].map((dt, i) => [dt, deviceCounts[i]])) as Record<Devices, number>,
+      };
+
+      return {
+        counts,
+      };
     }),
   getUsers: protectedProcedure
     .input(

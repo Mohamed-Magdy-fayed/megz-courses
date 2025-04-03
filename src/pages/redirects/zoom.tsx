@@ -1,5 +1,5 @@
-import AppLayout from "@/components/layout/AppLayout";
-import Spinner from "@/components/Spinner";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
+import Spinner from "@/components/ui/Spinner";
 import { useToast } from "@/components/ui/use-toast";
 import { api } from "@/lib/api";
 import { useRouter } from "next/router";

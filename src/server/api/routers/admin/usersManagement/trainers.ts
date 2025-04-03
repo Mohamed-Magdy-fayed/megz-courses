@@ -41,6 +41,7 @@ export const trainersRouter = createTRPCRouter({
   getTeachers: publicProcedure
     .query(async ({ ctx }) => {
       const teachers = await ctx.prisma.teacher.findMany({
+        where: { NOT: { user: { userRoles: { has: "Admin" } } } },
         orderBy: {
           id: "desc"
         },
@@ -134,7 +135,8 @@ export const trainersRouter = createTRPCRouter({
         orderBy: { sessionDate: "desc" },
         include: {
           zoomGroup: { include: { teacher: { include: { user: true } } } },
-          materialItem: true
+          materialItem: true,
+          zoomClient: { select: { isZoom: true } },
         }
       })
 

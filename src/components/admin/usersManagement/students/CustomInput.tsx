@@ -1,0 +1,40 @@
+import { ChangeEvent } from "react";
+import { Input, InputProps } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Typography } from "@/components/ui/Typoghraphy";
+
+interface CustomInputProps {
+  loading: boolean;
+  handleChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  value?: string | number;
+  smallGrid?: boolean;
+  label: string;
+  error: string;
+}
+
+export default function CustomInput({
+  loading,
+  handleChange,
+  value,
+  smallGrid,
+  label,
+  error,
+  ...rest
+}: CustomInputProps & InputProps) {
+  return (
+    <div
+      className={`${smallGrid ? "col-span-12 lg:col-span-6" : "col-span-12 md:col-span-6 lg:col-span-4"
+        }`}
+    >
+      <Label>{label}</Label>
+      <Input
+        disabled={loading}
+        onChange={handleChange}
+        value={value}
+        {...rest}
+      />
+      {error && <Typography>{error}</Typography>}
+
+    </div>
+  );
+}

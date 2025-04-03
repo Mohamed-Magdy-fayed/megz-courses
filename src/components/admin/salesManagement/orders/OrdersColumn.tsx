@@ -10,7 +10,7 @@ import WrapWithTooltip from "@/components/ui/wrap-with-tooltip";
 import { validOrderStatusesColors } from "@/lib/enumColors";
 import { filterFn } from "@/lib/dataTableUtils";
 import UserAvatar from "@/components/ui/user/UserAvatar";
-import { SeverityPill } from "@/components/overview/SeverityPill";
+import { SeverityPill } from "@/components/ui/SeverityPill";
 import { Checkbox } from "@/components/ui/checkbox";
 import OrderActions from "@/components/admin/salesManagement/orders/OrderActions";
 import OrderPayments from "@/components/admin/salesManagement/orders/OrderPayments";

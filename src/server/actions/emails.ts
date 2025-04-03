@@ -1,7 +1,7 @@
-import { EmailsWrapper } from "@/components/emails/EmailsWrapper";
-import OrderCreatedEmail from "@/components/emails/OrderCreatedEmail";
-import PaymentEmail from "@/components/emails/PaymentEmail";
-import RefundEmail from "@/components/emails/RefundEmail";
+import { EmailsWrapper } from "@/components/general/emails/EmailsWrapper";
+import OrderCreatedEmail from "@/components/general/emails/OrderCreatedEmail";
+import PaymentEmail from "@/components/general/emails/PaymentEmail";
+import RefundEmail from "@/components/general/emails/RefundEmail";
 import { env } from "@/env.mjs";
 import { sendZohoEmail } from "@/lib/emailHelpers";
 import { formatPrice } from "@/lib/utils";

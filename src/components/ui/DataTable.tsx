@@ -10,7 +10,6 @@ import {
   getPaginationRowModel,
   useReactTable,
   PaginationState,
-  Updater,
 } from "@tanstack/react-table";
 
 import {
@@ -21,26 +20,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { AlertModal } from "../modals/AlertModal";
+import { AlertModal } from "../general/modals/AlertModal";
 import { Typography } from "./Typoghraphy";
-import { Button, SpinnerButton } from "./button";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Download, DownloadCloud, SortAsc, SortDesc, Trash, Upload, UploadCloud } from "lucide-react";
-import { TableInput } from "@/components/ui/table-input";
-import TableSelectField from "@/components/ui/TableSelectField";
-import { DateRangePicker } from "@/components/ui/DateRangePicker";
-import { cn, formatPrice } from "@/lib/utils";
-import Spinner from "@/components/Spinner";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import Modal from "@/components/ui/modal";
+import { Button } from "./button";
+import { TrashIcon } from "lucide-react";
+import Spinner from "@/components/ui/Spinner";
 import { useSession } from "next-auth/react";
-import { downloadTemplate, exportToExcel, importFromExcel } from "@/lib/exceljs";
-import { useDropFile } from "@/hooks/useDropFile";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
 import { hasPermission } from "@/server/permissions";
-import WrapWithTooltip from "@/components/ui/wrap-with-tooltip";
-import SelectField from "@/components/ui/SelectField";
-import { upperFirst } from "lodash";
+import ExportImport from "@/components/ui/ServerDataTable/ExportImport";
+import SearchField from "@/components/ui/ServerDataTable/headers/SearchField";
+import FilterField from "@/components/ui/ServerDataTable/headers/FilterField";
+import DateRangeField from "@/components/ui/ServerDataTable/headers/DateRangeField";
+import { cn, formatPrice } from "@/lib/utils";
+import SortButton from "@/components/ui/ServerDataTable/headers/SortButton";
+import PaginationNavigation from "@/components/ui/ServerDataTable/PaginationNavigation";
+import PaginationPageSizeSelectors from "@/components/ui/ServerDataTable/PaginationPageSizeSelectors";
+import { StringKeyOf, StringValueOf } from "@/components/ui/ServerDataTable/utils/types";
+import SumField from "@/components/ui/ServerDataTable/headers/SumField";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -51,33 +47,33 @@ interface DataTableProps<TData, TValue> {
   importConfig?: {
     templateName: string;
     sheetName: string;
-    reqiredFields: Extract<keyof TData, string>[]
+    reqiredFields: StringKeyOf<TData>[]
     extraDetails?: React.ReactNode;
   },
   exportConfig?: {
     fileName: string;
     sheetName: string;
-    fields?: Extract<keyof TData, string>[];
+    fields?: StringKeyOf<TData>[];
   },
-  skele?: boolean,
+  isLoading?: boolean,
   error?: string,
   sum?: {
-    key: Extract<keyof TData, string>,
+    key: StringKeyOf<TData>,
     label: string,
     isNegative?: boolean,
   };
   dateRanges?: {
-    key: Extract<keyof TData, string>,
+    key: StringKeyOf<TData>,
     label: string,
   }[];
   searches?: {
-    key: Extract<keyof TData, string>,
+    key: StringKeyOf<TData>,
     label: string,
   }[];
   filters?: {
     filterName: string
-    values: { label: string, value: (Extract<TData[keyof TData], string>) }[]
-    key: Extract<keyof TData, string>
+    values: { label: string, value: (StringValueOf<TData>) }[]
+    key: StringKeyOf<TData>
   }[];
   isSuperSimple?: boolean;
   resetSelection?: boolean;
@@ -91,7 +87,7 @@ export function DataTable<TData, TValue>({
   handleImport,
   importConfig,
   exportConfig,
-  skele,
+  isLoading,
   error,
   sum,
   dateRanges,
@@ -102,9 +98,6 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [isImportOpen, setIsImportOpen] = React.useState<boolean>(false);
-  const [isExportOpen, setIsExportOpen] = React.useState<boolean>(false);
-  const [exportKeys, setExportKeys] = React.useState<Extract<keyof TData, string>[]>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = React.useState({});
 
@@ -130,8 +123,6 @@ export function DataTable<TData, TValue>({
 
   const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
-  const [startDate, setStartDate] = React.useState<Date | undefined>(new Date())
-  const [endDate, setEndDate] = React.useState<Date | undefined>(new Date())
 
   const handleOpen = () => {
     setOpen(true);
@@ -139,18 +130,6 @@ export function DataTable<TData, TValue>({
   };
 
   const { data: sessionData } = useSession()
-  const { toast } = useToast()
-  const {
-    isDragActive,
-    handleDragEnter,
-    handleDragLeave,
-    handleDragOver,
-    handleDrop,
-    handleFileChange,
-    setSelectedFile,
-    selectedFile,
-  } = useDropFile();
-  const inputRef = React.useRef<HTMLInputElement>(null)
 
   React.useEffect(() => setData(table.getSelectedRowModel().rows.map(row => row.original)), [rowSelection])
   React.useEffect(() => {
@@ -159,7 +138,7 @@ export function DataTable<TData, TValue>({
   }, [resetSelection])
 
   return (
-    <div className="w-full">
+    <div className="w-full space-y-4">
       {onDelete && <AlertModal
         isOpen={open}
         onClose={() => setOpen(false)}
@@ -173,210 +152,29 @@ export function DataTable<TData, TValue>({
         }}
         loading={loading}
       />}
-      <div className="flex flex-col py-4 lg:flex-row lg:py-0 items-center justify-between gap-4">
+
+      <div className="whitespace-nowrap grid">
         {sessionData?.user && hasPermission(sessionData?.user, "adminLayout", "view") && !isSuperSimple && (
-          <div className="flex items-center gap-8">
-            <Typography>Total records {table.getCoreRowModel().rows.length}</Typography>
-            {exportConfig && (
-              <WrapWithTooltip text="Export">
-                <Button
-                  variant={"icon"}
-                  customeColor={"mutedIcon"}
-                  onClick={() => setIsExportOpen(true)}>
-                  <DownloadCloud className="text-primary" />
-                </Button>
-              </WrapWithTooltip>
-            )}
-            <Modal
-              title="Export Data"
-              description="Select the fields to export"
-              isOpen={isExportOpen}
-              onClose={() => setIsExportOpen(false)}
-              children={
-                !exportConfig || !data[0]
-                  ? (
-                    <div className="flex flex-col items-center gap-4 p-8">
-                      <Typography>No export configuration</Typography>
-                    </div>
-                  )
-                  : (
-                    <div className="space-y-4">
-                      <SelectField
-                        multiSelect
-                        data={Object.keys(data[0]).map(key => ({
-                          Active: true,
-                          label: upperFirst(key),
-                          value: key,
-                        }))}
-                        listTitle="Fields"
-                        placeholder="Select fields"
-                        setValues={setExportKeys}
-                        values={exportKeys}
-                      />
-                      <Button
-                        onClick={() => {
-                          const rows =
-                            table.getFilteredSelectedRowModel().rows.length === 0
-                              ? table.getFilteredRowModel().rows
-                              : table.getFilteredSelectedRowModel().rows;
-
-                          const exportData = rows.map((r) =>
-                            exportKeys.reduce((acc, key) => {
-                              acc[key] = r.original[key];
-                              return acc;
-                            }, {} as Partial<TData>)
-                          );
-
-                          exportToExcel(exportData, exportConfig.fileName, exportConfig.sheetName);
-                        }}>
-                        Export
-                      </Button>
-                    </div>
-                  )}
-            />
-            {importConfig && (
-              <WrapWithTooltip text="Import">
-                <Button variant={"icon"} customeColor={"mutedIcon"} onClick={() => setIsImportOpen(true)}>
-                  <UploadCloud className="text-primary" />
-                </Button>
-              </WrapWithTooltip>
-            )}
-            <Modal
-              title="Import Data"
-              description="Select a file to import"
-              isOpen={isImportOpen}
-              onClose={() => setIsImportOpen(false)}
-              children={
-                !importConfig ? (
-                  <div className="flex flex-col items-center gap-4 p-8">
-                    <Typography>No import configuration</Typography>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-4 p-4">
-                    <div
-                      onClick={() => inputRef.current?.click()}
-                      onDragEnter={handleDragEnter}
-                      onDragLeave={handleDragLeave}
-                      onDragOver={handleDragOver}
-                      onDrop={handleDrop}
-                      className={cn("border-dashed border-2 border-primary p-8 text-center w-full", isDragActive ? "bg-primary-foreground" : "bg-muted/10")}
-                    >
-                      <Input
-                        ref={inputRef}
-                        type="file"
-                        onChange={handleFileChange}
-                        className="hidden"
-                        id="fileInput"
-                      />
-                      <Typography>
-                        {isDragActive
-                          ? 'Drop your files here...'
-                          : 'Drag and drop files here, or click to select file'}
-                      </Typography>
-
-                      {!!selectedFile && (
-                        <div>
-                          <Typography variant={"secondary"}>Selected File:</Typography>
-                          <Typography>{selectedFile.name}</Typography>
-                        </div>
-                      )}
-                    </div>
-                    {!!importConfig.extraDetails && importConfig.extraDetails}
-                    <div className="flex items-center justify-center gap-4">
-                      <SpinnerButton
-                        customeColor={"info"}
-                        loadingText="Downloading"
-                        icon={Download}
-                        isLoading={false}
-                        onClick={() => downloadTemplate(importConfig)}
-                        text="Download Template"
-                      />
-
-                      <SpinnerButton
-                        loadingText="Importing..."
-                        icon={Upload}
-                        isLoading={false}
-                        onClick={() => {
-                          if (!selectedFile) return toast({ title: "Error", description: "No file selected!", variant: "destructive" })
-                          if (!handleImport) return toast({ title: "Error", description: "No import configured!", variant: "destructive" })
-                          importFromExcel(selectedFile, handleImport)
-                          setSelectedFile(undefined)
-                          if (inputRef.current) {
-                            inputRef.current.value = ""
-                          }
-                          setIsImportOpen(false)
-                        }}
-                        text="Import Data"
-                      />
-                    </div>
-                  </div>
-                )
-              }
-            />
+          <div className="flex flex-col gap-2 md:flex-row">
+            <div className="flex flex-col items-center gap-2 md:flex-row md:justify-start md:gap-4">
+              <Typography className="whitespace-nowrap">Total records {table.getRowCount()}</Typography>
+              <ExportImport<TData> data={data} exportConfig={exportConfig} handleImport={handleImport} importConfig={importConfig} isLoading={!!isLoading} />
+            </div>
+            <div className="w-full flex flex-col gap-2 items-center md:flex-row md:gap-4 md:justify-end">
+              <PaginationPageSizeSelectors
+                isLoading={!!isLoading}
+                pageSize={pagination.pageSize || 10}
+                setPageSize={table.setPageSize}
+                options={
+                  table.getFilteredRowModel().rows.length > 100 ? [10, 50, 100]
+                    : table.getFilteredRowModel().rows.length > 50 ? [10, 50]
+                      : [10]
+                }
+              />
+              <PaginationNavigation table={table} />
+            </div>
           </div>
         )}
-        <div className="flex flex-col gap-2 justify-center">
-          {table.getPageCount() === 0 ? null : table.getPageCount() === 1 ? null : (
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2 justify-center w-full">
-                <Typography>Page</Typography>
-                <Typography>{pagination.pageIndex + 1}</Typography>
-                <Typography>of</Typography>
-                <Typography>{table.getPageCount()}</Typography>
-                <Typography>Pages</Typography>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  className="bg-primary h-4 w-8 p-0"
-                  onClick={() => table.setPageIndex(0)}
-                  disabled={pagination.pageIndex === 0}
-                >
-                  <ChevronsLeft className="w-4" />
-                </Button>
-                <Button
-                  className="bg-primary h-4 w-8 p-0"
-                  onClick={() => table.previousPage()}
-                  disabled={!table.getCanPreviousPage()}
-                >
-                  <ChevronLeft className="w-4" />
-                </Button>
-                <PaginationPageSelectors
-                  pageCount={table.getPageCount()}
-                  setPageIndex={table.setPageIndex}
-                  currentPage={table.getState().pagination.pageIndex}
-                />
-                <Button
-                  className="bg-primary h-4 w-8 p-0"
-                  onClick={() => table.nextPage()}
-                  disabled={!table.getCanNextPage()}
-                >
-                  <ChevronRight className="w-4" />
-                </Button>
-                <Button
-                  className="bg-primary h-4 w-8 p-0"
-                  onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                  disabled={!table.getCanNextPage()}
-                >
-                  <ChevronsRight className="w-4" />
-                </Button>
-              </div>
-              <div className="flex items-center gap-2 justify-center w-full">
-                <PaginationPageSizeSelectors
-                  pageSize={10}
-                  setPageSize={table.setPageSize}
-                  options={
-                    table.getCoreRowModel().rows.length > 100 ? [5, 10, 50, 100]
-                      : table.getCoreRowModel().rows.length > 50 ? [5, 10, 50]
-                        : table.getCoreRowModel().rows.length > 10 ? [5, 10]
-                          : table.getCoreRowModel().rows.length > 5 ? [5] : []
-                  }
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-      <div className="whitespace-nowrap grid">
         {table.getAllColumns().some(col => !!col.getFilterValue()) && (
           <Typography className="px-4 pb-4 text-sm text-muted">
             {table.getFilteredRowModel().rows.length} of{" "}
@@ -390,182 +188,34 @@ export function DataTable<TData, TValue>({
               {table.getFilteredRowModel().rows.length} row(s) selected.
             </Typography>
             {onDelete && <Button variant={"icon"} onClick={handleOpen} customeColor={"destructiveIcon"}>
-              <Trash />
+              <TrashIcon />
             </Button>}
           </div>
         )}
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  const currentFilter = filters?.find(f => f.key === header.id)
+      </div>
 
-                  return (
-                    <TableHead className="px-2" key={header.id}>
-                      {searches?.some(s => s.key === header.id) ? (
-                        <div className="flex items-center gap-2 justify-between">
-                          <TableInput
-                            placeholder={searches?.find(s => s.key === header.id)?.label}
-                            value={(table.getColumn(header.id)?.getFilterValue() as string) ?? ""}
-                            onChange={(event) =>
-                              table.getColumn(header.id)?.setFilterValue(event.target.value)
-                            }
-                          />
-                          <Button
-                            className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-                            onClick={() => table.getColumn(header.id)?.toggleSorting(table.getColumn(header.id)?.getIsSorted() === "asc")}
-                          >
-                            {table.getColumn(header.id)?.getIsSorted() === "asc" ? (
-                              <SortAsc className="h-4 w-4 text-primary" />
-                            ) : (
-                              <SortDesc className="h-4 w-4 text-primary" />
-                            )}
-                          </Button>
-                        </div>
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => {
+                const currentSearch = searches?.find(f => f.key === header.id)
+                const currentFilter = filters?.find(f => f.key === header.id)
+                const currentDateFilter = dateRanges?.find(dr => dr.key === header.id)
+
+                return (
+                  <TableHead className="px-2" key={header.id}>
+                    <div className="flex items-center gap-2 justify-between text-foreground whitespace-nowrap">
+                      {currentSearch ? (
+                        <SearchField header={header} table={table} currentSearch={currentSearch} />
                       ) : currentFilter ? (
-                        <div className="space-y-2">
-                          <div className="flex items-center w-fit gap-4">
-                            <TableSelectField
-                              data={currentFilter.values.map(val => ({
-                                Active: true,
-                                label: val.label,
-                                value: val.value,
-                                customLabel: (
-                                  <div className="flex items-center justify-between gap-4 w-full">
-                                    <Typography>{val.label}</Typography>
-                                    <Typography>
-                                      {
-                                        table.getFilteredRowModel().rows.length > 0
-                                          ? table.getFilteredRowModel().rows.filter(row => row.original[currentFilter.key as Extract<keyof TData, string>] === val.value).length
-                                          : table.getCoreRowModel().rows.filter(row => row.original[currentFilter.key as Extract<keyof TData, string>] === val.value).length
-                                      }
-                                    </Typography>
-                                  </div>
-                                )
-                              })) || []}
-                              listTitle={header.isPlaceholder
-                                ? null
-                                : (
-                                  <div className="flex items-center justify-between">
-                                    <Typography>{currentFilter.filterName}</Typography>
-                                    <Typography className="text-info">
-                                      {table.getCoreRowModel().rows.length}
-                                    </Typography>
-                                  </div>
-                                )}
-                              placeholder={currentFilter.filterName || ""}
-                              handleChange={(val) => {
-                                const isSameFilter = table.getColumn(header.id)?.getFilterValue() === val
-                                table.getColumn(header.id)?.setFilterValue(isSameFilter ? "" : val)
-                              }}
-                            />
-                            <Button
-                              className="w-fit rounded-full p-1 h-6 bg-transparent hover:bg-transparent"
-                              onClick={() => table.getColumn(header.id)?.toggleSorting(table.getColumn(header.id)?.getIsSorted() === "asc")}
-                            >
-                              {table.getColumn(header.id)?.getIsSorted() === "asc" ? (
-                                <SortAsc className="h-4 w-4 text-primary" />
-                              ) : (
-                                <SortDesc className="h-4 w-4 text-primary" />
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-                      ) : dateRanges?.some(dr => dr.key === header.id)
+                        <FilterField currentFilter={currentFilter} header={header} table={table} />
+                      ) : currentDateFilter
                         ? (
-                          <div className="flex gap-2 items-center justify-between">
-                            <DateRangePicker
-                              label={dateRanges.find(dr => dr.key === header.id)?.label || "No Label"}
-                              handleReset={() => {
-                                const col = table.getColumn(header.id)
-                                col?.setFilterValue(undefined)
-                              }}
-                              handleChange={() => {
-                                if (!startDate && !endDate) {
-                                  const col = table.getColumn(header.id)
-                                  col?.setFilterValue(undefined)
-                                  return
-                                }
-
-                                if (!startDate && endDate) {
-                                  const newStartDate = new Date(endDate.getTime())
-                                  newStartDate.setHours(0, 0, 0)
-                                  const newEndDate = new Date(endDate.getTime())
-                                  newEndDate.setHours(23, 59, 59)
-                                  const col = table.getColumn(header.id)
-                                  col?.setFilterValue(`${newStartDate}|${newEndDate}`)
-                                  return
-                                }
-
-                                if (!endDate && startDate) {
-                                  const newStartDate = new Date(startDate.getTime())
-                                  newStartDate.setHours(0, 0, 0)
-                                  const newEndDate = new Date(startDate.getTime())
-                                  newEndDate.setHours(23, 59, 59)
-                                  const col = table.getColumn(header.id)
-                                  col?.setFilterValue(`${newStartDate}|${newEndDate}`)
-                                  return
-                                }
-
-                                if (startDate === endDate) {
-                                  const newStartDate = new Date(startDate?.getTime()!);
-                                  newStartDate.setHours(0, 0, 0);
-                                  const newEndDate = new Date(endDate?.getTime()!)
-                                  newEndDate.setHours(23, 59, 59)
-
-                                  const col = table.getColumn(header.id)
-                                  col?.setFilterValue(`${newStartDate}|${newEndDate}`)
-                                  return
-                                }
-
-                                const newStartDate = new Date(startDate?.getTime()!);
-                                newStartDate.setHours(0, 0, 0);
-                                const newEndDate = new Date(endDate?.getTime()!)
-                                newEndDate.setHours(23, 59, 59)
-
-                                const col = table.getColumn(header.id)
-                                col?.setFilterValue(`${newStartDate}|${newEndDate}`)
-                                return
-                              }}
-                              startDate={startDate}
-                              setStartDate={setStartDate}
-                              endDate={endDate}
-                              setEndDate={setEndDate}
-                            />
-                            <Button
-                              className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-                              onClick={() => table.getColumn(header.id)?.toggleSorting(table.getColumn(header.id)?.getIsSorted() === "asc")}
-                            >
-                              {table.getColumn(header.id)?.getIsSorted() === "asc" ? (
-                                <SortAsc className="h-4 w-4 text-primary" />
-                              ) : (
-                                <SortDesc className="h-4 w-4 text-primary" />
-                              )}
-                            </Button>
-                          </div>
+                          <DateRangeField currentDateFilter={currentDateFilter} header={header} table={table} />
                         ) : header.id === sum?.key
                           ? (
-                            <div className="flex items-center gap-4 flex-shrink">
-                              <Typography className={cn(sum.isNegative ? "text-destructive" : "text-muted")}>{sum.label}</Typography>
-                              <Typography className={cn(sum.isNegative ? "text-destructive" : "text-muted")}>
-                                {sum.isNegative && "("}{formatPrice(table.getFilteredSelectedRowModel().rows.length > 0 ? table.getFilteredSelectedRowModel().rows.map(r => r.original[sum.key]).reduce((a, b) => {
-                                  return Number(a) + Number(b)
-                                }, 0) : table.getFilteredRowModel().rows.map(r => r.original[sum.key]).reduce((a, b) => {
-                                  return Number(a) + Number(b)
-                                }, 0))}{sum.isNegative && ")"}
-                              </Typography>
-                              <Button
-                                className="h-fit w-fit rounded-full bg-transparent hover:bg-transparent"
-                                onClick={() => table.getColumn(header.id)?.toggleSorting(table.getColumn(header.id)?.getIsSorted() === "asc")}
-                              >
-                                {table.getColumn(header.id)?.getIsSorted() === "asc" ? (
-                                  <SortAsc className="h-4 w-4 text-primary" />
-                                ) : (
-                                  <SortDesc className="h-4 w-4 text-primary" />
-                                )}
-                              </Button>
-                            </div>
+                            <SumField table={table} currentSummedField={sum} />
                           )
                           : header.isPlaceholder
                             ? null
@@ -579,125 +229,63 @@ export function DataTable<TData, TValue>({
                                 }
                               </Typography>
                             )}
-                    </TableHead>
-                  );
-                })}
+                      {header.column.getCanSort() && <SortButton setSorting={setSorting} header={header} />}
+                    </div>
+                  </TableHead>
+                );
+              })}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody className={isLoading ? "bg-muted/20 animate-pulse" : ""}>
+          {table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && "selected"}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id} className="py-1 px-2">
+                    {flexRender(
+                      cell.column.columnDef.cell,
+                      cell.getContext()
+                    )}
+                  </TableCell>
+                ))}
               </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody className={skele ? "bg-muted/20 animate-pulse" : ""}>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="py-1 px-2">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : skele ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24"
-                >
-                  <div className="flex w-fit mx-auto items-center gap-2">
-                    <Typography>Loading...</Typography><Spinner className="w-4 h-4" />
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : error ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  {error}
-                </TableCell>
-              </TableRow>
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+            ))
+          ) : isLoading ? (
+            <TableRow>
+              <TableCell
+                colSpan={columns.length}
+                className="h-24"
+              >
+                <div className="flex w-fit mx-auto items-center gap-2">
+                  <Typography>Loading...</Typography><Spinner className="w-4 h-4" />
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : error ? (
+            <TableRow>
+              <TableCell
+                colSpan={columns.length}
+                className="h-24 text-center"
+              >
+                {error}
+              </TableCell>
+            </TableRow>
+          ) : (
+            <TableRow>
+              <TableCell
+                colSpan={columns.length}
+                className="h-24 text-center"
+              >
+                No results.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 }
-
-export interface PaginationPageSelectorsProps {
-  pageCount: number;
-  setPageIndex: (index: number) => void;
-  currentPage: number;
-}
-
-export const PaginationPageSelectors: React.FC<PaginationPageSelectorsProps> = ({ pageCount, setPageIndex, currentPage }) => {
-  const maxPages = 5;
-  const middleIndex = Math.floor(maxPages / 2);
-
-  // Determine the range of visible pages
-  const startPage = Math.max(0, Math.min(pageCount - maxPages, currentPage - middleIndex));
-  const visiblePages = Array.from({ length: Math.min(maxPages, pageCount) }, (_, i) => startPage + i);
-
-  return (
-    <div className="flex items-center gap-2 px-4">
-      {visiblePages.map(i => (
-        <Button
-          key={i}
-          variant={i === currentPage ? "default" : "outline"}
-          customeColor={i === currentPage ? "primary" : "primaryOutlined"}
-          className="h-4 w-8 p-0 transition-all duration-100"
-          onClick={() => setPageIndex(i)}
-        >
-          {i + 1}
-        </Button>
-      ))}
-    </div>
-  );
-};
-
-export interface PaginationPageSizeSelectorsProps {
-  pageSize: number;
-  options: number[];
-  setPageSize: (updater: Updater<number>) => void
-}
-
-export const PaginationPageSizeSelectors: React.FC<PaginationPageSizeSelectorsProps> = ({ setPageSize, options }) => {
-  const [localPageSize, setLocalPageSize] = React.useState(10)
-
-  return (
-    <div className="flex flex-col items-center gap-2 px-4">
-      <Typography>Page Size</Typography>
-      <div className="flex items-center gap-2 px-4">
-        {options.map(item => (
-          <Button
-            key={`${item}DataTablePageSize`}
-            variant={item === localPageSize ? "default" : "outline"}
-            customeColor={item === localPageSize ? "primary" : "primaryOutlined"}
-            className="h-4 w-8 p-0 transition-all duration-100"
-            onClick={() => {
-              setPageSize(item)
-              setLocalPageSize(item)
-            }}
-          >
-            {item}
-          </Button>
-        ))}
-      </div>
-    </div>
-  );
-};

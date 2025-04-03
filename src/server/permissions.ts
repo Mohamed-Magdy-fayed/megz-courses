@@ -1,4 +1,4 @@
-import { NavLink } from "@/components/layout/Drawer";
+import { NavLink } from "@/components/pages/adminLayout/Drawer";
 import { Certificate, Course, GoogleClient, Lead, LeadStage, MessageTemplate, MetaClient, Order, Parameters, Payment, PlacementTest, Product, Refund, SupportChat, SupportTicket, SystemForm, SystemFormSubmission, Teacher, Tester, User, UserNote, UserRoles, ZoomClient, ZoomGroup, ZoomSession } from "@prisma/client";
 
 type PartialUser = Pick<User, "id" | "email" | "userRoles" | "userScreens">
@@ -34,7 +34,7 @@ type Permissions = {
     },
     users: {
         dataType: Partial<User>
-        action: "view" | "create" | "update" | "delete"
+        action: "view" | "create" | "update" | "delete" | "access"
     },
     certificates: {
         dataType: Partial<Certificate>
@@ -138,7 +138,10 @@ const ROLES = {
         adminLayout: { view: true, update: true },
         params: unrestricted,
         certificates: unrestricted,
-        users: unrestricted,
+        users: {
+            ...unrestricted,
+            access: true,
+        },
         supportChats: unrestricted,
         courses: unrestricted,
         leads: unrestricted,

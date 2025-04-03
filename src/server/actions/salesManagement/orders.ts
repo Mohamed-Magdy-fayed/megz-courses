@@ -62,18 +62,6 @@ export async function createCourseOrderPayment({ prisma, studentId, courseId, is
     }
 }
 
-export function createCourseStatus({ prisma, studentId, courseId, levelId, isPrivate }: CourseOrder & { prisma: PrismaClient; studentId: string; levelId?: string; }) {
-    return prisma.courseStatus.create({
-        data: {
-            status: "OrderCreated",
-            isPrivate,
-            course: { connect: { id: courseId } },
-            level: levelId ? { connect: { id: levelId } } : undefined,
-            user: { connect: { id: studentId } },
-        }
-    })
-}
-
 export function createOrderNote({ prisma, agentUserId, agentUserName, paymentLink, isPrivate, studentId, productName, studentName }: {
     prisma: PrismaClient; studentId: string; studentName: string; productName: string; isPrivate: boolean;
     agentUserId: string; agentUserName: string; paymentLink: string;
@@ -139,13 +127,25 @@ export async function createQuickOrderUserLead({ prisma, studentName, studentEma
 
 export async function payOrder({ orderId }: { orderId: string; }) {
     if (await isOrderFullyPaid({ orderId })) {
-        await prisma.order.update({ where: { id: orderId }, data: { status: "Paid" } })
+        await prisma.order.update({
+            where: { id: orderId },
+            data: {
+                status: "Paid",
+                courseStatuses: { updateMany: { where: {}, data: { status: "OrderPaid" } } }
+            },
+        })
     }
 }
 
 export async function refundOrder({ orderId }: { orderId: string; }) {
     if (await isOrderFullyRefunded({ orderId })) {
-        await prisma.order.update({ where: { id: orderId }, data: { status: "Refunded" } })
+        await prisma.order.update({
+            where: { id: orderId },
+            data: {
+                status: "Refunded",
+                courseStatuses: { updateMany: { where: {}, data: { status: "Refunded" } } }
+            },
+        })
     } else {
         await prisma.order.update({ where: { id: orderId }, data: { status: "Pending" } })
     }

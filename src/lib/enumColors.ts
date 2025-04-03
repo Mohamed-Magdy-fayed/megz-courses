@@ -1,4 +1,4 @@
-import { SeverityPillProps } from "@/components/overview/SeverityPill";
+import { SeverityPillProps } from "@/components/ui/SeverityPill";
 import { CourseStatuses, GroupStatus, LeadInteractionType, OrderStatus, SessionStatus, SupportTicketStatus, UserNoteStatus, UserNoteTypes } from "@prisma/client";
 
 export const validLeadInteractionsColors: (val: LeadInteractionType) => SeverityPillProps["color"] = (val) => {

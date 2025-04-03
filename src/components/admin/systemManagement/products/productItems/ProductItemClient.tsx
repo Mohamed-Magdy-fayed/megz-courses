@@ -79,7 +79,7 @@ export default function ProductItemsClient({ productId }: { productId: string })
                 searches={[
                     { key: "levelName", label: "Level" },
                 ]}
-                skele={isLoading}
+                isLoading={isLoading}
                 exportConfig={{ fileName: "Product Items", sheetName: "Product Items" }}
                 importConfig={{ reqiredFields: ["courseId", "levelId"], sheetName: "Product Items", templateName: "Product Items Template" }}
                 handleImport={(input) => {

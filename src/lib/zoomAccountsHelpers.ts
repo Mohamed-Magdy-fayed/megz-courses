@@ -55,3 +55,15 @@ export async function getZoomAccountMeetings({ accessToken, endDate, startDate }
         throw new Error(error.message)
     }
 }
+
+export const getZakToken = async (userId: string, token: string) => {
+    const response = await axios.get(
+        `https://api.zoom.us/v2/users/${userId}/token?type=zak`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    );
+    return response.data.token;
+};

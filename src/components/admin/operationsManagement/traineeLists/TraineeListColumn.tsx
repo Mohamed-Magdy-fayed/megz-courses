@@ -13,6 +13,10 @@ export type TraineeList = {
         value: string;
         label: string;
     }[],
+    levelIds: {
+        value: string;
+        label: string;
+    }[],
     levelSlug: string,
     levelName: string,
     image: string | null,

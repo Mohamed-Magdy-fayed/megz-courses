@@ -6,8 +6,8 @@ import {
 import { TRPCError } from "@trpc/server";
 import { validSessionStatuses } from "@/lib/enumsTypes";
 import { format } from "date-fns";
-import { EmailsWrapper } from "@/components/emails/EmailsWrapper";
-import SessionUpdatedEmail from "@/components/emails/SessionUpdated";
+import { EmailsWrapper } from "@/components/general/emails/EmailsWrapper";
+import SessionUpdatedEmail from "@/components/general/emails/SessionUpdated";
 import { sendZohoEmail } from "@/lib/emailHelpers";
 import { env } from "@/env.mjs";
 import { meetingLinkConstructor } from "@/lib/meetingsHelpers";

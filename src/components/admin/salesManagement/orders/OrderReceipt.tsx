@@ -7,11 +7,11 @@ import { TableCaption, TableBody, TableRow, TableCell, Table } from '../../../ui
 import { useToast } from '../../../ui/use-toast'
 import { Button } from '../../../ui/button'
 import Link from 'next/link'
-import { SeverityPill } from '../../../overview/SeverityPill'
 import { api } from '@/lib/api'
 import { validOrderStatusesColors } from '@/lib/enumColors'
-import Spinner from '@/components/Spinner'
+import Spinner from '@/components/ui/Spinner'
 import WrapWithTooltip from '@/components/ui/wrap-with-tooltip'
+import { SeverityPill } from '@/components/ui/SeverityPill'
 
 interface OrderReceiptProps {
     orderNumber: string;

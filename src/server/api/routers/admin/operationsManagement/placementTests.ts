@@ -53,25 +53,35 @@ export const placementTestsRouter = createTRPCRouter({
         }),
     getAllPlacementTests: protectedProcedure
         .query(async ({ ctx }) => {
-            const courses = await ctx.prisma.course.findMany({
-                include: {
-                    placementTests: {
-                        include: {
-                            student: { include: { courseStatus: { include: { level: true } } } },
-                            tester: { include: { user: true } },
-                            course: { include: { courseStatus: true, levels: true } },
-                            writtenTest: { include: { submissions: true } },
-                            zoomSessions: { include: { zoomClient: true } },
-                        }
+            // const courses = await ctx.prisma.course.findMany({
+            //     include: {
+            //         placementTests: {
+            // include: {
+            //     student: { include: { courseStatus: { include: { level: true } } } },
+            //     tester: { include: { user: true } },
+            //     course: { include: { courseStatus: true, levels: true } },
+            //     writtenTest: { include: { submissions: true } },
+            //     zoomSessions: { include: { zoomClient: true } },
+            // }
+            //         }
+            //     }
+            // })
+
+            // const tests = courses
+            //     .flatMap(c => c.placementTests)
+            //     .filter(test => !test.course?.courseStatus.some(s => !!s.courseLevelId && s.courseId === test.course?.id && test.studentUserId === s.userId))
+
+            return {
+                tests: await ctx.prisma.placementTest.findMany({
+                    include: {
+                        student: { include: { courseStatus: { include: { level: true } } } },
+                        tester: { include: { user: true } },
+                        course: { include: { courseStatus: true, levels: true } },
+                        writtenTest: { include: { submissions: true } },
+                        zoomSessions: { include: { zoomClient: true } },
                     }
-                }
-            })
-
-            const tests = courses
-                .flatMap(c => c.placementTests)
-                .filter(test => !test.course?.courseStatus.some(s => !!s.courseLevelId && s.courseId === test.course?.id && test.studentUserId === s.userId))
-
-            return { tests }
+                })
+            }
         }),
     createPlacementTest: protectedProcedure
         .input(z.object({
@@ -108,6 +118,10 @@ export const placementTestsRouter = createTRPCRouter({
                 include: { writtenTest: true, student: true }
             })
 
+            const courseStatus = await ctx.prisma.courseStatus.findFirst({ where: { userId, courseId }, select: { id: true } })
+            if (!courseStatus) throw new TRPCError({ code: "BAD_REQUEST", message: "No course Status found to update" })
+            await ctx.prisma.courseStatus.update({ where: { id: courseStatus?.id }, data: { status: "PlacementTest" } })
+
             return { placementTest }
         }),
     deletePlacementTest: protectedProcedure
@@ -134,9 +148,9 @@ export const placementTestsRouter = createTRPCRouter({
             const { zoomClient } = await getAvailableZoomClient(testTime, ctx.prisma, 30)
             if (!zoomClient) throw new TRPCError({ code: "BAD_REQUEST", message: "No available Zoom Accounts at the selected time!" })
 
-            const course = await ctx.prisma.course.findUnique({where: { id: courseId }})
+            const course = await ctx.prisma.course.findUnique({ where: { id: courseId } })
             if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "Lead not found!" })
-            const student = await ctx.prisma.user.findUnique({where: { id: userId }})
+            const student = await ctx.prisma.user.findUnique({ where: { id: userId } })
             if (!student) throw new TRPCError({ code: "BAD_REQUEST", message: "Student not found!" })
 
             const tester = await ctx.prisma.tester.findUnique({ where: { id: testerId }, include: { user: true } })

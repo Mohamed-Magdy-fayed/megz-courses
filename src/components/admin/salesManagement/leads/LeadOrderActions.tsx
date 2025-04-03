@@ -2,7 +2,7 @@ import { PaymentLinkForm } from "@/components/admin/salesManagement/forms/Paymen
 import { LeadOrderColumn } from "@/components/admin/salesManagement/leads/LeadOrdersColumns";
 import PaymentModal from "@/components/admin/salesManagement/modals/PaymentModal";
 import RefundModal from "@/components/admin/salesManagement/modals/RefundModal";
-import { AlertModal } from "@/components/modals/AlertModal";
+import { AlertModal } from "@/components/general/modals/AlertModal";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toastType, useToast } from "@/components/ui/use-toast";

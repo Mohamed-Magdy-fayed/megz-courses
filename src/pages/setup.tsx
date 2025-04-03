@@ -2,15 +2,15 @@ import { api } from "@/lib/api";
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Separator } from "@/components/ui/separator";
 import WrapWithTooltip from "@/components/ui/wrap-with-tooltip";
-import Spinner from "@/components/Spinner";
+import Spinner from "@/components/ui/Spinner";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import SetupForm from "@/components/setupComponents/SetupForm";
+import SetupForm from "@/components/admin/systemManagement/setupComponents/SetupForm";
 import { useState } from "react";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { createMutationOptions } from "@/lib/mutationsHelper";
-import { LogoPrimary } from "@/components/layout/Logo";
+import { LogoPrimary } from "@/components/pages/adminLayout/Logo";
 import Link from "next/link";
-import { AlertModal } from "@/components/modals/AlertModal";
+import { AlertModal } from "@/components/general/modals/AlertModal";
 import { useSession } from "next-auth/react";
 import NotFoundPage from "@/pages/404";
 import { SpinnerButton } from "@/components/ui/button";
@@ -150,12 +150,6 @@ const SetupPage = () => {
             <SetupForm />
           </>
         )}
-        {/* <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-          <TierCard currentTier={subscriptionTiers.Starter} isCurrent={setupQuery.data?.tier.name === subscriptionTiers.Starter.name} />
-          <TierCard currentTier={subscriptionTiers.Basic} isCurrent={setupQuery.data?.tier.name === subscriptionTiers.Basic.name} />
-          <TierCard currentTier={subscriptionTiers.Professional} isCurrent={setupQuery.data?.tier.name === subscriptionTiers.Professional.name} />
-          <TierCard currentTier={subscriptionTiers.Enterprise} isCurrent={setupQuery.data?.tier.name === subscriptionTiers.Enterprise.name} />
-        </div> */}
       </div>
     </ScrollArea>
   )

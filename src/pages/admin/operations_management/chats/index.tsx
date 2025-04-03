@@ -1,6 +1,6 @@
-import Spinner from "@/components/Spinner"
-import AppLayout from "@/components/layout/AppLayout"
-import { SeverityPill } from "@/components/overview/SeverityPill"
+import Spinner from "@/components/ui/Spinner"
+import AppLayout from "@/components/pages/adminLayout/AppLayout"
+import { SeverityPill } from "@/components/ui/SeverityPill"
 import { PaperContainer } from "@/components/ui/PaperContainers"
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -112,48 +112,46 @@ const ChatPage = () => {
             <ConceptTitle>
                 Chats
             </ConceptTitle>
-            <PaperContainer>
-                {chatsQuery.isLoading ? <Spinner className="w-full" /> :
-                    chats.length === 0 ? "No chats yet!" : (
-                        <div>
-                            {chats.map(chat => (
-                                <Link key={chat.id} href={`/chats/${chat.id}`} className="">
-                                    <div className="flex items-center justify-between hover:bg-primary/5 p-2 lg:p-4">
-                                        <div className="flex items-center gap-2" >
-                                            <Avatar>
-                                                <AvatarImage src={`${chat.user?.image}`} />
-                                                <AvatarFallback>
-                                                    {getInitials(`${chat.user?.name}`)}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div className="flex flex-col">
-                                                <Typography>
-                                                    {chat.user?.name}
-                                                </Typography>
-                                                <Typography variant={"secondary"} className="text-sm font-normal">
-                                                    {chat.user?.email}
-                                                </Typography>
-                                            </div>
-                                        </div>
-                                        <div className="flex flex-col gap-2 p-2 md:flex-row">
-                                            {chat.messages[chat.messages.length - 1]?.sender === chat.user?.name &&
-                                                <SeverityPill color="destructive" className="w-fit">
-                                                    {getUnreadMessages(chat)}
-                                                </SeverityPill>
-                                            }
-                                            <div className="flex flex-col gap-2">
-                                                <Typography>
-                                                    {chat.messages[chat.messages.length - 1]?.text}
-                                                </Typography>
-                                            </div>
+            {chatsQuery.isLoading ? <Spinner className="w-full" /> :
+                chats.length === 0 ? "No chats yet!" : (
+                    <div>
+                        {chats.map(chat => (
+                            <Link key={chat.id} href={`/chats/${chat.id}`} className="">
+                                <div className="flex items-center justify-between hover:bg-primary/5 p-2 lg:p-4">
+                                    <div className="flex items-center gap-2" >
+                                        <Avatar>
+                                            <AvatarImage src={`${chat.user?.image}`} />
+                                            <AvatarFallback>
+                                                {getInitials(`${chat.user?.name}`)}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div className="flex flex-col">
+                                            <Typography>
+                                                {chat.user?.name}
+                                            </Typography>
+                                            <Typography variant={"secondary"} className="text-sm font-normal">
+                                                {chat.user?.email}
+                                            </Typography>
                                         </div>
                                     </div>
-                                    <Separator />
-                                </Link>
-                            ))}
-                        </div>
-                    )}
-            </PaperContainer>
+                                    <div className="flex flex-col gap-2 p-2 md:flex-row">
+                                        {chat.messages[chat.messages.length - 1]?.sender === chat.user?.name &&
+                                            <SeverityPill color="destructive" className="w-fit">
+                                                {getUnreadMessages(chat)}
+                                            </SeverityPill>
+                                        }
+                                        <div className="flex flex-col gap-2">
+                                            <Typography>
+                                                {chat.messages[chat.messages.length - 1]?.text}
+                                            </Typography>
+                                        </div>
+                                    </div>
+                                </div>
+                                <Separator />
+                            </Link>
+                        ))}
+                    </div>
+                )}
         </AppLayout>
     )
 }

@@ -26,7 +26,7 @@ export default function LeadOrdersClient({ leadId }: { leadId: string }) {
             isStudentView: false,
             id,
             amount,
-            paidAmount: payments.reduce((a, b) => a + b.paymentAmount, 0),
+            paidAmount: payments.reduce((a, b) => a + b.paymentAmount, 0) - refunds.reduce((a, b) => a + b.refundAmount, 0),
             refundedAmount: refunds.reduce((a, b) => a + b.refundAmount, 0),
             remainingAmount: amount - payments.reduce((a, b) => a + b.paymentAmount, 0) + refunds.reduce((a, b) => a + b.refundAmount, 0),
             paidAt: payments[0]?.createdAt,
@@ -82,7 +82,7 @@ export default function LeadOrdersClient({ leadId }: { leadId: string }) {
                         }))]
                 },
             ]}
-            skele={isLoading}
+            isLoading={isLoading}
             exportConfig={{ fileName: "Lead Orders", sheetName: "Lead Orders" }}
         />
     )

@@ -1,5 +1,5 @@
-import ContactSection from '@/components/landingPageComponents/ContactSection';
-import LandingLayout from '@/components/landingPageComponents/LandingLayout';
+import ContactSection from '@/components/pages/landingPageComponents/ContactSection';
+import LandingLayout from '@/components/pages/landingPageComponents/LandingLayout';
 import { ToggleSection } from '@/components/ui/ToggleSection';
 import { ConceptTitle, Typography } from '@/components/ui/Typoghraphy';
 import { env } from '@/env.mjs';

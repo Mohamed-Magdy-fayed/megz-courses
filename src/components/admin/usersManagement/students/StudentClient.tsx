@@ -1,7 +1,6 @@
 import { api } from "@/lib/api";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { cn, getAddress } from "@/lib/utils";
-import { DataTable } from "@/components/ui/DataTable";
 import useImportErrors from "@/hooks/useImportErrors";
 import { createMutationOptions } from "@/lib/mutationsHelper";
 import { Input } from "@/components/ui/input";
@@ -9,6 +8,14 @@ import { Typography } from "@/components/ui/Typoghraphy";
 import { CheckSquare } from "lucide-react";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { studentColumns, StudentColumns } from "@/components/admin/usersManagement/students/StudentColumn";
+import { ServerDataTable } from "@/components/ui/ServerDataTable";
+import useServerDataTable from "@/hooks/useServerDataTable";
+import { Devices } from "@prisma/client";
+import { addFiltersCounts } from "@/lib/dataTableUtils";
+import useDynamicSchema from "@/hooks/useDynamicSchema";
+import { exportToExcel } from "@/lib/exceljs";
+import { usePrefetchSurroundingPages } from "@/hooks/usePrefetchSurroundingPages";
+import { DateRangeColumn, FilterColumn, SearchColumn } from "@/components/ui/ServerDataTable/utils/types";
 
 const StudentClient = () => {
   const [users, setUsers] = useState<StudentColumns[]>([]);
@@ -17,23 +24,61 @@ const StudentClient = () => {
 
   const { ErrorsModal, setError } = useImportErrors()
 
+  const dateRanges: DateRangeColumn<StudentColumns>[] = [{ key: "createdAt", label: "Created On" }]
+  const searches: SearchColumn<StudentColumns>[] = [
+    { key: "name", label: "Name" },
+    { key: "phone", label: "Phone" },
+  ]
+  const filters: FilterColumn<StudentColumns>[] = [
+    {
+      filterName: "Device", key: "device", values: [
+        { label: "Desktop", value: Devices.Desktop, count: 0 },
+        { label: "Tablet", value: Devices.Tablet, count: 0 },
+        { label: "Mobile", value: Devices.Mobile, count: 0 },
+        { label: "Null", value: "null", count: 0 },
+      ]
+    },
+  ]
+
   const { toastError, toastSuccess, toast } = useToast();
   const trpcUtils = api.useUtils();
-  const { data, isLoading } = api.users.getUsers.useQuery({
-    userRole: "Student",
+
+  const tableStates = useServerDataTable()
+  const userSchema = useDynamicSchema(tableStates.columnFilters, dateRanges, searches, filters)
+
+  const { data, isLoading } = api.users.getUsersTest.useQuery({
+    pageIndex: tableStates.pagination.pageIndex,
+    pageSize: tableStates.pagination.pageSize,
+    sorting: tableStates.sorting as { id: keyof StudentColumns, desc: boolean }[],
+    dateRanges: userSchema.dateRanges,
+    filters: userSchema.filters,
+    searches: userSchema.searches,
   });
 
   const formattedData: StudentColumns[] = data?.users.map((user) => ({
     id: user.id,
     name: user.name,
     email: user.email,
+    phone: user.phone,
+    device: user.device,
     image: user.image || "no image",
-    phone: user.phone || "no phone",
     address: user.address ? getAddress(user.address) : "no address",
     createdAt: user.createdAt,
   })) || [];
 
-
+  const exportMutation = api.users.exportUsers.useMutation(
+    createMutationOptions({
+      loadingToast,
+      setLoadingToast,
+      successMessageFormatter: (data) => {
+        exportToExcel(data, "Students", "Students")
+        return `${data.length} Users Exported!`
+      },
+      toast,
+      trpcUtils,
+      loadingMessage: "Exporting..."
+    })
+  );
   const deleteMutation = api.users.deleteUser.useMutation();
   const importMutation = api.users.importUsers.useMutation(
     createMutationOptions({
@@ -77,21 +122,41 @@ const StudentClient = () => {
     );
   };
 
+  usePrefetchSurroundingPages({
+    dataCount: data?.counts.filteredCount,
+    pageIndex: tableStates.pagination.pageIndex,
+    pageSize: tableStates.pagination.pageSize,
+    prefetchFn: trpcUtils.users.getUsersTest.prefetch,
+    dateRanges: userSchema.dateRanges,
+    filters: userSchema.filters,
+    searches: userSchema.searches,
+    sorting: tableStates.sorting as { id: keyof StudentColumns; desc: boolean }[],
+  });
+
   return (
     <>
       {ErrorsModal}
-      <DataTable
-        skele={isLoading}
+      <ServerDataTable
+        {...tableStates}
         columns={studentColumns}
         data={formattedData}
+        selectedData={users}
+        handleExport={(keys) => {
+          exportMutation.mutate({
+            select: keys,
+            dateRanges: userSchema.dateRanges,
+            filters: userSchema.filters,
+            searches: userSchema.searches,
+          })
+        }}
+        filteredCount={data?.counts.filteredCount || 0}
+        totalCount={data?.counts.totalCount || 0}
+        isLoading={isLoading || !!loadingToast}
         setData={setUsers}
         onDelete={onDelete}
-        dateRanges={[{ key: "createdAt", label: "Created On" }]}
-        searches={[
-          { key: "name", label: "Name" },
-          { key: "address", label: "Address" },
-          { key: "phone", label: "Phone" },
-        ]}
+        dateRanges={dateRanges}
+        searches={searches}
+        filters={filters.map(f => addFiltersCounts(f.filterName, f.key, f.values, data?.counts.deviceCounts || {}))}
         exportConfig={{
           fileName: `Students`,
           sheetName: "Students",

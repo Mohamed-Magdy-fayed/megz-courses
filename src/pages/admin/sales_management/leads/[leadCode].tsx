@@ -1,4 +1,4 @@
-import { SeverityPill } from "@/components/overview/SeverityPill";
+import { SeverityPill } from "@/components/ui/SeverityPill";
 import { Button, SpinnerButton } from "@/components/ui/button";
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Phone, Mail, Edit, Replace, Trash, Clock, XIcon, UserIcon, Calendar, UserPlus, ExternalLink, CopyIcon, PhoneIcon, MessageSquareIcon, LaptopIcon } from "lucide-react";
@@ -9,21 +9,21 @@ import { api } from "@/lib/api";
 import { createMutationOptions } from "@/lib/mutationsHelper";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/router";
-import AppLayout from "@/components/layout/AppLayout";
-import { AssignModal } from "@/components/modals/AssignModal";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
+import { AssignModal } from "@/components/general/modals/AssignModal";
 import { Separator } from "@/components/ui/separator";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Accordion, AccordionContent, AccordionItem } from "@/components/ui/accordion";
-import { AlertModal } from "@/components/modals/AlertModal";
-import Spinner from "@/components/Spinner";
-import LeadsForm from "@/components/leads/LeadsForm";
-import LabelsForm from "@/components/leads/LabelsForm";
-import RemindersForm from "@/components/leads/RemindersForm";
-import NotesForm from "@/components/leads/NotesForm";
+import { AlertModal } from "@/components/general/modals/AlertModal";
+import Spinner from "@/components/ui/Spinner";
+import LeadsForm from "@/components/admin/salesManagement/leads/LeadsForm";
+import LabelsForm from "@/components/admin/salesManagement/leads/LabelsForm";
+import RemindersForm from "@/components/admin/salesManagement/leads/RemindersForm";
+import NotesForm from "@/components/admin/salesManagement/leads/NotesForm";
 import GoBackButton from "@/components/ui/go-back";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import Link from "next/link";
-import InteractionsForm from "@/components/leads/InteractionsForm";
+import InteractionsForm from "@/components/admin/salesManagement/leads/InteractionsForm";
 import { validLeadInteractionsColors } from "@/lib/enumColors";
 import WrapWithTooltip from "@/components/ui/wrap-with-tooltip";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -49,9 +49,7 @@ export default function LeadPage() {
     const [isEditNoteOpen, setIsEditNoteOpen] = useState("");
     const [isDeleteNoteOpen, setIsDeleteNoteOpen] = useState(false);
     const [isEditContactInfo, setIsEditContactInfo] = useState(false);
-    const [isScheduleTestOpen, setIsScheduleTestOpen] = useState(false)
     const [isCreateOrderOpen, setIsCreateOrderOpen] = useState(false)
-    const [orderDetailsOpen, setOrderDetailsOpen] = useState(false)
 
     const [loadingToast, setLoadingToast] = useState<toastType>();
     const { toast } = useToast()
@@ -340,34 +338,6 @@ export default function LeadPage() {
                             </div>
                             <div className="grid gap-2 whitespace-nowrap">
                                 <Label>Order</Label>
-                                {/* {
-                                    leadData.lead.orderDetails
-                                        ? (
-                                            <div className="flex items-center gap-2">
-                                                <Button disabled={!leadData.lead.orderDetails || leadData.lead.orderDetails.status !== "Paid"} onClick={() => setIsScheduleTestOpen(true)}>
-                                                    <Calendar className="w-4 h-4" />
-                                                    {!leadData.lead.orderDetails?.user?.placementTests[0]?.oralTestTime
-                                                        ? (<Typography>Schedule Placement Test</Typography>)
-                                                        : (<Typography>Reschedule Placement Test</Typography>)
-                                                    }
-                                                </Button>
-                                                {
-
-                                                    testSession && testSession.session && <PlacemntTestMeetingInfo
-                                                        courseName={leadData.lead.orderDetails.course?.name || ""}
-                                                        isZoom={!!testSession.isZoom}
-                                                        session={testSession.session}
-                                                    />
-                                                }
-                                            </div>
-                                        )
-                                        : (
-                                            <Button disabled={!!leadData.lead.orderDetails || !userData?.user?.email} onClick={() => setIsCreateOrderOpen(true)}>
-                                                <Calendar className="w-4 h-4" />
-                                                <Typography>Create Order</Typography>
-                                            </Button>
-                                        )
-                                } */}
                                 <Button disabled={!userData?.user?.email} onClick={() => setIsCreateOrderOpen(true)}>
                                     <Calendar className="w-4 h-4" />
                                     <Typography>Place an Order</Typography>

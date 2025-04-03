@@ -24,8 +24,8 @@ const config = {
     defaultLocale: "en",
   },
   images: {
-    domains: [
-      "firebasestorage.googleapis.com",
+    remotePatterns: [
+      { hostname: "firebasestorage.googleapis.com" },
     ]
   },
   webpack: (config) => {

@@ -75,7 +75,7 @@ const OrderActions: React.FC<OrderActionsProps> = ({ data }) => {
           </div>
         }
       />
-      <PaymentModal isOpen={isTakePaymentModalOpen} setIsOpen={setIsTakePaymentModalOpen} orderNumber={data.id} userId={data.userId} remainingAmount={data.remainingAmount} />
+      <PaymentModal isOpen={isTakePaymentModalOpen} setIsOpen={setIsTakePaymentModalOpen} orderNumber={data.orderNumber} userId={data.userId} remainingAmount={data.remainingAmount} />
       <RefundModal isOpen={isRefundModalOpen} setIsOpen={setIsRefundModalOpen} orderId={data.id} userId={data.userId} paymentsTotal={data.paidAmount} />
       <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
         <DropdownMenuTrigger asChild>

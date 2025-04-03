@@ -1,20 +1,10 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
-import { formatPrice, leadsCodeGenerator, orderCodeGenerator } from "@/lib/utils";
+import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { leadsCodeGenerator } from "@/lib/utils";
 import { TRPCError } from "@trpc/server";
-import { Course, Order, User } from "@prisma/client";
-import { env } from "@/env.mjs";
-import axios from "axios";
-import { formatAmountForPaymob } from "@/lib/paymobHelpers";
-import { format } from "date-fns";
-import { sendZohoEmail } from "@/lib/emailHelpers";
-import Email from "@/components/emails/Email";
-import { EmailsWrapper } from "@/components/emails/EmailsWrapper";
-import PaymentConfEmail from "@/components/emails/PaymentConfEmail";
-import { sendWhatsAppMessage } from "@/lib/whatsApp";
 import { hasPermission } from "@/server/permissions";
-import { getCurrentTier, subscriptionTiers } from "@/lib/system";
-import { createCourseOrderPayment, createCourseStatus, createOrderNote, createProductOrderPayment, createQuickOrderUserLead } from "@/server/actions/salesManagement/orders";
+import { getCurrentTier } from "@/lib/system";
+import { createCourseOrderPayment, createOrderNote, createProductOrderPayment, createQuickOrderUserLead } from "@/server/actions/salesManagement/orders";
 import { orderConfirmationEmail } from "@/server/actions/emails";
 
 export const ordersRouter = createTRPCRouter({
@@ -144,11 +134,19 @@ export const ordersRouter = createTRPCRouter({
                                 labels: { connectOrCreate: { where: { value: "Direct order" }, create: { value: "Direct order" } } },
                             }
                         },
+                        courseStatuses: {
+                            create: product.productItems.map(item => ({
+                                status: "OrderCreated",
+                                isPrivate: product.isPrivate,
+                                course: { connect: { id: item.courseId } },
+                                level: item.courseLevelId ? { connect: { id: item.courseLevelId } } : undefined,
+                                user: { connect: { id: studentId } },
+                            }))
+                        },
                         user: { connect: { id: studentId } },
                     },
                 }),
                 createOrderNote({ prisma: ctx.prisma, agentUserId, agentUserName, isPrivate: product.isPrivate, paymentLink, productName: product.name, studentId, studentName: user.name }),
-                ...product.productItems.map(item => createCourseStatus({ prisma: ctx.prisma, courseId: item.courseId, isPrivate: product.isPrivate, studentId, levelId: item.courseLevelId || undefined }))
             ])
 
             const currentTier = getCurrentTier()
@@ -207,11 +205,18 @@ export const ordersRouter = createTRPCRouter({
                                 labels: { connectOrCreate: { where: { value: "Direct order" }, create: { value: "Direct order" } } },
                             }
                         },
+                        courseStatuses: {
+                            create: {
+                                status: "OrderCreated",
+                                isPrivate,
+                                course: { connect: { id: courseId } },
+                                user: { connect: { id: studentId } },
+                            }
+                        },
                         user: { connect: { id: studentId } },
                     },
                 }),
                 createOrderNote({ prisma: ctx.prisma, agentUserId, agentUserName, isPrivate, paymentLink, productName: course.name, studentId, studentName: user.name }),
-                createCourseStatus({ prisma: ctx.prisma, courseId, isPrivate, studentId })
             ])
 
             const currentTier = getCurrentTier()
@@ -260,10 +265,17 @@ export const ordersRouter = createTRPCRouter({
                         course: courseId ? { connect: { id: courseId } } : undefined,
                         lead: { connect: { id: leadId } },
                         user: { connect: { id: studentId } },
+                        courseStatuses: {
+                            create: {
+                                status: "OrderCreated",
+                                isPrivate,
+                                course: { connect: { id: courseId } },
+                                user: { connect: { id: studentId } },
+                            }
+                        },
                     },
                 }),
                 createOrderNote({ prisma: ctx.prisma, agentUserId, agentUserName, isPrivate, paymentLink, productName: course.name, studentId, studentName: user.name }),
-                createCourseStatus({ prisma: ctx.prisma, courseId, isPrivate, studentId })
             ])
 
             const currentTier = getCurrentTier()
@@ -313,10 +325,18 @@ export const ordersRouter = createTRPCRouter({
                         product: productId ? { connect: { id: productId } } : undefined,
                         lead: { connect: { id: leadId } },
                         user: { connect: { id: studentId } },
+                        courseStatuses: {
+                            create: product.productItems.map(item => ({
+                                status: "OrderCreated",
+                                isPrivate: product.isPrivate,
+                                course: { connect: { id: item.courseId } },
+                                level: item.courseLevelId ? { connect: { id: item.courseLevelId } } : undefined,
+                                user: { connect: { id: studentId } },
+                            }))
+                        },
                     },
                 }),
                 createOrderNote({ prisma: ctx.prisma, agentUserId, agentUserName, isPrivate: product.isPrivate, paymentLink, productName: product.name, studentId, studentName: user.name }),
-                ...product.productItems.map(item => createCourseStatus({ prisma: ctx.prisma, courseId: item.courseId, isPrivate: product.isPrivate, studentId, levelId: item.courseLevelId || undefined }))
             ])
 
             const currentTier = getCurrentTier()

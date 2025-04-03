@@ -1,10 +1,9 @@
-import AppLayout from "@/components/layout/AppLayout";
-import { PaperContainer } from "@/components/ui/PaperContainers";
+import AppLayout from "@/components/pages/adminLayout/AppLayout";
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import Modal from "@/components/ui/modal";
-import ZoomGroupForm from "@/components/zoomGroupsComponents/Form";
-import ZoomGroupsClient from "@/components/zoomGroupsComponents/Client";
+import ZoomGroupForm from "@/components/admin/operationsManagement/zoomGroupsComponents/Form";
+import ZoomGroupsClient from "@/components/admin/operationsManagement/zoomGroupsComponents/Client";
 import { PlusIcon } from "lucide-react";
 import type { NextPage } from "next";
 import { useState } from "react";
@@ -34,9 +33,7 @@ const GroupsPage: NextPage = () => {
                             <ZoomGroupForm setIsOpen={setIsOpen}></ZoomGroupForm>
                         )}
                     />
-                    <PaperContainer>
-                        <ZoomGroupsClient />
-                    </PaperContainer>
+                    <ZoomGroupsClient />
                 </div>
             </main>
         </AppLayout>
