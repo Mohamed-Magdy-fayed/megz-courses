@@ -149,7 +149,7 @@ const AuthenticationPage = () => {
           </div>
         </div>
       </ScrollArea>
-      <Image className="object-contain lg:grid place-content-center h-[80vh] w-full hidden" src={authImage} alt="Image" width={500} height={500}></Image>
+      <Image className="object-contain lg:grid place-content-center h-[80vh] w-full hidden" src="/authImage.jpg" alt="Image" width={500} height={500}></Image>
       <div className="lg:col-span-2">
         <div className="grid place-content-center border-t border-t-muted pt-8">
           <Copyright />

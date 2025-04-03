@@ -1,5 +1,4 @@
 import Image from "next/image"
-import unauthorized_page from '../../../../public/svgs/unauthorized_page.svg'
 import { Typography } from "@/components/ui/Typoghraphy"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -13,7 +12,7 @@ const UnauthorizedAccess = () => {
                     <div className="text-center mb-4">
                         <Image
                             alt="Under development"
-                            src={unauthorized_page}
+                            src="/svgs/unauthorized_page.svg"
                             width={400}
                             height={400}
                         />
