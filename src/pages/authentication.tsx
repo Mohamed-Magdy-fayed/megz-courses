@@ -15,7 +15,6 @@ import Spinner from "@/components/ui/Spinner";
 import { hasPermission } from "@/server/permissions";
 import Link from "next/link";
 import Image from "next/image";
-import authImage from '../../public/authImage.jpg'
 
 const AuthenticationPage = () => {
   const defaultVariant = useRouter().query.variant as "login" | "register"
