@@ -13,7 +13,7 @@ const CoursesSection = () => {
     return (
         <div className="grid grid-cols-12">
             {isLoading && <div className="col-span-12 p-4 flex justify-center items-center"><Spinner /></div>}
-            {data?.courses && data.courses.slice(0, 6).map((course, i) => (
+            {data?.courses && data.courses.slice(0, 6).map(course => (
                 <LandingCourseCard
                     key={course.id}
                     course={course}

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
 import { leadsCodeGenerator } from "@/lib/utils";
 import { TRPCError } from "@trpc/server";
 import { hasPermission } from "@/server/permissions";
@@ -89,6 +89,23 @@ export const ordersRouter = createTRPCRouter({
                 include: {
                     user: true,
                     lead: { include: { assignee: { include: { user: true } } } },
+                    course: true,
+                    product: true,
+                },
+            });
+            return { order };
+        }),
+    getByOrderNumberPublic: publicProcedure
+        .input(
+            z.object({
+                orderNumber: z.string(),
+            })
+        )
+        .query(async ({ ctx, input: { orderNumber } }) => {
+            const order = await ctx.prisma.order.findFirst({
+                where: { orderNumber },
+                include: {
+                    user: true,
                     course: true,
                     product: true,
                 },

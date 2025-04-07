@@ -2,12 +2,14 @@ import { z } from "zod";
 import {
     createTRPCRouter,
     protectedProcedure,
+    publicProcedure,
 } from "@/server/api/trpc";
-import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
+import { TRPCError } from "@trpc/server";
 
 import { hasPermission } from "@/server/permissions";
 import { payOrder } from "@/server/actions/salesManagement/orders";
 import { orderPaymentEmail } from "@/server/actions/emails";
+import { ROOT_EMAIL } from "@/server/constants";
 
 export const paymentsRouter = createTRPCRouter({
     getById: protectedProcedure
@@ -61,6 +63,43 @@ export const paymentsRouter = createTRPCRouter({
     //             throw new TRPCError(getTRPCErrorFromUnknown(error))
     //         }
     //     }),
+    selfPayment: publicProcedure
+        .input(z.object({
+            paymentId: z.string(),
+            paymentAmount: z.number(),
+            orderNumber: z.string(),
+        }))
+        .mutation(async ({ input: { orderNumber, paymentAmount, paymentId }, ctx }) => {
+            const paymentExists = await ctx.prisma.payment.findMany({ where: { paymentId } })
+            if (paymentExists.length > 0) return { payment: null }
+
+            const order = await ctx.prisma.order.findFirst({ where: { orderNumber } })
+            if (!order) throw new TRPCError({ code: "BAD_REQUEST", message: "Order not found!" })
+            const rootUser = await ctx.prisma.user.findUnique({ where: { email: ROOT_EMAIL }, include: { SalesAgent: true } })
+            if (!rootUser?.SalesAgent?.id) throw new TRPCError({ code: "BAD_REQUEST", message: "Root agent not found!" })
+
+            const payment = await ctx.prisma.payment.create({
+                data: {
+                    paymentAmount,
+                    paymentId,
+                    order: { connect: { orderNumber } },
+                    user: { connect: { id: order.userId } },
+                    agent: { connect: { id: rootUser.SalesAgent.id } },
+                },
+                include: { order: { include: { payments: true, refunds: true } }, user: true }
+            });
+
+            if (!payment.order) throw new TRPCError({ code: "BAD_REQUEST", message: "No order for this payment!" })
+
+            await payOrder({ orderId: payment.order.id })
+
+            await orderPaymentEmail({
+                order: payment.order, payment, student: payment.user,
+                remainingAmount: payment.order.amount - payment.order.payments.reduce((a, b) => a + b.paymentAmount, 0) + payment.order.refunds.reduce((a, b) => a + b.refundAmount, 0)
+            })
+
+            return { payment };
+        }),
     create: protectedProcedure
         .input(z.object({
             paymentId: z.string().optional(),

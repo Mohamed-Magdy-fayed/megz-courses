@@ -69,7 +69,7 @@ export const PaymentForm = ({
     }
 
     useEffect(() => {
-        setIsMounted(true);
+        if (!isMounted) setIsMounted(true);
     }, []);
 
     if (!isMounted) return null;

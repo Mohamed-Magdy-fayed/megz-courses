@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Course } from '@prisma/client'
+import { Product } from '@prisma/client'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -11,15 +11,15 @@ import EnrollmentModal from './EnrollmentModal'
 import { api } from '@/lib/api'
 import { useSession } from 'next-auth/react'
 
-const LandingCourseCard = ({ course }: {
-    course: Course & {
+const LandingProductCard = ({ product }: {
+    product: Product & {
         _count: {
             orders: number;
-            levels: number;
+            productItems: number;
         };
     }
 }) => {
-    const imageUrl = !course.image ? "" : `url(${course.image})`
+    const imageUrl = !product.image ? "" : `url(${product.image})`
     const [open, setOpen] = useState(false)
     const { data: sessionData } = useSession()
 
@@ -32,78 +32,69 @@ const LandingCourseCard = ({ course }: {
 
     return (
         <div
-            key={course.id}
+            key={product.id}
             className="w-full col-span-12 p-4 md:col-span-6 lg:col-span-4"
         >
             <Card className="h-full flex flex-col rounded-md overflow-hidden">
                 <CardHeader className="p-0">
-                    {course.image ? (
+                    {product.image ? (
                         <div
                             style={{ backgroundImage: imageUrl }}
                             className={cn("grid place-content-center isolate after:content after:absolute after:inset-0 after:bg-muted/40 w-full h-24 rounded-b-none rounded-t-md relative bg-cover bg-center")}
                         >
-                            <Typography variant={"secondary"} className="text-background z-10">{course.name}</Typography>
+                            <Typography variant={"secondary"} className="text-background z-10">{product.name}</Typography>
                         </div>
                     ) : (
                         <Skeleton className="w-full h-24 rounded-b-none grid place-content-center">
-                            <Typography variant={"secondary"}>{course.name}</Typography>
+                            <Typography variant={"secondary"}>{product.name}</Typography>
                         </Skeleton>
                     )}
                 </CardHeader>
                 <CardContent className="p-4 space-y-4 flex-grow flex-col flex justify-between">
                     <div>
                         <Typography>
-                            {course.description || "No description"}
+                            {product.description || "No description"}
                         </Typography>
                     </div>
                     <div className="grid grid-cols-2 px-4 py-2 bg-muted/10 whitespace-nowrap">
-                        <Typography >{formatPrice(course.groupPrice)} / Level</Typography>
-                        <Typography className="text-success text-end">{course._count.levels} Levels</Typography>
+                        <Typography>
+                            {formatPrice(product.discountedPrice ?? product.price)}
+                            {" "}
+                            {product.discountedPrice && <span className='line-through text-destructive'>{formatPrice(product.price)}</span>}
+                        </Typography>
+                        <Typography className="text-success text-end">{product._count.productItems} Items</Typography>
                     </div>
                 </CardContent>
                 <CardFooter className="flex items-center justify-between">
-                    <Link href={`/student/courses/${course.slug}`}>
+                    <Link href={`/student/products/${product.id}`}>
                         <Button className="gap-2" customeColor={"infoIcon"}>
                             View
                             <BookOpen />
                         </Button>
                     </Link>
-                    {userQuery.data?.user?.courseStatus.some(status => status.courseId === course.id) ? (
-                        <Link href={`/student/my_courses/${userQuery.data.user.courseStatus.find(status => status.courseId === course.id)?.course.slug}`}>
-                            <Button>
-                                <Typography>
-                                    Go to courses
-                                </Typography>
-                                <BookOpenCheck />
-                            </Button>
-                        </Link>
-                    ) : (
-                        <>
-                            <EnrollmentModal
-                                target={{
-                                    type: "course",
-                                    id: course.id,
-                                    name: course.name,
-                                    groupPrice: course.groupPrice,
-                                    privatePrice: course.privatePrice,
-                                }}
-                                open={open}
-                                setOpen={setOpen}
-                            />
-                            <Button
-                                onClick={() => setOpen(true)}
-                            >
-                                <Typography>
-                                    Endoll Now!
-                                </Typography>
-                                <BookPlus />
-                            </Button>
-                        </>
-                    )}
+                    <EnrollmentModal
+                        target={{
+                            type: "product",
+                            id: product.id,
+                            name: product.name,
+                            price: product.price,
+                            discountedPrice: product.discountedPrice ?? 0,
+                        }}
+                        open={open}
+                        setOpen={setOpen}
+                    />
+                    <Button
+                        onClick={() => setOpen(true)}
+                    >
+                        <Typography>
+                            Endoll Now!
+                        </Typography>
+                        <BookPlus />
+                    </Button>
                 </CardFooter>
             </Card>
         </div>
     )
 }
 
-export default LandingCourseCard
+export default LandingProductCard

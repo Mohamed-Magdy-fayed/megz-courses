@@ -1,185 +1,137 @@
-import React, { Dispatch, FC, SetStateAction, useState } from 'react'
+import { Dispatch, SetStateAction, useMemo, useState } from 'react'
 import Modal from '@/components/ui/modal'
 import { Typography } from '@/components/ui/Typoghraphy'
-import { cn, formatPrice } from '@/lib/utils'
-import { Separator } from '@/components/ui/separator'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
-import { CreditCard } from 'lucide-react'
-import Spinner from '@/components/ui/Spinner'
-import { useSession } from 'next-auth/react'
+import { formatPercentage, formatPrice } from '@/lib/utils'
 import { api } from '@/lib/api'
 import { Course } from '@prisma/client'
-import { useRouter } from 'next/router'
-import { useToast } from '@/components/ui/use-toast'
-import MobileNumberInput from '@/components/ui/phone-number-input'
-import LoginModal from '@/components/general/modals/LoginModal'
-import ChatWithUs from '@/components/pages/landingPageComponents/ChatWithUs'
+import { EnrollmentForm } from '@/components/student/courses/EnrollmentForm'
+import OrderSummary from '@/components/student/courses/OrderSummary'
+import { SpinnerButton } from '@/components/ui/button'
+import { CheckCircle2Icon } from 'lucide-react'
+import { CreditCardIcon } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
+import Link from 'next/link'
+
+type EnrollmentTarget =
+    | { type: "course"; name: string; id: string; privatePrice: number; groupPrice: number }
+    | { type: "product"; name: string; id: string; price: number; discountedPrice: number };
 
 interface EnrollmentModalProps {
-    setOpen: Dispatch<SetStateAction<boolean>>
-    setLoading: Dispatch<SetStateAction<boolean>>
-    open: boolean
-    loading: boolean
-    course: Course
+    setOpen: Dispatch<SetStateAction<boolean>>;
+    open: boolean;
+    target: EnrollmentTarget;
 }
 
-const EnrollmentModal: FC<EnrollmentModalProps> = ({
-    course,
-    loading,
+const EnrollmentModal = ({
+    target,
     open,
-    setLoading,
     setOpen,
-}) => {
-    const enrollCourseMutation = api.selfServe.enrollCourse.useMutation()
-    const { toastError, toastSuccess } = useToast()
-    const router = useRouter()
-    const session = useSession()
-    const [loginModalOpen, setLoginModalOpen] = useState(false)
-    const [checkedAgreement, setcheckedAgreement] = useState(false)
-    const [isPrivate, setIsPrivate] = useState(false)
-    const [phone, setPhone] = useState("")
+}: EnrollmentModalProps) => {
+    const { data: setupData } = api.setup.getCurrentTier.useQuery();
 
-    const { data: setupData } = api.setup.getCurrentTier.useQuery()
+    const [checkedAgreement, setCheckedAgreement] = useState(false);
+    const [isPrivate, setIsPrivate] = useState(false);
+    const [submitTrigger, setSubmitTrigger] = useState<"PayNow" | "PayLater">();
 
-    const onEnroll = () => {
-        if (!session.data?.user.email || !session.data?.user.name) return setLoginModalOpen(true)
-        if (!session.data.user.phone && !phone) return toastError("Please add your phone number!")
-        setLoading(true)
-        enrollCourseMutation.mutate({
-            courseId: course.id,
-            phone,
-            customerName: session.data.user.name,
-            email: session.data.user.email,
-            isPrivate,
-        }, {
-            onSuccess: (data) => {
-                router.push(data.paymentLink)
-            },
-            onError: (e) => toastError(e.message),
-            onSettled: () => {
-                setLoading(false)
-                setOpen(false)
-            },
-        })
-    }
+    const hasOnlinePayment = useMemo(() => !!setupData?.tier.onlinePayment, [setupData]);
 
-    function onSubmitOrder() {
-        if (!session.data?.user.email || !session.data?.user.name) return setLoginModalOpen(true)
-        if (!session.data.user.phone && !phone) return toastError("Please add your phone number!")
-        setLoading(true)
-        enrollCourseMutation.mutate({
-            courseId: course.id,
-            phone,
-            customerName: session.data.user.name,
-            email: session.data.user.email,
-            isPrivate,
-        }, {
-            onSuccess: (data) => {
-                toastSuccess(`Order Number: ${data.order.orderNumber} created successfully, we will contact you soon!`)
-            },
-            onError: (e) => toastError(e.message),
-            onSettled: () => {
-                setLoading(false)
-                setOpen(false)
-            },
-        })
-    }
+    const summaryData = useMemo(() => {
+        let basePrice = 0;
+        let discountedPrice = 0;
+        if (target.type === "course") {
+            basePrice = isPrivate ? target.privatePrice : target.groupPrice;
+        } else {
+            basePrice = target.price;
+            discountedPrice = target.discountedPrice;
+        }
+
+        const price = formatPrice(basePrice);
+        const discount = basePrice - (discountedPrice ?? basePrice)
+        return {
+            price,
+            discountedPrice: formatPrice(discountedPrice ?? basePrice),
+            discountAmount: formatPrice(discount),
+            discountPercentage: formatPercentage(discount / basePrice * 100)
+        };
+    }, [target, isPrivate]);
 
     return (
-        <>
-            <LoginModal open={loginModalOpen} setOpen={setLoginModalOpen} />
-            <Modal
-                title="Confirm enrollment"
-                description="review your order before confirmation"
-                isOpen={open}
-                onClose={() => setOpen(false)}
-            >
-                <div>
-                    <div className="flex flex-col items-center justify-between p-4">
-                        <div className="self-start">
-                            <Typography variant={"secondary"}>{course.name}</Typography>
-                        </div>
-                        <div className="self-end">
-                            <Typography className={cn("", isPrivate && "text-info")}> {formatPrice(isPrivate ? course.privatePrice : course.groupPrice)}</Typography>                    </div>
-                        <div className="self-start">
-                            <Typography variant={"secondary"}>Do you need a private class?</Typography>
-                        </div>
-                        <div className="w-full">
-                            <Typography>note that prices might change!</Typography>
-                            <Checkbox
-                                id='isPrivate'
-                                className="float-right border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
-                                checked={isPrivate}
-                                onClick={() => setIsPrivate((prev) => !prev)}
-                            />
-                        </div>
+        <Modal
+            title={
+                <Typography variant="secondary">
+                    {target.type === "course" ? "Course" : "Product"} Name:{" "}
+                    <Typography className="text-primary">{target.name}</Typography>
+                </Typography>
+            }
+            description="Review your order before confirmation"
+            isOpen={open}
+            onClose={() => setOpen(false)}
+        >
+            <div className="grid md:grid-cols-2 gap-4">
+                {target.type === "course" ? (
+                    <EnrollmentForm
+                        type={target.type}
+                        courseId={target.id}
+                        submitTrigger={submitTrigger}
+                        setSubmitTrigger={setSubmitTrigger}
+                        setIsOpen={setOpen}
+                        hasOnlinePayment={hasOnlinePayment}
+                        setIsPrivate={setIsPrivate}
+                    />
+                ) : (
+                    <EnrollmentForm
+                        type={target.type}
+                        productId={target.id}
+                        submitTrigger={submitTrigger}
+                        setSubmitTrigger={setSubmitTrigger}
+                        setIsOpen={setOpen}
+                        hasOnlinePayment={hasOnlinePayment}
+                    />
+                )}
+                <div className="space-y-4">
+                    <OrderSummary {...summaryData} />
+                    <div className="flex items-center gap-2">
+                        <Checkbox
+                            id="checkedAgreement"
+                            className="border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                            checked={checkedAgreement}
+                            onClick={() => setCheckedAgreement((prev) => !prev)}
+                        />
+                        <Label htmlFor="checkedAgreement" className="leading-5 text-balance">
+                            By clicking Submit Order you agree to our{" "}
+                            <Link className="in-table-link" target="_blank" href="/privacy">
+                                Privacy Policy
+                            </Link>{" "}
+                            and{" "}
+                            <Link className="in-table-link" target="_blank" href="/terms">
+                                Terms of Use
+                            </Link>
+                        </Label>
                     </div>
-                    <div className="flex flex-col items-center justify-between p-4">
-                        <div className="self-start">
-                            <Typography variant={"secondary"}>Creating order for email:</Typography>
-                        </div>
-                        <div className="self-end">
-                            <Typography >{session.data?.user.email}</Typography>
-                        </div>
-                    </div>
-                    {session.data?.user.phone && (
-                        <div className="flex flex-col items-center justify-between p-4">
-                            <div className="self-start">
-                                <Typography variant={"secondary"}>Please add your phone number:</Typography>
-                            </div>
-                            <div className="self-end">
-                                <MobileNumberInput placeholder='01111111111' setValue={setPhone} value={phone} />
-                            </div>
-                        </div>
-                    )}
-                    <Separator />
-                    {setupData?.tier.onlinePayment ? (
-                        <div className="flex items-center gap-2">
-                            <Checkbox
-                                id="checkedAgreement"
-                                className="border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
-                                checked={checkedAgreement}
-                                onClick={() => setcheckedAgreement((prev) => !prev)}
-                            />
-                            <Label htmlFor="checkedAgreement">
-                                <Typography className="leading-5">
-                                    By clicking continue payment online you authorize our website to send you an email with the payment link
-                                </Typography>
-                            </Label>
-                        </div>
-                    ) : null}
-                    <div className="flex flex-col items-center justify-between p-4">
-                        {!setupData?.tier.onlinePayment ? (
-                            <Button
-                                disabled={!checkedAgreement || loading}
-                                onClick={onEnroll}
-                            >
-                                <Typography className={cn("", loading && "opacity-0")}>
-                                    Continue payment online
-                                </Typography>
-                                <CreditCard className={cn("", loading && "opacity-0")} />
-                                {loading && <Spinner className="w-4 h-4 absolute" />}
-                            </Button>
-                        ) : (
-                            <Button
-                                disabled={loading}
-                                onClick={onSubmitOrder}
-                            >
-                                <Typography className={cn("", loading && "opacity-0")}>
-                                    Submit Order
-                                </Typography>
-                                <CreditCard className={cn("", loading && "opacity-0")} />
-                                {loading && <Spinner className="w-4 h-4 absolute" />}
-                            </Button>
-                        )}
-                        <Separator className='my-4' />
-                        <ChatWithUs />
+                    <div className="grid gap-4">
+                        <SpinnerButton
+                            onClick={() => setSubmitTrigger("PayLater")}
+                            className="ml-auto"
+                            customeColor="foreground"
+                            isLoading={!!submitTrigger}
+                            disabled={!checkedAgreement}
+                            icon={CheckCircle2Icon}
+                            text="Pay Later"
+                        />
+                        <SpinnerButton
+                            onClick={() => setSubmitTrigger("PayNow")}
+                            className="ml-auto"
+                            isLoading={!!submitTrigger}
+                            disabled={!checkedAgreement}
+                            icon={CreditCardIcon}
+                            text="Continue To Payment"
+                        />
                     </div>
                 </div>
-            </Modal>
-        </>
+            </div>
+        </Modal>
+
     )
 }
 

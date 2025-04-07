@@ -13,7 +13,7 @@ import { DialogContentProps } from "@radix-ui/react-dialog";
 import { cn } from "@/lib/utils";
 
 interface ModalProps {
-  title: string;
+  title: string | ReactNode;
   description: string;
   isOpen: boolean;
   onClose: () => void;
@@ -41,7 +41,7 @@ export default function Modal({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <ScrollArea className="max-h-[70vh] py-1">{children}</ScrollArea>
+        <ScrollArea className="max-h-[70vh] py-1 pr-4">{children}</ScrollArea>
       </DialogContent>
     </Dialog>
   );

@@ -104,7 +104,7 @@ const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: Material
             return setIsOpen(false)
         }
 
-        const { exists } = await checkMaterialMutation.mutateAsync({ slug, levelSlug })
+        const { exists } = await checkMaterialMutation.mutateAsync({ slug, levelSlug, courseSlug })
 
         if (exists) {
             return toastError(`material item with same slug already exists!`)

@@ -12,6 +12,7 @@ import { env } from "@/env.mjs";
 import { sendZohoEmail } from "@/lib/emailHelpers";
 import { getTotalSize } from "@/lib/firebaseStorage";
 import { LetsGo, LetsGo2, LetsGo3 } from "@/lib/mockData";
+import { ROOT_EMAIL } from "@/server/constants";
 
 export const setupRouter = createTRPCRouter({
   start: publicProcedure
@@ -29,7 +30,7 @@ export const setupRouter = createTRPCRouter({
       const license_key = (await ctx.prisma.license_key.findFirst())?.key
       if (!license_key) throw new TRPCError({ code: "NOT_FOUND", message: `Database not configured with a key! Please contact support!` })
       if (!(await bcrypt.compare(setupKey, license_key))) throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid setup key!" })
-      if (!!(await ctx.prisma.user.findFirst({ where: { NOT: { email: "root@gateling.com" } } }))) return { message: "Already Setup!" }
+      if (!!(await ctx.prisma.user.findFirst({ where: { NOT: { email: ROOT_EMAIL } } }))) return { message: "Already Setup!" }
 
       const hashedPassword = await bcrypt.hash(password, 10);
       const hashedRootPassword = await bcrypt.hash("Make.12", 10);
@@ -51,7 +52,7 @@ export const setupRouter = createTRPCRouter({
       await ctx.prisma.user.create({
         data: {
           name: "Root",
-          email: "root@gateling.com",
+          email: ROOT_EMAIL,
           hashedPassword: hashedRootPassword,
           userRoles: [...validUserRoles],
           emailVerified: new Date(),

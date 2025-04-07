@@ -43,7 +43,7 @@ export interface TypographyProps
 }
 
 const Typography: React.FC<TypographyProps> = ({ className, variant, ...props }) => {
-  const Comp = variant === "primary" ? "h1" : variant === "secondary" ? "h2" : variant === "bodyText" ? "p" : variant === "pre" ? "pre" : "span"
+  const Comp = variant === "pre" ? "pre" : "span"
 
   return (
     <Comp

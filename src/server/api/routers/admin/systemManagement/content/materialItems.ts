@@ -195,12 +195,13 @@ export const materialItemsRouter = createTRPCRouter({
     .input(z.object({
       slug: z.string(),
       levelSlug: z.string(),
+      courseSlug: z.string(),
     }))
-    .mutation(async ({ ctx, input: { slug, levelSlug } }) => {
+    .mutation(async ({ ctx, input: { slug, levelSlug, courseSlug } }) => {
       if (!hasPermission(ctx.session.user, "courses", "update")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
 
       const materialItem = await ctx.prisma.materialItem.findFirst({
-        where: { slug, courseLevel: { slug: levelSlug } }
+        where: { slug, courseLevel: { slug: levelSlug,course:{slug: courseSlug} }, }
       });
 
       return {

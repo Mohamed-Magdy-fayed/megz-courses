@@ -83,8 +83,12 @@ export const coursesRouter = createTRPCRouter({
         orderBy: {
           createdAt: "desc",
         },
-        take: 7,
-        include: { orders: true, levels: true }
+        take: 6,
+        include: {
+          _count: {
+            select: { levels: true, orders: true }
+          }
+        }
       });
 
       return { courses };
@@ -99,7 +103,12 @@ export const coursesRouter = createTRPCRouter({
             mode: "insensitive"
           },
         },
-        include: { levels: true }
+        include: {
+          levels: true,
+          _count: {
+            select: { levels: true, orders: true }
+          }
+        }
       });
 
       return { courses };
@@ -228,6 +237,15 @@ export const coursesRouter = createTRPCRouter({
         },
       });
       return { course };
+    }),
+  getPreviewBySlug: publicProcedure
+    .input(
+      z.object({
+        slug: z.string(),
+      })
+    )
+    .query(async ({ ctx, input: { slug } }) => {
+      return await ctx.prisma.course.findUnique({ where: { slug }, include: { levels: { include: { materialItems: true, } } } })
     }),
   getLearningLayoutData: protectedProcedure
     .input(

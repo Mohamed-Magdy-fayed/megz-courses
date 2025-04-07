@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
     createTRPCRouter,
     protectedProcedure,
+    publicProcedure,
 } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 
@@ -9,7 +10,7 @@ import { hasPermission } from "@/server/permissions";
 import { productSchema } from "@/components/admin/systemManagement/products/ProductForm";
 
 export const productsRouter = createTRPCRouter({
-    getById: protectedProcedure
+    getById: publicProcedure
         .input(z.object({
             id: z.string()
         }))
@@ -18,10 +19,23 @@ export const productsRouter = createTRPCRouter({
                 where: { id },
                 include: {
                     orders: true,
+                    productItems: { include: { course: true, level: true } }
                 }
             });
 
             return { product };
+        }),
+    getLatest: publicProcedure
+        .query(async ({ ctx }) => {
+            const products = await ctx.prisma.product.findMany({
+                take: 6,
+                orderBy: { createdAt: "desc" },
+                include: {
+                    _count: true,
+                }
+            });
+
+            return { products };
         }),
     getAll: protectedProcedure
         .query(async ({ ctx }) => {
@@ -35,7 +49,7 @@ export const productsRouter = createTRPCRouter({
         }),
     create: protectedProcedure
         .input(productSchema)
-        .mutation(async ({ input: { isActive,isPrivate, name, price, description, discountedPrice }, ctx }) => {
+        .mutation(async ({ input: { isActive, isPrivate, name, price, description, discountedPrice }, ctx }) => {
             const product = await ctx.prisma.product.create({
                 data: {
                     isActive,
@@ -55,7 +69,7 @@ export const productsRouter = createTRPCRouter({
         .input(z.array(productSchema))
         .mutation(async ({ input, ctx }) => {
             const products = await ctx.prisma.$transaction(
-                input.map(({ isActive,isPrivate, name, price, description, discountedPrice }) => ctx.prisma.product.create({
+                input.map(({ isActive, isPrivate, name, price, description, discountedPrice }) => ctx.prisma.product.create({
                     data: {
                         isActive,
                         isPrivate,
@@ -76,7 +90,7 @@ export const productsRouter = createTRPCRouter({
         .mutation(
             async ({
                 ctx,
-                input: { id, isActive,isPrivate, name, price, description, discountedPrice },
+                input: { id, isActive, isPrivate, name, price, description, discountedPrice },
             }) => {
                 const product = await ctx.prisma.product.update({
                     where: {

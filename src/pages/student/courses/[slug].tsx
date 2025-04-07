@@ -9,32 +9,23 @@ import { api } from "@/lib/api"
 import { cn, formatPrice } from "@/lib/utils"
 import { format } from "date-fns"
 import { BookOpenCheck, BookPlus } from "lucide-react"
+import { useSession } from "next-auth/react"
 import Link from "next/link"
-import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
+import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 
-const CoursePage = () => {
-    const router = useRouter()
-    const slug = router.query.slug as string
+const CoursePage = ({ slug }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+    const { status } = useSession()
 
-    const courseQuery = api.courses.getBySlug.useQuery({ slug }, {
-        enabled: false,
-    })
+    const { data: course, refetch } = api.courses.getPreviewBySlug.useQuery({ slug })
     const userQuery = api.users.getCurrentUser.useQuery(undefined, {
-        enabled: false,
+        enabled: status === "authenticated",
     })
-
-    const course = courseQuery.data?.course
-    const level = courseQuery.data?.course?.levels[0]
 
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
 
-    useEffect(() => {
-        if (!slug) return
-        courseQuery.refetch()
-        userQuery.refetch()
-    }, [slug])
+    useEffect(() => { refetch() }, [slug])
 
     if (!course) return (
         <div className="w-screen h-screen grid place-content-center">
@@ -52,7 +43,7 @@ const CoursePage = () => {
                                 style={{ backgroundImage: `url("${course.image}")` || "" }}
                                 className={cn("grid px-8 py-20 place-content-center isolate after:content after:absolute after:inset-0 after:bg-muted/40 w-full rounded-b-none relative bg-cover bg-center")}
                             >
-                                <Typography className="z-10 text-background" variant={"secondary"}>{course.name}</Typography>
+                                <Typography className="z-10 text-background select-none" variant={"secondary"}>{course.name}</Typography>
                             </div>
                         </CardHeader>
                         <CardContent className="p-4 space-y-4">
@@ -82,10 +73,14 @@ const CoursePage = () => {
                             ) : (
                                 <>
                                     <EnrollmentModal
-                                        course={course}
-                                        loading={loading}
+                                        target={{
+                                            type: "course",
+                                            id: course.id,
+                                            name: course.name,
+                                            groupPrice: course.groupPrice,
+                                            privatePrice: course.privatePrice,
+                                        }}
                                         open={open}
-                                        setLoading={setLoading}
                                         setOpen={setOpen}
                                     />
                                     <Button
@@ -100,7 +95,7 @@ const CoursePage = () => {
                                     </Button>
                                 </>
                             )}
-                            <Typography variant={"secondary"} className="text-success">{formatPrice(course.groupPrice)}</Typography>
+                            <Typography variant={"secondary"} className="text-success">{formatPrice(course.groupPrice)} / Level</Typography>
                         </CardFooter>
                     </Card>
                 </div>
@@ -109,21 +104,31 @@ const CoursePage = () => {
                         <Typography variant={"primary"}>{course.name}</Typography>
                         <Typography>Added on {format(course.createdAt, "do MMM yyyy")}</Typography>
                     </div>
-                    {!level?.materialItems[0] ? (
+                    {!course.levels[0]?.materialItems[0] ? (
                         <div className="p-4 space-x-4">
-                            <Typography>{level?.materialItems.length} Materials</Typography>
+                            <Typography>0 Materials</Typography>
                             <Typography>-</Typography>
                             <Typography>
-                                {level?.materialItems[0]!?.title || "No Material"}
+                                No Material
                             </Typography>
                         </div>
-                    ) : !courseQuery.data?.course ? <Spinner /> : (
-                        <CourseShowcase course={courseQuery.data.course} />
+                    ) : !course ? <Spinner /> : (
+                        <CourseShowcase course={course} />
                     )}
                 </div>
             </div>
         </LandingLayout>
     )
+}
+
+export const getServerSideProps: GetServerSideProps<{ slug: string }> = async (ctx) => {
+    if (typeof ctx.query.slug !== "string") return { notFound: true }
+
+    return {
+        props: {
+            slug: ctx.query.slug,
+        }
+    }
 }
 
 export default CoursePage

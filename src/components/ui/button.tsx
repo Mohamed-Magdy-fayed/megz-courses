@@ -19,7 +19,7 @@ const buttonVariants = cva(
             },
             customeColor: {
                 background: "bg-background text-background-foreground",
-                foreground: "bg-foreground text-foreground-foreground",
+                foreground: "bg-foreground text-background hover:bg-foreground/90",
                 primary: "bg-primary text-primary-foreground hover:bg-primary-hover",
                 secondary: "bg-secondary text-secondary-foreground hover:bg-secondary-hover",
                 accent: "bg-accent text-accent-foreground hover:bg-accent-hover",

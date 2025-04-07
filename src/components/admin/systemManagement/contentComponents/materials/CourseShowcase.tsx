@@ -1,18 +1,13 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
-import { Course, CourseLevel, MaterialItem } from "@prisma/client";
-import { FC } from "react";
+import { Prisma } from "@prisma/client";
 
 type CourseShowcaseProps = {
-    course: Course & {
-        levels: (CourseLevel & {
-            materialItems: MaterialItem[];
-        })[];
-    };
+    course: Prisma.CourseGetPayload<{ include: { levels: { include: { materialItems: true } } } }>;
 }
 
-const CourseShowcase: FC<CourseShowcaseProps> = ({ course }) => {
+const CourseShowcase = ({ course }: CourseShowcaseProps) => {
     return (
         <div className="space-y-8 p-4 w-full">
             <div className="space-y-2">
@@ -27,22 +22,24 @@ const CourseShowcase: FC<CourseShowcaseProps> = ({ course }) => {
                         </AccordionTrigger>
                         <AccordionContent>
                             <Typography variant={"secondary"}>Materials Overview</Typography>
-                            {lvl.materialItems.map(item => (
-                                <div key={item.id} className="grid gap-2 border-primary border rounded-xl mt-2 p-2">
-                                    <Typography>{item.title}</Typography>
-                                    <Typography>{item.subTitle}</Typography>
-                                    <Typography>{item.type === "Manual" ? "Interactive Session" : "Downloadable Content"}</Typography>
-                                    <div className="grid">
+                            {lvl.materialItems.sort((a, b) => a.sessionOrder - b.sessionOrder).map(item => (
+                                <Card key={item.id} className="grid gap-2 rounded-xl mt-2 p-2">
+                                    <CardHeader>
+                                        <CardTitle>{item.title}</CardTitle>
+                                        <CardDescription>{item.subTitle}</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>{item.uploads.length}{" "}{item.type === "Manual" ? "Interactive Session" : "Downloadable Content"}</CardContent>
+                                    <CardFooter className="grid">
                                         {item.uploads.map(url => {
                                             const itemName = url.split(`${item.slug}%2F`)[1]?.split("?alt=")[0]
                                             return (
-                                                <Button variant={"link"} className="text-info">
-                                                    {itemName}
-                                                </Button>
+                                                <Typography key={url} className="in-table-link">
+                                                    {itemName || url}
+                                                </Typography>
                                             )
                                         })}
-                                    </div>
-                                </div>
+                                    </CardFooter>
+                                </Card>
                             ))}
                         </AccordionContent>
                     </AccordionItem>

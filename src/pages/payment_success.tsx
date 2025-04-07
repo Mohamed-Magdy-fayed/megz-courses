@@ -5,7 +5,7 @@ import { toastType, useToast } from "@/components/ui/use-toast"
 import { api } from "@/lib/api"
 import { createMutationOptions } from "@/lib/mutationsHelper"
 import Head from "next/head"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { GetServerSideProps, InferGetServerSidePropsType } from "next"
 import OrderReceipt from "@/components/admin/salesManagement/orders/OrderReceipt"
 import LandingLayout from "@/components/pages/landingPageComponents/LandingLayout"
@@ -36,11 +36,11 @@ export const getServerSideProps: GetServerSideProps<PaymentData> = async (contex
 
 export default function SuccessfullPaymentPage({ amount_cents, id, merchant_order_id, success }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     const { toast } = useToast()
+    const [isMounted, setIsMounted] = useState(false);
     const [loadingToast, setLoadingToast] = useState<toastType>()
 
-    const { data: siteData, refetch: refetchSiteData } = api.siteIdentity.getSiteIdentity.useQuery()
     const trpcUtils = api.useUtils()
-    const createMutation = api.payments.create.useMutation(
+    const createMutation = api.payments.selfPayment.useMutation(
         createMutationOptions({
             trpcUtils,
             loadingToast,
@@ -55,13 +55,13 @@ export default function SuccessfullPaymentPage({ amount_cents, id, merchant_orde
 
     const paymentAmount = useMemo(() => (Number(amount_cents) / 100), [amount_cents])
 
-    // useEffect(() => {
-    //     if (!siteData?.siteIdentity.logoPrimary) {
-    //         refetchSiteData()
-    //         return
-    //     }
-    //     createMutation.mutate({ orderId, paymentAmount: , paymentId: id })
-    // }, [merchant_order_id, id, siteData?.siteIdentity.logoPrimary])
+    useEffect(() => {
+        if (!isMounted) setIsMounted(true);
+    }, []);
+
+    useEffect(() => {
+        if (isMounted) createMutation.mutate({ orderNumber: merchant_order_id, paymentAmount, paymentId: id })
+    }, [isMounted])
 
     return (
         <LandingLayout>

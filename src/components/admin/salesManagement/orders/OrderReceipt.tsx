@@ -21,7 +21,7 @@ interface OrderReceiptProps {
 const OrderReceipt: FC<OrderReceiptProps> = ({ orderNumber, adminView }) => {
     const { toastSuccess } = useToast()
 
-    const { data: orderData, isLoading, isError, error } = api.orders.getByOrderNumber.useQuery({ orderNumber })
+    const { data: orderData, isLoading, isError, error } = api.orders.getByOrderNumberPublic.useQuery({ orderNumber })
 
     const printRef = useRef<HTMLDivElement>(null);
 

@@ -1,0 +1,1 @@
+export const ROOT_EMAIL = "root@gateling.com"

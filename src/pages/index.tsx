@@ -4,6 +4,7 @@ import HeroSection from "@/components/pages/landingPageComponents/HeroSection";
 import LandingLayout from "@/components/pages/landingPageComponents/LandingLayout";
 import LandingSectionSeparator from "@/components/pages/landingPageComponents/LandingSectionSeparator";
 import OurTeamSection from "@/components/pages/landingPageComponents/OurTeamSection";
+import ProductsSection from "@/components/pages/landingPageComponents/ProductsSection";
 import { Star } from "lucide-react";
 
 const Page = () => {
@@ -17,6 +18,13 @@ const Page = () => {
         titleIcons={<Star />}
       />
       <CoursesSection />
+      <LandingSectionSeparator
+        images={`lg:bg-[url('../../public/courses_horiz.png')] bg-[url('../../public/courses_vert.png')]`}
+        title="Latest Products"
+        subTitle="Discover our packages!"
+        titleIcons={<Star />}
+      />
+      <ProductsSection />
       <LandingSectionSeparator
         images={`lg:bg-[url('../../public/team_section_large.png')] bg-[url('../../public/team_section_small.png')]`}
         title="Our Team"

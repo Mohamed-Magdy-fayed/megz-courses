@@ -147,6 +147,6 @@ export async function refundOrder({ orderId }: { orderId: string; }) {
             },
         })
     } else {
-        await prisma.order.update({ where: { id: orderId }, data: { status: "Pending" } })
+        await prisma.order.update({ where: { id: orderId }, data: { status: await isOrderFullyPaid({ orderId }) ? "Paid" : "Pending" } })
     }
 }
