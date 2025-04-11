@@ -24,13 +24,14 @@ function SchedulePlacementTestModalContent() {
     const { toast } = useToast()
     const { data: testersData } = api.trainers.getAvialableTesters.useQuery({ startTime: testTime! }, { enabled: !!testTime })
     const { data: zoomClients } = api.zoomAccounts.getZoomAccounts.useQuery();
-    const { data: coursesData, isLoading } = api.courses.getAll.useQuery()
+    const { data: courses, isLoading } = api.courses.getSimpleAll.useQuery()
 
     const trpcUtils = api.useUtils()
     const courseQuery = api.courses.getById.useQuery({ id: courseId || "" }, { enabled: !!courseId })
 
     const checkExistingPlacementTestMutation = api.placementTests.checkExistingPlacementTest.useMutation()
     const createPlacementTestMutation = api.placementTests.createPlacementTest.useMutation()
+    const sendTestCommsMutation = api.placementTests.sendTestComms.useMutation()
     const deletePlacementTestMutation = api.placementTests.deletePlacementTest.useMutation()
     const createMeetingMutation = api.zoomMeetings.createMeeting.useMutation()
     const getAvialableClientMutation = api.zoomAccounts.getAvailableZoomClient.useMutation()
@@ -54,8 +55,21 @@ function SchedulePlacementTestModalContent() {
             const { data } = await courseQuery.refetch()
             const courseId = data?.course?.id
             const courseName = data?.course?.name
+            const courseSlug = data?.course?.slug || ""
             const evaluationFormId = data?.course?.systemForms.find(form => form.type === "PlacementTest")?.id
-            if (!userId || !courseId || !courseName || !evaluationFormId) return innerLoadingToast.update({ id: innerLoadingToast.id, title: "Error", action: undefined, variant: "destructive", description: "No order found!" })
+            const showError = (message: string) =>
+                innerLoadingToast.update({
+                    id: innerLoadingToast.id,
+                    title: "Error",
+                    variant: "destructive",
+                    action: undefined,
+                    description: message,
+                });
+
+            if (!userId) return showError("User ID is missing!");
+            if (!courseId) return showError("Course ID is missing!");
+            if (!courseName) return showError("Course name is missing!");
+            if (!evaluationFormId) return showError("Evaluation form ID is missing!");
 
             const { zoomClient } = await getAvialableClientMutation.mutateAsync({ startDate: testDate, isTest: true })
             const zoomClientId = zoomClient.id
@@ -85,6 +99,15 @@ function SchedulePlacementTestModalContent() {
                 isZoom: zoomClient.isZoom,
             })
 
+            await sendTestCommsMutation.mutateAsync({
+                courseSlug,
+                studentEmail: placementTest.student.email,
+                studentName: placementTest.student.name,
+                studentPhone: placementTest.student.phone,
+                testerName: placementTest.tester.user.name,
+                testTime,
+            })
+
             await trpcUtils.invalidate()
 
             innerLoadingToast.update({
@@ -99,6 +122,7 @@ function SchedulePlacementTestModalContent() {
             setLoadingToast(undefined)
         } catch (error: any) {
             innerLoadingToast.update({ id: innerLoadingToast.id, title: "Error", action: undefined, variant: "destructive", description: error.message })
+        } finally {
             innerLoadingToast.dismissAfter()
             setLoadingToast(undefined)
         }
@@ -107,14 +131,14 @@ function SchedulePlacementTestModalContent() {
     return (
         <div className="space-y-4 p-2">
             <SingleSelectField
-                data={coursesData?.courses.map(course => ({
+                data={courses?.map(course => ({
                     Active: true,
                     label: course.name,
                     value: course.id,
                     customLabel: (
                         <div className="flex items-center whitespace-nowrap justify-between w-full gap-4">
                             <Typography>{course.name}</Typography>
-                            <Typography className="text-xs">Waiting: {getOrderPaidList(course)}</Typography>
+                            <Typography className="text-xs">Waiting: {getOrderPaidList(course.courseStatus, course.id)}</Typography>
                         </div>
                     ),
                 })) || []}
@@ -126,8 +150,7 @@ function SchedulePlacementTestModalContent() {
             />
             {courseId &&
                 <SingleSelectField
-                    data={coursesData?.courses
-                        .find(c => c.id === courseId)?.courseStatus
+                    data={courses?.find(c => c.id === courseId)?.courseStatus
                         .filter(s => !s.courseLevelId && s.status === "OrderPaid")
                         .filter((stat, index, self) => index === self.findIndex(({ userId }) => stat.userId === userId))
                         .map(stat => {

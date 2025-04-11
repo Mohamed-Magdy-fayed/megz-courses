@@ -2,6 +2,7 @@ import { env } from "@/env.mjs";
 import { generateCertificateId } from "@/lib/certificatesHelpers";
 import { validSystemFormTypes } from "@/lib/enumsTypes";
 import { getSubmissionScore } from "@/lib/utils";
+import { sendCertificateComms } from "@/server/actions/emails";
 import {
     createTRPCRouter,
     protectedProcedure,
@@ -151,7 +152,8 @@ export const systemFormSubmissionsRouter = createTRPCRouter({
                         user: { connect: { id: userId } },
                         course: { connect: { slug: courseSlug } },
                         courseLevel: { connect: { id: levelId } },
-                    }
+                    },
+                    include: { courseLevel: { select: { slug: true } }, course: { select: { name: true } } }
                 })
 
                 await ctx.prisma.userNote.create({
@@ -161,13 +163,21 @@ export const systemFormSubmissionsRouter = createTRPCRouter({
                         title: `Student final test submitted with score ${submission.totalScore}`,
                         type: "Info",
                         messages: [{
-                            message: `Final test submitted and user certificate was Created ${certificate.certificateId}\nCertificate URL: ${env.NEXTAUTH_URL}certificates/${certificate.certificateId}`,
+                            message: `Final test submitted and user certificate was Created ${certificate.certificateId}\nCertificate URL: ${env.NEXTAUTH_URL}student/certificates/${certificate.certificateId}`,
                             updatedAt: new Date(),
                             updatedBy: "System"
                         }],
                         createdByUser: { connect: { id: ctx.session.user.id } },
                         createdForStudent: { connect: { id: user.id } }
                     }
+                })
+
+                await sendCertificateComms({
+                    certificateLink: `${env.NEXTAUTH_URL}student/my_courses/${courseSlug}/${certificate.courseLevel?.slug}/certificate`,
+                    courseName: certificate.course.name,
+                    studentEmail: user.email,
+                    studentName: user.name,
+                    studentPhone: user.phone,
                 })
             }
 

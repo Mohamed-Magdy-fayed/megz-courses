@@ -4,8 +4,10 @@ import { Typography } from "@/components/ui/Typoghraphy";
 import Link from "next/link";
 import { isTimePassed } from "@/lib/utils";
 import { format } from "date-fns";
-import { SeverityPill, SeverityPillProps } from "@/components/ui/SeverityPill";
+import { SeverityPill } from "@/components/ui/SeverityPill";
 import { preMeetingLinkConstructor } from "@/lib/meetingsHelpers";
+import { CourseStatuses } from "@prisma/client";
+import { validCourseStatusesColors } from "@/lib/enumColors";
 
 export type MyCoursesRow = {
   id: string;
@@ -17,7 +19,7 @@ export type MyCoursesRow = {
   score: string;
   isOralTestScheduled: boolean;
   oralTestTime: Date;
-  status: string;
+  status: CourseStatuses;
   group?: {
     userName: string;
     userEmail: string;
@@ -81,14 +83,9 @@ export const myCoursesColumns: ColumnDef<MyCoursesRow>[] = [
     header: "Status",
     cell: ({ row }) => {
       const status = row.original.status
-      const color: SeverityPillProps["color"] =
-        status === "Waiting Placement Test" ? "info"
-          : status === "Need Submission" ? "primary"
-            : status === "Oral Test No Scheduled" ? "destructive"
-              : "success"
       if (status)
         return (
-          <SeverityPill className="max-w-fit p-2" color={color}>{status}</SeverityPill>
+          <SeverityPill className="max-w-fit p-2" color={validCourseStatusesColors(status)}>{status}</SeverityPill>
         )
     },
   },

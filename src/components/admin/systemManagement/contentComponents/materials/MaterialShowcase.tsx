@@ -56,9 +56,6 @@ const MaterialShowcase: FC<MaterialShowcaseProps> = ({ materialItem, course }) =
             pathQuery
         );
 
-        console.log(pathQuery);
-
-
         setLoading(true)
         listAll(storageRef).then((data) => {
             setItems(data.items);

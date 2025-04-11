@@ -9,6 +9,7 @@ import { sendWhatsAppMessage } from "@/lib/whatsApp";
 import { createMeeting, generateToken, getMeetingDetails, getUserRooms } from "@/lib/onMeetingApi";
 import { ZoomClient } from "@prisma/client";
 import { hasPermission } from "@/server/permissions";
+import { placementTestScheduledComms } from "@/server/actions/emails";
 
 export const placementTestsRouter = createTRPCRouter({
     getUserCoursePlacementTest: protectedProcedure
@@ -115,7 +116,7 @@ export const placementTestsRouter = createTRPCRouter({
                         }
                     },
                 },
-                include: { writtenTest: true, student: true }
+                include: { writtenTest: true, student: true, tester: { include: { user: true } } }
             })
 
             const courseStatus = await ctx.prisma.courseStatus.findFirst({ where: { userId, courseId }, select: { id: true } })
@@ -123,6 +124,18 @@ export const placementTestsRouter = createTRPCRouter({
             await ctx.prisma.courseStatus.update({ where: { id: courseStatus?.id }, data: { status: "PlacementTest" } })
 
             return { placementTest }
+        }),
+    sendTestComms: protectedProcedure
+        .input(z.object({
+            courseSlug: z.string().min(1, 'Course slug is required'),
+            studentName: z.string().min(1, 'Student name is required'),
+            studentEmail: z.string().email('Invalid email address'),
+            studentPhone: z.string().min(7, 'Phone number is too short'),
+            testTime: z.date(),
+            testerName: z.string().min(1, 'Tester name is required'),
+        }))
+        .mutation(async ({ input: { courseSlug, studentEmail, studentName, studentPhone, testTime, testerName } }) => {
+            return await placementTestScheduledComms({ courseSlug, studentEmail, studentName, studentPhone, testerName, testTime })
         }),
     deletePlacementTest: protectedProcedure
         .input(z.object({

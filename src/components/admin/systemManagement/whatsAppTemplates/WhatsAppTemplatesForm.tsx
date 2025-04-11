@@ -6,20 +6,20 @@ import { toastType, useToast } from "@/components/ui/use-toast";
 import { api } from "@/lib/api";
 import { createMutationOptions } from "@/lib/mutationsHelper";
 import { PlusSquare } from "lucide-react";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MessageTemplate } from "@prisma/client";
+import { MessageTemplateRow } from "@/components/admin/systemManagement/whatsAppTemplates/WhatsappTemplatesColumn";
 
 export const formSchema = z.object({
     name: z.string().min(1, "Template name is required"),
-    body: z.string().min(1, "Template body is required").max(500, "Template body is too long"),
+    body: z.string().min(1, "Template body is required").max(1000, "Template body is too long"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-const WhatsAppTemplatesForm = ({ setIsOpen, initialData }: { setIsOpen: Dispatch<SetStateAction<boolean>>, initialData?: Partial<MessageTemplate> }) => {
+const WhatsAppTemplatesForm = ({ setIsOpen, initialData }: { setIsOpen: Dispatch<SetStateAction<boolean>>, initialData?: Pick<MessageTemplateRow, "id" | "name" | "body"> }) => {
     const { toast } = useToast();
     const [loadingToast, setLoadingToast] = useState<toastType>();
 
@@ -45,8 +45,22 @@ const WhatsAppTemplatesForm = ({ setIsOpen, initialData }: { setIsOpen: Dispatch
             },
         })
     );
+    const editTemplateMutation = api.whatsAppTemplates.editMessageTemplate.useMutation(
+        createMutationOptions({
+            loadingToast,
+            setLoadingToast,
+            toast,
+            trpcUtils,
+            loadingMessage: "Saving template...",
+            successMessageFormatter: ({ updatedMessageTemplate }) => {
+                setIsOpen(false);
+                return `Template "${updatedMessageTemplate.name}" Updated successfully`;
+            },
+        })
+    );
 
     const handleCreate = (data: FormValues) => {
+        if (!!initialData) return editTemplateMutation.mutate({ ...data, id: initialData.id })
         addTemplateMutation.mutate(data);
     };
 
@@ -87,23 +101,6 @@ const WhatsAppTemplatesForm = ({ setIsOpen, initialData }: { setIsOpen: Dispatch
                         </FormItem>
                     )}
                 />
-
-                {initialData?.placeholders && (
-                    <div className="p-4">
-                        <FormLabel>Placeholders</FormLabel>
-                        <div className="space-y-1">
-                            {initialData.placeholders.length > 0 ? (
-                                initialData.placeholders.map((placeholder, index) => (
-                                    <p key={index} className="text-sm text-muted">
-                                        {placeholder}
-                                    </p>
-                                ))
-                            ) : (
-                                <p className="text-sm text-muted">No placeholders detected.</p>
-                            )}
-                        </div>
-                    </div>
-                )}
 
                 <div className="flex justify-end">
                     <SpinnerButton

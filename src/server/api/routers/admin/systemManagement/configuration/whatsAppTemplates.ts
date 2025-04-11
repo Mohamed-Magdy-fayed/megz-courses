@@ -88,7 +88,6 @@ export const whatsAppTemplatesRouter = createTRPCRouter({
                 data: {
                     name,
                     body,
-                    placeholders: [],
                 },
             });
 

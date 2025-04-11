@@ -9,7 +9,7 @@ const AssignmentPage: NextPage = () => {
     const router = useRouter()
     const courseSlug = router.query.courseSlug as string
     const slug = router.query.slug as string
-    const type: SystemFormTypes | undefined = router.query.formType === "Assignment" ? "Assignment" : router.query.formType === "Quiz" ? "Quiz" : undefined
+    const type: SystemFormTypes | undefined = router.query.formType === "assignment" ? "Assignment" : router.query.formType === "quiz" ? "Quiz" : undefined
 
     if (!type) return (
         <LearningLayout>

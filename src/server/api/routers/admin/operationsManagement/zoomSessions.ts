@@ -9,10 +9,9 @@ import { format } from "date-fns";
 import { EmailsWrapper } from "@/components/general/emails/EmailsWrapper";
 import SessionUpdatedEmail from "@/components/general/emails/SessionUpdated";
 import { sendZohoEmail } from "@/lib/emailHelpers";
-import { env } from "@/env.mjs";
-import { meetingLinkConstructor } from "@/lib/meetingsHelpers";
 import { sendWhatsAppMessage } from "@/lib/whatsApp";
 import { hasPermission } from "@/server/permissions";
+import { handleSessionStatusUpdate } from "@/server/actions/zoomSessions/sessionsActions";
 
 export const zoomSessionsRouter = createTRPCRouter({
     getAllSessions: protectedProcedure
@@ -99,73 +98,37 @@ export const zoomSessionsRouter = createTRPCRouter({
                 include: {
                     materialItem: { include: { systemForms: true } },
                     zoomGroup: { include: { zoomSessions: true, students: true, course: true, courseLevel: true } },
+                    zoomClient: { select: { isZoom: true } },
                 }
             })
 
             const zoomGroup = updatedSession.zoomGroup
-            if (!zoomGroup || !zoomGroup.courseId || !zoomGroup.courseLevelId) return { updatedSession }
+            const course = updatedSession.zoomGroup?.course
+            const level = updatedSession.zoomGroup?.courseLevel
+            const material = updatedSession.materialItem
+            if (!zoomGroup || !course || !level || !material) return { updatedSession }
 
             const isAllSessionsScheduled = !zoomGroup.zoomSessions.some(session => session.sessionStatus === "Completed")
-            if (sessionStatus === "Ongoing" && isAllSessionsScheduled) {
-                await ctx.prisma.zoomGroup.update({
-                    where: { id: zoomGroup.id },
-                    data: {
-                        groupStatus: "Active"
-                    }
-                })
-                await ctx.prisma.courseStatus.updateMany({
-                    where: {
-                        AND: {
-                            userId: { in: zoomGroup.studentIds },
-                            courseId: zoomGroup.courseId,
-                            courseLevelId: zoomGroup.courseLevelId,
-                        }
-                    },
-                    data: {
-                        status: "Ongoing"
-                    }
-                })
-            }
-
             const isAllSessionsCompleted = zoomGroup.zoomSessions.every(session => session.sessionStatus === "Completed")
-            if (sessionStatus === "Completed" && isAllSessionsCompleted) {
-                await ctx.prisma.zoomGroup.update({
-                    where: { id: zoomGroup.id },
-                    data: {
-                        groupStatus: "Completed"
-                    }
-                })
-                await ctx.prisma.courseStatus.updateMany({
-                    where: {
-                        AND: {
-                            userId: { in: zoomGroup.studentIds },
-                            courseId: zoomGroup.courseId,
-                            courseLevelId: zoomGroup.courseLevelId,
-                        }
-                    },
-                    data: {
-                        status: "Completed"
-                    }
-                })
+            const nextSession = zoomGroup.zoomSessions
+                .filter(s => s.sessionDate > updatedSession.sessionDate && s.sessionStatus !== "Completed")
+                .sort((a, b) => a.sessionDate.getTime() - b.sessionDate.getTime())[0];
 
-                await Promise.all(zoomGroup.students.map(async st => {
-                    await ctx.prisma.userNote.create({
-                        data: {
-                            sla: 0,
-                            status: "Closed",
-                            title: `Student group Completed and final test unlocked`,
-                            type: "Info",
-                            messages: [{
-                                message: `Group ${zoomGroup.groupNumber} Completed and the Student have been granted access to the final test.`,
-                                updatedAt: new Date(),
-                                updatedBy: "System"
-                            }],
-                            createdByUser: { connect: { id: ctx.session.user.id } },
-                            createdForStudent: { connect: { id: st.id } }
-                        }
-                    })
-                }))
-            }
+            await handleSessionStatusUpdate({
+                course,
+                currentUserId: ctx.session.user.id,
+                isAllSessionsCompleted,
+                isAllSessionsScheduled,
+                isZoom: !!updatedSession.zoomClient?.isZoom,
+                level,
+                material,
+                nextSession,
+                prisma: ctx.prisma,
+                sessionStatus,
+                students: zoomGroup.students,
+                updatedSession,
+                zoomGroup,
+            })
 
             return { updatedSession }
         }),
@@ -196,80 +159,37 @@ export const zoomSessionsRouter = createTRPCRouter({
                 include: {
                     materialItem: { include: { systemForms: true } },
                     zoomGroup: { include: { zoomSessions: true, students: true, course: true, courseLevel: true } },
+                    zoomClient: { select: { isZoom: true } },
                 }
             })
 
             const zoomGroup = updatedSession.zoomGroup
-            if (!zoomGroup || !zoomGroup.courseId || !zoomGroup.courseLevelId) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "didn't find the zoom group" })
+            const course = updatedSession.zoomGroup?.course
+            const level = updatedSession.zoomGroup?.courseLevel
+            const material = updatedSession.materialItem
+            if (!zoomGroup || !course || !level || !material) return { updatedSession }
 
             const isAllSessionsScheduled = !zoomGroup.zoomSessions.some(session => session.sessionStatus === "Completed")
-            if (sessionStatus === "Ongoing" && isAllSessionsScheduled) {
-                await ctx.prisma.zoomGroup.update({
-                    where: { id: zoomGroup.id },
-                    data: {
-                        groupStatus: "Active"
-                    }
-                })
-                await ctx.prisma.courseStatus.updateMany({
-                    where: {
-                        AND: {
-                            userId: { in: zoomGroup.studentIds },
-                            courseId: zoomGroup.courseId,
-                            courseLevelId: zoomGroup.courseLevelId,
-                        }
-                    },
-                    data: {
-                        status: "Ongoing"
-                    }
-                })
-            }
-
             const isAllSessionsCompleted = zoomGroup.zoomSessions.every(session => session.sessionStatus === "Completed")
-            if (sessionStatus === "Completed" && isAllSessionsCompleted) {
-                await ctx.prisma.zoomGroup.update({
-                    where: { id: zoomGroup.id },
-                    data: {
-                        groupStatus: "Completed"
-                    }
-                })
-                await ctx.prisma.courseStatus.updateMany({
-                    where: {
-                        AND: {
-                            userId: { in: zoomGroup.studentIds },
-                            courseId: zoomGroup.courseId,
-                            courseLevelId: zoomGroup.courseLevelId,
-                        }
-                    },
-                    data: {
-                        status: "Completed"
-                    }
-                })
+            const nextSession = zoomGroup.zoomSessions
+                .filter(s => s.sessionDate > updatedSession.sessionDate && s.sessionStatus !== "Completed")
+                .sort((a, b) => a.sessionDate.getTime() - b.sessionDate.getTime())[0];
 
-                await Promise.all(zoomGroup.students.map(async st => {
-                    await ctx.prisma.userNote.create({
-                        data: {
-                            sla: 0,
-                            status: "Closed",
-                            title: `Student group Completed and final test unlocked`,
-                            type: "Info",
-                            messages: [{
-                                message: `Group ${zoomGroup.groupNumber} Completed and the Student have been granted access to the final test.`,
-                                updatedAt: new Date(),
-                                updatedBy: "System"
-                            }],
-                            createdByUser: { connect: { id: ctx.session.user.id } },
-                            createdForStudent: { connect: { id: st.id } }
-                        }
-                    })
-                }))
-            }
-
-            const sessionLink = `${env.NEXTAUTH_URL}${meetingLinkConstructor({
-                meetingNumber: updatedSession.zoomGroup?.meetingNumber || "",
-                meetingPassword: updatedSession.zoomGroup?.meetingPassword || "",
-                sessionTitle: updatedSession.materialItem?.title || "",
-                sessionId: updatedSession.id,
-            })}`
+            await handleSessionStatusUpdate({
+                course,
+                currentUserId: ctx.session.user.id,
+                isAllSessionsCompleted,
+                isAllSessionsScheduled,
+                isZoom: !!updatedSession.zoomClient?.isZoom,
+                level,
+                material,
+                nextSession,
+                prisma: ctx.prisma,
+                sessionStatus,
+                students: zoomGroup.students,
+                updatedSession,
+                zoomGroup,
+            })
 
             if (
                 updatedSession.sessionDate.getDate() !== originalSession?.sessionDate.getDate()
@@ -282,14 +202,13 @@ export const zoomSessionsRouter = createTRPCRouter({
                         prisma: ctx.prisma,
                         props: {
                             sessionDate: format(updatedSession.sessionDate, "PPPp"),
-                            sessionLink: sessionLink,
                             studentName: student.name,
                             studentEmail: student.email,
                         }
                     })
 
                     sendZohoEmail({ html, email: student.email, subject: "A session date has been updated" })
-                    sendWhatsAppMessage({ prisma: ctx.prisma, toNumber: student.phone, type: "SessionUpdated", variables: { name: student.name, newTime: format(updatedSession?.sessionDate, "PPPp"), oldTime: format(originalSession?.sessionDate || new Date(), "PPPp"), sessionLink } })
+                    sendWhatsAppMessage({ prisma: ctx.prisma, toNumber: student.phone, type: "SessionUpdated", variables: { name: student.name, courseName: course.name, newTime: format(updatedSession?.sessionDate, "PPPp"), oldTime: format(originalSession?.sessionDate || new Date(), "PPPp") } })
                 })
             }
 

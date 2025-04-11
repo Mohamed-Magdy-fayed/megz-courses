@@ -1,5 +1,5 @@
 import { env } from "@/env.mjs";
-import { MessageTemplate, MessageTemplateType, PrismaClient } from "@prisma/client";
+import { MessageTemplate, MessageTemplateType, PrismaClient, MessageTemplateButton } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import axios from "axios";
 
@@ -17,15 +17,45 @@ export async function sendWhatsAppMessage<T extends MessageTemplateType>({ toNum
     if (!metaClient) return { success: false, error: "Whatsapp not configured!" };
 
     const messageBody = populateMessageBody({ type, body: template?.body, variables })
-    const data = JSON.stringify({
-        messaging_product: "whatsapp",
-        to: toNumber,
-        type: "text",
-        text: {
-            preview_url: true,
-            body: messageBody,
-        },
-    });
+
+    let data: string;
+
+    if (template.button) {
+        data = JSON.stringify({
+            messaging_product: "whatsapp",
+            to: toNumber,
+            type: "interactive",
+            interactive: {
+                type: "cta_url",
+                body: { text: messageBody },
+                action: {
+                    name: "cta_url",
+                    parameters: {
+                        display_text: template.button.text,
+                        url: variables[template.button.url as keyof typeof variables]
+                    }
+                },
+            },
+        });
+    } else if (template.document) {
+        data = JSON.stringify({
+            messaging_product: "whatsapp",
+            to: toNumber,
+            type: "document",
+            document: {
+                link: variables[template.document.link as keyof typeof variables],
+                caption: populateMessageBody({ body: template.document.caption, type, variables }),
+                filename: variables[template.document.filename as keyof typeof variables],
+            },
+        });
+    } else {
+        data = JSON.stringify({
+            messaging_product: "whatsapp",
+            to: toNumber,
+            type: "text",
+            text: { preview_url: true, body: messageBody },
+        });
+    }
 
     const config = {
         method: "post",
@@ -35,19 +65,16 @@ export async function sendWhatsAppMessage<T extends MessageTemplateType>({ toNum
             "Content-Type": "application/json",
             Authorization: `Bearer ${metaClient.accessToken}`,
         },
-        data: data,
+        data,
     };
 
     try {
         const response = await axios.request(config);
-
-        if (response.status === 200) {
-            return { success: true, toNumber, messageBody };
-        } else {
-            return { success: false, toNumber, messageBody };
-        }
+        return response.status === 200
+            ? { success: true, toNumber, messageBody }
+            : { success: false, toNumber, messageBody };
     } catch (error) {
-        console.error("WhatsApp API not Active - ", { toNumber, messageBody });
+        console.error("WhatsApp API Error", { toNumber, messageBody });
         return { success: false, error };
     }
 }
@@ -180,6 +207,12 @@ const messageTemplates = [
         placeholders: ['name', 'originalDate', 'newDate', 'meetingLink'],
     },
     {
+        name: 'Placement Test Result',
+        type: MessageTemplateType.PlacementTestResult,
+        body: 'Hi {{studentName}}, 👋\n\nGreat news! You\'ve been placed into the {{levelName}} level for the course: {{courseName}} 🎉\n\nYou can view your course details and get started here: {{courseLink}}\n\nOnce your course begins—whether in a group or private session—you’ll receive a notification with the schedule.\n\nWe\'re excited to see your progress! 🚀',
+        placeholders: ['studentName', 'levelName', 'courseName', 'courseLink'],
+    },
+    {
         name: 'Added To Waiting List',
         type: MessageTemplateType.AddedToWaitingList,
         body: 'Hi {{name}},\n\nYou\'ve been added to the Waiting list for {{courseName}}.\nWe will notify you once a spot becomes available. Thank you for your patience!',
@@ -188,45 +221,87 @@ const messageTemplates = [
     {
         name: 'Added To Group',
         type: MessageTemplateType.AddedToGroup,
-        body: 'Hi {{name}},\n\nyou\'ve been successfully added to the group {{groupName}}.\nWe look forward to your participation and engagement in the sessions!',
-        placeholders: ['name', 'groupName'],
+        body: `Hi {{name}},
+We're excited to let you know that you've been successfully added to a new group for your course journey 🎉
+Here are your group details:
+👨‍🏫 Teacher: {{trainerName}}
+📅 Start Date: {{groupStartDate}}
+
+When each session begins, you'll receive an email with:
+🔗 A Zoom meeting link to join the session
+📥 A download link for Zoom (for both mobile and desktop)
+
+Make sure to check your inbox before each session so you're ready to join on time.
+We look forward to seeing you in class and supporting your progress every step of the way!`,
+        placeholders: ['name', 'trainerName', 'groupStartDate'],
     },
     {
         name: 'Session Starting Soon',
         type: MessageTemplateType.SessionStartingSoon,
-        body: 'Hi {{name}},\n\nJust a reminder that your session for {{courseName}} at level {{levelName}} is Starting soon at {{sessionTime}}.\nPlease complete this short Quiz: {{quizLink}}\n\nYou can join the session on time from here: {{sessionLink}} ',
-        placeholders: ['name', 'courseName', 'levelName', 'sessionTime', 'sessionLink', 'quizLink'],
+        body: 'Hi {{name}}, 👋\n\nYour upcoming session for *{{courseName}}* is starting at *{{sessionTime}}*. Please make sure you\'re prepared!\n\nComplete the quick quiz before the session using the button below. 🎯\n\nSee you there! 🚀',
+        button: {
+            text: 'Take Quiz',
+            url: 'quizLink',
+        },
+        placeholders: ['name', 'courseName', 'sessionTime', 'quizLink'],
     },
     {
         name: 'Session Started',
         type: MessageTemplateType.SessionStarted,
-        body: 'Hi {{name}},\n\nYour session for {{courseName}} at level {{levelName}} has now started.\nPlease join from this link if you haven\'t: {{sessionLink}}\nEnjoy your learning experience!',
-        placeholders: ['name', 'courseName', 'levelName', 'sessionLink'],
+        body: 'Hi {{name}}, 👋\n\nYour session for *{{courseName}}* has just started! 🚀\nIf you haven\'t joined yet, click the button below to get started right away! 🎯\n\nThe session materials will be sent below. 📚\n\nEnjoy your learning experience!',
+        button: {
+            text: 'Join Session',
+            url: 'sessionLink',
+        },
+        placeholders: ['name', 'courseName', 'sessionLink'],
+    },
+    {
+        name: 'Session Materials',
+        type: MessageTemplateType.SessionMaterials,
+        body: '',
+        document: {
+            caption: '📄 {{filename}}',
+            link: 'link',
+            filename: 'filename',
+        },
+        placeholders: ['filename', 'link'],
     },
     {
         name: 'Session Updated',
         type: MessageTemplateType.SessionUpdated,
-        body: 'Hi {{name}},\n\nYour session for {{oldTime}} has changed to be at {{newTime}}.\nPlease join it on time from this link: {{sessionLink}}\nEnjoy your learning experience!',
-        placeholders: ['name', 'oldTime', 'newTime', 'sessionLink'],
+        body: 'Hi {{name}}, 👋\n\nWe wanted to let you know that your session for *{{courseName}}* has been updated.\nThe new session time is *{{newTime}}*. Please make sure to join at the updated time! ⏰\n\nSee you there!',
+        placeholders: ['name', 'courseName', 'oldTime', 'newTime'],
     },
     {
         name: 'Session Completed',
         type: MessageTemplateType.SessionCompleted,
-        body: 'Hi {{name}},\n\nCongratulations on completing your session for {{courseName}} at level {{levelName}}! We hope you found it valuable and look forward to your feedback.\nDon\'t forget your Assignment! you can find it here: {{assignmentLink}}',
-        placeholders: ['name', 'courseName', 'levelName', 'assignmentLink'],
+        body: 'Hi {{name}}, 🎉\n\nCongratulations on completing your session for *{{courseName}}*! 🏆\nWe hope you found it valuable. Please don’t forget to complete your assignment! 📚\nClick below to access it.',
+        button: {
+            text: 'Access Assignment',
+            url: 'assignmentLink',
+        },
+        placeholders: ['name', 'courseName', 'assignmentLink'],
     },
     {
         name: 'Group Completed',
         type: MessageTemplateType.GroupCompleted,
-        body: 'Hi {{name}},\n\nThe group {{groupName}} has been Completed. Thank you for your participation!\nPlease complete your final test from the below link to get your certificate!\n{{finalTestLink}}',
-        placeholders: ['name', 'groupName', 'finalTestLink'],
+        body: 'Hi {{studentName}}, 👋\n\nWell done! You’ve completed all your Zoom sessions for the course: {{courseName}} ✅\n\nYour final step is to take the test from the below link 📝\n\nOnce you complete it, your certificate will be automatically generated and sent to you. 🎓\n\nYou’re almost there—best of luck!',
+        button: {
+            text: 'Final Test',
+            url: 'finalTestLink',
+        },
+        placeholders: ['studentName', 'courseName', 'finalTestLink'],
     },
     {
         name: 'Certificate Ready',
         type: MessageTemplateType.CertificateReady,
-        body: 'Hi {{name}},\n\nCongratulations! your certificate for course {{courseName}} at level {{levelName}} is now ready!\nThank you for taking this learning journey with us and we\'re looking forward to help you with the rest of you learning neads.\n\nYou can view your certificate from this link: {{certificateLink}}',
-        placeholders: ['name', "certificateLink", "courseName", "levelName"],
-    },
+        body: 'Hi {{studentName}}, 🎉\n\nCongratulations on completing the course: {{courseName}}! You’ve done an amazing job. 🙌\n\nYour certificate is now available from the below link 🎓\n\nThank you for learning with us. We hope to see you again in future courses! 🚀',
+        button: {
+            text: 'Viwe my certificate',
+            url: 'certificateLink',
+        },
+        placeholders: ['studentName', 'courseName', 'certificateLink'],
+    }
 ];
 
 export async function setupDefaultMessageTemplates(prisma: PrismaClient) {
@@ -237,12 +312,16 @@ export async function setupDefaultMessageTemplates(prisma: PrismaClient) {
                 name: template.name,
                 type: template.type,
                 body: template.body,
+                button: template.button,
+                document: template.document,
                 placeholders: template.placeholders,
             },
             update: {
                 name: template.name,
                 type: template.type,
                 body: template.body,
+                button: template.button,
+                document: template.document,
                 placeholders: template.placeholders,
             },
         })))
@@ -262,14 +341,16 @@ export type MessageTemplatePlaceholders = {
     [MessageTemplateType.OrderRefunded]: { name: string; orderNumber: string; refundAmount: string; };
     [MessageTemplateType.PlacementTestScheduled]: { name: string; testTime: string; trainerName: string; meetingLink: string; };
     [MessageTemplateType.PlacementTestRescheduled]: { name: string; originalDate: string; newDate: string; meetingLink: string };
+    [MessageTemplateType.PlacementTestResult]: { studentName: string; levelName: string; courseName: string; courseLink: string; };
     [MessageTemplateType.AddedToWaitingList]: { name: string; courseName: string };
-    [MessageTemplateType.AddedToGroup]: { name: string; groupName: string };
+    [MessageTemplateType.AddedToGroup]: { name: string, trainerName: string, groupStartDate: string };
     [MessageTemplateType.SessionStartingSoon]: { name: string; courseName: string; sessionTime: string; quizLink: string; };
-    [MessageTemplateType.SessionStarted]: { name: string; courseName: string; levelName: string; sessionLink: string; };
-    [MessageTemplateType.SessionUpdated]: { name: string; newTime: string; oldTime: string; sessionLink: string; };
-    [MessageTemplateType.SessionCompleted]: { name: string; courseName: string; levelName: string; assignmentLink: string; };
-    [MessageTemplateType.GroupCompleted]: { name: string; groupName: string; finalTestLink: string; };
-    [MessageTemplateType.CertificateReady]: { name: string; certificateLink: string; courseName: string; levelName: string; };
+    [MessageTemplateType.SessionStarted]: { name: string; courseName: string; sessionLink: string; };
+    [MessageTemplateType.SessionMaterials]: { filename: string; link: string; };
+    [MessageTemplateType.SessionUpdated]: { name: string; courseName: string; newTime: string; oldTime: string; };
+    [MessageTemplateType.SessionCompleted]: { name: string; courseName: string; assignmentLink: string; };
+    [MessageTemplateType.GroupCompleted]: { studentName: string; courseName: string; finalTestLink: string };
+    [MessageTemplateType.CertificateReady]: { studentName: string; courseName: string; certificateLink: string; };
 };
 
 // Create a mapping type to ensure type safety

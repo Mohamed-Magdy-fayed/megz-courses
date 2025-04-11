@@ -1,12 +1,9 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import Link from "next/link";
-import { getInitials } from "@/lib/getInitials";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Typography } from "@/components/ui/Typoghraphy";
 import CellAction from "./WhatsappTemplatesActionCell";
 import { format } from "date-fns";
-import { Course, CourseStatus, MessageTemplateType, Order, User } from "@prisma/client";
+import { MessageTemplateButton, MessageTemplateDoc, MessageTemplateType } from "@prisma/client";
 import { SeverityPill } from "@/components/ui/SeverityPill";
 import { populateTemplate } from "@/lib/whatsApp";
 
@@ -15,6 +12,8 @@ export type MessageTemplateRow = {
   name: string,
   body: string,
   type: MessageTemplateType,
+  button: MessageTemplateButton | null,
+  document: MessageTemplateDoc | null,
   placeholders: string[],
   updatedAt: Date,
   createdAt: Date,

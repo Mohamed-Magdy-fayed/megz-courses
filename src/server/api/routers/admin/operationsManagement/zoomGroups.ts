@@ -9,6 +9,7 @@ import { generateGroupNumnber } from "@/lib/utils";
 import { createZoomMeeting, generateGroupMeetingConfig, getAvailableZoomClient, refreshZoomAccountToken } from "@/lib/meetingsHelpers";
 import { hasPermission } from "@/server/permissions";
 import { createMeeting, generateToken } from "@/lib/onMeetingApi";
+import { sendGroupCreatedComms } from "@/server/actions/emails";
 
 export const zoomGroupsRouter = createTRPCRouter({
     attendSession: protectedProcedure
@@ -50,92 +51,6 @@ export const zoomGroupsRouter = createTRPCRouter({
                     attenders: studentIds
                 }
             })
-
-            return { updatedSession }
-        }),
-    editSessionStatus: protectedProcedure
-        .input(z.object({
-            id: z.string(),
-            sessionStatus: z.enum(validSessionStatuses),
-        }))
-        .mutation(async ({ ctx, input: { id, sessionStatus } }) => {
-            const updatedSession = await ctx.prisma.zoomSession.update({
-                where: {
-                    id
-                },
-                data: {
-                    sessionStatus
-                },
-                include: {
-                    materialItem: { include: { systemForms: true } },
-                    zoomGroup: { include: { zoomSessions: true, students: true, course: true, courseLevel: true } },
-                }
-            })
-
-            const zoomGroup = updatedSession.zoomGroup
-            if (!zoomGroup || !zoomGroup.courseId || !zoomGroup.courseLevelId) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "didn't find the zoom group" })
-
-            const isAllSessionsScheduled = !zoomGroup.zoomSessions.some(session => session.sessionStatus === "Completed")
-            if (sessionStatus === "Ongoing" && isAllSessionsScheduled) {
-                await ctx.prisma.zoomGroup.update({
-                    where: { id: zoomGroup.id },
-                    data: {
-                        groupStatus: "Active"
-                    }
-                })
-                await ctx.prisma.courseStatus.updateMany({
-                    where: {
-                        AND: {
-                            userId: { in: zoomGroup.studentIds },
-                            courseId: zoomGroup.courseId,
-                            courseLevelId: zoomGroup.courseLevelId,
-                        }
-                    },
-                    data: {
-                        status: "Ongoing"
-                    }
-                })
-            }
-
-            const isAllSessionsCompleted = zoomGroup.zoomSessions.every(session => session.sessionStatus === "Completed")
-            if (sessionStatus === "Completed" && isAllSessionsCompleted) {
-                await ctx.prisma.zoomGroup.update({
-                    where: { id: zoomGroup.id },
-                    data: {
-                        groupStatus: "Completed"
-                    }
-                })
-                await ctx.prisma.courseStatus.updateMany({
-                    where: {
-                        AND: {
-                            userId: { in: zoomGroup.studentIds },
-                            courseId: zoomGroup.courseId,
-                            courseLevelId: zoomGroup.courseLevelId,
-                        }
-                    },
-                    data: {
-                        status: "Completed"
-                    }
-                })
-
-                await Promise.all(zoomGroup.students.map(async st => {
-                    await ctx.prisma.userNote.create({
-                        data: {
-                            sla: 0,
-                            status: "Closed",
-                            title: `Student group Completed and final test unlocked`,
-                            type: "Info",
-                            messages: [{
-                                message: `Group ${zoomGroup.groupNumber} Completed and the Student have been granted access to the final test.`,
-                                updatedAt: new Date(),
-                                updatedBy: "System"
-                            }],
-                            createdByUser: { connect: { id: ctx.session.user.id } },
-                            createdForStudent: { connect: { id: st.id } }
-                        }
-                    })
-                }))
-            }
 
             return { updatedSession }
         }),
@@ -272,28 +187,49 @@ export const zoomGroupsRouter = createTRPCRouter({
             })
         )
         .mutation(async ({ input: { sessionDates, studentIds, courseId, teacherId, courseLevelId }, ctx }) => {
-            if (!hasPermission(ctx.session.user, "zoomGroups", "create")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not allowed to take this action, Please contact your Admin!" })
-            if (sessionDates.some(d => !d.sessionId)) throw new TRPCError({ code: "BAD_REQUEST", message: "Some sessions are not found!" })
+            if (!hasPermission(ctx.session.user, "zoomGroups", "create"))
+                throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not allowed to take this action, Please contact your Admin!" });
 
-            const [teacher, course, courseStatuses] = await ctx.prisma.$transaction([
-                ctx.prisma.teacher.findUnique({ where: { id: teacherId }, include: { user: true } }),
-                ctx.prisma.course.findUnique({ where: { id: courseId }, include: { levels: { include: { materialItems: true } } } }),
-                ctx.prisma.courseStatus.findMany({ where: { userId: { in: studentIds }, courseId, courseLevelId }, orderBy: { updatedAt: "desc" }, distinct: "userId" }),
-            ])
-            if (!teacher) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Teacher doesn't exist!" })
-            if (!course) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Course doesn't exist!" })
+            if (sessionDates.some(d => !d.sessionId))
+                throw new TRPCError({ code: "BAD_REQUEST", message: "Some sessions are not found!" });
 
-            const level = course.levels.find(({ id }) => id === courseLevelId)
-            if (!level) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No levels!" })
-            if (level.materialItems.length === 0) throw new TRPCError({ code: "BAD_REQUEST", message: "No materials in this level!" })
+            const [teacher, course, courseStatuses, studentUsers] = await ctx.prisma.$transaction([
+                ctx.prisma.teacher.findUnique({
+                    where: { id: teacherId },
+                    include: { user: true },
+                }),
+                ctx.prisma.course.findUnique({
+                    where: { id: courseId },
+                    include: { levels: { include: { materialItems: true } } },
+                }),
+                ctx.prisma.courseStatus.findMany({
+                    where: { userId: { in: studentIds }, courseId, courseLevelId },
+                    orderBy: { updatedAt: "desc" },
+                    distinct: "userId",
+                }),
+                ctx.prisma.user.findMany({
+                    where: { id: { in: studentIds } },
+                    select: { id: true, name: true, email: true, phone: true },
+                }),
+            ]);
 
-            const startDate = sessionDates[0]?.date
-            if (!startDate) throw new TRPCError({ code: "BAD_REQUEST", message: "No dates selected!" })
+            if (!teacher) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Teacher doesn't exist!" });
+            if (!course) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Course doesn't exist!" });
 
-            const { zoomClient } = await getAvailableZoomClient(startDate, ctx.prisma, 120)
-            if (!zoomClient) throw new TRPCError({ code: "BAD_REQUEST", message: "No available zoom account at the selected time!" })
+            const level = course.levels.find(({ id }) => id === courseLevelId);
+            if (!level) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No levels!" });
+            if (level.materialItems.length === 0)
+                throw new TRPCError({ code: "BAD_REQUEST", message: "No materials in this level!" });
 
-            const groupNumber = generateGroupNumnber(startDate, teacher.user.name, course.name)
+            const startDate = sessionDates[0]?.date;
+            if (!startDate)
+                throw new TRPCError({ code: "BAD_REQUEST", message: "No dates selected!" });
+
+            const { zoomClient } = await getAvailableZoomClient(startDate, ctx.prisma, 120);
+            if (!zoomClient)
+                throw new TRPCError({ code: "BAD_REQUEST", message: "No available zoom account at the selected time!" });
+
+            const groupNumber = generateGroupNumnber(startDate, teacher.user.name, course.name);
 
             const meetingConfig = generateGroupMeetingConfig({
                 courseName: course.name,
@@ -302,13 +238,18 @@ export const zoomGroupsRouter = createTRPCRouter({
                 levelName: level.name,
                 startDate,
                 sessionDates,
-            })
+            });
 
-            let meetingData = { meetingNumber: "", meetingPassword: "" }
+            let meetingData = { meetingNumber: "", meetingPassword: "" };
 
             if (!zoomClient.isZoom) {
-                if (!zoomClient.roomCode) throw new TRPCError({ code: "BAD_REQUEST", message: "No room in the Account!" })
-                const token = await generateToken({ api_key: zoomClient.accessToken, api_secret: zoomClient.refreshToken })
+                if (!zoomClient.roomCode)
+                    throw new TRPCError({ code: "BAD_REQUEST", message: "No room in the Account!" });
+
+                const token = await generateToken({
+                    api_key: zoomClient.accessToken,
+                    api_secret: zoomClient.refreshToken,
+                });
 
                 const { meeting_no } = await createMeeting({
                     token,
@@ -318,19 +259,19 @@ export const zoomGroupsRouter = createTRPCRouter({
                         recording: true,
                         room_code: zoomClient.roomCode,
                         topic: groupNumber,
-                    }
-                })
+                    },
+                });
 
-                meetingData = { meetingNumber: meeting_no, meetingPassword: "" }
+                meetingData = { meetingNumber: meeting_no, meetingPassword: "" };
             } else {
-                const refreshedClient = await refreshZoomAccountToken(zoomClient, ctx.prisma)
-                const { meetingNumber, meetingPassword } = await createZoomMeeting(meetingConfig, refreshedClient.accessToken)
-                meetingData = { meetingNumber, meetingPassword }
+                const refreshedClient = await refreshZoomAccountToken(zoomClient, ctx.prisma);
+                const { meetingNumber, meetingPassword } = await createZoomMeeting(meetingConfig, refreshedClient.accessToken);
+                meetingData = { meetingNumber, meetingPassword };
             }
 
-            const { meetingNumber, meetingPassword } = meetingData
+            const { meetingNumber, meetingPassword } = meetingData;
 
-            const [zoomGroup, ...rest] = await ctx.prisma.$transaction([
+            const [zoomGroup] = await ctx.prisma.$transaction([
                 ctx.prisma.zoomGroup.create({
                     data: {
                         startDate: new Date(startDate),
@@ -348,10 +289,10 @@ export const zoomGroupsRouter = createTRPCRouter({
                                     meetingPassword,
                                     materialItemId: session.sessionId,
                                     zoomClientId: zoomClient.id,
-                                }))
-                            }
+                                })),
+                            },
                         },
-                        students: { connect: studentIds.map(c => ({ id: c })) },
+                        students: { connect: studentIds.map(id => ({ id })) },
                         teacher: { connect: { id: teacherId } },
                         course: { connect: { id: courseId } },
                         courseLevel: { connect: { id: courseLevelId } },
@@ -365,11 +306,9 @@ export const zoomGroupsRouter = createTRPCRouter({
                 }),
                 ctx.prisma.courseStatus.updateMany({
                     where: { id: { in: courseStatuses.map(s => s.id) } },
-                    data: {
-                        status: "Ongoing",
-                    }
+                    data: { status: "Ongoing" },
                 }),
-                ...studentIds.map((studentId) => (
+                ...studentIds.map((studentId) =>
                     ctx.prisma.userNote.create({
                         data: {
                             sla: 0,
@@ -385,13 +324,22 @@ export const zoomGroupsRouter = createTRPCRouter({
                             createdByUser: { connect: { id: ctx.session.user.id } },
                         }
                     })
-                ))
-            ])
+                )
+            ]);
 
-            return {
-                zoomGroup,
-                rest,
-            };
+            await Promise.all(studentUsers.map(student =>
+                sendGroupCreatedComms({
+                    studentName: student.name,
+                    studentEmail: student.email,
+                    studentPhone: student.phone,
+                    trainerName: teacher.user.name,
+                    groupStartDate: startDate,
+                    courseName: course.name,
+                    courseSlug: course.slug,
+                })
+            ));
+
+            return { zoomGroup };
         }),
     editZoomGroup: protectedProcedure
         .input(

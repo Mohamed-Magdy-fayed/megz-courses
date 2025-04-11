@@ -30,18 +30,18 @@ import { useToast } from "@/components/ui/use-toast";
 const EditMaterialPage = () => {
   const router = useRouter();
   const slug = router.query.materialSlug as string;
-  const { data } = api.materials.getBySlug.useQuery({ slug }, { enabled: !!slug });
+  const pathQuery = useMemo(() => router.query.path as string, [router.query.path])
+  const segments = useMemo(() => pathQuery?.split("/") || [], [pathQuery])
+  const { data } = api.materials.getBySlug.useQuery({ slug, courseSlug: segments[3]!, levelSlug: segments[4]! }, { enabled: (!!slug && !!segments[3] && !!segments[4]) });
   const inputRef = useRef<HTMLInputElement>(null)
   const { progress, uploadFiles } = useFileUpload()
   const { downloadFile } = useFileDownload()
   const { toastInfo } = useToast()
 
-  const pathQuery = useMemo(() => router.query.path as string, [router.query.path])
-  const segments = useMemo(() => pathQuery?.split("/") || [], [pathQuery])
   const course = api.courses.getBySlug.useQuery({ slug: segments[3]! }, { enabled: !!segments[3] }).data?.course
   const courseName = course?.name
   const levelName = api.levels.getBySlug.useQuery({ slug: segments[4]!, courseSlug: segments[3]! }, { enabled: !!segments[4] && !!segments[3] }).data?.level?.name
-  const materialName = api.materials.getBySlug.useQuery({ slug: segments[5]! }, { enabled: !!segments[5] }).data?.materialItem?.title
+  const materialName = api.materials.getBySlug.useQuery({ slug: segments[5]!, courseSlug: segments[3]!, levelSlug: segments[4]! }, { enabled: (!!segments[5] && !!segments[3] && !!segments[4]) }).data?.materialItem?.title
 
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)

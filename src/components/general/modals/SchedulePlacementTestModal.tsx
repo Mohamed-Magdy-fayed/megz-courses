@@ -49,7 +49,19 @@ function SchedulePlacementTestModal({ courseId, userId, isScheduleTestOpen, setI
             const courseId = data?.course?.id
             const courseName = data?.course?.name
             const evaluationFormId = data?.course?.systemForms.find(form => form.type === "PlacementTest")?.id
-            if (!userId || !courseId || !courseName || !evaluationFormId) return innerLoadingToast.update({ id: innerLoadingToast.id, title: "Error", action: undefined, variant: "destructive", description: "No order found!" })
+            const showError = (message: string) =>
+                innerLoadingToast.update({
+                    id: innerLoadingToast.id,
+                    title: "Error",
+                    variant: "destructive",
+                    action: undefined,
+                    description: message,
+                });
+
+            if (!userId) return showError("User ID is missing!");
+            if (!courseId) return showError("Course ID is missing!");
+            if (!courseName) return showError("Course name is missing!");
+            if (!evaluationFormId) return showError("Evaluation form ID is missing!");
 
             const { zoomClient } = await getAvialableClientMutation.mutateAsync({ startDate: testDate, isTest: true })
             const zoomClientId = zoomClient.id
@@ -94,6 +106,7 @@ function SchedulePlacementTestModal({ courseId, userId, isScheduleTestOpen, setI
             setIsScheduleTestOpen(false)
         } catch (error: any) {
             innerLoadingToast.update({ id: innerLoadingToast.id, title: "Error", action: undefined, variant: "destructive", description: error.message })
+        } finally {
             innerLoadingToast.dismissAfter()
             setLoadingToast(undefined)
         }

@@ -100,7 +100,7 @@ model CourseStatus {
     id            String         @id @default(auto()) @map("_id") @db.ObjectId
     course        Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
     courseId      String         @db.ObjectId
-    order         Order          @relation(fields: [orderId], references: [id])
+    order         Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
     orderId       String         @db.ObjectId
     level         CourseLevel?   @relation(fields: [courseLevelId], references: [id], onDelete: Cascade)
     courseLevelId String?        @db.ObjectId
@@ -743,10 +743,12 @@ enum MessageTemplateType {
     OrderRefunded
     PlacementTestScheduled
     PlacementTestRescheduled
+    PlacementTestResult
     AddedToWaitingList
     AddedToGroup
     SessionStartingSoon
     SessionStarted
+    SessionMaterials
     SessionUpdated
     SessionCompleted
     GroupCompleted
@@ -754,14 +756,27 @@ enum MessageTemplateType {
     Custom
 }
 
+type MessageTemplateButton {
+    text String
+    url  String
+}
+
+type MessageTemplateDoc {
+    caption  String
+    link     String
+    filename String
+}
+
 model MessageTemplate {
-    id           String              @id @default(auto()) @map("_id") @db.ObjectId
-    name         String              @unique
+    id           String                 @id @default(auto()) @map("_id") @db.ObjectId
+    name         String                 @unique
     type         MessageTemplateType
+    button       MessageTemplateButton?
+    document     MessageTemplateDoc?
     body         String
     placeholders String[]
-    updatedAt    DateTime            @updatedAt
-    createdAt    DateTime            @default(now())
+    updatedAt    DateTime               @updatedAt
+    createdAt    DateTime               @default(now())
 }
 
 model Parameters {

@@ -11,11 +11,13 @@ const WhatsappTemplatesClient = () => {
   const trpcUtils = api.useUtils();
   const { data: templatesData, isLoading } = api.whatsAppTemplates.getMessageTemplates.useQuery()
 
-  const formattedData: MessageTemplateRow[] = templatesData?.messageTemplates.map(({ id, name, body, type, placeholders, updatedAt, createdAt }) => ({
+  const formattedData: MessageTemplateRow[] = templatesData?.messageTemplates.map(({ id, name, body, type, button, document, placeholders, updatedAt, createdAt }) => ({
     id,
     name,
     body,
     type,
+    button,
+    document,
     placeholders,
     updatedAt,
     createdAt,

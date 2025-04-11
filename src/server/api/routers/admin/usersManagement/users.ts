@@ -11,6 +11,9 @@ import { env } from "@/env.mjs";
 import { hasPermission } from "@/server/permissions";
 import { createGenericExportSchema, createGenericSchema, createWhereConditions, transformSortingForPrisma } from "@/lib/serverDataTable/utils";
 import { StudentColumns } from "@/components/admin/usersManagement/students/StudentColumn";
+import { EmailsWrapper } from "@/components/general/emails/EmailsWrapper";
+import EmailConfirmation from "@/components/general/emails/EmailConfirmation";
+import { sendZohoEmail } from "@/lib/emailHelpers";
 
 export const usersRouter = createTRPCRouter({
   queryUsers: protectedProcedure
@@ -545,9 +548,7 @@ export const usersRouter = createTRPCRouter({
           },
         }
 
-        const logoUrl = (await ctx.prisma.siteIdentity.findFirst())?.logoPrimary
         const accessToken = await bcrypt.hash(user.id, 10);
-
 
         if (ctx.session.user.userRoles.includes("Admin") && password) {
           const hashedPassword = await bcrypt.hash(password, 10)
@@ -556,14 +557,26 @@ export const usersRouter = createTRPCRouter({
 
         const updatedUser = await ctx.prisma.user.update(updateOptions);
 
+        if (user.email !== email) {
+          const html = await EmailsWrapper({
+            EmailComp: EmailConfirmation,
+            prisma: ctx.prisma,
+            props: {
+              confirmationLink: `${env.NEXTAUTH_URL}email_conf/${user.id}?access_token=${accessToken}`,
+              customerName: user.name,
+              userEmail: user.email,
+            }
+          })
+
+          await sendZohoEmail({
+            email,
+            subject: `Confirm your new email ${email}`,
+            html,
+          })
+        }
+
         return {
           updatedUser,
-          emailProps: user.email !== email ? {
-            logoUrl: logoUrl || "",
-            confirmationLink: `${env.NEXTAUTH_URL}email_conf/${user.id}?access_token=${accessToken}`,
-            customerName: user.name,
-            userEmail: user.email,
-          } : undefined,
         };
       }
     ),

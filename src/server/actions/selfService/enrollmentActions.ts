@@ -7,8 +7,11 @@ import { subscriptionTiers } from "@/lib/system";
 import { orderCodeGenerator, leadsCodeGenerator, formatPrice } from "@/lib/utils";
 import { createInnerTRPCContext } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
+import { randomUUID } from "crypto";
+import bcrypt from "bcrypt";
 import { format } from "date-fns";
 import { z } from "zod";
+import { sendNewUserCredintialsAndConfirm } from "@/server/actions/emails";
 
 export const enrollmentInput = z.object({
     name: z.string(),
@@ -32,7 +35,18 @@ export const enrollHandler = async ({
     let user = await ctx.prisma.user.findUnique({ where: { email } });
     if (!user) {
         try {
-            user = await ctx.prisma.user.create({ data: { name, email, phone } });
+            const password = "@P" + randomUUID().toString().split("-")[0] as string;
+            const hashedPassword = await bcrypt.hash(password, 10)
+            user = await ctx.prisma.user.create({ data: { name, email, phone, hashedPassword } });
+
+            await sendNewUserCredintialsAndConfirm({
+                prisma: ctx.prisma,
+                userId: user.id,
+                email: user.email,
+                phone,
+                customerName: user.name,
+                password,
+            })
         } catch {
             throw new TRPCError({
                 code: "BAD_REQUEST",

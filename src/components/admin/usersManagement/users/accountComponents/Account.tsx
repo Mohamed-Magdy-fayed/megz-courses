@@ -17,7 +17,7 @@ export const Account = ({ user }: { user: Prisma.UserGetPayload<{}> }) => {
   const { toastError, toastSuccess } = useToast()
   const session = useSession()
   const pathname = useRouter().pathname
-  const isOwnAccount = pathname === "/admin/users_management/account" || pathname === "/students/my_account"
+  const isOwnAccount = pathname === "/admin/users_management/account" || pathname === "/student/my_account"
   const trpcUtils = api.useUtils();
 
   const editUserImage = api.users.editUserImage.useMutation({

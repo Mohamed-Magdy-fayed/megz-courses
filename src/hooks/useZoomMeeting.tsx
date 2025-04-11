@@ -11,7 +11,7 @@ const useZoomMeeting = () => {
     const trpcUtils = api.useUtils()
 
     const attendSessionMutation = api.zoomGroups.attendSession.useMutation()
-    const editSessionStatusMutation = api.zoomGroups.editSessionStatus.useMutation({
+    const editSessionStatusMutation = api.zoomSessions.editSessionStatus.useMutation({
         onSuccess: ({ updatedSession }) => trpcUtils.zoomGroups.invalidate()
     })
 

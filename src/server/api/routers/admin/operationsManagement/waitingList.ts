@@ -3,6 +3,7 @@ import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { validCourseStatuses } from "@/lib/enumsTypes";
 import { hasPermission } from "@/server/permissions";
+import { placementResultComms } from "@/server/actions/emails";
 
 export const waitingListRouter = createTRPCRouter({
     queryFullList: protectedProcedure
@@ -50,42 +51,65 @@ export const waitingListRouter = createTRPCRouter({
             oralFeedback: z.string(),
         }))
         .mutation(async ({ input: { userId, levelId, courseId, oralFeedback }, ctx }) => {
-            const PlacementTest = await ctx.prisma.placementTest.findFirst({
-                where: { courseId, studentUserId: userId },
-            })
-            if (PlacementTest && !hasPermission(ctx.session.user, "placementTests", "update", PlacementTest)) throw new TRPCError({ code: "UNAUTHORIZED", message: "You can't take that action!" })
+            const [placementTest, courseStatusList] = await ctx.prisma.$transaction([
+                ctx.prisma.placementTest.findFirst({
+                    where: { courseId, studentUserId: userId },
+                }),
+                ctx.prisma.courseStatus.findMany({
+                    where: { userId },
+                    include: { level: true },
+                }),
+            ]);
 
-            const user = await ctx.prisma.user.findUnique({ where: { id: userId }, include: { courseStatus: { include: { level: true } } } })
-            if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "user not found!" })
+            if (!placementTest) {
+                throw new TRPCError({ code: "BAD_REQUEST", message: "Placement Test not found!" });
+            }
 
-            const alreadySubmitted = user.courseStatus.find(s => s.courseId === courseId && s.courseLevelId === levelId)
-            if (alreadySubmitted) throw new TRPCError({ code: "BAD_REQUEST", message: `Result submitted already! ${alreadySubmitted.status}` })
+            if (!hasPermission(ctx.session.user, "placementTests", "update", placementTest)) {
+                throw new TRPCError({ code: "UNAUTHORIZED", message: "You can't take that action!" });
+            }
 
-            const course = await ctx.prisma.course.findUnique({ where: { id: courseId } })
-            if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "course not found!" })
+            const existingStatus = courseStatusList.find(
+                s => s.courseId === courseId && s.courseLevelId === levelId
+            );
+            if (existingStatus) {
+                throw new TRPCError({ code: "BAD_REQUEST", message: `Result submitted already! ${existingStatus.status}` });
+            }
 
-            const status = await ctx.prisma.courseStatus.findMany({
-                where: {
-                    courseId,
-                    userId,
-                    courseLevelId: { isSet: false },
-                    status: { in: ["PlacementTest", "OrderPaid"] },
-                }
-            })
-            if (!status[0]) throw new TRPCError({ code: "BAD_REQUEST", message: "No courses status found!" })
+            const unassignedStatus = courseStatusList.find(
+                s => s.courseId === courseId && !s.courseLevelId && ["PlacementTest", "OrderPaid"].includes(s.status)
+            );
+            if (!unassignedStatus) {
+                throw new TRPCError({ code: "BAD_REQUEST", message: "No courses status found!" });
+            }
 
-            const [] = await ctx.prisma.$transaction([
+            const [user, course, level] = await ctx.prisma.$transaction([
+                ctx.prisma.user.findUnique({
+                    where: { id: userId },
+                    select: { id: true, name: true, email: true, phone: true },
+                }),
+                ctx.prisma.course.findUnique({
+                    where: { id: courseId },
+                    select: { id: true, name: true, slug: true },
+                }),
+                ctx.prisma.courseLevel.findUnique({
+                    where: { id: levelId },
+                    select: { name: true },
+                }),
+            ]);
+
+            if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "User not found!" });
+            if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "Course not found!" });
+            if (!level) throw new TRPCError({ code: "BAD_REQUEST", message: "Level not found!" });
+
+            const levelName = level.name;
+
+            await ctx.prisma.$transaction([
                 ctx.prisma.courseStatus.update({
-                    where: {
-                        id: status[0].id,
-                    },
+                    where: { id: unassignedStatus.id },
                     data: {
                         status: "Waiting",
-                        level: {
-                            connect: {
-                                id: levelId,
-                            }
-                        }
+                        courseLevelId: levelId,
                     },
                 }),
                 ctx.prisma.userNote.create({
@@ -95,19 +119,28 @@ export const waitingListRouter = createTRPCRouter({
                         title: `Student added to Waiting list by ${ctx.session.user.name}`,
                         type: "Info",
                         createdForStudent: { connect: { id: user.id } },
-                        messages: [{
-                            message: `User was added to Waiting list of course ${course.name} at level ${user.courseStatus.find((s) => courseId === s.courseId)?.level?.name}`,
-                            updatedAt: new Date(),
-                            updatedBy: "System"
-                        }],
                         createdByUser: { connect: { id: ctx.session.user.id } },
-                    }
+                        messages: [{
+                            message: `User was added to Waiting list of course ${course.name} at level ${levelName}`,
+                            updatedAt: new Date(),
+                            updatedBy: "System",
+                        }],
+                    },
                 }),
                 ctx.prisma.placementTest.update({
-                    where: { id: PlacementTest?.id },
-                    data: { oralFeedback }
+                    where: { id: placementTest.id },
+                    data: { oralFeedback },
                 })
-            ])
+            ]);
+
+            await placementResultComms({
+                courseSlug: course.slug,
+                courseName: course.name,
+                levelName,
+                studentName: user.name,
+                studentEmail: user.email,
+                studentPhone: user.phone,
+            });
 
             return { user, course };
         }),

@@ -122,9 +122,9 @@ export const getWaitingList = (course: CourseType): number => {
     .length;
 }
 
-export const getOrderPaidList = (course: CourseType): number => {
-  return course.courseStatus
-    .filter(stat => stat.status === "OrderPaid" && stat.courseId === course.id)
+export const getOrderPaidList = (courseStatus: CourseStatus[], courseId: string): number => {
+  return courseStatus
+    .filter(stat => stat.status === "OrderPaid" && stat.courseId === courseId)
     .filter((stat, i, self) => i === self.findIndex(({ userId }) => stat.userId === userId))
     .length;
 }

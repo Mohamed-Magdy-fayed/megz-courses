@@ -1,3 +1,4 @@
+import { EmailSignatureProps } from '@/components/general/emails/EmailSignature';
 import { env } from '@/env.mjs';
 import {
     Body,
@@ -20,7 +21,6 @@ interface EmailProps {
     customerName: string;
     userEmail: string;
     confirmationLink: string;
-    logoUrl: string;
 }
 
 export const EmailConfirmation = ({
@@ -28,7 +28,7 @@ export const EmailConfirmation = ({
     userEmail,
     confirmationLink,
     logoUrl,
-}: EmailProps) => {
+}: EmailProps & EmailSignatureProps) => {
     const previewText = `Confirm your email, ${customerName}`;
 
     return (

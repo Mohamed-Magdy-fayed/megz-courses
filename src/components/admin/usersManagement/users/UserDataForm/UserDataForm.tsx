@@ -47,7 +47,7 @@ interface UserDataFormProps {
 
 const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsOpen, initialData }) => {
     const pathname = useRouter().pathname
-    const isOwnAccount = pathname === "/admin/users_management/account" || pathname === "/students/my_account"
+    const isOwnAccount = pathname === "/admin/users_management/account" || pathname === "/student/my_account"
     const session = useSession()
 
     const [loading, setLoading] = useState(false)
@@ -75,31 +75,16 @@ const UserDataForm: React.FC<UserDataFormProps> = ({ title, withPassword, setIsO
 
     const { toastSuccess, toastError } = useToast()
     const trpcUrils = api.useUtils();
-    const sendEmailMutation = api.emails.sendZohoEmail.useMutation()
     const editUser = api.users.editUser.useMutation();
 
     const onSubmit = async (data: UserDataFormValues) => {
         try {
             setLoading(true);
-            const { emailProps, updatedUser } = await editUser.mutateAsync(data)
+            const { updatedUser } = await editUser.mutateAsync(data)
             if (isOwnAccount) {
                 await session.update({
                     ...updatedUser,
                     picture: updatedUser.image,
-                })
-            }
-
-            if (emailProps) {
-                const html = render(
-                    <EmailConfirmation
-                        {...emailProps}
-                    />, { pretty: true }
-                )
-
-                await sendEmailMutation.mutateAsync({
-                    email: emailProps.userEmail,
-                    subject: `Confirm your new email ${emailProps.userEmail}`,
-                    html,
                 })
             }
             toastSuccess(`User with the email: ${updatedUser.email} has been updated`)

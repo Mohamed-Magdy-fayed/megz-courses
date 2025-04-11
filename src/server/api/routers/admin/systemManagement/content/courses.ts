@@ -113,6 +113,9 @@ export const coursesRouter = createTRPCRouter({
 
       return { courses };
     }),
+  getSimpleAll: protectedProcedure.query(async ({ ctx }) => {
+    return await ctx.prisma.course.findMany({ include: { courseStatus: {include: {user: true}} } });
+  }),
   getAll: protectedProcedure.query(async ({ ctx }) => {
     const courses = await ctx.prisma.course.findMany({
       include: {

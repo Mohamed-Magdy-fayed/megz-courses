@@ -1,3 +1,4 @@
+import { EmailSignatureProps } from '@/components/general/emails/EmailSignature';
 import { env } from '@/env.mjs';
 import {
     Body,
@@ -17,7 +18,6 @@ interface CredentialsEmailProps {
     customerName: string;
     userEmail: string;
     password: string;
-    logoUrl: string;
     courseLink: string;
 }
 
@@ -27,7 +27,7 @@ export const CredentialsEmail = ({
     password,
     logoUrl,
     courseLink,
-}: CredentialsEmailProps) => {
+}: CredentialsEmailProps & EmailSignatureProps) => {
     const previewText = `Your credentials for accessing the course materials`;
 
     return (
