@@ -2,7 +2,7 @@ import { env } from "@/env.mjs";
 import { generateCertificateId } from "@/lib/certificatesHelpers";
 import { validSystemFormTypes } from "@/lib/enumsTypes";
 import { getSubmissionScore } from "@/lib/utils";
-import { sendCertificateComms } from "@/server/actions/emails";
+import { formatUserForComms, sendCertificateComms } from "@/server/actions/emails";
 import {
     createTRPCRouter,
     protectedProcedure,
@@ -175,9 +175,7 @@ export const systemFormSubmissionsRouter = createTRPCRouter({
                 await sendCertificateComms({
                     certificateLink: `${env.NEXTAUTH_URL}student/my_courses/${courseSlug}/${certificate.courseLevel?.slug}/certificate`,
                     courseName: certificate.course.name,
-                    studentEmail: user.email,
-                    studentName: user.name,
-                    studentPhone: user.phone,
+                    ...formatUserForComms(user)
                 })
             }
 

@@ -9,7 +9,7 @@ import { generateGroupNumnber } from "@/lib/utils";
 import { createZoomMeeting, generateGroupMeetingConfig, getAvailableZoomClient, refreshZoomAccountToken } from "@/lib/meetingsHelpers";
 import { hasPermission } from "@/server/permissions";
 import { createMeeting, generateToken } from "@/lib/onMeetingApi";
-import { sendGroupCreatedComms } from "@/server/actions/emails";
+import { formatUserForComms, sendGroupCreatedComms } from "@/server/actions/emails";
 
 export const zoomGroupsRouter = createTRPCRouter({
     attendSession: protectedProcedure
@@ -209,7 +209,7 @@ export const zoomGroupsRouter = createTRPCRouter({
                 }),
                 ctx.prisma.user.findMany({
                     where: { id: { in: studentIds } },
-                    select: { id: true, name: true, email: true, phone: true },
+                    select: { id: true, name: true, email: true, phone: true, fcmTokens: true },
                 }),
             ]);
 
@@ -329,13 +329,11 @@ export const zoomGroupsRouter = createTRPCRouter({
 
             await Promise.all(studentUsers.map(student =>
                 sendGroupCreatedComms({
-                    studentName: student.name,
-                    studentEmail: student.email,
-                    studentPhone: student.phone,
                     trainerName: teacher.user.name,
                     groupStartDate: startDate,
                     courseName: course.name,
                     courseSlug: course.slug,
+                    ...formatUserForComms(student),
                 })
             ));
 

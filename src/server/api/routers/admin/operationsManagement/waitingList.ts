@@ -3,7 +3,7 @@ import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { validCourseStatuses } from "@/lib/enumsTypes";
 import { hasPermission } from "@/server/permissions";
-import { placementResultComms } from "@/server/actions/emails";
+import { formatUserForComms, placementResultComms } from "@/server/actions/emails";
 
 export const waitingListRouter = createTRPCRouter({
     queryFullList: protectedProcedure
@@ -86,7 +86,7 @@ export const waitingListRouter = createTRPCRouter({
             const [user, course, level] = await ctx.prisma.$transaction([
                 ctx.prisma.user.findUnique({
                     where: { id: userId },
-                    select: { id: true, name: true, email: true, phone: true },
+                    select: { id: true, name: true, email: true, phone: true, fcmTokens: true },
                 }),
                 ctx.prisma.course.findUnique({
                     where: { id: courseId },
@@ -137,9 +137,7 @@ export const waitingListRouter = createTRPCRouter({
                 courseSlug: course.slug,
                 courseName: course.name,
                 levelName,
-                studentName: user.name,
-                studentEmail: user.email,
-                studentPhone: user.phone,
+                ...formatUserForComms(user),
             });
 
             return { user, course };

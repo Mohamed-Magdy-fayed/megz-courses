@@ -6,7 +6,7 @@ import {
 import { TRPCError } from "@trpc/server";
 import { hasPermission } from "@/server/permissions";
 import { refundOrder } from "@/server/actions/salesManagement/orders";
-import { orderRefundEmail } from "@/server/actions/emails";
+import { formatUserForComms, orderRefundEmail } from "@/server/actions/emails";
 
 export const refundsRouter = createTRPCRouter({
     getById: protectedProcedure
@@ -63,7 +63,7 @@ export const refundsRouter = createTRPCRouter({
             });
 
             await refundOrder({ orderId })
-            await orderRefundEmail({ refund, order: refund.order, student: refund.user })
+            await orderRefundEmail({ refund, order: refund.order, student: formatUserForComms(refund.user) })
 
             return { refund };
         }),

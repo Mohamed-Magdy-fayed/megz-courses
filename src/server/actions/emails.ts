@@ -21,7 +21,6 @@ import SessionEndedEmail from "@/components/general/emails/SessionEndedEmail";
 import FinalTestInvitationEmail from "@/components/general/emails/FinalTestInvitationEmail";
 import CourseCompletionCongratulationsEmail from "@/components/general/emails/CourseCompletionCongratulationsEmail";
 import { sendNotification } from "@/lib/fcmhelpers";
-import { send } from "process";
 
 type CommsUserData = {
     studentId: string;
@@ -31,7 +30,7 @@ type CommsUserData = {
     studentFcmTokens: string[];
 }
 
-export const formatUserForComms = (user: User): CommsUserData => {
+export const formatUserForComms = (user: Pick<User, "id" | "name" | "email" | "phone" | "fcmTokens">): CommsUserData => {
     return { studentEmail: user.email, studentName: user.name, studentPhone: user.phone, studentFcmTokens: user.fcmTokens, studentId: user.id }
 }
 
@@ -445,7 +444,7 @@ export async function sendGroupEndComms({ studentName, finalTestLink, studentFcm
     });
 }
 
-export async function sendCertificateComms({ studentName,studentFcmTokens, certificateLink, studentEmail, studentPhone, courseName }: CommsUserData & {
+export async function sendCertificateComms({ studentName, studentFcmTokens, certificateLink, studentEmail, studentPhone, courseName }: CommsUserData & {
     certificateLink: string;
     courseName: string;
 }) {

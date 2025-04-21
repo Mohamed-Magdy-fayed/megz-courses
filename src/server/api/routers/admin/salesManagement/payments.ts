@@ -8,7 +8,7 @@ import { TRPCError } from "@trpc/server";
 
 import { hasPermission } from "@/server/permissions";
 import { payOrder } from "@/server/actions/salesManagement/orders";
-import { orderPaymentEmail } from "@/server/actions/emails";
+import { formatUserForComms, orderPaymentEmail } from "@/server/actions/emails";
 import { ROOT_EMAIL } from "@/server/constants";
 
 export const paymentsRouter = createTRPCRouter({
@@ -94,7 +94,7 @@ export const paymentsRouter = createTRPCRouter({
             await payOrder({ orderId: payment.order.id })
 
             await orderPaymentEmail({
-                order: payment.order, payment, student: payment.user,
+                order: payment.order, payment, student: formatUserForComms(payment.user),
                 remainingAmount: payment.order.amount - payment.order.payments.reduce((a, b) => a + b.paymentAmount, 0) + payment.order.refunds.reduce((a, b) => a + b.refundAmount, 0)
             })
 
@@ -136,7 +136,7 @@ export const paymentsRouter = createTRPCRouter({
             await payOrder({ orderId: payment.order.id })
 
             await orderPaymentEmail({
-                order: payment.order, payment, student: payment.user,
+                order: payment.order, payment, student: formatUserForComms(payment.user),
                 remainingAmount: payment.order.amount - payment.order.payments.reduce((a, b) => a + b.paymentAmount, 0) + payment.order.refunds.reduce((a, b) => a + b.refundAmount, 0)
             })
 

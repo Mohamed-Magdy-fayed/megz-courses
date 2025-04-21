@@ -11,7 +11,7 @@ import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
 import { format } from "date-fns";
 import { z } from "zod";
-import { sendNewUserCredintialsAndConfirm } from "@/server/actions/emails";
+import { formatUserForComms, sendNewUserCredintialsAndConfirm } from "@/server/actions/emails";
 
 export const enrollmentInput = z.object({
     name: z.string(),
@@ -39,13 +39,11 @@ export const enrollHandler = async ({
             const hashedPassword = await bcrypt.hash(password, 10)
             user = await ctx.prisma.user.create({ data: { name, email, phone, hashedPassword } });
 
+
             await sendNewUserCredintialsAndConfirm({
                 prisma: ctx.prisma,
-                userId: user.id,
-                email: user.email,
-                phone,
-                customerName: user.name,
                 password,
+                ...formatUserForComms(user)
             })
         } catch {
             throw new TRPCError({

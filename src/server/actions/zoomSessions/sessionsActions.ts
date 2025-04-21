@@ -1,5 +1,5 @@
 import { preMeetingLinkConstructor } from "@/lib/meetingsHelpers";
-import { sendGroupEndComms, sendSessionEndComms, sendSessionStartComms, sendSessionStartingSoonComms } from "@/server/actions/emails";
+import { formatUserForComms, sendGroupEndComms, sendSessionEndComms, sendSessionStartComms, sendSessionStartingSoonComms } from "@/server/actions/emails";
 import { Course, CourseLevel, MaterialItem, PrismaClient, SessionStatus, User, ZoomGroup, ZoomSession } from "@prisma/client";
 import { env } from "process";
 
@@ -23,9 +23,7 @@ export async function handleSessionStatusUpdate({ prisma, sessionStatus, student
             await sendSessionStartingSoonComms({
                 courseName: course.name,
                 quizLink: `${env.NEXTAUTH_URL}student/my_courses/${course.slug}/${level.slug}/quiz/${material.slug}`,
-                studentEmail: st.email,
-                studentName: st.name,
-                studentPhone: st.phone,
+                ...formatUserForComms(st),
                 zoomJoinLink: preMeetingLinkConstructor({
                     isZoom,
                     meetingNumber: updatedSession.meetingNumber,
@@ -62,10 +60,8 @@ export async function handleSessionStatusUpdate({ prisma, sessionStatus, student
             await sendSessionStartComms({
                 courseName: course.name,
                 materialLink: `${env.NEXTAUTH_URL}student/my_courses/${course.slug}/${level.slug}/session/${material.slug}`,
-                sessionTitle: st.email,
-                studentEmail: st.email,
-                studentName: st.name,
-                studentPhone: st.phone,
+                sessionTitle: material.title,
+                ...formatUserForComms(st),
                 zoomJoinLink: preMeetingLinkConstructor({
                     isZoom,
                     meetingNumber: updatedSession.meetingNumber,
@@ -84,9 +80,7 @@ export async function handleSessionStatusUpdate({ prisma, sessionStatus, student
             await Promise.all(students.map(async st => {
                 await sendSessionEndComms({
                     courseName: course.name,
-                    studentEmail: st.email,
-                    studentName: st.name,
-                    studentPhone: st.phone,
+                    ...formatUserForComms(st),
                     assignmentLink: `${env.NEXTAUTH_URL}student/my_courses/${course.slug}/${level.slug}/assignment/${material.slug}`,
                     nextSessionDate: nextSession?.sessionDate,
                     sessionTitle: material.title,
@@ -133,9 +127,7 @@ export async function handleSessionStatusUpdate({ prisma, sessionStatus, student
 
             await sendGroupEndComms({
                 courseName: course.name,
-                studentEmail: st.email,
-                studentName: st.name,
-                studentPhone: st.phone,
+                ...formatUserForComms(st),
                 finalTestLink: `${env.NEXTAUTH_URL}student/my_courses/${course.slug}/${level.slug}/final_test`,
             })
         }))

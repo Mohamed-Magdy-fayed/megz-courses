@@ -128,14 +128,16 @@ export const placementTestsRouter = createTRPCRouter({
     sendTestComms: protectedProcedure
         .input(z.object({
             courseSlug: z.string().min(1, 'Course slug is required'),
+            studentId: z.string(),
+            studentFcmTokens: z.array(z.string()),
             studentName: z.string().min(1, 'Student name is required'),
             studentEmail: z.string().email('Invalid email address'),
             studentPhone: z.string().min(7, 'Phone number is too short'),
             testTime: z.date(),
             testerName: z.string().min(1, 'Tester name is required'),
         }))
-        .mutation(async ({ input: { courseSlug, studentEmail, studentName, studentPhone, testTime, testerName } }) => {
-            return await placementTestScheduledComms({ courseSlug, studentEmail, studentName, studentPhone, testerName, testTime })
+        .mutation(async ({ input: { courseSlug, studentEmail, studentName, studentPhone, testTime, testerName, studentFcmTokens, studentId } }) => {
+            return await placementTestScheduledComms({ courseSlug, studentEmail, studentName, studentPhone, testerName, testTime, studentFcmTokens, studentId })
         }),
     deletePlacementTest: protectedProcedure
         .input(z.object({
