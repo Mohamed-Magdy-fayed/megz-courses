@@ -11,7 +11,8 @@ import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
 import { format } from "date-fns";
 import { z } from "zod";
-import { formatUserForComms, sendNewUserCredintialsAndConfirm } from "@/server/actions/emails";
+import { sendNewUserCredintialsAndConfirm } from "@/server/actions/emails";
+import { formatUserForComms } from "@/lib/fcmhelpers"
 
 export const enrollmentInput = z.object({
     name: z.string(),

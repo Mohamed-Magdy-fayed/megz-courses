@@ -9,7 +9,7 @@ import { sendZohoEmail } from "@/lib/emailHelpers";
 import { formatPrice } from "@/lib/utils";
 import { sendWhatsAppMessage } from "@/lib/whatsApp";
 import { prisma } from "@/server/db";
-import { PrismaClient, User } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { format } from "date-fns";
 import bcrypt from "bcrypt";
 import PlacementTestEmail from "@/components/general/emails/PlacementTestEmail";
@@ -20,18 +20,30 @@ import SessionStartedEmail from "@/components/general/emails/SessionStartedEmail
 import SessionEndedEmail from "@/components/general/emails/SessionEndedEmail";
 import FinalTestInvitationEmail from "@/components/general/emails/FinalTestInvitationEmail";
 import CourseCompletionCongratulationsEmail from "@/components/general/emails/CourseCompletionCongratulationsEmail";
-import { sendNotification } from "@/lib/fcmhelpers";
+import { CommsUserData } from "@/lib/fcmhelpers";
+import { firebaseAdmin } from "@/server/firebase-admin";
+import { Message } from "firebase-admin/lib/messaging/messaging-api";
 
-type CommsUserData = {
-    studentId: string;
-    studentName: string;
-    studentEmail: string;
-    studentPhone: string;
-    studentFcmTokens: string[];
-}
+type SendNotificationInput = {
+    tokens: string[];
+    title: string;
+    body: string;
+    link: string,
+};
 
-export const formatUserForComms = (user: Pick<User, "id" | "name" | "email" | "phone" | "fcmTokens">): CommsUserData => {
-    return { studentEmail: user.email, studentName: user.name, studentPhone: user.phone, studentFcmTokens: user.fcmTokens, studentId: user.id }
+export async function sendNotification({ tokens, body, link, title }: SendNotificationInput) {
+    await Promise.all(tokens.map(async (token) => {
+        const payload: Message = {
+            token,
+            data: {
+                title,
+                body,
+                link,
+            },
+        }
+
+        await firebaseAdmin.messaging().send(payload)
+    }))
 }
 
 export async function orderConfirmationEmail({ prisma, product, student, order }: {

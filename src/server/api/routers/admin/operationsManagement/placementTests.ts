@@ -6,7 +6,7 @@ import { ZoomMeeting } from "@/lib/zoomTypes";
 import { env } from "@/env.mjs";
 import { format } from "date-fns";
 import { sendWhatsAppMessage } from "@/lib/whatsApp";
-import { createMeeting, generateToken, getMeetingDetails, getUserRooms } from "@/lib/onMeetingApi";
+import { createMeeting, generateToken, getMeetingDetails } from "@/lib/onMeetingApi";
 import { ZoomClient } from "@prisma/client";
 import { hasPermission } from "@/server/permissions";
 import { placementTestScheduledComms } from "@/server/actions/emails";
@@ -54,24 +54,6 @@ export const placementTestsRouter = createTRPCRouter({
         }),
     getAllPlacementTests: protectedProcedure
         .query(async ({ ctx }) => {
-            // const courses = await ctx.prisma.course.findMany({
-            //     include: {
-            //         placementTests: {
-            // include: {
-            //     student: { include: { courseStatus: { include: { level: true } } } },
-            //     tester: { include: { user: true } },
-            //     course: { include: { courseStatus: true, levels: true } },
-            //     writtenTest: { include: { submissions: true } },
-            //     zoomSessions: { include: { zoomClient: true } },
-            // }
-            //         }
-            //     }
-            // })
-
-            // const tests = courses
-            //     .flatMap(c => c.placementTests)
-            //     .filter(test => !test.course?.courseStatus.some(s => !!s.courseLevelId && s.courseId === test.course?.id && test.studentUserId === s.userId))
-
             return {
                 tests: await ctx.prisma.placementTest.findMany({
                     include: {

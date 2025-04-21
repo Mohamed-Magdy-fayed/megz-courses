@@ -1,24 +1,14 @@
-import { firebaseAdmin } from "@/server/firebase-admin";
-import { Message } from "firebase-admin/lib/messaging/messaging-api";
+// This file contains helper functions for sending notifications using Firebase Cloud Messaging (FCM).
+import { User } from "@prisma/client"
 
-type SendNotificationInput = {
-    tokens: string[];
-    title: string;
-    body: string;
-    link: string,
-};
+export type CommsUserData = {
+    studentId: string;
+    studentName: string;
+    studentEmail: string;
+    studentPhone: string;
+    studentFcmTokens: string[];
+}
 
-export async function sendNotification({ tokens, body, link, title }: SendNotificationInput) {
-    await Promise.all(tokens.map(async (token) => {
-        const payload: Message = {
-            token,
-            data: {
-                title,
-                body,
-                link,
-            },
-        }
-
-        await firebaseAdmin.messaging().send(payload)
-    }))
+export const formatUserForComms = (user: Pick<User, "id" | "name" | "email" | "phone" | "fcmTokens">): CommsUserData => {
+    return { studentEmail: user.email, studentName: user.name, studentPhone: user.phone, studentFcmTokens: user.fcmTokens, studentId: user.id }
 }

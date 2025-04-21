@@ -12,7 +12,7 @@ import { Typography } from "@/components/ui/Typoghraphy"
 import { getOrderPaidList } from "@/lib/utils"
 import WrapWithTooltip from "@/components/ui/wrap-with-tooltip"
 import Link from "next/link"
-import { formatUserForComms } from "@/server/actions/emails"
+import { formatUserForComms } from "@/lib/fcmhelpers"
 
 function SchedulePlacementTestModalContent() {
     const [testTime, setTestTime] = useState<Date | undefined>(new Date(new Date().getMinutes() >= 30 ? new Date().setHours(new Date().getHours() + 1, 0) : new Date().setMinutes(30)))
@@ -101,8 +101,8 @@ function SchedulePlacementTestModalContent() {
             })
 
             await sendTestCommsMutation.mutateAsync({
-                courseSlug,
                 ...formatUserForComms(placementTest.student),
+                courseSlug,
                 testerName: placementTest.tester.user.name,
                 testTime,
             })

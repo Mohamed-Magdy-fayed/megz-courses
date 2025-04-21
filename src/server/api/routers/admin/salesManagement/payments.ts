@@ -8,8 +8,9 @@ import { TRPCError } from "@trpc/server";
 
 import { hasPermission } from "@/server/permissions";
 import { payOrder } from "@/server/actions/salesManagement/orders";
-import { formatUserForComms, orderPaymentEmail } from "@/server/actions/emails";
+import { orderPaymentEmail } from "@/server/actions/emails";
 import { ROOT_EMAIL } from "@/server/constants";
+import { formatUserForComms } from "@/lib/fcmhelpers"
 
 export const paymentsRouter = createTRPCRouter({
     getById: protectedProcedure

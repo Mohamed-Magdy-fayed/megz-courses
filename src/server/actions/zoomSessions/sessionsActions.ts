@@ -1,7 +1,8 @@
 import { preMeetingLinkConstructor } from "@/lib/meetingsHelpers";
-import { formatUserForComms, sendGroupEndComms, sendSessionEndComms, sendSessionStartComms, sendSessionStartingSoonComms } from "@/server/actions/emails";
+import { sendGroupEndComms, sendSessionEndComms, sendSessionStartComms, sendSessionStartingSoonComms } from "@/server/actions/emails";
 import { Course, CourseLevel, MaterialItem, PrismaClient, SessionStatus, User, ZoomGroup, ZoomSession } from "@prisma/client";
 import { env } from "process";
+import { formatUserForComms } from "@/lib/fcmhelpers"
 
 export async function handleSessionStatusUpdate({ prisma, sessionStatus, students, course, level, material, updatedSession, zoomGroup, isZoom, isAllSessionsScheduled, currentUserId, isAllSessionsCompleted, nextSession }: {
     prisma: PrismaClient;

@@ -3,7 +3,8 @@ import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { validCourseStatuses } from "@/lib/enumsTypes";
 import { hasPermission } from "@/server/permissions";
-import { formatUserForComms, placementResultComms } from "@/server/actions/emails";
+import { placementResultComms } from "@/server/actions/emails";
+import { formatUserForComms } from "@/lib/fcmhelpers"
 
 export const waitingListRouter = createTRPCRouter({
     queryFullList: protectedProcedure

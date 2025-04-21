@@ -4,12 +4,13 @@ import {
     protectedProcedure,
 } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import { validGroupStatuses, validSessionStatuses } from "@/lib/enumsTypes";
+import { validGroupStatuses } from "@/lib/enumsTypes";
 import { generateGroupNumnber } from "@/lib/utils";
 import { createZoomMeeting, generateGroupMeetingConfig, getAvailableZoomClient, refreshZoomAccountToken } from "@/lib/meetingsHelpers";
 import { hasPermission } from "@/server/permissions";
 import { createMeeting, generateToken } from "@/lib/onMeetingApi";
-import { formatUserForComms, sendGroupCreatedComms } from "@/server/actions/emails";
+import { sendGroupCreatedComms } from "@/server/actions/emails";
+import { formatUserForComms } from "@/lib/fcmhelpers"
 
 export const zoomGroupsRouter = createTRPCRouter({
     attendSession: protectedProcedure

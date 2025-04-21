@@ -5,7 +5,8 @@ import { TRPCError } from "@trpc/server";
 import { hasPermission } from "@/server/permissions";
 import { getCurrentTier } from "@/lib/system";
 import { createCourseOrderPayment, createOrderNote, createProductOrderPayment, createQuickOrderUserLead } from "@/server/actions/salesManagement/orders";
-import { formatUserForComms, orderConfirmationEmail } from "@/server/actions/emails";
+import { orderConfirmationEmail } from "@/server/actions/emails";
+import { formatUserForComms } from "@/lib/fcmhelpers"
 
 export const ordersRouter = createTRPCRouter({
     getAll: protectedProcedure.query(async ({ ctx }) => {
