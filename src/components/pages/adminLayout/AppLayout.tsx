@@ -10,12 +10,14 @@ import UnauthorizedAccess from "./UnauthorizedAccess";
 import { api } from "@/lib/api";
 import { hasPermission } from "@/server/permissions";
 import { useRouter } from "next/router";
+import { useFCMToken } from "@/hooks/useFCMToken";
 
 const allowedByDefault = ["/redirects"]
 
 const AppLayout = ({ children }: { children: ReactNode }) => {
   const { Opened, openNav, closeNav } = useNavStore();
   const { pathname } = useRouter();
+  useFCMToken()
 
   const { data: session, status } = useSession({ required: true })
   const { data, refetch } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: false })

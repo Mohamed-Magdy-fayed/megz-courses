@@ -3,9 +3,11 @@ import { LandingNavigationMenu } from './LandingNavMenu'
 import LandingFooter from './LandingFooter'
 import ChatWithUs from './ChatWithUs'
 import { api } from '@/lib/api'
+import { useFCMToken } from '@/hooks/useFCMToken'
 
 const LandingLayout = ({ children }: { children: ReactNode }) => {
     const { data, refetch } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: false })
+    useFCMToken()
 
     useEffect(() => { refetch() }, [])
 

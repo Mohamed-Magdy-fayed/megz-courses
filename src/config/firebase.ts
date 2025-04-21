@@ -1,7 +1,8 @@
 // Import the functions you need from the SDKs you need
 import { env } from "@/env.mjs";
-import { getApps, initializeApp } from "firebase/app";
+import { getApp, getApps, initializeApp } from "firebase/app";
 import { getStorage } from "firebase/storage";
+import { getMessaging, getToken, isSupported } from "firebase/messaging";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -16,9 +17,31 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-let app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+let app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
 const STORAGE_FOLDER_PATH = `gs://${env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}`;
 export const storage = getStorage(app, STORAGE_FOLDER_PATH);
+
+export const messaging = async () => {
+  const supported = await isSupported();
+  return supported ? getMessaging(app) : null;
+};
+
+export const fetchToken = async () => {
+  try {
+    const fcmMessaging = await messaging()
+    console.log(fcmMessaging);
+    if (fcmMessaging) {
+
+      const token = await getToken(fcmMessaging);
+
+      return token
+    }
+    return null
+  } catch (error) {
+    console.error("Error while fetching token!");
+    return null
+  }
+}
 
 export default app;

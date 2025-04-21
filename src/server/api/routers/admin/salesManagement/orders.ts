@@ -5,7 +5,7 @@ import { TRPCError } from "@trpc/server";
 import { hasPermission } from "@/server/permissions";
 import { getCurrentTier } from "@/lib/system";
 import { createCourseOrderPayment, createOrderNote, createProductOrderPayment, createQuickOrderUserLead } from "@/server/actions/salesManagement/orders";
-import { orderConfirmationEmail } from "@/server/actions/emails";
+import { formatUserForComms, orderConfirmationEmail } from "@/server/actions/emails";
 
 export const ordersRouter = createTRPCRouter({
     getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -170,7 +170,7 @@ export const ordersRouter = createTRPCRouter({
             if (currentTier.onlinePayment) {
                 await orderConfirmationEmail({
                     product: { name: product.name, price: product.discountedPrice ?? product.price },
-                    student: { studentEmail: user.email, studentName: user.name, studentPhone: user.phone },
+                    student: formatUserForComms(user),
                     prisma: ctx.prisma,
                     order: { orderDate: order.createdAt, orderNumber, paymentLink },
                 })
@@ -240,7 +240,7 @@ export const ordersRouter = createTRPCRouter({
             if (currentTier.onlinePayment) {
                 await orderConfirmationEmail({
                     product: { name: course.name, price: isPrivate ? course.privatePrice : course.groupPrice },
-                    student: { studentEmail: user.email, studentName: user.name, studentPhone: user.phone },
+                    student: formatUserForComms(user),
                     prisma: ctx.prisma,
                     order: { orderDate: order.createdAt, orderNumber, paymentLink },
                 })
@@ -299,7 +299,7 @@ export const ordersRouter = createTRPCRouter({
             if (currentTier.onlinePayment) {
                 await orderConfirmationEmail({
                     product: { name: course.name, price: isPrivate ? course.privatePrice : course.groupPrice },
-                    student: { studentEmail: user.email, studentName: user.name, studentPhone: user.phone },
+                    student: formatUserForComms(user),
                     prisma: ctx.prisma,
                     order: { orderDate: order.createdAt, orderNumber, paymentLink },
                 })
@@ -360,7 +360,7 @@ export const ordersRouter = createTRPCRouter({
             if (currentTier.onlinePayment) {
                 await orderConfirmationEmail({
                     product: { name: product.name, price: product.discountedPrice ?? product.price },
-                    student: { studentEmail: user.email, studentName: user.name, studentPhone: user.phone },
+                    student: formatUserForComms(user),
                     prisma: ctx.prisma,
                     order: { orderDate: order.createdAt, orderNumber, paymentLink },
                 })

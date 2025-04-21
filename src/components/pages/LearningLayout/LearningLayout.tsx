@@ -9,6 +9,7 @@ import { Prisma } from '@prisma/client'
 import useLoadLearningData from '@/hooks/useLoadLearningData'
 import { api } from '@/lib/api'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useFCMToken } from '@/hooks/useFCMToken'
 
 export type LearningLayoutProps = {
     children: ReactNode;
@@ -90,6 +91,7 @@ const LearningLayout = ({ children }: LearningLayoutProps) => {
 
     const { course, level, user } = useLoadLearningData()
     const { data, refetch } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: false })
+    useFCMToken()
 
     useEffect(() => { refetch() }, [])
 

@@ -9,7 +9,7 @@ import { sendZohoEmail } from "@/lib/emailHelpers";
 import { formatPrice } from "@/lib/utils";
 import { sendWhatsAppMessage } from "@/lib/whatsApp";
 import { prisma } from "@/server/db";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, User } from "@prisma/client";
 import { format } from "date-fns";
 import bcrypt from "bcrypt";
 import PlacementTestEmail from "@/components/general/emails/PlacementTestEmail";
@@ -20,15 +20,29 @@ import SessionStartedEmail from "@/components/general/emails/SessionStartedEmail
 import SessionEndedEmail from "@/components/general/emails/SessionEndedEmail";
 import FinalTestInvitationEmail from "@/components/general/emails/FinalTestInvitationEmail";
 import CourseCompletionCongratulationsEmail from "@/components/general/emails/CourseCompletionCongratulationsEmail";
+import { sendNotification } from "@/lib/fcmhelpers";
+import { send } from "process";
+
+type CommsUserData = {
+    studentId: string;
+    studentName: string;
+    studentEmail: string;
+    studentPhone: string;
+    studentFcmTokens: string[];
+}
+
+export const formatUserForComms = (user: User): CommsUserData => {
+    return { studentEmail: user.email, studentName: user.name, studentPhone: user.phone, studentFcmTokens: user.fcmTokens, studentId: user.id }
+}
 
 export async function orderConfirmationEmail({ prisma, product, student, order }: {
     prisma: PrismaClient;
     product: { name: string; price: number; };
     order: { paymentLink: string; orderNumber: string; orderDate: Date; };
-    student: { studentName: string; studentEmail: string; studentPhone: string; };
+    student: CommsUserData;
 }) {
     const { name, price } = product
-    const { studentPhone, studentEmail, studentName } = student
+    const { studentPhone, studentEmail, studentName, studentFcmTokens } = student
     const { orderNumber, orderDate, paymentLink } = order
     const formattedPrice = formatPrice(price)
 
@@ -47,6 +61,7 @@ export async function orderConfirmationEmail({ prisma, product, student, order }
         }
     })
 
+    await sendNotification({ tokens: studentFcmTokens, title: "Order Confirmation", body: `Your order ${orderNumber} has been placed successfully.\nClick on the notification to get redirected to online payment!`, link: paymentLink })
     await sendZohoEmail({ email: studentEmail, html, subject: `Thanks for your order ${orderNumber}` })
     await sendWhatsAppMessage({
         prisma,
@@ -64,19 +79,19 @@ export async function orderConfirmationEmail({ prisma, product, student, order }
 export async function orderPaymentEmail({ payment, student, order, remainingAmount }: {
     payment: { paymentAmount: number; createdAt: Date; };
     order: { orderNumber: string; amount: number; createdAt: Date; };
-    student: { name: string; email: string; phone: string; };
+    student: CommsUserData;
     remainingAmount: number;
 }) {
     const { paymentAmount, createdAt: paymentCreatedAt } = payment
-    const { email, name, phone } = student
+    const { studentPhone, studentEmail, studentName, studentFcmTokens } = student
     const { orderNumber, createdAt, amount } = order
 
     const html = await EmailsWrapper({
         EmailComp: PaymentEmail,
         prisma,
         props: {
-            email,
-            name,
+            email: studentEmail,
+            name: studentName,
             orderNumber,
             orderDate: format(createdAt, "PPPp"),
             orderTotal: formatPrice(amount),
@@ -86,13 +101,14 @@ export async function orderPaymentEmail({ payment, student, order, remainingAmou
         }
     })
 
-    await sendZohoEmail({ email, html, subject: `Thanks for your order ${orderNumber}` })
+    await sendNotification({ tokens: studentFcmTokens, title: "Payment Confirmation", body: `Your payment of ${formatPrice(paymentAmount)} for order ${orderNumber} has been received successfully!`, link: `${env.NEXTAUTH_URL}student/my_courses` })
+    await sendZohoEmail({ email: studentEmail, html, subject: `Thanks for your order ${orderNumber}` })
     const { success, error } = await sendWhatsAppMessage({
         prisma,
-        toNumber: phone,
+        toNumber: studentPhone,
         type: "OrderPaid",
         variables: {
-            name,
+            name: studentName,
             orderNumber,
             paymentAmount: formatPrice(paymentAmount),
             coursesLink: `${env.NEXTAUTH_URL}student/my_courses`
@@ -104,10 +120,10 @@ export async function orderPaymentEmail({ payment, student, order, remainingAmou
 export async function orderRefundEmail({ refund, student, order }: {
     refund: { refundAmount: number; createdAt: Date; };
     order: { orderNumber: string; amount: number; createdAt: Date; };
-    student: { name: string; email: string; phone: string; };
+    student: CommsUserData;
 }) {
     const { refundAmount } = refund
-    const { email, name, phone } = student
+    const { studentEmail, studentName, studentPhone, studentFcmTokens } = student
     const { orderNumber } = order
 
     const html = await EmailsWrapper({
@@ -116,17 +132,18 @@ export async function orderRefundEmail({ refund, student, order }: {
         props: {
             refundAmount: formatPrice(refundAmount),
             orderNumber,
-            name,
+            name: studentName,
         }
     })
 
-    await sendZohoEmail({ email, html, subject: `Thanks for your order ${orderNumber}` })
+    await sendNotification({ tokens: studentFcmTokens, title: "Refund Confirmation", body: `Your refund of ${formatPrice(refundAmount)} for order ${orderNumber} has been processed successfully!`, link: `${env.NEXTAUTH_URL}student/my_courses` })
+    await sendZohoEmail({ email: studentEmail, html, subject: `Thanks for your order ${orderNumber}` })
     const { success, error } = await sendWhatsAppMessage({
         prisma,
-        toNumber: phone,
+        toNumber: studentPhone,
         type: "OrderRefunded",
         variables: {
-            name,
+            name: studentName,
             orderNumber,
             refundAmount: formatPrice(refundAmount),
         },
@@ -134,12 +151,8 @@ export async function orderRefundEmail({ refund, student, order }: {
     return { success, error }
 }
 
-export async function sendNewUserCredintialsAndConfirm({ customerName, email, phone, password, prisma, userId }: {
+export async function sendNewUserCredintialsAndConfirm({ studentName, studentEmail, studentPhone, studentFcmTokens, password, prisma, studentId }: CommsUserData & {
     prisma: PrismaClient;
-    userId: string;
-    phone: string;
-    email: string;
-    customerName: string;
     password: string;
 }) {
     try {
@@ -147,50 +160,43 @@ export async function sendNewUserCredintialsAndConfirm({ customerName, email, ph
             EmailComp: CredentialsEmail,
             prisma,
             props: {
-                userEmail: email,
-                customerName,
+                userEmail: studentEmail,
+                customerName: studentName,
                 password,
                 courseLink: `${env.NEXTAUTH_URL}student/my_courses`,
             },
         });
 
         await sendZohoEmail({
-            email,
+            email: studentEmail,
             html,
             subject: `Your credentials for accessing the course materials`,
         });
 
-        const accessToken = await bcrypt.hash(userId, 10);
+        const accessToken = await bcrypt.hash(studentId, 10);
 
         const htmlConfirm = await EmailsWrapper({
             EmailComp: EmailConfirmation,
             prisma,
             props: {
-                customerName,
-                userEmail: email,
-                confirmationLink: `${env.NEXTAUTH_URL}email_conf/${userId}?access_token=${accessToken}`,
+                customerName: studentName,
+                userEmail: studentEmail,
+                confirmationLink: `${env.NEXTAUTH_URL}email_conf/${studentId}?access_token=${accessToken}`,
             },
         });
 
         await sendZohoEmail({
-            email,
+            email: studentEmail,
             html: htmlConfirm,
-            subject: `Confirm your email, ${customerName}`,
+            subject: `Confirm your email, ${studentName}`,
         });
 
         await sendWhatsAppMessage({
-            toNumber: phone, prisma, type: "CredentialsEmail", variables: {
-                email,
-                name: customerName,
+            toNumber: studentPhone, prisma, type: "CredentialsEmail", variables: {
+                email: studentEmail,
+                name: studentName,
                 password,
                 coursesLink: `${env.NEXTAUTH_URL}student/my_courses`,
-            }
-        })
-
-        await sendWhatsAppMessage({
-            toNumber: phone, prisma, type: "ConfirmEmail", variables: {
-                name: customerName,
-                confirmationLink: `${env.NEXTAUTH_URL}email_conf/${userId}?access_token=${accessToken}`,
             }
         })
     } catch (error) {
@@ -199,11 +205,8 @@ export async function sendNewUserCredintialsAndConfirm({ customerName, email, ph
     }
 }
 
-export async function placementTestScheduledComms({ courseSlug, studentName, studentEmail, studentPhone, testTime, testerName }: {
+export async function placementTestScheduledComms({ courseSlug, studentName, studentFcmTokens, studentEmail, studentPhone, testTime, testerName }: CommsUserData & {
     courseSlug: string;
-    studentName: string;
-    studentEmail: string;
-    studentPhone: string;
     testTime: Date;
     testerName: string;
 }) {
@@ -219,6 +222,7 @@ export async function placementTestScheduledComms({ courseSlug, studentName, stu
         }
     })
 
+    await sendNotification({ tokens: studentFcmTokens, title: "Placement Test Scheduled", body: `Your placement test has been scheduled for ${format(testTime, "PPPpp")}.`, link: `${env.NEXTAUTH_URL}student/placement_test/${courseSlug}` })
     await sendZohoEmail({ email: studentEmail, html, subject: `Your Placement Test Has Been Scheduled` })
     await sendWhatsAppMessage({
         prisma,
@@ -233,10 +237,7 @@ export async function placementTestScheduledComms({ courseSlug, studentName, stu
     })
 }
 
-export async function placementResultComms({ courseSlug, studentName, courseName, levelName, studentEmail, studentPhone }: {
-    studentName: string;
-    studentEmail: string;
-    studentPhone: string;
+export async function placementResultComms({ courseSlug, studentName, courseName, levelName, studentEmail, studentPhone, studentFcmTokens }: CommsUserData & {
     courseName: string;
     courseSlug: string;
     levelName: string;
@@ -252,6 +253,7 @@ export async function placementResultComms({ courseSlug, studentName, courseName
         }
     })
 
+    await sendNotification({ tokens: studentFcmTokens, title: "Placement Test Result", body: `Your placement test result is ready.`, link: `${env.NEXTAUTH_URL}student/placement_test/${courseSlug}` })
     await sendZohoEmail({ email: studentEmail, html, subject: `Your Placement Result is Ready` })
     await sendWhatsAppMessage({
         prisma,
@@ -266,10 +268,7 @@ export async function placementResultComms({ courseSlug, studentName, courseName
     })
 }
 
-export async function sendGroupCreatedComms({ studentName, trainerName, groupStartDate, courseName, courseSlug, studentEmail, studentPhone }: {
-    studentName: string;
-    studentEmail: string;
-    studentPhone: string;
+export async function sendGroupCreatedComms({ studentName, trainerName, studentFcmTokens, groupStartDate, courseName, courseSlug, studentEmail, studentPhone }: CommsUserData & {
     trainerName: string;
     groupStartDate: Date;
     courseName: string;
@@ -288,6 +287,7 @@ export async function sendGroupCreatedComms({ studentName, trainerName, groupSta
         }
     })
 
+    await sendNotification({ tokens: studentFcmTokens, title: "Group Created", body: `You have been added to a group for ${courseName} starting on ${formattedDate}.`, link: `${env.NEXTAUTH_URL}student/my_courses/${courseSlug}` })
     await sendZohoEmail({ email: studentEmail, html, subject: `You're enrolled in a group for ${courseName}` })
     await sendWhatsAppMessage({
         prisma,
@@ -301,10 +301,7 @@ export async function sendGroupCreatedComms({ studentName, trainerName, groupSta
     })
 }
 
-export async function sendSessionStartingSoonComms({ studentName, studentEmail, studentPhone, sessionDate, courseName, quizLink, zoomJoinLink }: {
-    studentName: string;
-    studentEmail: string;
-    studentPhone: string;
+export async function sendSessionStartingSoonComms({ studentName, studentEmail, studentFcmTokens, studentPhone, sessionDate, courseName, quizLink, zoomJoinLink }: CommsUserData & {
     sessionDate: Date;
     courseName: string;
     quizLink: string;
@@ -324,6 +321,7 @@ export async function sendSessionStartingSoonComms({ studentName, studentEmail, 
         }
     });
 
+    await sendNotification({ tokens: studentFcmTokens, title: "Session Starting Soon", body: `Your session for ${courseName} is starting soon!`, link: quizLink })
     await sendZohoEmail({ email: studentEmail, html, subject: `Your upcoming session for${courseName} is starting soon!` });
     await sendWhatsAppMessage({
         prisma,
@@ -338,10 +336,7 @@ export async function sendSessionStartingSoonComms({ studentName, studentEmail, 
     });
 }
 
-export async function sendSessionStartComms({ studentName, sessionTitle, courseName, zoomJoinLink, materialLink, materialSlug, studentEmail, studentPhone, uploads }: {
-    studentName: string;
-    studentEmail: string;
-    studentPhone: string;
+export async function sendSessionStartComms({ studentName, studentFcmTokens, sessionTitle, courseName, zoomJoinLink, materialLink, materialSlug, studentEmail, studentPhone, uploads }: CommsUserData & {
     courseName: string;
     sessionTitle: string;
     zoomJoinLink: string;
@@ -361,6 +356,7 @@ export async function sendSessionStartComms({ studentName, sessionTitle, courseN
         }
     });
 
+    await sendNotification({ tokens: studentFcmTokens, title: "Session Started", body: `Your session for ${courseName} has started!`, link: zoomJoinLink })
     await sendZohoEmail({ email: studentEmail, html, subject: `Your session for ${courseName} has started – join now!` });
     await sendWhatsAppMessage({
         prisma,
@@ -387,12 +383,9 @@ export async function sendSessionStartComms({ studentName, sessionTitle, courseN
     }))
 }
 
-export async function sendSessionEndComms({ studentName, nextSessionDate, assignmentLink, studentEmail, studentPhone, courseName, sessionTitle }: {
-    studentName: string;
+export async function sendSessionEndComms({ studentName, studentFcmTokens, nextSessionDate, assignmentLink, studentEmail, studentPhone, courseName, sessionTitle }: CommsUserData & {
     nextSessionDate: Date;
     assignmentLink: string;
-    studentEmail: string;
-    studentPhone: string;
     courseName: string;
     sessionTitle: string;
 }) {
@@ -410,6 +403,7 @@ export async function sendSessionEndComms({ studentName, nextSessionDate, assign
         }
     });
 
+    await sendNotification({ tokens: studentFcmTokens, title: "Session Ended", body: `Your session for ${courseName} has ended!`, link: assignmentLink })
     await sendZohoEmail({ email: studentEmail, html, subject: `${courseName} – Your session has ended. Here's what's next.` });
     await sendWhatsAppMessage({
         prisma,
@@ -423,11 +417,8 @@ export async function sendSessionEndComms({ studentName, nextSessionDate, assign
     });
 }
 
-export async function sendGroupEndComms({ studentName, finalTestLink, studentEmail, studentPhone, courseName }: {
-    studentName: string;
+export async function sendGroupEndComms({ studentName, finalTestLink, studentFcmTokens, studentEmail, studentPhone, courseName }: CommsUserData & {
     finalTestLink: string;
-    studentEmail: string;
-    studentPhone: string;
     courseName: string;
 }) {
     const html = await EmailsWrapper({
@@ -440,6 +431,7 @@ export async function sendGroupEndComms({ studentName, finalTestLink, studentEma
         }
     });
 
+    await sendNotification({ tokens: studentFcmTokens, title: "Group Completed", body: `Your group for ${courseName} has completed!`, link: finalTestLink })
     await sendZohoEmail({ email: studentEmail, html, subject: `Your ${courseName} Zoom sessions are done — it's time for your final test!` });
     await sendWhatsAppMessage({
         prisma,
@@ -453,11 +445,8 @@ export async function sendGroupEndComms({ studentName, finalTestLink, studentEma
     });
 }
 
-export async function sendCertificateComms({ studentName, certificateLink, studentEmail, studentPhone, courseName }: {
-    studentName: string;
+export async function sendCertificateComms({ studentName,studentFcmTokens, certificateLink, studentEmail, studentPhone, courseName }: CommsUserData & {
     certificateLink: string;
-    studentEmail: string;
-    studentPhone: string;
     courseName: string;
 }) {
     const html = await EmailsWrapper({
@@ -470,7 +459,8 @@ export async function sendCertificateComms({ studentName, certificateLink, stude
         }
     });
 
-    await sendZohoEmail({ email: studentEmail, html, subject: `Your ${courseName} Zoom sessions are done — it's time for your final test!` });
+    await sendNotification({ tokens: studentFcmTokens, title: "Certificate Ready", body: `Your certificate for ${courseName} is ready!`, link: certificateLink })
+    await sendZohoEmail({ email: studentEmail, html, subject: `Your certificate is now ready — Congratulations!` });
     await sendWhatsAppMessage({
         prisma,
         toNumber: studentPhone,
