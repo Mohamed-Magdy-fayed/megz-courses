@@ -1,7 +1,14 @@
 {
-    "cron": [
+    "crons": [
         {
             "path": "/api/internal/cron/starting-sessions",
+            "schedule": "* * * * *",
+            "headers": {
+                "authorization": "Bearer super-secret-token"
+            }
+        },
+        {
+            "path": "/api/internal/cron/starting-tests",
             "schedule": "* * * * *",
             "headers": {
                 "authorization": "Bearer super-secret-token"
