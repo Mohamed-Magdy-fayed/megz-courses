@@ -23,34 +23,39 @@ export type Meeting = {
 }
 
 export async function refreshZoomAccountToken(client: ZoomClient, prisma: PrismaClient) {
-    let data = QueryString.stringify({
-        'grant_type': 'refresh_token',
-        'refresh_token': client.refreshToken
-    });
-    let refreshConfig = {
-        method: 'post',
-        maxBodyLength: Infinity,
-        url: 'https://zoom.us/oauth/token',
-        headers: {
-            'Authorization': `Basic ${client.encodedIdSecret}`,
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        data: data
-    };
+    try {
+        let data = QueryString.stringify({
+            'grant_type': 'refresh_token',
+            'refresh_token': client.refreshToken
+        });
+        let refreshConfig = {
+            method: 'post',
+            maxBodyLength: Infinity,
+            url: 'https://zoom.us/oauth/token',
+            headers: {
+                'Authorization': `Basic ${client.encodedIdSecret}`,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            data: data
+        };
 
-    const refreshResponse = await axios.request(refreshConfig)
+        const refreshResponse = await axios.request(refreshConfig)
 
-    const refreshedClient = await prisma.zoomClient.update({
-        where: {
-            id: client.id,
-        },
-        data: {
-            accessToken: refreshResponse.data.access_token,
-            refreshToken: refreshResponse.data.refresh_token,
-        }
-    })
+        const refreshedClient = await prisma.zoomClient.update({
+            where: {
+                id: client.id,
+            },
+            data: {
+                accessToken: refreshResponse.data.access_token,
+                refreshToken: refreshResponse.data.refresh_token,
+            }
+        })
 
-    return refreshedClient
+        return refreshedClient
+    } catch (error: any) {
+        console.log(error.response?.data);
+        throw new Error(JSON.stringify(error.response?.data))
+    }
 }
 
 export async function getZoomAccountMeetings(client: ZoomClient, startDate?: Date, endDate?: Date) {

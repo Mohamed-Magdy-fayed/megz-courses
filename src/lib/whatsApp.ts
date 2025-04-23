@@ -236,6 +236,16 @@ We look forward to seeing you in class and supporting your progress every step o
         placeholders: ['name', 'trainerName', 'groupStartDate'],
     },
     {
+        name: 'Test Starting Soon',
+        type: MessageTemplateType.TestStartingSoon,
+        body: 'Hi {{name}}, 👋\n\nYour upcoming test for *{{courseName}}* is starting at *{{sessionTime}}*. Please make sure you\'re prepared!\n\nComplete the quick quiz before the test using the button below. 🎯\n\nSee you there! 🚀',
+        button: {
+            text: 'Take Quiz',
+            url: 'quizLink',
+        },
+        placeholders: ['name', 'courseName', 'sessionTime', 'quizLink'],
+    },
+    {
         name: 'Session Starting Soon',
         type: MessageTemplateType.SessionStartingSoon,
         body: 'Hi {{name}}, 👋\n\nYour upcoming session for *{{courseName}}* is starting at *{{sessionTime}}*. Please make sure you\'re prepared!\n\nComplete the quick quiz before the session using the button below. 🎯\n\nSee you there! 🚀',
@@ -344,6 +354,7 @@ export type MessageTemplatePlaceholders = {
     [MessageTemplateType.PlacementTestResult]: { studentName: string; levelName: string; courseName: string; courseLink: string; };
     [MessageTemplateType.AddedToWaitingList]: { name: string; courseName: string };
     [MessageTemplateType.AddedToGroup]: { name: string, trainerName: string, groupStartDate: string };
+    [MessageTemplateType.TestStartingSoon]: { name: string; courseName: string; sessionTime: string; quizLink: string; };
     [MessageTemplateType.SessionStartingSoon]: { name: string; courseName: string; sessionTime: string; quizLink: string; };
     [MessageTemplateType.SessionStarted]: { name: string; courseName: string; sessionLink: string; };
     [MessageTemplateType.SessionMaterials]: { filename: string; link: string; };

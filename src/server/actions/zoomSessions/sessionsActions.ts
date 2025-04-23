@@ -1,12 +1,14 @@
 import { preMeetingLinkConstructor } from "@/lib/meetingsHelpers";
-import { sendGroupEndComms, sendSessionEndComms, sendSessionStartComms, sendSessionStartingSoonComms } from "@/server/actions/emails";
+import { sendGroupEndComms, sendNotification, sendPlacementTestStartingSoonComms, sendSessionEndComms, sendSessionStartComms, sendSessionStartingSoonComms } from "@/server/actions/emails";
 import { Course, CourseLevel, MaterialItem, PrismaClient, SessionStatus, User, ZoomGroup, ZoomSession } from "@prisma/client";
 import { env } from "process";
 import { formatUserForComms } from "@/lib/fcmhelpers"
+import { ROOT_EMAIL } from "@/server/constants";
+import { format } from "date-fns";
 
 export async function handleSessionStatusUpdate({ prisma, sessionStatus, students, course, level, material, updatedSession, zoomGroup, isZoom, isAllSessionsScheduled, currentUserId, isAllSessionsCompleted, nextSession }: {
     prisma: PrismaClient;
-    currentUserId: string;
+    currentUserId?: string;
     isZoom: boolean;
     isAllSessionsScheduled: boolean;
     isAllSessionsCompleted: boolean;
@@ -121,7 +123,7 @@ export async function handleSessionStatusUpdate({ prisma, sessionStatus, student
                         updatedAt: new Date(),
                         updatedBy: "System"
                     }],
-                    createdByUser: { connect: { id: currentUserId } },
+                    createdByUser: { connect: currentUserId ? { id: currentUserId } : { email: ROOT_EMAIL } },
                     createdForStudent: { connect: { id: st.id } }
                 }
             })
@@ -132,5 +134,33 @@ export async function handleSessionStatusUpdate({ prisma, sessionStatus, student
                 finalTestLink: `${env.NEXTAUTH_URL}student/my_courses/${course.slug}/${level.slug}/final_test`,
             })
         }))
+    }
+}
+
+export async function handlePlacementTestProgress({ course, isZoom, sessionStatus, student, tester, updatedSession }: {
+    sessionStatus: SessionStatus;
+    course: Course;
+    student: User;
+    tester: User;
+    updatedSession: ZoomSession;
+    isZoom: boolean;
+}) {
+    if (sessionStatus === "Starting") {
+        const zoomJoinLink = preMeetingLinkConstructor({
+            isZoom,
+            meetingNumber: updatedSession.meetingNumber,
+            meetingPassword: updatedSession.meetingPassword,
+            sessionTitle: `Placement Test - ${course.name}`,
+            sessionId: updatedSession.id,
+        })
+        await sendPlacementTestStartingSoonComms({
+            courseName: course.name,
+            quizLink: `${env.NEXTAUTH_URL}student/placement_test/${course.slug}`,
+            ...formatUserForComms(student),
+            zoomJoinLink,
+            sessionDate: updatedSession.sessionDate,
+        })
+
+        await sendNotification({ tokens: tester.fcmTokens, title: "📅 Test Starting Soon", body: `Your test for ${course.name} with student: ${student.name} is starting soon at ${format(updatedSession.sessionDate, "PPp")}!\nTake the quize now!`, link: zoomJoinLink })
     }
 }

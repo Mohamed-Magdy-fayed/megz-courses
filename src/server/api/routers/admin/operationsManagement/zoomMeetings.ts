@@ -113,6 +113,7 @@ export const zoomMeetingsRouter = createTRPCRouter({
 
                 async function getMeetingData(isZoom: boolean) {
                     if (isZoom) {
+                        
                         const updatedZoomClient = await refreshZoomAccountToken(zoomClient!, ctx.prisma)
                         const { meetingNumber, meetingPassword } = await createZoomMeeting({
                             topic,
@@ -130,7 +131,7 @@ export const zoomMeetingsRouter = createTRPCRouter({
                             timezone: "Africa/Cairo",
                             type: 2,
                         }, updatedZoomClient?.accessToken!)
-
+                        
                         return { meetingNumber, meetingPassword }
                     } else {
                         const token = await generateToken({ api_key: zoomClient?.accessToken!, api_secret: zoomClient?.refreshToken! })

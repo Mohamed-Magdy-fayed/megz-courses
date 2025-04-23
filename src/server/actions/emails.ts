@@ -23,6 +23,7 @@ import CourseCompletionCongratulationsEmail from "@/components/general/emails/Co
 import { CommsUserData } from "@/lib/fcmhelpers";
 import { firebaseAdmin } from "@/server/firebase-admin";
 import { Message } from "firebase-admin/lib/messaging/messaging-api";
+import UpcomingTestReminderEmail from "@/components/general/emails/UpcomingTestReminderEmail";
 
 type SendNotificationInput = {
     tokens: string[];
@@ -42,7 +43,11 @@ export async function sendNotification({ tokens, body, link, title }: SendNotifi
             },
         }
 
-        await firebaseAdmin.messaging().send(payload)
+        try {
+            await firebaseAdmin.messaging().send(payload)
+        } catch (error) {
+            console.log(error);
+        }
     }))
 }
 
@@ -332,12 +337,47 @@ export async function sendSessionStartingSoonComms({ studentName, studentEmail, 
         }
     });
 
-    await sendNotification({ tokens: studentFcmTokens, title: "Session Starting Soon", body: `Your session for ${courseName} is starting soon!`, link: quizLink })
+    await sendNotification({ tokens: studentFcmTokens, title: "📅 Session Starting Soon", body: `Your session for ${courseName} is starting soon at ${sessionTime}!\nTake the quize now!`, link: quizLink })
     await sendZohoEmail({ email: studentEmail, html, subject: `Your upcoming session for${courseName} is starting soon!` });
     await sendWhatsAppMessage({
         prisma,
         toNumber: studentPhone,
         type: "SessionStartingSoon",
+        variables: {
+            courseName,
+            name: studentName,
+            quizLink,
+            sessionTime,
+        },
+    });
+}
+
+export async function sendPlacementTestStartingSoonComms({ studentName, studentEmail, studentFcmTokens, studentPhone, sessionDate, courseName, quizLink, zoomJoinLink }: CommsUserData & {
+    sessionDate: Date;
+    courseName: string;
+    quizLink: string;
+    zoomJoinLink: string;
+}) {
+    const sessionTime = format(sessionDate, "PPPpp");
+
+    const html = await EmailsWrapper({
+        EmailComp: UpcomingTestReminderEmail,
+        prisma,
+        props: {
+            studentName,
+            courseName,
+            quizLink,
+            sessionDate: sessionTime,
+            zoomJoinLink,
+        }
+    });
+
+    await sendNotification({ tokens: studentFcmTokens, title: "📅 Test Starting Soon", body: `Your test for ${courseName} is starting soon at ${sessionTime}!\nTake the quize now!`, link: quizLink })
+    await sendZohoEmail({ email: studentEmail, html, subject: `Your upcoming test for${courseName} is starting soon!` });
+    await sendWhatsAppMessage({
+        prisma,
+        toNumber: studentPhone,
+        type: "TestStartingSoon",
         variables: {
             courseName,
             name: studentName,

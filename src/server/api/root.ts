@@ -33,13 +33,15 @@ import { chatAgentsRouter } from "@/server/api/routers/admin/usersManagement/cha
 import { salesAgentsRouter } from "@/server/api/routers/admin/usersManagement/salesAgents";
 import { trainersRouter } from "@/server/api/routers/admin/usersManagement/trainers";
 import { usersRouter } from "@/server/api/routers/admin/usersManagement/users";
+import { cronRouter } from "@/server/api/routers/cronJobs";
 import { authRouter } from "@/server/api/routers/general/auth";
 import { emailsRouter } from "@/server/api/routers/general/emails";
 import { pushNotificationsRouter } from "@/server/api/routers/general/pushNotifications";
 import { certificatesRouter } from "@/server/api/routers/student/certificates";
 import { selfServeRouter } from "@/server/api/routers/student/selfServe";
 import { systemFormSubmissionsRouter } from "@/server/api/routers/student/systemFormSubmissions";
-import { createTRPCRouter } from "@/server/api/trpc";
+import { createCallerFactory, createTRPCContext, createTRPCRouter } from "@/server/api/trpc";
+import { NextApiRequest, NextApiResponse } from "next";
 
 /**
  * This is the primary router for your server.
@@ -88,7 +90,16 @@ export const appRouter = createTRPCRouter({
   payments: paymentsRouter,
   refunds: refundsRouter,
   pushNotifications: pushNotificationsRouter,
+  cron: cronRouter,
 });
 
 // export type definition of API
 export type AppRouter = typeof appRouter;
+
+export const getCaller = async (req: NextApiRequest, res: NextApiResponse) => {
+  const ctx = await createTRPCContext({ req, res });
+  const createCaller = createCallerFactory(appRouter);
+  return createCaller({
+    ...ctx
+  });
+}

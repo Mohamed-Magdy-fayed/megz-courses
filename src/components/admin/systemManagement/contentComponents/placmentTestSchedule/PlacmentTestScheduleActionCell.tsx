@@ -6,9 +6,9 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { CheckSquare, Copy, ChevronDownIcon, TargetIcon, Trash2Icon } from "lucide-react";
+import { CheckSquare, Copy, ChevronDownIcon, TargetIcon, Trash2Icon, CalendarClockIcon } from "lucide-react";
 import { toastType, useToast } from "@/components/ui/use-toast";
-import { useState } from "react";
+import { SetStateAction, useState } from "react";
 import { api } from "@/lib/api";
 import { env } from "@/env.mjs";
 import { createMutationOptions } from "@/lib/mutationsHelper";
@@ -16,6 +16,7 @@ import { AlertModal } from "@/components/general/modals/AlertModal";
 import Link from "next/link";
 // import { Meeting } from "@prisma/client";
 import SubmitLevelModal from "@/components/general/modals/SubmitLevelModal";
+import SchedulePlacementTestModal from "@/components/general/modals/SchedulePlacementTestModal";
 
 interface ActionCellProps {
     id: string;
@@ -34,6 +35,7 @@ const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, cou
     const { toastInfo, toast, toastError } = useToast();
     const [isOpen, setIsOpen] = useState(false)
     const [isSubmitLevelOpen, setIsSubmitLevelOpen] = useState(false)
+    const [isRescheduleOpen, setIsRescheduleOpen] = useState(false)
     const [isDeleteOpen, setIsDeleteOpen] = useState(false)
     const [loadingToast, setLoadingToast] = useState<toastType | undefined>()
     const [level, setLevel] = useState<string>()
@@ -101,6 +103,12 @@ const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, cou
                 handleSubmitLevel={handleSubmitLevel}
                 oralQuestions={oralTestQuestions}
             />
+            <SchedulePlacementTestModal
+                courseId={courseId}
+                userId={userId}
+                isScheduleTestOpen={isRescheduleOpen}
+                setIsScheduleTestOpen={setIsRescheduleOpen}
+            />
             <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
                 <DropdownMenuTrigger asChild>
                     <Button customeColor="mutedOutlined" variant={"outline"} className="w-full h-fit p-0" >
@@ -125,6 +133,13 @@ const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, cou
                     }}>
                         <CheckSquare className="w-4 h-4 mr-2" />
                         Submit Level
+                    </DropdownMenuItem>
+                    <DropdownMenuItem disabled={isLevelSubmitted === "Completed"} onClick={() => {
+                        setIsOpen(false)
+                        setIsRescheduleOpen(true)
+                    }}>
+                        <CalendarClockIcon className="w-4 h-4 mr-2" />
+                        Reschedule Test
                     </DropdownMenuItem>
                     <DropdownMenuItem disabled={!!loadingToast} onClick={() => {
                         setIsOpen(false)

@@ -1,0 +1,32 @@
+{
+    "cron": [
+        {
+            "path": "/api/internal/cron/starting-sessions",
+            "schedule": "* * * * *",
+            "headers": {
+                "authorization": "Bearer super-secret-token"
+            }
+        },
+        {
+            "path": "/api/internal/cron/missed-sessions",
+            "schedule": "* * * * *",
+            "headers": {
+                "authorization": "Bearer super-secret-token"
+            }
+        },
+        {
+            "path": "/api/internal/cron/completed-sessions",
+            "schedule": "* * * * *",
+            "headers": {
+                "authorization": "Bearer super-secret-token"
+            }
+        },
+        {
+            "path": "/api/internal/cron/completed-groups",
+            "schedule": "* * * * *",
+            "headers": {
+                "authorization": "Bearer super-secret-token"
+            }
+        }
+    ]
+}

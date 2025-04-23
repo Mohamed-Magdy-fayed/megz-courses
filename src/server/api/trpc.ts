@@ -15,6 +15,8 @@ import { ZodError } from "zod";
 import { getServerAuthSession } from "@/server/auth";
 import { prisma } from "@/server/db";
 import { Devices } from "@prisma/client";
+import { NextApiRequest, NextApiResponse } from "next";
+import { appRouter } from "@/server/api/root";
 
 /**
  * 1. CONTEXT
@@ -117,6 +119,7 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
  * @see https://trpc.io/docs/router
  */
 export const createTRPCRouter = t.router;
+export const createCallerFactory = t.createCallerFactory;
 
 /**
  * Public (unauthenticated) procedure

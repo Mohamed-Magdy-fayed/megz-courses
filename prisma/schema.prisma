@@ -747,6 +747,7 @@ enum MessageTemplateType {
     PlacementTestResult
     AddedToWaitingList
     AddedToGroup
+    TestStartingSoon
     SessionStartingSoon
     SessionStarted
     SessionMaterials
