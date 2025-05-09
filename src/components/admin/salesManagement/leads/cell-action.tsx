@@ -11,7 +11,7 @@ import { Copy, ExternalLink, ChevronDownIcon, PackagePlus, Trash, View } from "l
 import { useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { AssignModal } from "../../../general/modals/AssignModal";
-import { Lead } from "./LeadsColumn";
+import { LeadColumn } from "./LeadsColumn";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { AlertModal } from "@/components/general/modals/AlertModal";
 import { createMutationOptions } from "@/lib/mutationsHelper";
@@ -23,7 +23,7 @@ import { hasPermission } from "@/server/permissions";
 import CreateOrderModal from "@/components/admin/salesManagement/modals/CreateOrderModal";
 
 interface CellActionProps {
-  data: Lead;
+  data: LeadColumn;
 }
 
 const CellAction: React.FC<CellActionProps> = ({ data }) => {
@@ -151,13 +151,13 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
               Assign to me
             </DropdownMenuItem>
           )}
-          <DropdownMenuItem disabled={data.stage?.defaultStage !== "Qualified"} onClick={() => (setIsOpen(false), setIsCreateOrderOpen(true))}>
+          <DropdownMenuItem disabled={data.stageName !== "Qualified"} onClick={() => (setIsOpen(false), setIsCreateOrderOpen(true))}>
             <PackagePlus className="w-4 h-4 mr-2" />
             Create Order
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuLabel>Move To</DropdownMenuLabel>
-          {data.stages?.filter(s => s.name !== data.stageName).map(stage => (
+          {data.stagesData.filter(s => s.name !== data.stageName).map(stage => (
             <DropdownMenuItem key={stage.id} onClick={() => handleMoveLead(stage.id)}>
               {stage.name}
             </DropdownMenuItem>

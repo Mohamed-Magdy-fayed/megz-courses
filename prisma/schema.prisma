@@ -147,7 +147,7 @@ model User {
     teacherId             String?                @db.ObjectId
     tester                Tester?                @relation("UserToTester")
     testerId              String?                @db.ObjectId
-    SalesAgent            SalesAgent?            @relation("UserToSalesAgent")
+    salesAgent            SalesAgent?            @relation("UserToSalesAgent")
     salesAgentId          String?                @db.ObjectId
     chatAgent             ChatAgent?             @relation("UserToChatAgent")
     supportChat           SupportChat?           @relation("UserToChat")
@@ -237,7 +237,6 @@ model Course {
     systemForms     SystemForm[]
     certificates    Certificate[]
     courseStatus    CourseStatus[]
-    orders          Order[]
     productItems    ProductItem[]
     updatedAt       DateTime        @updatedAt
     createdAt       DateTime        @default(now())
@@ -335,11 +334,8 @@ model Order {
     refunds         Refund[]
     courseStatuses  CourseStatus[]
     status          OrderStatus    @default(Pending)
-    course          Course?        @relation(fields: [courseId], references: [id])
-    courseId        String?        @db.ObjectId
-    product         Product?       @relation(fields: [productId], references: [id])
-    productId       String?        @db.ObjectId
-    courseType      CourseType?
+    product         Product        @relation(fields: [productId], references: [id])
+    productId       String         @db.ObjectId
     refundRequester String?        @db.ObjectId
     paymentIntentId String?
     paymentLink     String?
@@ -916,16 +912,15 @@ model SystemFormSubmission {
 }
 
 model Product {
-    id              String        @id @default(auto()) @map("_id") @db.ObjectId
-    price           Int
-    discountedPrice Int?
-    name            String
-    description     String?
-    image           String?
-    isActive        Boolean
-    isPrivate       Boolean
-    orders          Order[]
-    productItems    ProductItem[]
+    id           String        @id @default(auto()) @map("_id") @db.ObjectId
+    groupPrice   Int
+    privatePrice Int
+    name         String
+    description  String?
+    image        String?
+    isActive     Boolean
+    orders       Order[]
+    productItems ProductItem[]
 
     updatedAt DateTime @updatedAt
     createdAt DateTime @default(now())

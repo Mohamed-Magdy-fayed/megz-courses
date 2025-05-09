@@ -4,17 +4,15 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { cn, formatPrice } from '@/lib/utils'
-import { BookOpen, BookOpenCheck, BookPlus } from 'lucide-react'
+import { BookOpen } from 'lucide-react'
 import { Typography } from '@/components/ui/Typoghraphy'
 import { Skeleton } from '@/components/ui/skeleton'
-import EnrollmentModal from './EnrollmentModal'
 import { api } from '@/lib/api'
 import { useSession } from 'next-auth/react'
 
 const LandingCourseCard = ({ course }: {
     course: Course & {
         _count: {
-            orders: number;
             levels: number;
         };
     }
@@ -68,38 +66,6 @@ const LandingCourseCard = ({ course }: {
                             <BookOpen />
                         </Button>
                     </Link>
-                    {userQuery.data?.user?.courseStatus.some(status => status.courseId === course.id) ? (
-                        <Link href={`/student/my_courses/${userQuery.data.user.courseStatus.find(status => status.courseId === course.id)?.course.slug}`}>
-                            <Button>
-                                <Typography>
-                                    Go to courses
-                                </Typography>
-                                <BookOpenCheck />
-                            </Button>
-                        </Link>
-                    ) : (
-                        <>
-                            <EnrollmentModal
-                                target={{
-                                    type: "course",
-                                    id: course.id,
-                                    name: course.name,
-                                    groupPrice: course.groupPrice,
-                                    privatePrice: course.privatePrice,
-                                }}
-                                open={open}
-                                setOpen={setOpen}
-                            />
-                            <Button
-                                onClick={() => setOpen(true)}
-                            >
-                                <Typography>
-                                    Endoll Now!
-                                </Typography>
-                                <BookPlus />
-                            </Button>
-                        </>
-                    )}
                 </CardFooter>
             </Card>
         </div>

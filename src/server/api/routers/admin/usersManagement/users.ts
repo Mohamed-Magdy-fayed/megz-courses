@@ -43,11 +43,15 @@ export const usersRouter = createTRPCRouter({
       return { users };
     }),
   getStudents: protectedProcedure
-    .query(async ({ ctx }) => {
+    .input(z.object({
+      ids: z.array(z.string()),
+    }).optional())
+    .query(async ({ ctx, input }) => {
       if (!hasPermission(ctx.session.user, "users", "view")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
 
       const users = await ctx.prisma.user.findMany({
         where: {
+          ...(input?.ids ? { id: { in: input.ids } } : {}),
           userRoles: { equals: ["Student"] },
         },
         orderBy: {
@@ -86,7 +90,7 @@ export const usersRouter = createTRPCRouter({
 
       return users
     }),
-  getUsersTest: protectedProcedure
+  getUsersPaginated: protectedProcedure
     .input(createGenericSchema<StudentColumns>())
     .query(async ({ ctx, input: { dateRanges, filters, searches, pageIndex, pageSize, sorting } }) => {
       if (!hasPermission(ctx.session.user, "users", "view")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" });
@@ -134,109 +138,6 @@ export const usersRouter = createTRPCRouter({
         counts,
       };
     }),
-  getUsersFunc: protectedProcedure
-    .input(createGenericSchema<StudentColumns>())
-    .mutation(async ({ ctx, input: { dateRanges, filters, searches, pageIndex, pageSize, sorting } }) => {
-      if (!hasPermission(ctx.session.user, "users", "view")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" });
-
-      const whereConditions: Prisma.UserWhereInput = {
-        ...createWhereConditions({ dateRanges, filters, searches }),
-        userRoles: { equals: ["Student" as UserRoles] },
-      }
-
-      const filteredWhere: Prisma.UserWhereInput = {
-        ...whereConditions,
-        device: !whereConditions.device ? undefined : validDeviceTypes.includes(whereConditions.device as Devices) ? whereConditions.device : { isSet: false },
-      }
-
-      const users = await ctx.prisma.user.findMany({
-        where: filteredWhere,
-        orderBy: sorting.length > 0 ? transformSortingForPrisma(sorting) : [{ createdAt: "desc" }],
-        select: {
-          _count: true, name: true, email: true, phone: true, address: true, id: true, image: true, emailVerified: true,
-          payments: true, createdAt: true, device: true,
-        },
-        take: pageSize,
-        skip: pageSize * pageIndex
-      });
-
-      const [totalCount, filteredCount, ...deviceCounts] = await ctx.prisma.$transaction([
-        ctx.prisma.user.count({ where: { userRoles: { equals: ["Student" as UserRoles] } } }),
-        ctx.prisma.user.count({ where: filteredWhere }),
-        ...[...validDeviceTypes, null].map(dt => ctx.prisma.user.count({
-          where: {
-            ...filteredWhere,
-            device: dt ? dt : { isSet: false },
-          }
-        }))
-      ]);
-
-      const counts = {
-        totalCount,
-        filteredCount,
-        deviceCounts: Object.fromEntries([...validDeviceTypes, null].map((dt, i) => [dt, deviceCounts[i]])) as Record<Devices, number>,
-      };
-
-      return {
-        users,
-        counts,
-      };
-    }),
-  getDeviceCounts: protectedProcedure
-    .input(createGenericSchema<StudentColumns>())
-    .mutation(async ({ ctx, input: { dateRanges, filters, searches, pageIndex, pageSize, sorting } }) => {
-      if (!hasPermission(ctx.session.user, "users", "view")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" });
-
-      const [totalCount, filteredCount, ...deviceCounts] = await ctx.prisma.$transaction([
-        ctx.prisma.user.count({ where: { userRoles: { equals: ["Student" as UserRoles] } } }),
-        ctx.prisma.user.count({ where: { userRoles: { equals: ["Student" as UserRoles] } } }),
-        ...[...validDeviceTypes, null].map(dt => ctx.prisma.user.count({
-          where: {
-            userRoles: { equals: ["Student" as UserRoles] },
-            device: dt ? dt : { isSet: false },
-          }
-        }))
-      ]);
-
-      const counts = {
-        totalCount,
-        filteredCount,
-        deviceCounts: Object.fromEntries([...validDeviceTypes, null].map((dt, i) => [dt, deviceCounts[i]])) as Record<Devices, number>,
-      };
-
-      return {
-        counts,
-      };
-    }),
-  getUsers: protectedProcedure
-    .input(
-      z.object({
-        userRole: z.enum(validUserRoles),
-      })
-    )
-    .query(async ({ ctx, input: { userRole } }) => {
-      if (!hasPermission(ctx.session.user, "users", "view")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
-
-      const users = await ctx.prisma.user.findMany({
-        where: {
-          AND: [
-            { userRoles: { has: userRole } },
-            { NOT: { userRoles: { has: "Admin" } } },
-          ]
-        },
-        orderBy: {
-          id: "desc"
-        },
-        include: {
-          orders: true,
-          zoomGroups: { include: { zoomSessions: true } },
-          systemFormSubmissions: true,
-          courseStatus: true
-        },
-      });
-
-      return { users };
-    }),
   getRetintionsUsers: protectedProcedure
     .query(async ({ ctx }) => {
       if (!hasPermission(ctx.session.user, "users", "view")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
@@ -273,7 +174,7 @@ export const usersRouter = createTRPCRouter({
       const user = await ctx.prisma.user.findUnique({
         where: { id },
         include: {
-          orders: { include: { course: { include: { levels: true, orders: { include: { user: true } } } } } },
+          orders: { include: { product: { include: { orders: { include: { user: true } } } } } },
           systemFormSubmissions: true,
           zoomGroups: { include: { zoomSessions: true, teacher: { include: { user: true } }, course: true, students: true, courseLevel: true }, },
           placementTests: {
@@ -302,7 +203,7 @@ export const usersRouter = createTRPCRouter({
       const user = await ctx.prisma.user.findUnique({
         where: { id },
         include: {
-          orders: { include: { course: { include: { levels: true, orders: { include: { user: true } } } }, lead: { include: { assignee: { include: { user: true } } } }, user: true } },
+          orders: { include: { product: { include: { orders: { include: { user: true } } } }, lead: { include: { assignee: { include: { user: true } } } }, user: true } },
           systemFormSubmissions: true,
           zoomGroups: { include: { zoomSessions: true, teacher: { include: { user: true } }, course: true, students: true, courseLevel: true }, },
           placementTests: {
@@ -334,7 +235,7 @@ export const usersRouter = createTRPCRouter({
           email,
         },
         include: {
-          orders: { include: { course: { include: { orders: { include: { user: true } } } } } },
+          orders: { include: { product: { include: { orders: { include: { user: true } } } } } },
           studentNotes: { include: { createdByUser: true, mentions: true } },
           placementTests: {
             include: {
@@ -456,7 +357,7 @@ export const usersRouter = createTRPCRouter({
               chatAgent: userRole === "ChatAgent" ? { create: {} } : undefined,
               teacher: userRole === "Teacher" ? { create: {} } : undefined,
               tester: userRole === "Tester" ? { create: {} } : undefined,
-              SalesAgent: userRole === "SalesAgent" ? { create: {} } : undefined,
+              salesAgent: userRole === "SalesAgent" ? { create: {} } : undefined,
             }
           })
         )),
@@ -541,7 +442,7 @@ export const usersRouter = createTRPCRouter({
             chatAgent: userRoles?.includes("ChatAgent") ? {
               connectOrCreate: { where: { userId: user.id }, create: {} }
             } : undefined,
-            SalesAgent: userRoles?.includes("SalesAgent") ? {
+            salesAgent: userRoles?.includes("SalesAgent") ? {
               connectOrCreate: { where: { userId: user.id }, create: {} }
             } : undefined,
             emailVerified: user.email !== email ? null : undefined

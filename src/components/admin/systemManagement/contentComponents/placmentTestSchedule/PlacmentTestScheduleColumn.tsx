@@ -86,7 +86,7 @@ export const columns: ColumnDef<PlacmentTestScheduleRow>[] = [
     {
         accessorKey: "isLevelSubmitted",
         cell: ({ row }) => <SeverityPill color={row.original.isLevelSubmitted === "Completed" ? "success" : "destructive"} children={row.original.isLevelSubmitted} />,
-        filterFn: (row, columnId, filterValue) => row.original.isLevelSubmitted !== filterValue
+        filterFn: (row, columnId, filterValue) => row.original.isLevelSubmitted === filterValue
     },
     {
         accessorKey: "createdAt",

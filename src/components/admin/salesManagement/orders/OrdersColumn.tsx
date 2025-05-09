@@ -32,11 +32,8 @@ export type OrderColumns = {
   userName: string;
   userImage: string;
   refundRequester: string | null;
-  courseId?: string;
-  courseSlug?: string;
-  courseName?: string;
-  productId?: string;
-  productName?: string;
+  productId: string;
+  productName: string;
 }
 
 export const orderColumns: ColumnDef<OrderColumns>[] = [
@@ -99,7 +96,6 @@ export const orderColumns: ColumnDef<OrderColumns>[] = [
       </Dialog>
   },
   { accessorKey: "paidAt", cell: ({ row }) => !row.original.paidAt ? "NA" : format(row.original.paidAt, "PP"), filterFn },
-  { accessorKey: "courseId", cell: ({ row }) => !row.original.isStudentView && <Link className="in-table-link" href={`/admin/system_management/content/courses/${row.original.courseSlug}`}>{row.original.courseName}</Link> },
   { accessorKey: "productId", cell: ({ row }) => !row.original.isStudentView && <Link className="in-table-link" href={`/admin/system_management/products/${row.original.productId}`}>{row.original.productName}</Link> },
   { accessorKey: "leadCode", cell: ({ row }) => !row.original.isStudentView && <Link className="in-table-link" href={`/admin/sales_management/leads/${row.original.leadCode}`}>{row.original.leadCode}</Link> },
   { id: "action", header: "Actions", cell: ({ row }) => !row.original.isStudentView && <OrderActions data={row.original} /> },

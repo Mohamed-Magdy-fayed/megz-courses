@@ -17,7 +17,7 @@ function SchedulePlacementTestModal({ courseId, userId, isScheduleTestOpen, setI
     const [loadingToast, setLoadingToast] = useState<toastType>()
 
     const { toast } = useToast()
-    const { data: testersData } = api.trainers.getAvialableTesters.useQuery({ startTime: testTime! }, { enabled: !!testTime })
+    const { data: testersData } = api.trainers.getAvialableTesters.useQuery({ startTime: testTime! }, { enabled: !!testTime && !!isScheduleTestOpen })
     const { data: zoomClients } = api.zoomAccounts.getZoomAccounts.useQuery();
 
     const trpcUtils = api.useUtils()

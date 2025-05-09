@@ -12,18 +12,18 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev --experimental-https",
-    "postinstall": "prisma generate && prisma db push",
+    "postinstall": "prisma generate",
     "lint": "next lint",
     "start": "next start",
+    "seed": "npx tsx src/lib/seed/index.ts",
     "prebuild": "npx tsc --noEmit",
-    "ngrok": "ngrok http 3000",
-    "db": "cd ./mongodb-cluster && docker compose up --wait",
+    "ngrok": "ngrok http http://localhost:3000",
+    "db": "cd ./mongodb-cluster && docker compose up --detach",
     "dbprod": "cd ./mongodb-cluster-prod && docker compose up --wait",
     "dep": "git add . & git commit -m \"auto commit\" & git push",
     "local-to-cloud": "mongodump --uri=\"mongodb://mongo1:27017/dev111\" --out=./dump && mongorestore --uri=\"mongodb://megz:megz@ac-ojzympx-shard-00-00.qilsmnc.mongodb.net:27017,ac-ojzympx-shard-00-01.qilsmnc.mongodb.net:27017,ac-ojzympx-shard-00-02.qilsmnc.mongodb.net:27017/prod?ssl=true&replicaSet=atlas-ud3hsu-shard-0&authSource=Admin&retryWrites=true&w=majority\" ./dump/dev111",
     "cloud-to-local": "mongodump --uri=\"mongodb://megz:megz@ac-ojzympx-shard-00-00.qilsmnc.mongodb.net:27017,ac-ojzympx-shard-00-01.qilsmnc.mongodb.net:27017,ac-ojzympx-shard-00-02.qilsmnc.mongodb.net:27017/prod?ssl=true&replicaSet=atlas-ud3hsu-shard-0&authSource=Admin&retryWrites=true&w=majority\" --out=./dump/dev && mongorestore --uri=\"mongodb://mongo1:27017/dev\" ./dump/dev/prod",
-    "docker": "docker login ghcr.io && docker build . -t ghcr.io/mohamed-magdy-fayed/courses-app:latest && docker push ghcr.io/mohamed-magdy-fayed/courses-app:latest",
-    "dockerdb": "docker login ghcr.io && docker build ./mongodb-cluster -t ghcr.io/mohamed-magdy-fayed/courses-app-db:latest && docker push ghcr.io/mohamed-magdy-fayed/courses-app-db:latest"
+    "docker": "docker login ghcr.io && docker build . -t ghcr.io/mohamed-magdy-fayed/courses-app:latest && docker push ghcr.io/mohamed-magdy-fayed/courses-app:latest"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.1.1",
@@ -75,6 +75,7 @@
     "jsrsasign": "^11.1.0",
     "lodash": "^4.17.21",
     "lucide-react": "^0.258.0",
+    "mongodb": "^6.16.0",
     "mongoose": "^8.13.2",
     "next": "^15.1.6",
     "next-auth": "^4.22.1",
@@ -99,6 +100,7 @@
     "zustand": "^4.3.8"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.7.0",
     "@types/bcrypt": "^5.0.0",
     "@types/eslint": "^8.37.0",
     "@types/howler": "^2.2.11",
@@ -122,6 +124,7 @@
     "prisma": "^6.4.1",
     "tailwind-scrollbar": "^3.0.4",
     "tailwindcss": "^3.3.0",
+    "tsx": "^4.19.3",
     "typescript": "^5.0.4"
   },
   "ct3aMetadata": {

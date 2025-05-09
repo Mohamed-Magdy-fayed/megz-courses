@@ -62,7 +62,7 @@ type Permissions = {
     },
     orders: {
         dataType: Partial<Order>
-        action: "view" | "create" | "update" | "delete" | "pay"
+        action: "view" | "create" | "update" | "delete" | "pay" | "cancel"
     },
     zoomGroups: {
         dataType: Partial<ZoomGroup>

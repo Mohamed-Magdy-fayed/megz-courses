@@ -15,7 +15,7 @@ import { useEffect, useState } from "react"
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import ProductShowcase from "@/components/admin/systemManagement/contentComponents/materials/ProductShowcase"
 
-const CoursePage = ({ id }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const ProductPage = ({ id }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const { status } = useSession()
 
     const { data, refetch } = api.products.getById.useQuery({ id })
@@ -47,7 +47,6 @@ const CoursePage = ({ id }: InferGetServerSidePropsType<typeof getServerSideProp
                             <div>
                                 <Typography variant={"secondary"}>Description</Typography>
                                 <div>{data.product.description}</div>
-                                <div>{data.product.isPrivate ? "Private classes" : "In group classes"}</div>
                             </div>
                             <div>
                                 <Typography variant={"secondary"}>Contents: </Typography>
@@ -61,11 +60,10 @@ const CoursePage = ({ id }: InferGetServerSidePropsType<typeof getServerSideProp
                         <CardFooter className="flex gap-4 items-center justify-between flex-wrap p-4">
                             <EnrollmentModal
                                 target={{
-                                    type: "product",
                                     id: data.product.id,
                                     name: data.product.name,
-                                    price: data.product.price,
-                                    discountedPrice: data.product.discountedPrice ?? 0,
+                                    privatePrice: data.product.privatePrice,
+                                    groupPrice: data.product.groupPrice,
                                 }}
                                 open={open}
                                 setOpen={setOpen}
@@ -79,9 +77,7 @@ const CoursePage = ({ id }: InferGetServerSidePropsType<typeof getServerSideProp
                                 <BookPlus />
                             </Button>
                             <Typography>
-                                {formatPrice(data.product.discountedPrice ?? data.product.price)}
-                                {" "}
-                                {data.product.discountedPrice && <span className='line-through text-destructive'>{formatPrice(data.product.price)}</span>}
+                                {formatPrice(data.product.groupPrice)}
                             </Typography>
                         </CardFooter>
                     </Card>
@@ -118,4 +114,4 @@ export const getServerSideProps: GetServerSideProps<{ id: string }> = async (ctx
     }
 }
 
-export default CoursePage
+export default ProductPage

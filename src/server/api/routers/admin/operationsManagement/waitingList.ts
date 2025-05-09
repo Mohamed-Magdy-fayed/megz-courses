@@ -1,49 +1,11 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import { validCourseStatuses } from "@/lib/enumsTypes";
 import { hasPermission } from "@/server/permissions";
 import { placementResultComms } from "@/server/actions/emails";
 import { formatUserForComms } from "@/lib/fcmhelpers"
 
 export const waitingListRouter = createTRPCRouter({
-    queryFullList: protectedProcedure
-        .input(z.object({ status: z.enum(validCourseStatuses) }))
-        .query(async ({ ctx, input: { status } }) => {
-            const fullList = await ctx.prisma.courseStatus.findMany({
-                where: {
-                    status,
-                },
-                include: {
-                    course: { include: { levels: true, orders: true } },
-                    level: true,
-                    user: true,
-                },
-                orderBy: { createdAt: "asc" }
-            })
-
-            const statusCounts = await ctx.prisma.courseStatus.groupBy({
-                by: ['status'],
-                _count: true,
-            });
-
-            return { fullList, statusCounts }
-        }),
-    getFullWaitingList: protectedProcedure
-        .query(async ({ ctx }) => {
-            const fullList = await ctx.prisma.courseStatus.findMany({
-                where: {
-                    status: "Waiting",
-                },
-                include: {
-                    course: { include: { levels: true, orders: true } },
-                    level: true,
-                    user: true,
-                },
-                orderBy: { createdAt: "asc" }
-            })
-            return { fullList }
-        }),
     addToWaitingList: protectedProcedure
         .input(z.object({
             courseId: z.string(),

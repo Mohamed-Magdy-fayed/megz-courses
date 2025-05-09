@@ -16,11 +16,10 @@ import { z } from "zod"
 export const productSchema = z.object({
     id: z.string(),
     isActive: z.boolean(),
-    isPrivate: z.boolean(),
     name: z.string(),
-    price: z.number(),
+    privatePrice: z.number(),
+    groupPrice: z.number(),
     description: z.string().optional(),
-    discountedPrice: z.number().optional(),
 })
 
 type FormValues = z.infer<typeof productSchema>
@@ -35,10 +34,9 @@ export default function ProductForm({ setIsOpen, initialData }: { initialData?: 
         defaultValues: {
             id: initialData?.id ?? "",
             isActive: initialData?.isActive === "Active" ? true : false,
-            isPrivate: initialData?.isPrivate === "Private" ? true : false,
             name: initialData?.name ?? "",
-            price: initialData?.price ?? undefined,
-            discountedPrice: initialData?.discountedPrice ?? undefined,
+            privatePrice: initialData?.privatePrice ?? undefined,
+            groupPrice: initialData?.groupPrice ?? undefined,
             description: initialData?.description ?? undefined,
         }
     })
@@ -116,10 +114,10 @@ export default function ProductForm({ setIsOpen, initialData }: { initialData?: 
                 <div className="flex items-start justify-between gap-4">
                     <FormField
                         control={form.control}
-                        name="price"
+                        name="privatePrice"
                         render={({ field }) => (
                             <FormItem className="p-2">
-                                <FormLabel>Price</FormLabel>
+                                <FormLabel>Private Price</FormLabel>
                                 <FormControl>
                                     <Input
                                         type="number"
@@ -135,10 +133,10 @@ export default function ProductForm({ setIsOpen, initialData }: { initialData?: 
                     />
                     <FormField
                         control={form.control}
-                        name="discountedPrice"
+                        name="groupPrice"
                         render={({ field }) => (
                             <FormItem className="p-2">
-                                <FormLabel>Discount Price</FormLabel>
+                                <FormLabel>Group Price</FormLabel>
                                 <FormControl>
                                     <Input
                                         type="number"
@@ -148,7 +146,6 @@ export default function ProductForm({ setIsOpen, initialData }: { initialData?: 
                                         onChange={(e) => field.onChange(e.target.valueAsNumber)}
                                     />
                                 </FormControl>
-                                <FormDescription>Leave blank to use the main price only.</FormDescription>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -170,27 +167,6 @@ export default function ProductForm({ setIsOpen, initialData }: { initialData?: 
                                             onCheckedChange={(val) => field.onChange(val)}
                                         />
                                         <FormLabel>Is Active?</FormLabel>
-                                    </div>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="isPrivate"
-                        render={({ field }) => (
-                            <FormItem className="p-2">
-                                <FormControl>
-                                    <div className="flex items-center gap-4">
-                                        <Switch
-                                            name={field.name}
-                                            ref={field.ref}
-                                            disabled={!!loadingToast}
-                                            checked={field.value}
-                                            onCheckedChange={(val) => field.onChange(val)}
-                                        />
-                                        <FormLabel>Is Private?</FormLabel>
                                     </div>
                                 </FormControl>
                                 <FormMessage />

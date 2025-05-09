@@ -47,14 +47,12 @@ export default function ProductsClient() {
     }
 
     const formattedData: ProductColumn[] = data?.products
-        .map(({ id, isActive, isPrivate, description, discountedPrice, name, price, orders, createdAt, updatedAt }) => ({
+        .map(({ id, isActive, description, name, groupPrice, privatePrice, orders, createdAt, updatedAt }) => ({
             id,
             isActive: isActive ? "Active" : "Inactive",
-            isPrivate: isPrivate ? "Private" : "Group",
             description,
-            discountedPrice,
             name,
-            price,
+            groupPrice, privatePrice,
             orders,
             amounts: orders.reduce((a, b) => a + b.amount, 0),
             createdAt,
@@ -80,31 +78,24 @@ export default function ProductsClient() {
                             { label: "Inactive", value: "Inactive" },
                         ]
                     },
-                    {
-                        key: "isPrivate", filterName: "Is Private", values: [
-                            { label: "Private", value: "Private" },
-                            { label: "Group", value: "Group" },
-                        ]
-                    },
                 ]}
                 searches={[
                     { key: "name", label: "Product Name" },
-                    { key: "price", label: "Price" },
-                    { key: "discountedPrice", label: "Discount Price" },
+                    { key: "privatePrice", label: "Private Price" },
+                    { key: "groupPrice", label: "Group Price" },
                 ]}
                 sum={{ key: "amounts", label: "Orders" }}
                 isLoading={isLoading}
                 exportConfig={{ fileName: "Products", sheetName: "Products" }}
-                importConfig={{ reqiredFields: ["name", "price", "discountedPrice", "description", "isActive", "isPrivate"], sheetName: "Products", templateName: "Products Template" }}
+                importConfig={{ reqiredFields: ["name", "privatePrice", "groupPrice", "description", "isActive"], sheetName: "Products", templateName: "Products Template" }}
                 handleImport={(input) => {
-                    const importData = input.map(({ name, price, isActive, isPrivate, description, discountedPrice }) => ({
+                    const importData = input.map(({ name, privatePrice, groupPrice, isActive, description }) => ({
                         id: "",
                         name,
-                        price: Number(price),
+                        privatePrice: Number(privatePrice),
+                        groupPrice: Number(groupPrice),
                         isActive: isActive === "Active" ? true : false,
-                        isPrivate: isPrivate === "Private" ? true : false,
                         description: description ?? undefined,
-                        discountedPrice: discountedPrice ? Number(discountedPrice) : undefined,
                     }))
 
                     const { success, data, error } = z.array(productSchema).safeParse(importData)

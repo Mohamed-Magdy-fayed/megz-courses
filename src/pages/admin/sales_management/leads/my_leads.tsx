@@ -5,7 +5,7 @@ import { PaperContainer } from "@/components/ui/PaperContainers";
 import LeadsClient from "@/components/admin/salesManagement/leads/LeadsClient";
 import { Button, SpinnerButton } from "@/components/ui/button";
 import { Edit, ListChecks, ChevronDownIcon, PlusSquare, Trash } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Modal from "@/components/ui/modal";
 import LeadsForm from "@/components/admin/salesManagement/leads/LeadsForm";
 import StageForm from "@/components/admin/salesManagement/leads/StageForm";
@@ -20,7 +20,7 @@ import SelectField from "@/components/ui/SelectField";
 import { formatPercentage } from "@/lib/utils";
 import { ArrowRightToLine } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Lead } from "@/components/admin/salesManagement/leads/LeadsColumn";
+import { LeadColumn } from "@/components/admin/salesManagement/leads/LeadsColumn";
 import { useSession } from "next-auth/react";
 import WrapWithTooltip from "@/components/ui/wrap-with-tooltip";
 import { SeverityPill } from "@/components/ui/SeverityPill";
@@ -35,13 +35,12 @@ const MyLeadsPage: NextPage = () => {
     const [resetSelection, setResetSelection] = useState(false)
     const [loadingToast, setLoadingToast] = useState<toastType>()
     const [values, setValues] = useState<string[]>([])
-    const [selectedLeads, setSelectedLeads] = useState<Lead[]>([])
+    const [selectedLeads, setSelectedLeads] = useState<LeadColumn[]>([])
 
     const { data: sessionData } = useSession()
     const { toast } = useToast()
     const trpcUtils = api.useUtils()
 
-    const { data: leadsData } = api.leads.getMyLeads.useQuery()
     const { data: stagesData, isLoading } = api.leadStages.getLeadStages.useQuery()
     const { data: labelsData } = api.leadLabels.getLeadLabels.useQuery()
     const importLeadsMutation = api.leads.import.useMutation(
@@ -77,6 +76,34 @@ const MyLeadsPage: NextPage = () => {
     const handleImport = (data: { name: string, email: string, phone: string }[]) => {
         importLeadsMutation.mutate(data);
     }
+
+    
+    const {
+        totalLeads,
+        convertedLeads,
+        conversionRate,
+        leadStageCounts,
+        getStageCount,
+    } = useMemo(() => {
+        const getStageCount = (stageName: string) => counts[stageName] || 0;
+
+        if (!stagesData?.stages) return { totalLeads: 0, convertedLeads: 0, conversionRate: 0, leadStageCounts: {}, getStageCount: () => 0 };
+
+        const total = stagesData?.stages.reduce((sum, stage) => sum + stage._count.leads, 0);
+        const converted = stagesData?.stages.find(stage => stage.name === "Converted")?._count.leads || 0;
+        const rate = total > 0 ? (converted / total) * 100 : 0;
+        const counts = Object.fromEntries(
+            stagesData?.stages.map(stage => [stage.name, stage._count.leads])
+        );
+
+        return {
+            totalLeads: total,
+            convertedLeads: converted,
+            conversionRate: rate,
+            leadStageCounts: counts,
+            getStageCount,
+        };
+    }, [stagesData?.stages]);
 
     return (
         <AppLayout>
@@ -140,12 +167,12 @@ const MyLeadsPage: NextPage = () => {
                                 <TabsTrigger value="2">Lost</TabsTrigger>
                             </TabsList>
                         ) : (
-                            <TabsList className="w-full">
+                            <TabsList>
                                 {stagesData?.stages.map(stage => (
                                     <TabsTrigger key={`${stage.id}trigger`} className="flex items-center gap-2" value={stage.name}>
                                         <Typography>{stage.name}</Typography>
                                         <SeverityPill color="info" className="aspect-square">
-                                            {stage.leads.filter(l => l.assignee?.userId === sessionData?.user.id).length}
+                                            {getStageCount(stage.name)}
                                         </SeverityPill>
                                     </TabsTrigger>
                                 ))}
@@ -223,19 +250,14 @@ const MyLeadsPage: NextPage = () => {
                                     />
                                 </div>
                                 <div className="flex items-center gap-4 justify-between p-4 md:justify-start md:gap-8">
-                                    <Typography className="text-info">Intake {stagesData.stages.flatMap(stage => stage.leads.filter(l => l.assignee?.userId === sessionData?.user.id)).length}</Typography>
+                                    <Typography className="text-info">Intake {totalLeads}</Typography>
                                     <ArrowRightToLine />
-                                    <Typography className="text-success">Converted {stagesData.stages.filter(stage => stage.defaultStage === "Converted").flatMap(stage => stage.leads.filter(l => l.assignee?.userId === sessionData?.user.id)).length}</Typography>
+                                    <Typography className="text-success">Converted {convertedLeads}</Typography>
                                     <ArrowRightToLine />
-                                    <Typography className="text-destructive">Convertion Rate {formatPercentage(stagesData.stages.filter(stage => stage.defaultStage === "Converted").flatMap(stage => stage.leads.filter(l => l.assignee?.userId === sessionData?.user.id)).length / stagesData.stages.flatMap(stage => stage.leads.filter(l => l.assignee?.userId === sessionData?.user.id)).length * 100)}</Typography>
+                                    <Typography className="text-destructive">Convertion Rate {formatPercentage(conversionRate)}</Typography>
                                 </div>
                                 <LeadsClient
-                                    stage={{
-                                        ...stage,
-                                        leads: values.length > 0
-                                            ? stage.leads.filter(lead => lead.labels.some(label => values.some(val => label.value === val)) && lead.assignee?.userId === sessionData?.user.id)
-                                            : stage.leads.filter(lead => lead.assignee?.userId === sessionData?.user.id)
-                                    }}
+                                    stageName={stage.name}
                                     resetSelection={resetSelection}
                                     stagesData={stagesData.stages}
                                     handleImport={handleImport}

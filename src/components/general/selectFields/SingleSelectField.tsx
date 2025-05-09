@@ -55,7 +55,7 @@ function SingleSelectField<T>({ selected, setSelected, isLoading, placeholder, d
             <PopoverContent className="p-0 mx-4" avoidCollisions collisionPadding={20}>
                 <Command>
                     {!disableSearch && <CommandInput placeholder={placeholder} />}
-                    <CommandEmpty>No redults.</CommandEmpty>
+                    <CommandEmpty>No results.</CommandEmpty>
                     <CommandGroup>
                         <ScrollArea className="h-60">
                             {data.map((item, i) => (

@@ -17,7 +17,7 @@ export const getAddress = (address: Address) => `${address?.city || "no city"} -
 
 export const leadsCodeGenerator = (createdAt?: Date) => `Lead-${createdAt?.getTime() || Date.now()}`
 
-export const orderCodeGenerator = () => `SO-${Date.now()}`
+export const orderCodeGenerator = (createdAt?: Date) => `SO-${createdAt?.getTime() || Date.now()}-${Math.floor(Number(Math.random().toFixed(2)) * 100)}`
 
 export const hasAccess = (currentUserRole: UserRoles, userRoles: UserRoles[]) => {
   return userRoles.some(t => t === currentUserRole)
@@ -106,12 +106,6 @@ export const getDifferenceMargin = <T extends DataObject>(
 
 export type CourseType = Course & {
   levels: CourseLevel[];
-  orders: (Order & {
-    user: User & {
-      courseStatus: CourseStatus[];
-      orders: Order[];
-    };
-  })[];
   courseStatus: (CourseStatus & { user: User })[];
 }
 

@@ -46,7 +46,7 @@ const StudentClient = () => {
   const tableStates = useServerDataTable()
   const userSchema = useDynamicSchema(tableStates.columnFilters, dateRanges, searches, filters)
 
-  const { data, isLoading } = api.users.getUsersTest.useQuery({
+  const { data, isLoading } = api.users.getUsersPaginated.useQuery({
     pageIndex: tableStates.pagination.pageIndex,
     pageSize: tableStates.pagination.pageSize,
     sorting: tableStates.sorting as { id: keyof StudentColumns, desc: boolean }[],
@@ -126,7 +126,7 @@ const StudentClient = () => {
     dataCount: data?.counts.filteredCount,
     pageIndex: tableStates.pagination.pageIndex,
     pageSize: tableStates.pagination.pageSize,
-    prefetchFn: trpcUtils.users.getUsersTest.prefetch,
+    prefetchFn: trpcUtils.users.getUsersPaginated.prefetch,
     dateRanges: userSchema.dateRanges,
     filters: userSchema.filters,
     searches: userSchema.searches,

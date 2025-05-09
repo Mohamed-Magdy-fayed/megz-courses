@@ -1,4 +1,4 @@
-import { columns, Lead } from "./LeadsColumn";
+import { columns, LeadColumn } from "./LeadsColumn";
 import { DataTable } from "@/components/ui/DataTable";
 import { Dispatch, FC, SetStateAction, useState } from "react";
 import { LeadStage, Prisma } from "@prisma/client";
@@ -7,21 +7,23 @@ import { createMutationOptions } from "@/lib/mutationsHelper";
 import { toastType, useToast } from "@/components/ui/use-toast";
 
 type LeadsClientProps = {
-  stage: Prisma.LeadStageGetPayload<{ include: { leads: { include: { orders: true, labels: true, assignee: { include: { user: true } } } } } }>;
-  stagesData: LeadStage[];
+  stageName: string;
+  stagesData: { id: string, name: string }[];
   resetSelection: boolean;
   handleImport: (data: { name: string, email: string, phone: string }[]) => void;
-  setSelectedLeads: Dispatch<SetStateAction<Lead[]>>;
+  setSelectedLeads: Dispatch<SetStateAction<LeadColumn[]>>;
 }
 
-const LeadsClient: FC<LeadsClientProps> = ({ resetSelection, stage, stagesData, handleImport, setSelectedLeads }) => {
-  const [data, setData] = useState<Lead[]>([])
+const LeadsClient: FC<LeadsClientProps> = ({ stageName, stagesData, resetSelection, handleImport, setSelectedLeads }) => {
+  const [data, setData] = useState<LeadColumn[]>([])
   const [loadingToast, setLoadingToast] = useState<toastType>()
 
   const { toast } = useToast()
   const trpcUtils = api.useUtils()
 
-  const formattedData: Lead[] = stage.leads.map(({
+  const { data: leads, isLoading } = api.leads.getLeads.useQuery({ name: stageName })
+
+  const formattedData: LeadColumn[] = leads?.map(({
     userId,
     name,
     code,
@@ -35,11 +37,12 @@ const LeadsClient: FC<LeadsClientProps> = ({ resetSelection, stage, stagesData, 
     assignee,
     labels,
     reminders,
+    isReminderSet,
     createdAt,
     updatedAt,
   }) => {
     const lastReminder = reminders[reminders.length - 1]?.time
-    const isOverdue = (lastReminder && lastReminder < new Date())
+    const isOverdue = (lastReminder && lastReminder < new Date() && isReminderSet)
     const dueToday = lastReminder && lastReminder.toDateString() === new Date().toDateString()
 
     return ({
@@ -51,19 +54,18 @@ const LeadsClient: FC<LeadsClientProps> = ({ resetSelection, stage, stagesData, 
       message: message || "",
       phone: phone || "",
       source,
-      stage,
-      stages: stagesData,
-      stageName: stage.name,
+      stageName,
+      stagesData,
       assignee,
       labels,
-      isOverdue: !lastReminder ? "Not set" : isOverdue ? "Overdue" : dueToday ? "Due today" : "Due later",
+      isOverdue: (!lastReminder || !isReminderSet) ? "Not set" : isOverdue ? "Overdue" : dueToday ? "Due today" : "Due later",
       assigneeName: assignee?.user.name || "Not Assigned",
       image: image || "",
       userId: userId || "",
       createdAt,
       updatedAt,
     })
-  })
+  }) || []
 
   const [callback, setCallback] = useState<() => void>()
   const deleteLeadsMutation = api.leads.deleteLead.useMutation(
@@ -87,6 +89,7 @@ const LeadsClient: FC<LeadsClientProps> = ({ resetSelection, stage, stagesData, 
 
   return (
     <DataTable
+      isLoading={isLoading}
       columns={columns}
       data={formattedData || []}
       setData={(data) => {
@@ -108,8 +111,8 @@ const LeadsClient: FC<LeadsClientProps> = ({ resetSelection, stage, stagesData, 
         templateName: "Leads Import Template"
       }}
       exportConfig={{
-        sheetName: `${stage.name} Stage`,
-        fileName: `${stage.name} Stage Leads`
+        sheetName: `${stageName} Stage`,
+        fileName: `${stageName} Stage Leads`
       }}
       searches={[
         { key: "code", label: "Code" },

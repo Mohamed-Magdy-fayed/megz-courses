@@ -1,16 +1,15 @@
 import { env } from "@/env.mjs"
 import { createPaymentIntent } from "@/lib/paymobHelpers";
-import { leadsCodeGenerator, orderCodeGenerator } from "@/lib/utils";
+import { leadsCodeGenerator } from "@/lib/utils";
 import { PrismaClient } from "@prisma/client"
 import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
 import { isOrderFullyPaid, isOrderFullyRefunded } from "@/server/actions/salesManagement/transactions";
 import { prisma } from "@/server/db";
 
-type CourseOrder = { courseId: string; isPrivate: boolean; };
-type ProductOrder = { productId: string; }
+type ProductOrder = { productId: string; isPrivate: boolean; }
 
-export async function createProductOrderPayment({ prisma, studentId, productId }: ProductOrder & { prisma: PrismaClient; studentId: string }) {
+export async function createOrderPayment({ prisma, studentId, productId, orderNumber, isPrivate }: ProductOrder & { prisma: PrismaClient; studentId: string; orderNumber: string }) {
     const [user, lead, product] = await prisma.$transaction([
         prisma.user.findUnique({ where: { id: studentId }, include: { leads: true } }),
         prisma.lead.findFirst({ where: { userId: studentId } }),
@@ -19,9 +18,8 @@ export async function createProductOrderPayment({ prisma, studentId, productId }
 
     if (!user) throw new Error("Missing user")
     if (!product) throw new Error("Missing a product")
-    const amount = product.discountedPrice ?? product.price
+    const amount = isPrivate ? product.privatePrice : product.groupPrice
 
-    const orderNumber = orderCodeGenerator()
     const intentResponse = await createPaymentIntent(amount, product, user, orderNumber)
     const paymentLink = `${env.PAYMOB_BASE_URL}/unifiedcheckout/?publicKey=${env.PAYMOB_PUBLIC_KEY}&clientSecret=${intentResponse.client_secret}`
 
@@ -32,32 +30,6 @@ export async function createProductOrderPayment({ prisma, studentId, productId }
         user,
         lead,
         product,
-        amount,
-    }
-}
-
-export async function createCourseOrderPayment({ prisma, studentId, courseId, isPrivate }: CourseOrder & { prisma: PrismaClient; studentId: string }) {
-    const [user, lead, course] = await prisma.$transaction([
-        prisma.user.findUnique({ where: { id: studentId } }),
-        prisma.lead.findFirst({ where: { userId: studentId } }),
-        prisma.course.findUnique({ where: { id: courseId } }),
-    ])
-
-    if (!user) throw new Error("Missing user")
-    if (!course) throw new Error("Missing a course")
-    const amount = isPrivate ? course.privatePrice : course.groupPrice
-
-    const orderNumber = orderCodeGenerator()
-    const intentResponse = await createPaymentIntent(amount, course, user, orderNumber)
-    const paymentLink = `${env.PAYMOB_BASE_URL}/unifiedcheckout/?publicKey=${env.PAYMOB_PUBLIC_KEY}&clientSecret=${intentResponse.client_secret}`
-
-    return {
-        paymentLink,
-        paymentIntentId: intentResponse.id,
-        orderNumber,
-        user,
-        lead,
-        course,
         amount,
     }
 }

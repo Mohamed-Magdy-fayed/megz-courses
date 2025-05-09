@@ -58,9 +58,7 @@ const LandingProductCard = ({ product }: {
                     </div>
                     <div className="grid grid-cols-2 px-4 py-2 bg-muted/10 whitespace-nowrap">
                         <Typography>
-                            {formatPrice(product.discountedPrice ?? product.price)}
-                            {" "}
-                            {product.discountedPrice && <span className='line-through text-destructive'>{formatPrice(product.price)}</span>}
+                            {formatPrice(product.groupPrice)}
                         </Typography>
                         <Typography className="text-success text-end">{product._count.productItems} Items</Typography>
                     </div>
@@ -74,11 +72,10 @@ const LandingProductCard = ({ product }: {
                     </Link>
                     <EnrollmentModal
                         target={{
-                            type: "product",
                             id: product.id,
                             name: product.name,
-                            price: product.price,
-                            discountedPrice: product.discountedPrice ?? 0,
+                            privatePrice: product.privatePrice,
+                            groupPrice: product.groupPrice,
                         }}
                         open={open}
                         setOpen={setOpen}

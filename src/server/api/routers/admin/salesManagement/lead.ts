@@ -1,18 +1,10 @@
-import { leadsCodeGenerator, orderCodeGenerator } from "@/lib/utils";
+import { leadsCodeGenerator } from "@/lib/utils";
 import {
     createTRPCRouter,
     protectedProcedure,
 } from "@/server/api/trpc";
 import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
-import { randomUUID } from "crypto";
-import bcrypt from "bcrypt";
 import { z } from "zod";
-import { createPaymentIntent } from "@/lib/paymobHelpers";
-import { env } from "@/env.mjs";
-import { EmailsWrapper } from "@/components/general/emails/EmailsWrapper";
-import { CredentialsEmail } from "@/components/general/emails/CredintialsEmail";
-import { sendZohoEmail } from "@/lib/emailHelpers";
-import { sendWhatsAppMessage } from "@/lib/whatsApp";
 import { hasPermission } from "@/server/permissions";
 
 export const leadsRouter = createTRPCRouter({
@@ -74,16 +66,23 @@ export const leadsRouter = createTRPCRouter({
             return { count: leads.count }
         }),
     getLeads: protectedProcedure
-        .query(async ({ ctx }) => {
+        .input(z.object({
+            name: z.string(),
+        }).optional())
+        .query(async ({ ctx, input }) => {
             const leads = await ctx.prisma.lead.findMany({
+                where: {
+                    leadStage: input?.name ? { name: input.name } : undefined,
+                },
                 include: {
                     leadStage: true, assignee: { include: { user: true } },
                     labels: true,
                     notes: true,
-                }
+                },
+                orderBy: { createdAt: "desc" },
             });
 
-            return { leads };
+            return leads;
         }),
     getLeadOrders: protectedProcedure
         .input(z.object({
@@ -95,7 +94,6 @@ export const leadsRouter = createTRPCRouter({
                 include: {
                     user: true,
                     lead: { include: { assignee: { include: { user: true } } } },
-                    course: true,
                     product: true,
                     payments: true,
                     refunds: true,
@@ -177,21 +175,7 @@ export const leadsRouter = createTRPCRouter({
                     labels: true,
                     notes: true,
                     interactions: { include: { customer: true, salesAgent: { include: { user: true } } } },
-                    orders: {
-                        include: {
-                            course: { include: { systemForms: true } },
-                            user: {
-                                include: {
-                                    placementTests: {
-                                        where: {
-                                            course: { orders: { some: { lead: { code } } } }
-                                        },
-                                        include: { zoomSessions: { include: { zoomClient: true } } },
-                                    }
-                                }
-                            },
-                        }
-                    },
+                    orders: true,
                 }
             });
 
@@ -328,121 +312,6 @@ export const leadsRouter = createTRPCRouter({
                     updatedLeads
                 }
             }
-        }),
-    convertLead: protectedProcedure
-        .input(z.object({
-            leadId: z.string(),
-            name: z.string(),
-            phone: z.string(),
-            email: z.string().email(),
-            courseId: z.string(),
-            isPrivate: z.boolean(),
-        }))
-        .mutation(async ({ ctx, input: { leadId, email, name, phone, courseId, isPrivate } }) => {
-            if (!hasPermission(ctx.session.user, "leads", "update")) throw new TRPCError({
-                code: "UNAUTHORIZED",
-                message: "You are not authorized to create orders, Please contact your Admin!"
-            })
-
-            const salesAgentUser = await ctx.prisma.user.findUnique({ where: { id: ctx.session.user.id }, include: { SalesAgent: true } })
-            if (!salesAgentUser) throw new TRPCError({ code: "BAD_REQUEST", message: "No salesagent user found!" })
-
-            const course = await ctx.prisma.course.findUnique({ where: { id: courseId } })
-            if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "Course not found!" })
-
-            const password = "@P" + randomUUID().toString().split("-")[0] as string;
-            const hashedPassword = await bcrypt.hash(password, 10)
-            const user = await ctx.prisma.user.findUnique({ where: { name, email, phone, hashedPassword, emailVerified: new Date() } })
-            if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "unable to create user" })
-
-            const totalPrice = isPrivate ? course.privatePrice : course.groupPrice
-            const orderNumber = orderCodeGenerator()
-
-            const intentResponse = await createPaymentIntent(totalPrice, course, user, orderNumber)
-            if (!intentResponse.client_secret) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "intent failed" })
-
-            const paymentLink = `${env.PAYMOB_BASE_URL}/unifiedcheckout/?publicKey=${env.PAYMOB_PUBLIC_KEY}&clientSecret=${intentResponse.client_secret}`
-
-            const convertedStage = await ctx.prisma.leadStage.findUnique({ where: { defaultStage: "Converted" } })
-            if (!convertedStage) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Default Stage Missing!" })
-
-            const order = await ctx.prisma.order.create({
-                data: {
-                    amount: totalPrice,
-                    orderNumber,
-                    paymentLink,
-                    lead: { connect: { id: leadId } },
-                    course: { connect: { id: courseId } },
-                    user: { connect: { id: user.id } },
-                    courseType: { id: courseId, isPrivate }
-                },
-                include: {
-                    course: true,
-                    user: true,
-                    lead: { include: { assignee: { include: { user: true } } } }
-                },
-            })
-
-            await ctx.prisma.$transaction([
-                ctx.prisma.lead.update({
-                    where: { id: leadId },
-                    data: {
-                        leadStageId: convertedStage.id
-                    }
-                }),
-                ctx.prisma.courseStatus.create({
-                    data: {
-                        status: "OrderCreated",
-                        course: { connect: { id: courseId } },
-                        user: { connect: { id: user.id } },
-                        order: { connect: { id: order.id } }
-                    }
-                }),
-                ctx.prisma.userNote.create({
-                    data: {
-                        sla: 0,
-                        status: "Closed",
-                        title: `Quick Order Placed by ${salesAgentUser.name}`,
-                        type: "Info",
-                        createdForStudent: { connect: { id: user.id } },
-                        messages: [{
-                            message: `An order was placed by ${salesAgentUser.name} for Student ${user.name} regarding course ${course.name} for a ${isPrivate ? "private" : "group"} purchase the order is now awaiting payment\nPayment Link: ${paymentLink}`,
-                            updatedAt: new Date(),
-                            updatedBy: "System"
-                        }],
-                        createdByUser: { connect: { id: salesAgentUser.id } },
-                    }
-                })
-            ])
-
-            const courseLink = `${env.NEXT_PUBLIC_NEXTAUTH_URL}student/my_courses`
-            const html = await EmailsWrapper({
-                EmailComp: CredentialsEmail,
-                prisma: ctx.prisma,
-                props: {
-                    courseLink,
-                    customerName: name,
-                    password,
-                    userEmail: email,
-                }
-            })
-
-            await sendZohoEmail({ email, html, subject: `Your credentials for accessing the course materials` })
-            await sendWhatsAppMessage({
-                prisma: ctx.prisma, toNumber: phone, type: "CredentialsEmail", variables: {
-                    name,
-                    email,
-                    password,
-                    coursesLink: courseLink
-                }
-            })
-
-            return {
-                order,
-                password,
-                user,
-                paymentLink,
-            };
         }),
     editLead: protectedProcedure
         .input(z.object({

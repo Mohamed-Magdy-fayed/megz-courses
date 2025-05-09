@@ -1,0 +1,60 @@
+import { UserRoles } from "@prisma/client";
+
+export const salesAgentsData = [
+    {
+        name: "Ahmed El-Masry",
+        email: "ahmed.elmasry@gmail.com",
+        password: "$2b$10$eBcWICrtSsH.I3YnB4y1xub2pY4AVFF.3DyGMPgoxP7YYCju7lbCO",
+        phone: "201112345678",
+        image: "/avatars/avatar-anika-visser.png",
+        agentType: UserRoles.OperationAgent,
+    },
+    {
+        name: "Fatma Abdelrahman",
+        email: "fatma.abdelrahman@gmail.com",
+        password: "$2b$10$eBcWICrtSsH.I3YnB4y1xub2pY4AVFF.3DyGMPgoxP7YYCju7lbCO",
+        phone: "201022234567",
+        image: "/avatars/avatar-carson-darrin.png",
+        agentType: UserRoles.OperationAgent,
+    },
+    {
+        name: "Mohamed Hossam",
+        email: "mohamed.hossam@gmail.com",
+        password: "$2b$10$eBcWICrtSsH.I3YnB4y1xub2pY4AVFF.3DyGMPgoxP7YYCju7lbCO",
+        phone: "201512345678",
+        image: "/avatars/avatar-fran-perez.png",
+        agentType: UserRoles.SalesAgent,
+    },
+    {
+        name: "Sara Mohamed",
+        email: "sara.mohamed@gmail.com",
+        password: "$2b$10$eBcWICrtSsH.I3YnB4y1xub2pY4AVFF.3DyGMPgoxP7YYCju7lbCO",
+        phone: "201222233344",
+        image: "/avatars/avatar-iulia-albu.png",
+        agentType: UserRoles.SalesAgent,
+    },
+    {
+        name: "Omar Ahmed",
+        email: "omar.ahmed@gmail.com",
+        password: "$2b$10$eBcWICrtSsH.I3YnB4y1xub2pY4AVFF.3DyGMPgoxP7YYCju7lbCO",
+        phone: "201012345678",
+        image: "/avatars/avatar-jie-yan-song.png",
+        agentType: UserRoles.SalesAgent,
+    },
+    {
+        name: "Ali Hassan",
+        email: "ali.hassan@gmail.com",
+        password: "$2b$10$eBcWICrtSsH.I3YnB4y1xub2pY4AVFF.3DyGMPgoxP7YYCju7lbCO",
+        phone: "201222233345",
+        image: "/avatars/avatar-miron-vitold.png",
+        agentType: UserRoles.SalesAgent,
+    },
+    {
+        name: "Mona Maher",
+        email: "mona.maher@gmail.com",
+        password: "$2b$10$eBcWICrtSsH.I3YnB4y1xub2pY4AVFF.3DyGMPgoxP7YYCju7lbCO",
+        phone: "201512345679",
+        image: "/avatars/avatar-nasimiyu-danai.png",
+        agentType: UserRoles.SalesAgent,
+    },
+]

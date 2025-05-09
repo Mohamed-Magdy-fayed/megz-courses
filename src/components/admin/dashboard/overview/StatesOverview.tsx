@@ -103,13 +103,13 @@ export default function StatesOverview() {
         const {
           difference: progressSinceLastWeek,
           total: progress
-        } = data?.leads
-            ? getDifferenceMargin(data?.leads.filter(lead => lead.leadStage?.defaultStage === "Converted").map(lead => ({ ...lead, createdAt: lead.updatedAt })), "id")
+        } = data
+            ? getDifferenceMargin(data.filter(lead => lead.leadStage?.defaultStage === "Converted").map(lead => ({ ...lead, createdAt: lead.updatedAt })), "id")
             : { difference: 0, total: 0 }
 
         setTasks(prev => ({
           ...prev,
-          target: progress / (data?.leads.length || 1),
+          target: progress / (data?.length || 1),
           sinceLastWeek: progressSinceLastWeek,
         }))
       })

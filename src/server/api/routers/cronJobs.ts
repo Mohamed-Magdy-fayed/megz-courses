@@ -6,6 +6,34 @@ import { ROOT_EMAIL } from "@/server/constants";
 import { format } from "date-fns";
 
 export const cronRouter = createTRPCRouter({
+    leadReminders: publicProcedure.query(async ({ ctx }) => {
+        console.log("Checking lead reminders...");
+
+        const now = new Date()
+
+        // 1. Get sessions starting soon
+        const leadsWithRemindersSet = await ctx.prisma.lead.updateMany({
+            where: {
+                reminders: {
+                    some: {
+                        time: {
+                            gt: now,
+                        }
+                    }
+                },
+            },
+            data: {
+                isReminderSet: true,
+            },
+        });
+
+        if (leadsWithRemindersSet.count === 0) {
+            console.log("✅ No leads with reminders set.");
+            return { success: true };
+        }
+
+        return { success: true };
+    }),
     startingSessions: publicProcedure.query(async ({ ctx }) => {
         console.log("🔔 Sending trainer reminders...");
 

@@ -99,14 +99,14 @@ const OrderReceipt: FC<OrderReceiptProps> = ({ orderNumber, adminView }) => {
                         <TableRow>
                             <TableCell className="whitespace-nowrap">Product:</TableCell>
                             <TableCell className="text-right">
-                                {orderData.order.course?.name || orderData.order.product?.name}
+                                {orderData.order.product.name}
                             </TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell className="whitespace-nowrap flex items-center gap-2">
-                                {orderData.order.course?.name || orderData.order.product?.name}
+                                {orderData.order.product.name}
                                 <WrapWithTooltip text="View course">
-                                    <Link href={`/student/my_courses/${orderData.order.course?.slug}`} target='_blank'>
+                                    <Link href={`/student/my_courses`} target='_blank'>
                                         <ExternalLink className='w-4 h-4 text-info' />
                                     </Link>
                                 </WrapWithTooltip>

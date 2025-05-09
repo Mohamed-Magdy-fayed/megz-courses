@@ -1,81 +1,21 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import { validCourseStatuses } from "@/lib/enumsTypes";
 import { hasPermission } from "@/server/permissions";
 
 export const coursesRouter = createTRPCRouter({
-  getUsersWithStatus: protectedProcedure
-    .input(z.object({ id: z.string(), status: z.enum(validCourseStatuses) }))
-    .query(async ({ input: { id, status }, ctx }) => {
-      const course = await ctx.prisma.course.findUnique({
-        where: {
-          id,
-        },
-        include: { orders: true }
-      });
-
-      const userIds = course?.orders.map(o => o.userId)
-
-      const users = await ctx.prisma.user.findMany({
-        where: { id: { in: userIds } },
-        include: {
-          orders: true,
-          courseStatus: true,
-        }
-      })
-
-      const usersWithStatus = users.filter(u => u.courseStatus.some((courseStatus) => courseStatus.courseId === course?.id && courseStatus.status === status))
-
-      return { usersWithStatus };
-    }),
   getWaitingList: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input: { id }, ctx }) => {
-      const course = await ctx.prisma.course.findUnique({
-        where: {
-          id,
-        },
-        include: { orders: true }
-      });
-
-      const userIds = course?.orders.map(o => o.userId)
-
-      const users = await ctx.prisma.user.findMany({
-        where: { id: { in: userIds } },
+      const watingUsers = await ctx.prisma.user.findMany({
+        where: { courseStatus: { some: { courseId: id, status: "Waiting" } } },
         include: {
           orders: true,
           courseStatus: true,
         }
       })
 
-      const watingUsers = users.filter(u => u.courseStatus.some(({ courseId, status, courseLevelId }) => courseId === course?.id && u.courseStatus.some(s => courseLevelId === s.courseLevelId) && status === "Waiting"))
-
       return { watingUsers };
-    }),
-  getWaitingLists: protectedProcedure
-    .query(async ({ ctx }) => {
-      const courses = await ctx.prisma.course.findMany({
-        include: { orders: true }
-      });
-
-      const coursesWaitingUsers = await Promise.all(courses.map(async (course) => {
-        const userIds = course?.orders.map(order => order.userId)
-
-        const users = await ctx.prisma.user.findMany({
-          where: { id: { in: userIds } },
-          include: { courseStatus: true }
-        })
-
-        const watingUsers = users.filter(user => user.courseStatus.some(({ courseId, status }) => courseId === course?.id && status === "Waiting"))
-        return {
-          courseId: course.id,
-          waitingList: watingUsers.length,
-        }
-      }))
-
-
-      return { coursesWaitingUsers };
     }),
   getLatest: publicProcedure
     .query(async ({ ctx }) => {
@@ -86,9 +26,10 @@ export const coursesRouter = createTRPCRouter({
         take: 6,
         include: {
           _count: {
-            select: { levels: true, orders: true }
-          }
-        }
+            select: { levels: true }
+          },
+          productItems: { select: { product: { select: { _count: { select: { orders: true } } } } } },
+        },
       });
 
       return { courses };
@@ -104,28 +45,21 @@ export const coursesRouter = createTRPCRouter({
           },
         },
         include: {
-          levels: true,
           _count: {
-            select: { levels: true, orders: true }
-          }
-        }
+            select: { levels: true }
+          },
+          productItems: { select: { product: { select: { _count: { select: { orders: true } } } } } },
+        },
       });
 
       return { courses };
     }),
   getSimpleAll: protectedProcedure.query(async ({ ctx }) => {
-    return await ctx.prisma.course.findMany({ include: { courseStatus: {include: {user: true}} } });
+    return await ctx.prisma.course.findMany({ include: { courseStatus: { include: { user: true } } } });
   }),
   getAll: protectedProcedure.query(async ({ ctx }) => {
     const courses = await ctx.prisma.course.findMany({
       include: {
-        orders: {
-          include: {
-            user: {
-              include: { orders: true, courseStatus: true }
-            }
-          }
-        },
         systemForms: true,
         levels: { include: { materialItems: true } },
         courseStatus: { include: { user: true } },
@@ -172,7 +106,6 @@ export const coursesRouter = createTRPCRouter({
         where: { id },
         include: {
           zoomGroups: true,
-          orders: { include: { user: true } },
           placementTests: {
             include: {
               student: true,
@@ -183,6 +116,7 @@ export const coursesRouter = createTRPCRouter({
           },
           levels: { include: { materialItems: { include: { systemForms: true, zoomSessions: true } } } },
           systemForms: true,
+          courseStatus: { where: { status: "Waiting" } }
         },
       });
       return { course };
@@ -226,7 +160,6 @@ export const coursesRouter = createTRPCRouter({
             }
           },
           zoomGroups: { include: { zoomSessions: true, courseLevel: true } },
-          orders: { include: { user: true } },
           placementTests: {
             include: {
               student: { include: { courseStatus: { include: { level: true } } } },
@@ -249,6 +182,15 @@ export const coursesRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input: { slug } }) => {
       return await ctx.prisma.course.findUnique({ where: { slug }, include: { levels: { include: { materialItems: true, } } } })
+    }),
+  getCourseProduct: publicProcedure
+    .input(
+      z.object({
+        slug: z.string(),
+      })
+    )
+    .query(async ({ ctx, input: { slug } }) => {
+      return await ctx.prisma.product.findFirst({ where: { productItems: { some: { course: { slug } } } } })
     }),
   getLearningLayoutData: protectedProcedure
     .input(

@@ -13,14 +13,10 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import Link from 'next/link'
 
-type EnrollmentTarget =
-    | { type: "course"; name: string; id: string; privatePrice: number; groupPrice: number }
-    | { type: "product"; name: string; id: string; price: number; discountedPrice: number };
-
 interface EnrollmentModalProps {
     setOpen: Dispatch<SetStateAction<boolean>>;
     open: boolean;
-    target: EnrollmentTarget;
+    target: { name: string; id: string; privatePrice: number; groupPrice: number };
 }
 
 const EnrollmentModal = ({
@@ -36,31 +32,13 @@ const EnrollmentModal = ({
 
     const hasOnlinePayment = useMemo(() => !!setupData?.tier.onlinePayment, [setupData]);
 
-    const summaryData = useMemo(() => {
-        let basePrice = 0;
-        let discountedPrice = 0;
-        if (target.type === "course") {
-            basePrice = isPrivate ? target.privatePrice : target.groupPrice;
-        } else {
-            basePrice = target.price;
-            discountedPrice = target.discountedPrice;
-        }
-
-        const price = formatPrice(basePrice);
-        const discount = basePrice - (discountedPrice ?? basePrice)
-        return {
-            price,
-            discountedPrice: formatPrice(discountedPrice ?? basePrice),
-            discountAmount: formatPrice(discount),
-            discountPercentage: formatPercentage(discount / basePrice * 100)
-        };
-    }, [target, isPrivate]);
+    const price = useMemo(() => formatPrice(isPrivate ? target.privatePrice : target.groupPrice), [target, isPrivate]);
 
     return (
         <Modal
             title={
                 <Typography variant="secondary">
-                    {target.type === "course" ? "Course" : "Product"} Name:{" "}
+                    Product Name:{" "}
                     <Typography className="text-primary">{target.name}</Typography>
                 </Typography>
             }
@@ -69,28 +47,16 @@ const EnrollmentModal = ({
             onClose={() => setOpen(false)}
         >
             <div className="grid md:grid-cols-2 gap-4">
-                {target.type === "course" ? (
-                    <EnrollmentForm
-                        type={target.type}
-                        courseId={target.id}
-                        submitTrigger={submitTrigger}
-                        setSubmitTrigger={setSubmitTrigger}
-                        setIsOpen={setOpen}
-                        hasOnlinePayment={hasOnlinePayment}
-                        setIsPrivate={setIsPrivate}
-                    />
-                ) : (
-                    <EnrollmentForm
-                        type={target.type}
-                        productId={target.id}
-                        submitTrigger={submitTrigger}
-                        setSubmitTrigger={setSubmitTrigger}
-                        setIsOpen={setOpen}
-                        hasOnlinePayment={hasOnlinePayment}
-                    />
-                )}
+                <EnrollmentForm
+                    productId={target.id}
+                    submitTrigger={submitTrigger}
+                    setSubmitTrigger={setSubmitTrigger}
+                    setIsOpen={setOpen}
+                    setIsPrivate={setIsPrivate}
+                    hasOnlinePayment={hasOnlinePayment}
+                />
                 <div className="space-y-4">
-                    <OrderSummary {...summaryData} />
+                    <OrderSummary price={price} />
                     <div className="flex items-center gap-2">
                         <Checkbox
                             id="checkedAgreement"

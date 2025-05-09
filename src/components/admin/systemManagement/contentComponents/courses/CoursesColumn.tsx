@@ -1,14 +1,13 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Info } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import CoursesActionCell from "./CoursesActionCell";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { CourseLevel, Order, User } from "@prisma/client";
 import { formatPrice } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SeverityPill } from "@/components/ui/SeverityPill";
+import { filterFn } from "@/lib/dataTableUtils";
 
 export type CourseRow = {
     id: string,
@@ -22,7 +21,6 @@ export type CourseRow = {
     privatePrice: number,
     instructorPrice: number,
     levels: CourseLevel[],
-    orders: (Order & { user: User })[],
     enrollments: number,
 };
 
@@ -87,17 +85,7 @@ export const columns: ColumnDef<CourseRow>[] = [
         accessorKey: "enrollments",
         header: "Enrollments",
         cell: ({ row }) => (
-            <div className="flex items-center gap-2">
-                <Typography>{row.original.orders.length}</Typography>
-                <Tooltip>
-                    <TooltipTrigger>
-                        <Info className="text-info" />
-                    </TooltipTrigger>
-                    <TooltipContent className="flex flex-col">
-                        {row.original.orders.map(({ user }) => (<Typography key={user.id}>{user.email}</Typography>))}
-                    </TooltipContent>
-                </Tooltip>
-            </div>
+            <Typography>{row.original.enrollments}</Typography>
         )
     },
     {
@@ -108,12 +96,7 @@ export const columns: ColumnDef<CourseRow>[] = [
                 <>{format(row.original.createdAt, "dd MMM yyyy")}</>
             )
         },
-        filterFn: (row, columnId, filterValue) => {
-            const val = row.original.createdAt
-            const startDate = new Date(filterValue.split("|")[0])
-            const endDate = new Date(filterValue.split("|")[1])
-            return val.getTime() >= startDate.getTime() && val.getTime() <= endDate.getTime()
-        },
+        filterFn,
     },
     {
         accessorKey: "slug",

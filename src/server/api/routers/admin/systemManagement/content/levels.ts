@@ -101,6 +101,7 @@ export const levelsRouter = createTRPCRouter({
             id: courseId
           }
         },
+        include: { courseStatus: { include: { user: true } } },
       });
       return { levels };
     }),

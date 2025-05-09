@@ -19,15 +19,12 @@ export const enrollmentInput = z.object({
     email: z.string(),
     phone: z.string(),
     withPayment: z.boolean(),
-    isPrivate: z.boolean().optional(),
-    courseId: z.string().optional(),
-    productId: z.string().optional(),
-}).refine(data => data.courseId || data.productId, {
-    message: "Either courseId or productId must be provided.",
+    isPrivate: z.boolean(),
+    productId: z.string(),
 })
 
 export const enrollHandler = async ({
-    input: { email, phone, name, isPrivate, courseId, productId, withPayment },
+    input: { email, phone, name, isPrivate, productId, withPayment },
     ctx,
 }: {
     input: z.infer<typeof enrollmentInput>;
@@ -60,33 +57,23 @@ export const enrollHandler = async ({
     let productDescription = "";
     let totalAmount = 0;
 
-    if (courseId) {
-        const course = await ctx.prisma.course.findUnique({ where: { id: courseId } });
-        if (!course) throw new TRPCError({ code: "BAD_REQUEST", message: "Course not found" });
+    const product = await ctx.prisma.product.findUnique({
+        where: { id: productId },
+        include: {
+            productItems: { include: { course: true, level: true } },
+        },
+    });
+    if (!product) throw new TRPCError({ code: "BAD_REQUEST", message: "Product not found" });
 
-        selectedCourses = [{ id: course.id, name: course.name }];
-        productName = course.name;
-        productDescription = course.description ?? "";
-        totalAmount = isPrivate ? course.privatePrice : course.groupPrice;
-    } else if (productId) {
-        const product = await ctx.prisma.product.findUnique({
-            where: { id: productId },
-            include: {
-                productItems: { include: { course: true, level: true } },
-            },
-        });
-        if (!product) throw new TRPCError({ code: "BAD_REQUEST", message: "Product not found" });
+    selectedCourses = product.productItems.map(({ course, level }) => ({
+        id: course.id,
+        name: course.name,
+        levelId: level?.id,
+    }));
 
-        selectedCourses = product.productItems.map(({ course, level }) => ({
-            id: course.id,
-            name: course.name,
-            levelId: level?.id,
-        }));
-
-        productName = product.name;
-        productDescription = product.description ?? "";
-        totalAmount = product.discountedPrice ?? product.price;
-    }
+    productName = product.name;
+    productDescription = product.description ?? "";
+    totalAmount = isPrivate ? product.privatePrice : product.groupPrice;
 
     const orderNumber = orderCodeGenerator();
     let paymentLink = "";
@@ -128,12 +115,7 @@ export const enrollHandler = async ({
                     create: {
                         amount: totalAmount,
                         orderNumber,
-                        courseType: courseId ? {
-                            id: courseId,
-                            isPrivate: isPrivate || false,
-                        } : undefined,
-                        course: courseId ? { connect: { id: courseId } } : undefined,
-                        product: productId ? { connect: { id: productId } } : undefined,
+                        product: { connect: { id: productId } },
                         user: { connect: { email } },
                         paymentLink,
                         courseStatuses: {

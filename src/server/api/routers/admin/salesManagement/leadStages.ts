@@ -8,41 +8,48 @@ import { hasPermission } from "@/server/permissions";
 
 export const leadStagesRouter = createTRPCRouter({
     getLeadStages: protectedProcedure
-        .query(async ({ ctx }) => {
-            const leads = await ctx.prisma.lead.findMany()
-            const emails = leads.map(l => l.email).filter(l => l !== null)
-            const phones = leads.map(l => l.phone).filter(l => l !== null)
+        .input(
+            z.object({ labels: z.array(z.string()) }).optional()
+        )
+        .query(async ({ ctx, input }) => {
+            // const leads = await ctx.prisma.lead.findMany()
+            // const emails = leads.map(l => l.email).filter(l => l !== null)
+            // const phones = leads.map(l => l.phone).filter(l => l !== null)
 
-            const usersWithEamil = await ctx.prisma.user.findMany({ where: { email: { in: emails } } })
-            const usersWithPhone = await ctx.prisma.user.findMany({ where: { phone: { in: phones } } })
+            // const usersWithEamil = await ctx.prisma.user.findMany({ where: { email: { in: emails } } })
+            // const usersWithPhone = await ctx.prisma.user.findMany({ where: { phone: { in: phones } } })
 
-            await ctx.prisma.lead.updateMany({
-                where: {
-                    OR: [
-                        { email: { in: usersWithEamil.map(u => u.email).filter(l => l !== null) } },
-                        { phone: { in: usersWithPhone.map(u => u.phone).filter(l => l !== null) } },
-                    ]
-                },
-                data: {
-                    isInvalid: true,
-                }
-            })
+            // await ctx.prisma.lead.updateMany({
+            //     where: {
+            //         OR: [
+            //             { email: { in: usersWithEamil.map(u => u.email).filter(l => l !== null) } },
+            //             { phone: { in: usersWithPhone.map(u => u.phone).filter(l => l !== null) } },
+            //         ]
+            //     },
+            //     data: {
+            //         isInvalid: true,
+            //     }
+            // })
 
             const stages = await ctx.prisma.leadStage.findMany({
-                include: {
-                    leads: {
-                        orderBy: { createdAt: "desc" },
-                        include: {
-                            labels: true,
-                            assignee: { include: { user: true } },
-                            notes: true,
-                            leadStage: true,
-                            orders: true,
-                        }
-                    }
+                select: {
+                    id: true,
+                    name: true,
+                    order: true,
+                    defaultStage: true,
+                    _count: {
+                        select: {
+                            leads: {
+                                where: (input?.labels.length || 0) > 0 ? { labels: { some: { value: { in: input?.labels } } } } : undefined,
+                            }
+                        },
+                    },
                 },
-                orderBy: { order: "asc" },
+                orderBy: {
+                    order: "asc",
+                },
             });
+
 
             return { stages };
         }),

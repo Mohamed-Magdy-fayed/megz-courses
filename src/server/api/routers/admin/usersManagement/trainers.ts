@@ -121,6 +121,16 @@ export const trainersRouter = createTRPCRouter({
 
       return { trainer };
     }),
+  getTrainerSessions: protectedProcedure
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
+      const sessions = await ctx.prisma.zoomSession.findMany({
+        where: { zoomGroup: { teacherId: input } },
+        orderBy: { sessionDate: "desc" },
+      })
+
+      return sessions;
+    }),
   getCurrentTrainerSessions: protectedProcedure
     .query(async ({ ctx }) => {
       const id = ctx.session.user.id

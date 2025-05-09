@@ -76,8 +76,8 @@ export const paymentsRouter = createTRPCRouter({
 
             const order = await ctx.prisma.order.findFirst({ where: { orderNumber } })
             if (!order) throw new TRPCError({ code: "BAD_REQUEST", message: "Order not found!" })
-            const rootUser = await ctx.prisma.user.findUnique({ where: { email: ROOT_EMAIL }, include: { SalesAgent: true } })
-            if (!rootUser?.SalesAgent?.id) throw new TRPCError({ code: "BAD_REQUEST", message: "Root agent not found!" })
+            const rootUser = await ctx.prisma.user.findUnique({ where: { email: ROOT_EMAIL }, include: { salesAgent: true } })
+            if (!rootUser?.salesAgent?.id) throw new TRPCError({ code: "BAD_REQUEST", message: "Root agent not found!" })
 
             const payment = await ctx.prisma.payment.create({
                 data: {
@@ -85,7 +85,7 @@ export const paymentsRouter = createTRPCRouter({
                     paymentId,
                     order: { connect: { orderNumber } },
                     user: { connect: { id: order.userId } },
-                    agent: { connect: { id: rootUser.SalesAgent.id } },
+                    agent: { connect: { id: rootUser.salesAgent.id } },
                 },
                 include: { order: { include: { payments: true, refunds: true } }, user: true }
             });

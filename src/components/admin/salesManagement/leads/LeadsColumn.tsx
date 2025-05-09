@@ -12,20 +12,19 @@ import Link from "next/link";
 import { SeverityPill } from "@/components/ui/SeverityPill";
 import WrapWithTooltip from "@/components/ui/wrap-with-tooltip";
 
-export type Lead = {
+export type LeadColumn = {
   userId: string;
   name: string;
   code: string;
   id: string;
-  email?: string;
+  email: string;
   formId?: string;
   message?: string;
-  phone?: string;
+  phone: string;
   source: LeadSource;
   isOverdue: "Overdue" | "Due today" | "Not set" | "Due later";
-  stage: LeadStage | null;
-  stages: LeadStage[] | undefined;
   stageName: string;
+  stagesData: { id: string, name: string }[];
   assignee: Prisma.SalesAgentGetPayload<{ include: { user: true } }> | null;
   assigneeName: string;
   labels: LeadLabel[];
@@ -34,7 +33,7 @@ export type Lead = {
   updatedAt: Date;
 }
 
-export const columns: ColumnDef<Lead>[] = [
+export const columns: ColumnDef<LeadColumn>[] = [
   {
     id: "select",
     header: ({ table }) => (

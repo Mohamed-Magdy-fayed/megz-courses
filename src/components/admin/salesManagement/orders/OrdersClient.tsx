@@ -30,7 +30,6 @@ const OrdersClient = ({ userId }: { userId?: string }) => {
 
   const formattedData: OrderColumns[] = data?.orders.map(({
     amount,
-    course,
     product,
     payments,
     refunds,
@@ -57,9 +56,6 @@ const OrdersClient = ({ userId }: { userId?: string }) => {
     userEmail: user.email,
     userImage: user.image || "",
     refundRequester,
-    courseId: course?.id,
-    courseSlug: course?.slug,
-    courseName: course?.name,
     productName: product?.name,
     productId: product?.id,
   })) || []
@@ -89,14 +85,6 @@ const OrdersClient = ({ userId }: { userId?: string }) => {
             label: upperFirst(status),
             value: status,
           }))]
-        },
-        {
-          key: "courseId", filterName: "Course", values: [...formattedData.map(d => d.courseId)
-            .filter((value, index, self) => self.indexOf(value) === index)
-            .map(id => ({
-              label: formattedData.find(d => d.courseId === id)?.courseName || "",
-              value: id || "",
-            }))]
         },
         {
           key: "productId", filterName: "Product", values: [...formattedData.map(d => d.productId)

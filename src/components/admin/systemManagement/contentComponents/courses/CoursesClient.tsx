@@ -2,11 +2,11 @@ import { DataTable } from "@/components/ui/DataTable";
 import { api } from "@/lib/api";
 import { CourseRow, columns } from "./CoursesColumn";
 import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { toastType, useToast } from "@/components/ui/use-toast";
 import { createMutationOptions } from "@/lib/mutationsHelper";
 
 const CoursesClient = () => {
-    const [loadingToast, setLoadingToast] = useState<ReturnType<typeof toast>>()
+    const [loadingToast, setLoadingToast] = useState<toastType>()
     const [courses, setCourses] = useState<CourseRow[]>([])
 
     const { toast } = useToast()
@@ -50,8 +50,7 @@ const CoursesClient = () => {
         privatePrice: course.privatePrice,
         instructorPrice: course.instructorPrice,
         levels: course.levels,
-        orders: course.orders,
-        enrollments: course.orders.length,
+        enrollments: course.courseStatus.length,
     }))
 
     const onDelete = (callback?: () => void) => {

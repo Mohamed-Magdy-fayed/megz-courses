@@ -26,8 +26,8 @@ import MaterialsClient from "@/components/admin/systemManagement/contentComponen
 import UploadMaterialForm from "@/components/admin/systemManagement/contentComponents/materials/uploadForm/UploadMaterialForm";
 import PlacementTestsTabContent from "@/components/admin/systemManagement/contentComponents/placmentTests/PlacementTestsTabContent";
 import QuizzesTabContent from "@/components/admin/systemManagement/contentComponents/quizzes/QuizzesTabContent";
-import WaitingListTabContent from "@/components/admin/systemManagement/contentComponents/waitingList/WaitingListTabContent";
 import { CustomFormModal } from "@/components/admin/systemManagement/systemForms/CustomFormModal";
+import TraineeListClient from "@/components/admin/operationsManagement/traineeLists/TraineeListClient";
 
 const tabs = [
     { value: "levels", label: "Levels" },
@@ -298,34 +298,8 @@ const CoursePage = () => {
                             />
                         </TabsContent>
                         <TabsContent value="waiting_list">
-                            <WaitingListTabContent
-                                formattedData={data?.course.courseStatus ? data?.course.courseStatus
-                                    .filter(({ status, courseId }) => status === "Waiting" && data.course?.id === courseId)
-                                    .map(({ courseId, level, user: {
-                                        id,
-                                        name,
-                                        image,
-                                        device,
-                                        email,
-                                        phone,
-                                        orders,
-                                        createdAt,
-                                        updatedAt,
-                                    } }) => ({
-                                        id,
-                                        name,
-                                        image,
-                                        device,
-                                        email,
-                                        phone,
-                                        orders,
-                                        courseId,
-                                        levelSlugs: data.course?.levels.map(lvl => ({ label: lvl.name, value: lvl.slug })) || [],
-                                        levelSlug: level?.slug || "",
-                                        levelName: level?.name || "",
-                                        createdAt,
-                                        updatedAt,
-                                    })) : []}
+                            <TraineeListClient
+                                status={"Waiting"}
                             />
                         </TabsContent>
                         <TabsContent value="groups">

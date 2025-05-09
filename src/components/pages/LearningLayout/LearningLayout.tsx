@@ -43,7 +43,6 @@ export type LearningLayoutCourseType = Prisma.CourseGetPayload<{
             }
         },
         zoomGroups: { include: { zoomSessions: true, courseLevel: true } },
-        orders: { include: { user: true } },
         placementTests: {
             include: {
                 student: { include: { courseStatus: { include: { level: true } } } },
@@ -69,7 +68,7 @@ export type LearningLayoutLevelType = Prisma.CourseLevelGetPayload<{
 
 export type LearningLayoutUserType = Prisma.UserGetPayload<{
     include: {
-        orders: { include: { course: { include: { levels: true, orders: { include: { user: true } } } } } },
+        orders: { include: { product: { include: { productItems: { include: { course: { include: { levels: true, orders: { include: { user: true } } } } } } } } } },
         systemFormSubmissions: true,
         zoomGroups: { include: { zoomSessions: true, teacher: { include: { user: true } }, course: true, students: true, courseLevel: true }, },
         placementTests: {

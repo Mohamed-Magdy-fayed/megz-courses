@@ -22,11 +22,8 @@ export type LeadOrderColumn = {
     paidAmount: number;
     status: OrderStatus;
     refundRequester: string | null;
-    courseId?: string;
-    courseSlug?: string;
-    courseName?: string;
-    productId?: string;
-    productName?: string;
+    productId: string;
+    productName: string;
     paidAt?: Date;
     createdAt: Date;
     updatedAt: Date;
@@ -67,7 +64,6 @@ export const leadOrderColumns: ColumnDef<LeadOrderColumn>[] = [
     },
     { accessorKey: "paidAmount", header: "Transactions", cell: ({ row }) => <TransactionsModal orderId={row.original.id} remainingAmount={row.original.remainingAmount} /> },
     { accessorKey: "paidAt", filterFn, cell: ({ row }) => row.original.paidAt ? format(row.original.paidAt, "PPp") : "No payments" },
-    { accessorKey: "courseId", cell: ({ row }) => <Link className="in-table-link" href={`/admin/system_management/content/courses/${row.original.courseSlug}`}>{row.original.courseName}</Link> },
     { accessorKey: "productId", cell: ({ row }) => <Link className="in-table-link" href={`/admin/system_management/products/${row.original.productId}`}>{row.original.productName}</Link> },
     { id: "action", header: "Actions", cell: ({ row }) => <LeadOrderActions {...row.original} /> },
 ]

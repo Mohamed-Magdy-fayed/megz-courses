@@ -11,7 +11,7 @@ import { subscriptionTiers } from "@/lib/system";
 import { env } from "@/env.mjs";
 import { sendZohoEmail } from "@/lib/emailHelpers";
 import { getTotalSize } from "@/lib/firebaseStorage";
-import { LetsGo, LetsGo2, LetsGo3 } from "@/lib/mockData";
+// import { LetsGo, LetsGo2, LetsGo3 } from "@/lib/mockData";
 import { ROOT_EMAIL } from "@/server/constants";
 
 export const setupRouter = createTRPCRouter({
@@ -45,7 +45,7 @@ export const setupRouter = createTRPCRouter({
           userScreens: [...validUserScreens],
           emailVerified: new Date(),
           phone,
-          SalesAgent: { create: {} },
+          salesAgent: { create: {} },
         },
       });
 
@@ -57,7 +57,7 @@ export const setupRouter = createTRPCRouter({
           userRoles: [...validUserRoles],
           emailVerified: new Date(),
           phone: "01271741743",
-          SalesAgent: { create: {} },
+          salesAgent: { create: {} },
         },
       });
 
@@ -73,18 +73,18 @@ export const setupRouter = createTRPCRouter({
         leadStages,
       }
     }),
-  reset: publicProcedure
-    .mutation(async ({ ctx }) => {
-      return await LetsGo(ctx.prisma)
-    }),
-  reset2: publicProcedure
-    .mutation(async ({ ctx }) => {
-      return await LetsGo2(ctx.prisma)
-    }),
-  reset3: publicProcedure
-    .mutation(async ({ ctx }) => {
-      return await LetsGo3(ctx.prisma)
-    }),
+  // reset: publicProcedure
+  //   .mutation(async ({ ctx }) => {
+  //     return await LetsGo(ctx.prisma)
+  //   }),
+  // reset2: publicProcedure
+  //   .mutation(async ({ ctx }) => {
+  //     return await LetsGo2(ctx.prisma)
+  //   }),
+  // reset3: publicProcedure
+  //   .mutation(async ({ ctx }) => {
+  //     return await LetsGo3(ctx.prisma)
+  //   }),
   update: publicProcedure
     .input(
       z.object({

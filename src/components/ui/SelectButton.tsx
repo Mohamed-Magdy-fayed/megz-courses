@@ -28,7 +28,7 @@ const SelectButton: FC<SelectButtonProps> = ({ placeholder, listTitle, data, val
             <SelectTrigger {...props}>
                 <SelectValue placeholder={placeholder} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent sideOffset={-60}>
                 <SelectGroup>
                     <SelectGroup className='flex items-center justify-between gap-4'>
                         <SelectLabel>{listTitle}</SelectLabel>

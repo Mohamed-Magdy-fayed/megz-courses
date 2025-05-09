@@ -20,7 +20,7 @@ const ResumeStudentsForm: FC<ResumeStudentsFormProps> = ({ setIsOpen, id }) => {
 
     const action = "Continue";
 
-    const { data: postpondedListData } = api.waitingList.queryFullList.useQuery({ status: "Postponded" });
+    const { data: postpondedListData } = api.traineeList.queryFullList.useQuery({ status: "Postponded" });
     const resumeStudentsMutation = api.zoomGroups.resumeStudents.useMutation();
     const trpcUtils = api.useUtils();
     const { toastError, toastSuccess } = useToast()
@@ -49,16 +49,16 @@ const ResumeStudentsForm: FC<ResumeStudentsFormProps> = ({ setIsOpen, id }) => {
     return (
         <div>
             <div className="flex flex-col p-4 items-start gap-4 h-full">
-                {!postpondedListData?.fullList ? <Spinner className="mx-auto" /> :
+                {!postpondedListData?.rows ? <Spinner className="mx-auto" /> :
                     <SelectField
-                        disabled={postpondedListData?.fullList.length === 0 || loading}
+                        disabled={postpondedListData?.rows.length === 0 || loading}
                         className="col-span-2"
                         multiSelect
                         values={userIds}
                         setValues={setUserIds}
-                        placeholder={postpondedListData?.fullList.length === 0 ? "No students in postpond list!" : "Select Users..."}
+                        placeholder={postpondedListData?.rows.length === 0 ? "No students in postpond list!" : "Select Users..."}
                         listTitle="Users"
-                        data={postpondedListData?.fullList.map(status => ({
+                        data={postpondedListData?.rows.map(status => ({
                             Active: true,
                             label: status.user.name,
                             value: status.user.id,

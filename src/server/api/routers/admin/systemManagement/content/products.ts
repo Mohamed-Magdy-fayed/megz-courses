@@ -49,15 +49,13 @@ export const productsRouter = createTRPCRouter({
         }),
     create: protectedProcedure
         .input(productSchema)
-        .mutation(async ({ input: { isActive, isPrivate, name, price, description, discountedPrice }, ctx }) => {
+        .mutation(async ({ input: { isActive, name, privatePrice, groupPrice, description }, ctx }) => {
             const product = await ctx.prisma.product.create({
                 data: {
                     isActive,
-                    isPrivate,
                     name,
-                    price,
+                    privatePrice, groupPrice,
                     description,
-                    discountedPrice,
                 },
             });
 
@@ -69,14 +67,12 @@ export const productsRouter = createTRPCRouter({
         .input(z.array(productSchema))
         .mutation(async ({ input, ctx }) => {
             const products = await ctx.prisma.$transaction(
-                input.map(({ isActive, isPrivate, name, price, description, discountedPrice }) => ctx.prisma.product.create({
+                input.map(({ isActive, name, privatePrice, groupPrice, description }) => ctx.prisma.product.create({
                     data: {
                         isActive,
-                        isPrivate,
                         name,
-                        price,
+                        privatePrice, groupPrice,
                         description,
-                        discountedPrice,
                     },
                 }))
             );
@@ -90,7 +86,7 @@ export const productsRouter = createTRPCRouter({
         .mutation(
             async ({
                 ctx,
-                input: { id, isActive, isPrivate, name, price, description, discountedPrice },
+                input: { id, isActive, name, privatePrice, groupPrice, description },
             }) => {
                 const product = await ctx.prisma.product.update({
                     where: {
@@ -98,11 +94,9 @@ export const productsRouter = createTRPCRouter({
                     },
                     data: {
                         isActive,
-                        isPrivate,
                         name,
-                        price,
+                        privatePrice, groupPrice,
                         description,
-                        discountedPrice,
                     },
                 });
 

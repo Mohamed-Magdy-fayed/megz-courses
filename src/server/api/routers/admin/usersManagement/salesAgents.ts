@@ -59,7 +59,7 @@ export const salesAgentsRouter = createTRPCRouter({
                 where: {
                     email
                 },
-                include: { SalesAgent: true },
+                include: { salesAgent: true },
             });
 
             return { user };
@@ -95,11 +95,11 @@ export const salesAgentsRouter = createTRPCRouter({
                     hashedPassword,
                     phone: input.phone,
                     image: input.image,
-                    SalesAgent: { create: {} },
+                    salesAgent: { create: {} },
                     userRoles: [input.agentType],
                 },
                 include: {
-                    SalesAgent: true,
+                    salesAgent: true,
                 },
             });
 
@@ -136,7 +136,7 @@ export const salesAgentsRouter = createTRPCRouter({
                         userRoles: [agentType]
                     },
                     include: {
-                        SalesAgent: true,
+                        salesAgent: true,
                     },
                 });
 

@@ -12,7 +12,7 @@ import { UserAccountTabs } from "@/components/admin/usersManagement/users/accoun
 
 export type UserGetPayload = Prisma.UserGetPayload<{
   include: {
-    orders: { include: { course: { include: { levels: true, orders: { include: { user: true } } } } } },
+    orders: { include: { product: { include: { productItems: { include: { course: { include: { levels: true, orders: { include: { user: true } } } } } } } } } },
     evaluationFormSubmissions: true,
     zoomGroups: { include: { zoomSessions: true, Teacher: { include: { user: true } }, course: true, students: true, courseLevel: true }, },
     placementTests: {

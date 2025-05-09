@@ -1,11 +1,7 @@
 import { TraineeList } from "@/components/admin/operationsManagement/traineeLists/TraineeListColumn";
-import CreateOrderModal from "@/components/admin/salesManagement/modals/CreateOrderModal";
-import ProductForm from "@/components/admin/systemManagement/products/ProductForm";
-import { AlertModal } from "@/components/general/modals/AlertModal";
 import SubmitLevelModal from "@/components/general/modals/SubmitLevelModal";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import Modal from "@/components/ui/modal";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { api } from "@/lib/api";
 import { createMutationOptions } from "@/lib/mutationsHelper";
@@ -23,7 +19,7 @@ export default function TraineeListActions(trainee: TraineeList) {
     const [level, setLevel] = useState<string>()
 
     const courseLevels = trainee.levelIds.map(l => ({ id: l.value, name: l.label }))
-    
+
     const trpcUtils = api.useUtils()
     const addToWaitingListMutation = api.waitingList.addToWaitingList.useMutation(
         createMutationOptions({

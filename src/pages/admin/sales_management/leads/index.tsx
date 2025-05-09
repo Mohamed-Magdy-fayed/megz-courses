@@ -5,7 +5,7 @@ import { PaperContainer } from "@/components/ui/PaperContainers";
 import LeadsClient from "@/components/admin/salesManagement/leads/LeadsClient";
 import { Button, SpinnerButton } from "@/components/ui/button";
 import { Edit, LinkIcon, ListChecks, ChevronDownIcon, PlusSquare, Trash } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Modal from "@/components/ui/modal";
 import LeadsForm from "@/components/admin/salesManagement/leads/LeadsForm";
 import StageForm from "@/components/admin/salesManagement/leads/StageForm";
@@ -20,11 +20,10 @@ import SelectField from "@/components/ui/SelectField";
 import { formatPercentage } from "@/lib/utils";
 import { ArrowRightToLine } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Lead } from "@/components/admin/salesManagement/leads/LeadsColumn";
+import { LeadColumn } from "@/components/admin/salesManagement/leads/LeadsColumn";
 import Link from "next/link";
 import { SeverityPill } from "@/components/ui/SeverityPill";
 import GoBackButton from "@/components/ui/go-back";
-import AllLeadsClient from "@/components/admin/salesManagement/leads/AllLeadsClient";
 
 const LeadsPage: NextPage = () => {
     const [isAddLeadOpen, setIsAddLeadOpen] = useState(false)
@@ -35,12 +34,12 @@ const LeadsPage: NextPage = () => {
     const [resetSelection, setResetSelection] = useState(false)
     const [loadingToast, setLoadingToast] = useState<toastType>()
     const [values, setValues] = useState<string[]>([])
-    const [selectedLeads, setSelectedLeads] = useState<Lead[]>([])
+    const [selectedLeads, setSelectedLeads] = useState<LeadColumn[]>([])
 
     const { toast } = useToast()
     const trpcUtils = api.useUtils()
 
-    const { data: stagesData, isLoading, refetch } = api.leadStages.getLeadStages.useQuery()
+    const { data: stagesData, isLoading, refetch } = api.leadStages.getLeadStages.useQuery({ labels: values })
     const { data: labelsData } = api.leadLabels.getLeadLabels.useQuery()
     const assignAllMutation = api.leads.assignAll.useMutation(
         createMutationOptions({
@@ -91,6 +90,33 @@ const LeadsPage: NextPage = () => {
     const handleImport = (data: { name: string, email: string, phone: string }[]) => {
         importLeadsMutation.mutate(data);
     }
+
+    const {
+        totalLeads,
+        convertedLeads,
+        conversionRate,
+        leadStageCounts,
+        getStageCount,
+    } = useMemo(() => {
+        const getStageCount = (stageName: string) => counts[stageName] || 0;
+
+        if (!stagesData?.stages) return { totalLeads: 0, convertedLeads: 0, conversionRate: 0, leadStageCounts: {}, getStageCount: () => 0 };
+
+        const total = stagesData?.stages.reduce((sum, stage) => sum + stage._count.leads, 0);
+        const converted = stagesData?.stages.find(stage => stage.name === "Converted")?._count.leads || 0;
+        const rate = total > 0 ? (converted / total) * 100 : 0;
+        const counts = Object.fromEntries(
+            stagesData?.stages.map(stage => [stage.name, stage._count.leads])
+        );
+
+        return {
+            totalLeads: total,
+            convertedLeads: converted,
+            conversionRate: rate,
+            leadStageCounts: counts,
+            getStageCount,
+        };
+    }, [stagesData?.stages]);
 
     return (
         <AppLayout>
@@ -154,35 +180,28 @@ const LeadsPage: NextPage = () => {
                     </div>
                     <Tabs className="w-full" defaultValue="Intake" id="leads">
                         {isLoading ? (
-                                <TabsList className="animate-pulse">
-                                    <TabsTrigger value="0">All</TabsTrigger>
-                                    <TabsTrigger value="1">Intake</TabsTrigger>
-                                    <TabsTrigger value="2">Qualified</TabsTrigger>
-                                    <TabsTrigger value="3">Converted</TabsTrigger>
-                                    <TabsTrigger value="2">Not Qualified</TabsTrigger>
-                                    <TabsTrigger value="2">Lost</TabsTrigger>
-                                </TabsList>
-                            ) : (
-                                <TabsList>
-                                    <TabsTrigger value="all" className="flex items-center gap-2">
-                                        <Typography>All</Typography>
+                            <TabsList className="animate-pulse">
+                                <TabsTrigger value="0">Intake</TabsTrigger>
+                                <TabsTrigger value="1">Qualified</TabsTrigger>
+                                <TabsTrigger value="2">Converted</TabsTrigger>
+                                <TabsTrigger value="3">Not Qualified</TabsTrigger>
+                                <TabsTrigger value="4">Lost</TabsTrigger>
+                            </TabsList>
+                        ) : (
+                            <TabsList>
+                                {stagesData?.stages.map(stage => (
+                                    <TabsTrigger key={`${stage.id}trigger`} className="flex items-center gap-2" value={stage.name}>
+                                        <Typography>{stage.name}</Typography>
                                         <SeverityPill color="info" className="aspect-square">
-                                            {stagesData?.stages.flatMap(s => s.leads).length}
+                                            {getStageCount(stage.name)}
                                         </SeverityPill>
                                     </TabsTrigger>
-                                    {stagesData?.stages.map(stage => (
-                                        <TabsTrigger key={`${stage.id}trigger`} className="flex items-center gap-2" value={stage.name}>
-                                            <Typography>{stage.name}</Typography>
-                                            <SeverityPill color="info" className="aspect-square">
-                                                {stage.leads.length}
-                                            </SeverityPill>
-                                        </TabsTrigger>
-                                    ))}
-                                    <Button customeColor={"mutedIcon"} onClick={() => setIsManageOpen(!isManageOpen)}>
-                                        Manage Stages <ChevronDownIcon className="w-4 h-4" />
-                                    </Button>
-                                </TabsList>
-                            )}
+                                ))}
+                                <Button customeColor={"mutedIcon"} onClick={() => setIsManageOpen(!isManageOpen)}>
+                                    Manage Stages <ChevronDownIcon className="w-4 h-4" />
+                                </Button>
+                            </TabsList>
+                        )}
                         <Accordion type="single" collapsible value={isManageOpen ? "Manage Stages" : undefined}>
                             <AccordionItem value="Manage Stages" >
                                 <AccordionContent>
@@ -209,45 +228,6 @@ const LeadsPage: NextPage = () => {
                                 </AccordionContent>
                             </AccordionItem>
                         </Accordion>
-                        {stagesData?.stages && (
-                            <TabsContent value="all">
-                                <div className="flex justify-start gap-4">
-                                    <div className="flex flex-col gap-4 md:flex-row">
-                                        <SpinnerButton
-                                            icon={ListChecks}
-                                            text={`Assign All`}
-                                            isLoading={!!loadingToast} customeColor={"info"} onClick={() => onAssignAll()}
-                                        />
-                                    </div>
-                                    <div className="flex-shrink">
-                                        <SelectField
-                                            data={[...(labelsData?.leadLabels.map(label => ({
-                                                Active: true,
-                                                label: label.value,
-                                                value: label.value,
-                                            })) || []), {
-                                                Active: true,
-                                                label: "No Labels",
-                                                value: "No Labels",
-                                            }]}
-                                            listTitle="Labels"
-                                            placeholder="Select Label"
-                                            setValues={setValues}
-                                            values={values}
-                                            multiSelect
-                                        />
-                                    </div>
-                                </div>
-                                <Typography className="text-destructive">Convertion Rate {formatPercentage(stagesData.stages.filter(stage => stage.defaultStage === "Converted").flatMap(stage => stage.leads).length / stagesData.stages.flatMap(stage => stage.leads).length * 100)}</Typography>
-                                <AllLeadsClient
-                                    leads={values.length > 0 ? stagesData.stages.flatMap(s => s.leads).filter(lead => lead.labels.some(label => values.some(val => label.value === val))) : stagesData.stages.flatMap(s => s.leads)}
-                                    resetSelection={resetSelection}
-                                    stagesData={stagesData.stages}
-                                    handleImport={handleImport}
-                                    setSelectedLeads={setSelectedLeads}
-                                />
-                            </TabsContent>
-                        )}
                         {stagesData?.stages.map(stage => (
                             <TabsContent key={stage.id} value={stage.name}>
                                 <div className="flex items-end justify-between gap-4 md:justify-start">
@@ -295,19 +275,16 @@ const LeadsPage: NextPage = () => {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4 justify-between p-4 md:justify-start md:gap-8">
-                                    <Typography className="text-info">Intake {stagesData.stages.flatMap(stage => stage.leads).length}</Typography>
+                                    <Typography className="text-info">Intake {totalLeads}</Typography>
                                     <ArrowRightToLine />
-                                    <Typography className="text-success">Converted {stagesData.stages.filter(stage => stage.defaultStage === "Converted").flatMap(stage => stage.leads).length}</Typography>
+                                    <Typography className="text-success">Converted {convertedLeads}</Typography>
                                     <ArrowRightToLine />
-                                    <Typography className="text-destructive">Convertion Rate {formatPercentage(stagesData.stages.filter(stage => stage.defaultStage === "Converted").flatMap(stage => stage.leads).length / stagesData.stages.flatMap(stage => stage.leads).length * 100)}</Typography>
+                                    <Typography className="text-destructive">Convertion Rate {formatPercentage(conversionRate)}</Typography>
                                 </div>
                                 <LeadsClient
-                                    stage={{
-                                        ...stage,
-                                        leads: values.length > 0 ? stage.leads.filter(lead => lead.labels.some(label => values.some(val => label.value === val))) : stage.leads
-                                    }}
-                                    resetSelection={resetSelection}
+                                    stageName={stage.name}
                                     stagesData={stagesData.stages}
+                                    resetSelection={resetSelection}
                                     handleImport={handleImport}
                                     setSelectedLeads={setSelectedLeads}
                                 />

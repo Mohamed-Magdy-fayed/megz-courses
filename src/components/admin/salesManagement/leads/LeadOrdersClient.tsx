@@ -10,7 +10,6 @@ export default function LeadOrdersClient({ leadId }: { leadId: string }) {
     const formattedData: LeadOrderColumn[] = data?.orders
         .map(({
             amount,
-            course,
             product,
             payments,
             refunds,
@@ -39,11 +38,8 @@ export default function LeadOrdersClient({ leadId }: { leadId: string }) {
             userEmail: user.email,
             userPhone: user.email,
             refundRequester,
-            courseId: course?.id,
-            courseSlug: course?.slug,
-            courseName: course?.name,
-            productName: product?.name,
-            productId: product?.id,
+            productName: product.name,
+            productId: product.id,
             updatedAt,
             createdAt,
         })) ?? []
@@ -64,14 +60,6 @@ export default function LeadOrdersClient({ leadId }: { leadId: string }) {
                         label: upperFirst(status),
                         value: status,
                     }))]
-                },
-                {
-                    key: "courseId", filterName: "Course", values: [...formattedData.map(d => d.courseId)
-                        .filter((value, index, self) => self.indexOf(value) === index)
-                        .map(id => ({
-                            label: formattedData.find(d => d.courseId === id)?.courseName || "",
-                            value: id || "",
-                        }))]
                 },
                 {
                     key: "productId", filterName: "Product", values: [...formattedData.map(d => d.productId)

@@ -1,11 +1,10 @@
 import { traineeColumns, TraineeList } from '@/components/admin/operationsManagement/traineeLists/TraineeListColumn'
 import { DataTable } from '@/components/ui/DataTable'
-import { PaperContainer } from '@/components/ui/PaperContainers'
 import { api } from '@/lib/api'
 import { CourseStatuses } from '@prisma/client'
 
-export default function TraineeListClient({ status }: { status: CourseStatuses }) {
-    const { data, isLoading } = api.traineeList.queryFullList.useQuery({ status })
+export default function TraineeListClient({ status, courseId }: { status: CourseStatuses; courseId?: string }) {
+    const { data, isLoading } = api.traineeList.queryFullList.useQuery({ status, courseId })
 
     const formattedData: TraineeList[] = data?.rows.map(({
         user: {
@@ -20,7 +19,6 @@ export default function TraineeListClient({ status }: { status: CourseStatuses }
             id: courseId,
             name: courseName,
             slug,
-            orders,
             levels,
         },
         isPrivate,

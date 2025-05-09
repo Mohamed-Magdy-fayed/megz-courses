@@ -9,11 +9,10 @@ import Link from "next/link";
 export type ProductColumn = {
     id: string;
     isActive: "Active" | "Inactive";
-    isPrivate: "Private" | "Group";
     description: string | null;
-    discountedPrice: number | null;
     name: string;
-    price: number;
+    privatePrice: number;
+    groupPrice: number;
     orders: { id: string; }[];
     amounts: number;
     createdAt: Date;
@@ -42,9 +41,8 @@ export const productColumns: ColumnDef<ProductColumn>[] = [
     },
     { accessorKey: "name", cell: ({ row }) => <Link className="in-table-link" href={`/admin/system_management/products/${row.original.id}`}>{row.original.name}</Link> },
     { accessorKey: "isActive", cell: ({ row }) => <SeverityPill color={row.original.isActive === "Active" ? "success" : "destructive"} children={row.original.isActive} /> },
-    { accessorKey: "isPrivate", cell: ({ row }) => <SeverityPill color={row.original.isPrivate === "Private" ? "primary" : "info"} children={row.original.isPrivate} /> },
-    { accessorKey: "price", cell: ({ row }) => formatPrice(row.original.price), filterFn },
-    { accessorKey: "discountedPrice", cell: ({ row }) => row.original.discountedPrice ? formatPrice(row.original.discountedPrice) : "No discount", filterFn },
+    { accessorKey: "privatePrice", cell: ({ row }) => formatPrice(row.original.privatePrice), filterFn },
+    { accessorKey: "groupPrice", cell: ({ row }) => formatPrice(row.original.groupPrice), filterFn },
     { accessorKey: "amounts", cell: ({ row }) => `${row.original.orders.length} Orders` },
     { accessorKey: "updatedAt", cell: ({ row }) => format(row.original.updatedAt, "PPp"), filterFn },
     { accessorKey: "createdAt", cell: ({ row }) => format(row.original.createdAt, "PPp"), filterFn },

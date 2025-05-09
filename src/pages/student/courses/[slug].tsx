@@ -18,6 +18,7 @@ const CoursePage = ({ slug }: InferGetServerSidePropsType<typeof getServerSidePr
     const { status } = useSession()
 
     const { data: course, refetch } = api.courses.getPreviewBySlug.useQuery({ slug })
+    const { data: product } = api.courses.getCourseProduct.useQuery({ slug })
     const userQuery = api.users.getCurrentUser.useQuery(undefined, {
         enabled: status === "authenticated",
     })
@@ -70,15 +71,14 @@ const CoursePage = ({ slug }: InferGetServerSidePropsType<typeof getServerSidePr
                                         <BookOpenCheck />
                                     </Button>
                                 </Link>
-                            ) : (
+                            ) : product ? (
                                 <>
                                     <EnrollmentModal
                                         target={{
-                                            type: "course",
-                                            id: course.id,
-                                            name: course.name,
-                                            groupPrice: course.groupPrice,
-                                            privatePrice: course.privatePrice,
+                                            id: product.id,
+                                            name: product.name,
+                                            privatePrice: product.privatePrice,
+                                            groupPrice: product.groupPrice,
                                         }}
                                         open={open}
                                         setOpen={setOpen}
@@ -94,7 +94,7 @@ const CoursePage = ({ slug }: InferGetServerSidePropsType<typeof getServerSidePr
                                         {loading && <Spinner className="w-4 h-4 absolute" />}
                                     </Button>
                                 </>
-                            )}
+                            ) : null}
                             <Typography variant={"secondary"} className="text-success">{formatPrice(course.groupPrice)} / Level</Typography>
                         </CardFooter>
                     </Card>

@@ -24,47 +24,28 @@ const baseSchema = z.object({
     name: z.string().min(3, "Please enter your name!"),
     email: z.string().email("Please enter your email!"),
     phone: z.string().min(1, "Please enter your phone!"),
-});
-
-const courseSchema = baseSchema.extend({
     isPrivate: z.boolean(),
 });
 
-type EnrollmentFormValues = z.infer<typeof baseSchema & typeof courseSchema>
+type EnrollmentFormValues = z.infer<typeof baseSchema>
 
-type CommonProps = {
+type EnrollmentFormProps = {
+    productId: string;
     setIsOpen: (val: boolean) => void;
     submitTrigger: "PayNow" | "PayLater" | undefined;
     setSubmitTrigger: Dispatch<SetStateAction<"PayNow" | "PayLater" | undefined>>;
     hasOnlinePayment: boolean;
-};
-
-type ProductProps = CommonProps & {
-    type: "product";
-    productId: string;
-};
-
-type CourseProps = CommonProps & {
-    type: "course";
-    courseId: string;
     setIsPrivate: Dispatch<SetStateAction<boolean>>;
 };
-
-type EnrollmentFormProps = ProductProps | CourseProps;
 
 export const EnrollmentForm: FC<EnrollmentFormProps> = (props) => {
     const router = useRouter();
     const { toast } = useToast();
     const [loadingToast, setLoadingToast] = useState<toastType>();
 
-    const isProduct = props.type === "product";
-    const isCourse = props.type === "course";
-
     const form = useForm<EnrollmentFormValues>({
-        resolver: zodResolver(isCourse ? courseSchema : baseSchema),
-        defaultValues: isCourse
-            ? { name: "", email: "", phone: "", isPrivate: false }
-            : { name: "", email: "", phone: "" },
+        resolver: zodResolver(baseSchema),
+        defaultValues: { name: "", email: "", phone: "", isPrivate: false },
     });
 
     const trpcUtils = api.useUtils();
@@ -89,17 +70,13 @@ export const EnrollmentForm: FC<EnrollmentFormProps> = (props) => {
     );
 
     const handlePay = (data: EnrollmentFormValues) => {
-        if (isProduct) {
-            enrollMutation.mutate({ ...data, productId: props.productId, withPayment: props.submitTrigger === "PayNow", });
-        } else {
-            enrollMutation.mutate({ ...data, courseId: props.courseId, withPayment: props.submitTrigger === "PayNow" });
-        }
+        enrollMutation.mutate({ ...data, productId: props.productId, withPayment: props.submitTrigger === "PayNow", });
     };
 
     const isPrivate = form.watch("isPrivate");
 
     useEffect(() => {
-        if (isCourse) props.setIsPrivate(isPrivate);
+        props.setIsPrivate(isPrivate);
     }, [isPrivate]);
 
     useEffect(() => {
@@ -174,35 +151,33 @@ export const EnrollmentForm: FC<EnrollmentFormProps> = (props) => {
                     )}
                 />
 
-                {isCourse && (
-                    <FormField
-                        control={form.control}
-                        name="isPrivate"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormControl>
-                                    <div className="flex items-center gap-4">
-                                        <Switch
-                                            id={field.name}
-                                            name={field.name}
-                                            ref={field.ref}
-                                            disabled={!!loadingToast}
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                        />
-                                        <FormLabel htmlFor={field.name}>
-                                            Do you need a private class?
-                                        </FormLabel>
-                                    </div>
-                                </FormControl>
-                                <FormDescription>
-                                    Please note that prices might change!
-                                </FormDescription>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                )}
+                <FormField
+                    control={form.control}
+                    name="isPrivate"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormControl>
+                                <div className="flex items-center gap-4">
+                                    <Switch
+                                        id={field.name}
+                                        name={field.name}
+                                        ref={field.ref}
+                                        disabled={!!loadingToast}
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                    />
+                                    <FormLabel htmlFor={field.name}>
+                                        Do you need a private class?
+                                    </FormLabel>
+                                </div>
+                            </FormControl>
+                            <FormDescription>
+                                Please note that prices might change!
+                            </FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
             </form>
         </Form>
     );

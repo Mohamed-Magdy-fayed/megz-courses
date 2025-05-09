@@ -4,7 +4,6 @@ import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import Modal from "@/components/ui/modal";
-import { PaperContainer } from "@/components/ui/PaperContainers";
 import CourseForm from "@/components/admin/systemManagement/contentComponents/courses/CourseForm";
 import CoursesClient from "@/components/admin/systemManagement/contentComponents/courses/CoursesClient";
 
