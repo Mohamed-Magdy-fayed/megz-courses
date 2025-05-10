@@ -40,8 +40,13 @@ const EditMaterialPage = () => {
 
   const course = api.courses.getBySlug.useQuery({ slug: segments[3]! }, { enabled: !!segments[3] }).data?.course
   const courseName = course?.name
-  const levelName = api.levels.getBySlug.useQuery({ slug: segments[4]!, courseSlug: segments[3]! }, { enabled: !!segments[4] && !!segments[3] }).data?.level?.name
-  const materialName = api.materials.getBySlug.useQuery({ slug: segments[5]!, courseSlug: segments[3]!, levelSlug: segments[4]! }, { enabled: (!!segments[5] && !!segments[3] && !!segments[4]) }).data?.materialItem?.title
+  const courseSlug = course?.slug
+  const { data: levelData } = api.levels.getBySlug.useQuery({ slug: segments[4]!, courseSlug: segments[3]! }, { enabled: !!segments[4] && !!segments[3] })
+  const levelName = levelData?.level?.name
+  const levelSlug = levelData?.level?.slug
+  const { data: materialData } = api.materials.getBySlug.useQuery({ slug: segments[5]!, courseSlug: segments[3]!, levelSlug: segments[4]! }, { enabled: (!!segments[5] && !!segments[3] && !!segments[4]) })
+  const materialName = materialData?.materialItem?.title
+  const updateMaterialMutation = api.materials.editUploadMaterialItem.useMutation()
 
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -60,17 +65,22 @@ const EditMaterialPage = () => {
   }
 
   const handleUpload = async (files: File[]) => {
-    if (!files) return
+    if (!files || !materialData?.materialItem || !courseSlug || !levelSlug) return
     if (inputRef.current) {
       inputRef.current.value = "";
     }
 
     setUploading(true)
-    uploadFiles(files, `${pathQuery}`)
-      .then(() => {
-        loadData()
-        setUploading(false)
-      })
+    const newUploads = await uploadFiles(files, `${pathQuery}`)
+    const uploads = materialData.materialItem.uploads.concat(newUploads)
+    loadData()
+    await updateMaterialMutation.mutateAsync({
+      ...materialData.materialItem,
+      courseSlug,
+      levelSlug,
+      uploads,
+    })
+    setUploading(false)
   }
 
   const handleDownload = async (path: string) => {
@@ -85,9 +95,20 @@ const EditMaterialPage = () => {
   }
 
   const handleDelete = async (path: string) => {
+    if (!materialData?.materialItem || !courseSlug || !levelSlug) return
+
     setLoading(true)
-    deleteFile(path)
-      .then(() => loadData())
+    await deleteFile(path)
+    loadData()
+    const uploads = materialData.materialItem.uploads.filter(u => u !== path)
+
+    loadData()
+    await updateMaterialMutation.mutateAsync({
+      ...materialData.materialItem,
+      courseSlug,
+      levelSlug,
+      uploads,
+    })
   }
 
   const handleDeleteFolder = async (path: string) => {

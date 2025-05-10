@@ -1,7 +1,9 @@
 import ProductSelectField from "@/components/general/selectFields/ProductSelectField";
 import { Button, SpinnerButton } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Modal from "@/components/ui/modal";
+import MobileNumberInput from "@/components/ui/phone-number-input";
 import { Switch } from "@/components/ui/switch";
 import { toastType, useToast } from "@/components/ui/use-toast";
 import { api } from "@/lib/api";
@@ -107,6 +109,13 @@ export default function CreateOrderModal({ userExists, isOpen, setIsOpen }: Crea
             onClose={() => setIsOpen(false)}
             children={
                 <div className="space-y-4">
+                    <Input disabled={!!loadingToast} name="name" type="text" value={studentName} placeholder="Jon Doe" onChange={(e => setStudentName(e.target.value))} />
+                    <Input disabled={!!loadingToast} name="email" type="text" value={studentEmail} placeholder="Example@mail.com" onChange={(e => setStudentEmail(e.target.value))} />
+                    <MobileNumberInput
+                        value={studentPhone}
+                        setValue={(val) => setStudentPhone(val)}
+                        placeholder="201X XXXXXXXX"
+                    />
                     <ProductSelectField loading={!!loadingToast} productId={productId} setProductId={setProductId} />
                     <div className="flex items-center space-x-2">
                         <Switch checked={isPrivate} onCheckedChange={(val) => setIsPrivate(val)} id="isPrivate" />

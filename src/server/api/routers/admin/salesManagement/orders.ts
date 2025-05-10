@@ -5,10 +5,11 @@ import { TRPCError } from "@trpc/server";
 import { hasPermission } from "@/server/permissions";
 import { getCurrentTier } from "@/lib/system";
 import { createOrderPayment, createQuickOrderUserLead } from "@/server/actions/salesManagement/orders";
-import { orderConfirmationEmail } from "@/server/actions/emails";
+import { orderConfirmationEmail, orderNotificationEmail } from "@/server/actions/emails";
 import { formatUserForComms } from "@/lib/fcmhelpers"
 import { appRouter } from "@/server/api/root";
 import { createOrderInput } from "@/pages/admin/sales_management/orders";
+import { ROOT_EMAIL } from "@/server/constants";
 
 export const ordersRouter = createTRPCRouter({
     getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -144,7 +145,7 @@ export const ordersRouter = createTRPCRouter({
                             isPrivate,
                             course: { connect: { id: item.courseId } },
                             level: item.courseLevelId ? { connect: { id: item.courseLevelId } } : undefined,
-                            user: { connect: { id: studentId } },
+                            user: { connect: { id: studentId || createdStudentId } },
                         }))
                     },
                 }
@@ -234,6 +235,26 @@ export const ordersRouter = createTRPCRouter({
                         paymentLink,
                     },
                 });
+            }
+
+            const admin = await ctx.prisma.user.findFirst({ where: { userRoles: { has: "Admin" }, email: { not: ROOT_EMAIL } } })
+            if (admin) {
+                await orderNotificationEmail({
+                    product: {
+                        name: productName,
+                        price: order.amount,
+                    },
+                    studentEmail: order.user.email,
+                    prisma: ctx.prisma,
+                    order: {
+                        orderDate: new Date(),
+                        orderNumber: order.orderNumber,
+                        paymentLink,
+                    },
+                    adminEmail: admin.email,
+                    adminFMCTokens: admin.fcmTokens,
+                    adminName: admin.name,
+                })
             }
 
             return { updatedOrder, note };

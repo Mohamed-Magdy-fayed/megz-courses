@@ -100,7 +100,7 @@ const UploadMaterialForm = ({ initialData, setIsOpen }: { initialData?: Material
         if (!levelSlug[0]) return toastError("Please select a level")
 
         if (initialData) {
-            await editUploadMaterialMutation.mutateAsync({ id: initialData.id, title, subTitle, slug, levelSlug, courseSlug, sessionOrder })
+            await editUploadMaterialMutation.mutateAsync({ id: initialData.id, title, subTitle, slug, levelSlug, courseSlug, sessionOrder, uploads: initialData.uploads })
             return setIsOpen(false)
         }
 

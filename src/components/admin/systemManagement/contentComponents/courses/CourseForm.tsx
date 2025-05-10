@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, useState } from "react";
 import { api } from "@/lib/api";
-import { Button } from "@/components/ui/button";
-import { ImagePlus, X } from "lucide-react";
+import { Button, SpinnerButton } from "@/components/ui/button";
+import { ImagePlus, PlusCircleIcon, X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import {
   Form,
@@ -240,9 +240,7 @@ const CourseForm = ({ initialData, setIsOpen }: {
           >
             Reset
           </Button>
-          <Button disabled={loading || uploadingImage} type="submit">
-            {initialData ? "Submit" : "Create Course"}
-          </Button>
+          <SpinnerButton isLoading={loading || uploadingImage || !!loadingToast} type="submit" text={initialData ? "Submit" : "Create Course"} icon={PlusCircleIcon} />
         </div>
       </form>
     </Form>

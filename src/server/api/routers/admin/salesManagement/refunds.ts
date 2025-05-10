@@ -8,6 +8,7 @@ import { hasPermission } from "@/server/permissions";
 import { refundOrder } from "@/server/actions/salesManagement/orders";
 import { orderRefundEmail } from "@/server/actions/emails";
 import { formatUserForComms } from "@/lib/fcmhelpers"
+import { ROOT_EMAIL } from "@/server/constants";
 
 export const refundsRouter = createTRPCRouter({
     getById: protectedProcedure
@@ -63,8 +64,10 @@ export const refundsRouter = createTRPCRouter({
                 include: { order: true, user: true }
             });
 
+            const admin = await ctx.prisma.user.findFirst({ where: { userRoles: { has: "Admin" }, email: { not: ROOT_EMAIL } } })
+
             await refundOrder({ orderId })
-            await orderRefundEmail({ refund, order: refund.order, student: formatUserForComms(refund.user) })
+            await orderRefundEmail({ refund, order: refund.order, student: formatUserForComms(refund.user), adminEmail: admin?.email || "", adminName: admin?.name || "", adminFMCTokens: admin?.fcmTokens || [] })
 
             return { refund };
         }),

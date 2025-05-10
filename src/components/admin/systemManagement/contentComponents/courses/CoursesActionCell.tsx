@@ -51,6 +51,7 @@ const CoursesActionCell: React.FC<CellActionProps> = ({ id, slug, description, g
             setLoadingToast,
             toast,
             successMessageFormatter: ({ deletedCourses }) => {
+                setIsDeleteOpen(false)
                 return `${deletedCourses.count} courses deleted`
             },
             loadingMessage: "Deleting...",

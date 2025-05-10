@@ -214,13 +214,14 @@ export const materialItemsRouter = createTRPCRouter({
     .input(z.object({
       id: z.string(),
       title: z.string(),
-      subTitle: z.string(),
+      subTitle: z.string().nullable(),
       slug: z.string(),
       sessionOrder: z.number(),
+      uploads: z.array(z.string()),
       levelSlug: z.string(),
       courseSlug: z.string(),
     }))
-    .mutation(async ({ ctx, input: { id, title, subTitle, slug, levelSlug, courseSlug, sessionOrder } }) => {
+    .mutation(async ({ ctx, input: { id, title, subTitle, slug, uploads, levelSlug, courseSlug, sessionOrder } }) => {
       if (!hasPermission(ctx.session.user, "courses", "update")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
       await ctx.prisma.materialItem.update({ where: { id }, data: { courseLevel: { disconnect: true } } })
 
@@ -236,6 +237,7 @@ export const materialItemsRouter = createTRPCRouter({
           subTitle,
           slug,
           sessionOrder,
+          uploads,
           courseLevel: {
             connect: { courseId_slug: { courseId: course.id, slug: levelSlug } },
           },

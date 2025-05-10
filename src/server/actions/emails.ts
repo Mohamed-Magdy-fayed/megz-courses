@@ -24,6 +24,8 @@ import { CommsUserData } from "@/lib/fcmhelpers";
 import { firebaseAdmin } from "@/server/firebase-admin";
 import { Message } from "firebase-admin/lib/messaging/messaging-api";
 import UpcomingTestReminderEmail from "@/components/general/emails/UpcomingTestReminderEmail";
+import OrderNotificationEmail from "@/components/general/emails/OrderNotificationEmail";
+import RefundNotificationEmail from "@/components/general/emails/RefundNotificationEmail";
 
 type SendNotificationInput = {
     tokens: string[];
@@ -92,6 +94,43 @@ export async function orderConfirmationEmail({ prisma, product, student, order }
     })
 }
 
+export async function orderNotificationEmail({ prisma, product, studentEmail, order, adminName, adminEmail, adminFMCTokens }: {
+    prisma: PrismaClient;
+    product: { name: string; price: number; };
+    order: { paymentLink: string; orderNumber: string; orderDate: Date; };
+    studentEmail: string;
+    adminName: string;
+    adminEmail: string;
+    adminFMCTokens: string[];
+}) {
+    const { name, price } = product
+    const { orderNumber, orderDate, paymentLink } = order
+    const formattedPrice = formatPrice(price)
+
+    const html = await EmailsWrapper({
+        EmailComp: OrderNotificationEmail,
+        prisma,
+        props: {
+            product: { productName: name, productPrice: formattedPrice },
+            adminName: adminName,
+            userEmail: studentEmail,
+            orderNumber,
+            orderAmount: formattedPrice,
+            orderCreatedAt: format(orderDate, "PPPp"),
+            paymentLink,
+            isPaymentEnabled: true,
+        }
+    })
+
+    await sendNotification({
+        tokens: adminFMCTokens,
+        title: "🧾 New Order Placed!",
+        body: `Order #${orderNumber} for ${name} has been placed.\nTotal: ${formattedPrice}.\nTap to view payment details.`,
+        link: `${env.NEXT_PUBLIC_NEXTAUTH_URL}admin/sales_management/orders`,
+    });
+    await sendZohoEmail({ email: adminEmail, html, subject: "🧾 New Order Placed!" })
+}
+
 export async function orderPaymentEmail({ payment, student, order, remainingAmount }: {
     payment: { paymentAmount: number; createdAt: Date; };
     order: { orderNumber: string; amount: number; createdAt: Date; };
@@ -133,10 +172,13 @@ export async function orderPaymentEmail({ payment, student, order, remainingAmou
     return { success, error }
 }
 
-export async function orderRefundEmail({ refund, student, order }: {
+export async function orderRefundEmail({ refund, student, order, adminFMCTokens, adminName, adminEmail }: {
     refund: { refundAmount: number; createdAt: Date; };
     order: { orderNumber: string; amount: number; createdAt: Date; };
     student: CommsUserData;
+    adminFMCTokens: string[];
+    adminName: string;
+    adminEmail: string;
 }) {
     const { refundAmount } = refund
     const { studentEmail, studentName, studentPhone, studentFcmTokens } = student
@@ -152,7 +194,24 @@ export async function orderRefundEmail({ refund, student, order }: {
         }
     })
 
+    const htmlNotification = await EmailsWrapper({
+        EmailComp: RefundNotificationEmail,
+        prisma,
+        props: {
+            refundAmount: formatPrice(refundAmount),
+            orderNumber,
+            name: adminName,
+        }
+    })
+
+    await sendNotification({
+        tokens: adminFMCTokens,
+        title: "💸 Refund Issued",
+        body: `A refund of ${refundAmount} was processed for Order #${orderNumber}. Tap to view details.`,
+        link: `${env.NEXTAUTH_URL}/admin/sales_management/orders/${orderNumber}`,
+    });
     await sendNotification({ tokens: studentFcmTokens, title: "Refund Confirmation", body: `Your refund of ${formatPrice(refundAmount)} for order ${orderNumber} has been processed successfully!`, link: `${env.NEXTAUTH_URL}student/my_courses` })
+    await sendZohoEmail({ email: adminEmail, html: htmlNotification, subject: `Refund Issued for Order #${orderNumber}` })
     await sendZohoEmail({ email: studentEmail, html, subject: `Thanks for your order ${orderNumber}` })
     const { success, error } = await sendWhatsAppMessage({
         prisma,
