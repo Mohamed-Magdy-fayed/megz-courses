@@ -1,5 +1,7 @@
 import { myCoursesColumns, MyCoursesRow } from "@/components/student/myCoursesComponents/MyCoursesColumn";
 import { DataTable } from "@/components/ui/DataTable";
+import { DisplayError } from "@/components/ui/display-error";
+import Spinner from "@/components/ui/Spinner";
 import { api } from "@/lib/api";
 import { formatPercentage } from "@/lib/utils";
 import { useSession } from "next-auth/react";
@@ -7,7 +9,7 @@ import { useSession } from "next-auth/react";
 const MyCoursesClient = () => {
     const session = useSession()
 
-    const { data, isLoading } = api.courses.getStudentCourses.useQuery(undefined, { enabled: !!session.data?.user.emailVerified })
+    const { data, isLoading, isError, error } = api.courses.getStudentCourses.useQuery(undefined, { enabled: !!session.data?.user.emailVerified, retry: () => false })
 
     const formattedData: MyCoursesRow[] = data?.courses ? data?.courses.map(({
         id,
@@ -57,6 +59,15 @@ const MyCoursesClient = () => {
             })[0],
         }
     }) : []
+
+
+    if (isLoading) return (
+        <Spinner className="mx-auto" />
+    )
+
+    if (isError && error) return (
+        <DisplayError message={error.message} />
+    )
 
     return (
         <DataTable

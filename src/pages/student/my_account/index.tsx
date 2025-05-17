@@ -35,8 +35,8 @@ const Page = () => {
               <div className="col-span-12 md:col-span-8">
                 <AccountDetails user={data.user} />
               </div>
-              <div className="col-span-full">
-                <ConceptTitle className="whitespace-nowrap mb-8">My Orders History</ConceptTitle>
+              <div className="col-span-full space-y-4">
+                <ConceptTitle className="whitespace-nowrap">My Orders History</ConceptTitle>
                 <Card>
                   <CardContent>
                     <AccountPaymentClient data={data.user.orders} />

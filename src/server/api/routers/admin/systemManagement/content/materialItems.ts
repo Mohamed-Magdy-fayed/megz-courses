@@ -54,11 +54,10 @@ export const materialItemsRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input: { courseLevelId } }) => {
-      const materialItems = await ctx.prisma.materialItem.findMany({
+      return await ctx.prisma.materialItem.findMany({
         where: { courseLevelId },
         include: { systemForms: true },
       });
-      return { materialItems };
     }),
   getByCourseSlug: protectedProcedure
     .input(

@@ -4,6 +4,37 @@ import { TRPCError } from "@trpc/server";
 import { hasPermission } from "@/server/permissions";
 
 export const coursesRouter = createTRPCRouter({
+  getLearningMenu: protectedProcedure
+    .input(z.object({ courseSlug: z.string() }))
+    .query(async ({ ctx, input: { courseSlug } }) => {
+      const courseStatues = await ctx.prisma.courseStatus.findMany({
+        where: {
+          userId: ctx.session.user.id,
+          course: { slug: courseSlug },
+          level: { isNot: null },
+          status: "Ongoing",
+        },
+        select: {
+          id: true,
+          course: { select: { id: true, name: true, slug: true,createdAt: true } },
+          level: {
+            select: {
+              id: true, name: true, slug: true,
+              materialItems: {
+                select: {
+                  id: true, title: true, slug: true,
+                  systemForms: { select: { id: true } }
+                }
+              }
+            }
+          },
+        }
+      });
+
+      if (!courseStatues) throw new TRPCError({ code: "BAD_REQUEST", message: "no courseStatues found" })
+
+      return { courseStatues };
+    }),
   getWaitingList: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input: { id }, ctx }) => {
@@ -121,6 +152,9 @@ export const coursesRouter = createTRPCRouter({
       });
       return { course };
     }),
+  getBySlugSimple: protectedProcedure
+    .input(z.object({ slug: z.string() }))
+    .query(async ({ ctx, input: { slug } }) => await ctx.prisma.course.findUnique({ where: { slug }, include: { levels: true } })),
   getBySlug: protectedProcedure
     .input(
       z.object({

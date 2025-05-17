@@ -1,26 +1,16 @@
 import { api } from "@/lib/api";
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { toastType, useToast } from "@/components/ui/use-toast";
-import SelectField from "@/components/ui/SelectField";
-import Spinner from "@/components/ui/Spinner";
-import { CourseType, getLevelWaitingList, getWaitingList } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import Link from "next/link";
-import { ExternalLink } from "lucide-react";
 import { createMutationOptions } from "@/lib/mutationsHelper";
 import { DateMultiplePicker } from "@/components/ui/DateMultiplePicker";
 import { TimePickerSelect } from "@/components/ui/TimePickerSelect";
 import { format } from "date-fns";
-import SelectButton from "@/components/ui/SelectButton";
-import WrapWithTooltip from "@/components/ui/wrap-with-tooltip";
-import SingleSelectCourse from "@/components/general/selectFields/SingleSelectCourse";
 import TeacherSelectField from "@/components/general/selectFields/TeacherSelectField";
 import CourseSelectField from "@/components/general/selectFields/CourseSelectField";
 import LevelSelectField from "@/components/general/selectFields/LevelSelectField";
-import { DataTable } from "@/components/ui/DataTable";
 import GroupStudentsTable from "@/components/admin/operationsManagement/zoomGroupsComponents/GroupStudentsTable";
 import StudentSelectField from "@/components/general/selectFields/StudentSelectField";
 
@@ -79,7 +69,7 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
         if (!courseLevelId) return toastError("Please select the courseLevel!")
         if (studentIds.length === 0) return toastError("Please select students!")
 
-        const materials = materialsData?.materialItems || []
+        const materials = materialsData || []
 
         const sessionDates = days.map((d, idx) => {
             const sessionId = materials[idx]?.id
@@ -121,8 +111,6 @@ const ZoomGroupForm: FC<ZoomGroupFormProps> = ({ setIsOpen, initialData }) => {
             },
         });
     };
-
-    const totalWaitingUsers = useMemo(() => courseData?.course?.courseStatus.length, [courseData?.course])
 
     return (
         <div>

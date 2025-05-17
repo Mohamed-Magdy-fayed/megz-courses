@@ -11,6 +11,7 @@ import { hasPermission } from "@/server/permissions";
 import { createMeeting, generateToken } from "@/lib/onMeetingApi";
 import { sendGroupCreatedComms } from "@/server/actions/emails";
 import { formatUserForComms } from "@/lib/fcmhelpers"
+import { ROOT_EMAIL } from "@/server/constants";
 
 export const zoomGroupsRouter = createTRPCRouter({
     attendSession: protectedProcedure
@@ -272,10 +273,31 @@ export const zoomGroupsRouter = createTRPCRouter({
 
             const { meetingNumber, meetingPassword } = meetingData;
 
+            if (studentUsers.length !== studentIds.length) {
+                throw new TRPCError({ code: "BAD_REQUEST", message: "One or more students do not exist!" });
+            }
+
+            const levelExists = await ctx.prisma.courseLevel.findUnique({
+                where: { id: courseLevelId },
+            });
+            if (!levelExists) {
+                throw new TRPCError({ code: "BAD_REQUEST", message: "Level does not exist!" });
+            }
+
+            const materialItemIds = sessionDates.map(s => s.sessionId!) // you've already checked for undefined
+            const existingMaterialItems = await ctx.prisma.materialItem.findMany({
+                where: { id: { in: materialItemIds } },
+                select: { id: true },
+            });
+
+            if (existingMaterialItems.length !== materialItemIds.length) {
+                throw new TRPCError({ code: "BAD_REQUEST", message: "One or more material items are invalid!" });
+            }
+
             const [zoomGroup] = await ctx.prisma.$transaction([
                 ctx.prisma.zoomGroup.create({
                     data: {
-                        startDate: new Date(startDate),
+                        startDate,
                         meetingNumber,
                         meetingPassword,
                         groupNumber,
@@ -318,11 +340,11 @@ export const zoomGroupsRouter = createTRPCRouter({
                             type: "Info",
                             createdForStudent: { connect: { id: studentId } },
                             messages: [{
-                                message: `The Student was added to a zoom group ${groupNumber}`,
+                                message: `The Student was added to a zoom group ${groupNumber} by ${ctx.session.user.name}`,
                                 updatedAt: new Date(),
                                 updatedBy: "System"
                             }],
-                            createdByUser: { connect: { id: ctx.session.user.id } },
+                            createdByUser: { connect: { email: ROOT_EMAIL } },
                         }
                     })
                 )

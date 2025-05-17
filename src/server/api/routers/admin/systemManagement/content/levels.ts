@@ -45,6 +45,15 @@ export const levelsRouter = createTRPCRouter({
 
       return { levels };
     }),
+  getByIdSimple: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .query(async ({ ctx, input: { id } }) => {
+      return await ctx.prisma.courseLevel.findUnique({ where: { id } });
+    }),
   getById: protectedProcedure
     .input(
       z.object({

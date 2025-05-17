@@ -31,7 +31,6 @@ import ExportImport from "@/components/ui/ServerDataTable/ExportImport";
 import SearchField from "@/components/ui/ServerDataTable/headers/SearchField";
 import FilterField from "@/components/ui/ServerDataTable/headers/FilterField";
 import DateRangeField from "@/components/ui/ServerDataTable/headers/DateRangeField";
-import { cn, formatPrice } from "@/lib/utils";
 import SortButton from "@/components/ui/ServerDataTable/headers/SortButton";
 import PaginationNavigation from "@/components/ui/ServerDataTable/PaginationNavigation";
 import PaginationPageSizeSelectors from "@/components/ui/ServerDataTable/PaginationPageSizeSelectors";
@@ -165,11 +164,7 @@ export function DataTable<TData, TValue>({
                 isLoading={!!isLoading}
                 pageSize={pagination.pageSize || 10}
                 setPageSize={table.setPageSize}
-                options={
-                  table.getFilteredRowModel().rows.length > 100 ? [10, 50, 100]
-                    : table.getFilteredRowModel().rows.length > 50 ? [10, 50]
-                      : [10]
-                }
+                options={[10, 20, 50, 100, 200, 500, 1000]}
               />
               <PaginationNavigation table={table} />
             </div>

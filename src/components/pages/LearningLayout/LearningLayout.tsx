@@ -1,15 +1,10 @@
-import { ReactNode, useEffect } from 'react'
-import { Sheet, SheetContent } from '../../ui/sheet'
-import { useNavStore } from '@/zustand/store'
-import { LearningNavigationMenu } from './LearningNavigationMenu'
-import LearningDrawer from './LearningDrawer'
-import ChatWithUs from '../landingPageComponents/ChatWithUs'
-import LearningFooter from './LearningFooter'
+import { ReactNode } from 'react'
 import { Prisma } from '@prisma/client'
-import useLoadLearningData from '@/hooks/useLoadLearningData'
-import { api } from '@/lib/api'
-import { Skeleton } from '@/components/ui/skeleton'
 import { useFCMToken } from '@/hooks/useFCMToken'
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { AppSidebar } from '@/components/pages/LearningLayout/app-sidebar'
+import { NavBreadcrumb } from '@/components/pages/LearningLayout/nav-breadcrumb'
+import { Separator } from '@/components/ui/separator'
 
 export type LearningLayoutProps = {
     children: ReactNode;
@@ -86,60 +81,23 @@ export type LearningLayoutUserType = Prisma.UserGetPayload<{
 }>
 
 const LearningLayout = ({ children }: LearningLayoutProps) => {
-    const { Opened, openNav, closeNav } = useNavStore();
-
-    const { course, level, user } = useLoadLearningData()
-    const { data, refetch } = api.siteIdentity.getSiteIdentity.useQuery(undefined, { enabled: false })
     useFCMToken()
 
-    useEffect(() => { refetch() }, [])
-
-    if (!course || !user) return (
-        <div className="flex">
-            <Sheet
-                open={Opened}
-                onOpenChange={() => Opened ? closeNav() : openNav()}
-            >
-                <SheetContent side="left" className="p-0 w-min">
-                    <Skeleton className='w-40 h-80 rounded-none bg-foreground' />
-                </SheetContent>
-            </Sheet>
-            <div className="hidden lg:block p-0 w-min">
-                <Skeleton className='w-80 h-full rounded-none bg-foreground' />
-            </div>
-            <div className="w-full h-screen flex flex-col">
-                <LearningNavigationMenu />
-                <div className="flex flex-col justify-between flex-grow overflow-auto transition-all scrollbar-thin scrollbar-track-accent scrollbar-thumb-secondary">
-                    <main className="p-4">{children}</main>
-                    <ChatWithUs />
-                </div>
-                <Skeleton className='w-full h-20 rounded-none bg-foreground' />
-            </div>
-        </div>
-    )
-
     return (
-        <div className="flex">
-            <Sheet
-                open={Opened}
-                onOpenChange={() => Opened ? closeNav() : openNav()}
-            >
-                <SheetContent side="left" className="p-0 w-min">
-                    <LearningDrawer user={user} course={course} level={!level ? undefined : level} />
-                </SheetContent>
-            </Sheet>
-            <div className="hidden lg:block p-0 w-min">
-                <LearningDrawer user={user} course={course} level={!level ? undefined : level} />
-            </div>
-            <div className="w-full h-screen flex flex-col">
-                <LearningNavigationMenu />
-                <div className="flex flex-col justify-between flex-grow overflow-auto transition-all scrollbar-thin scrollbar-track-accent scrollbar-thumb-secondary">
-                    <main className="p-4">{children}</main>
-                    <ChatWithUs />
-                    <LearningFooter siteIdentity={data?.siteIdentity} course={course} level={!level ? undefined : level} />
-                </div>
-            </div>
-        </div>
+        <SidebarProvider>
+            <style>{`body { overflow-x: auto !important; overflow-y: auto !important; }`}</style>
+            <AppSidebar variant='inset' />
+            <SidebarInset>
+                <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+                    <div className="flex items-center gap-2 px-4">
+                        <SidebarTrigger />
+                        <Separator orientation="vertical" className="mr-2 h-4" />
+                        <NavBreadcrumb />
+                    </div>
+                </header>
+                <div className="p-4">{children}</div>
+            </SidebarInset>
+        </SidebarProvider>
     )
 }
 

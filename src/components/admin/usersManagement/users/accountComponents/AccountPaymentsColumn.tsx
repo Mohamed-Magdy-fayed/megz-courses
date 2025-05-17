@@ -43,7 +43,7 @@ export const columns: ColumnDef<Order>[] = [
         accessorKey: "orderNumber",
         header: "Order Number",
         cell: ({ row }) => (
-            <Link className="in-table-link" href={`/admin/sales_management/orders/${row.original.orderNumber}`}>
+            <Link className="in-table-link" href={`/student/my_account/orders/${row.original.orderNumber}`}>
                 {row.original.orderNumber}
             </Link>
         ),
@@ -124,7 +124,7 @@ export const columns: ColumnDef<Order>[] = [
         id: "action",
         header: "Actions",
         cell: ({ row }) => (
-            <AccountPaymentActionCell id={row.original.id} />
+            <AccountPaymentActionCell orderNumber={row.original.orderNumber} />
         ),
     },
 ];

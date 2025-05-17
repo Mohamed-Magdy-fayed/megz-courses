@@ -48,7 +48,7 @@ function MultiSelectField<T>({ selected, setSelected, isLoading, disabled, place
                     className="flex w-full gap-2 bg-background hover:bg-background justify-between text-inherit hover:text-primary hover:border-primary"
                 >
                     {selected.length > 0
-                        ? data.find(d => d.value === selected)?.label
+                        ? data.filter(d => selected.includes(d.value)).reduce((acc, curr) => acc + (curr.label) + ", ", "").slice(0, -2)
                         : placeholder}
                     {isLoading && !disabled ? <Spinner size={20} /> : <ChevronDownIcon className="h-4 w-4 opacity-50 ml-auto" />}
                 </Button>

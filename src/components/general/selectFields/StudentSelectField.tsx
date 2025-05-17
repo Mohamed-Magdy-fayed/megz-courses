@@ -16,7 +16,7 @@ export default function StudentSelectField({ loading, levelId, studentIds, setSt
             data={data?.rows.map(row => ({
                 active: true,
                 label: row.user.name,
-                value: row.id,
+                value: row.userId,
                 customLabel: (
                     <div className="flex items-center justify-between gap-4">
                         <Typography>{row.user.name}</Typography>

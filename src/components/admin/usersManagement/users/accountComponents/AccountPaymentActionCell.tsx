@@ -10,15 +10,15 @@ import { Copy, ChevronDownIcon } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 interface AccountPaymentActionCellProps {
-    id: string;
+    orderNumber: string;
 }
 
-const AccountPaymentActionCell: React.FC<AccountPaymentActionCellProps> = ({ id }) => {
+const AccountPaymentActionCell: React.FC<AccountPaymentActionCellProps> = ({ orderNumber }) => {
     const { toastInfo } = useToast();
 
     const onCopy = () => {
-        navigator.clipboard.writeText(id);
-        toastInfo("Category ID copied to the clipboard");
+        navigator.clipboard.writeText(orderNumber);
+        toastInfo("Order Number copied to the clipboard");
     };
 
     return (

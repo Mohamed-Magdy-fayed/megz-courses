@@ -1,33 +1,41 @@
 import LearningLayout from "@/components/pages/LearningLayout/LearningLayout"
 import { Typography } from "@/components/ui/Typoghraphy"
-import { format } from "date-fns"
-import useLoadLearningData from "@/hooks/useLoadLearningData"
 import { Button } from "@/components/ui/button"
+import { DisplayError } from "@/components/ui/display-error"
+import GoBackButton from "@/components/ui/go-back"
+import { Skeleton } from "@/components/ui/skeleton"
+import { api } from "@/lib/api"
+import { format } from "date-fns"
 import { ExternalLink } from "lucide-react"
 import Link from "next/link"
-import { ArrowLeftToLine } from "lucide-react"
 import { useRouter } from "next/router"
-import Spinner from "@/components/ui/Spinner"
-import LandingLayout from "@/components/pages/landingPageComponents/LandingLayout"
+import { useMemo } from "react"
 
 const CoursePage = () => {
-    const { course, user } = useLoadLearningData()
     const router = useRouter()
+    const courseSlug = router.query.courseSlug as string;
 
-    if (!course || !user) return (
-        <LandingLayout>
-            <Spinner className="mx-auto" />
-        </LandingLayout>
-    )
+    const { data, isLoading, isError, error } = api.courses.getLearningMenu.useQuery({ courseSlug }, { enabled: !!courseSlug })
+    const course = useMemo(() => data?.courseStatues[0]?.course, [data])
+
+    if (isLoading && !error) {
+        return <Skeleton className="w-full h-40" />
+    }
+
+    if (isError && error) {
+        return <DisplayError message={error.message} />
+    }
+
+    if (!course) {
+        return <DisplayError message={`No course found!`} />
+    }
 
     return (
         <LearningLayout>
             <div className="flex flex-col items-start md:p-4">
                 <div className="p-4 w-full flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <Button onClick={() => router.back()} variant={"icon"} customeColor={"infoIcon"}>
-                            <ArrowLeftToLine className="w-4 h-4" />
-                        </Button>
+                        <GoBackButton />
                         <Typography variant={"primary"}>{course.name} Course</Typography>
                     </div>
                     <Typography>Added on {format(course.createdAt, "do MMM yyyy")}</Typography>
@@ -35,19 +43,16 @@ const CoursePage = () => {
                 <div className="p-4 w-full space-y-4">
                     <Typography variant={"secondary"}>Please select a level to start</Typography>
                     <div className="flex items-center gap-4 p-4 flex-wrap">
-                        {course.levels
-                            .filter(lvl => user.courseStatus.some(({ courseId, courseLevelId }) => courseId === course.id && courseLevelId === lvl.id))
-                            .map(lvl => (
-                                <Link key={lvl.id} href={`/student/my_courses/${course.slug}/${lvl.slug}`}>
+                        {data.courseStatues
+                            .map(status => (
+                                <Link key={status.id} href={`/student/my_courses/${course.slug}/${status.level?.slug}`}>
                                     <Button variant={"outline"} customeColor={"infoOutlined"}>
                                         <ExternalLink className="w-4 h-4" />
-                                        <Typography>{lvl.name}</Typography>
+                                        <Typography>{status.level?.name}</Typography>
                                     </Button>
                                 </Link>
                             ))
                         }
-                        {course.levels
-                            .filter(lvl => user.courseStatus.some(({ courseId, courseLevelId }) => courseId === course.id && courseLevelId === lvl.id)).length === 0 && "No levels for now!"}
                     </div>
                 </div>
             </div>
