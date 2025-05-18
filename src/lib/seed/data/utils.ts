@@ -80,6 +80,89 @@ export const oralTestFeedbackOutcomes = [
     "Did not attend or complete test – Unable to evaluate performance"
 ];
 
+export const notificationTemplates = [
+    {
+        title: "New Order Placed",
+        message: "A customer has placed a new order.\nCheck the order details to proceed with processing.",
+    },
+    {
+        title: "Payment Received",
+        message: "Payment for an order has been successfully processed.\nVerify the order and initiate fulfillment.",
+    },
+    {
+        title: "Course Enrollment Successful",
+        message: "A student has enrolled in a course.\nCheck the enrollment dashboard for details.",
+    },
+    {
+        title: "New Support Ticket",
+        message: "A user has submitted a new support request.\nReview and respond as soon as possible.",
+    },
+    {
+        title: "Feedback Submitted",
+        message: "You received new feedback from a user.\nReview the feedback to take appropriate action.",
+    },
+    {
+        title: "Assignment Submitted",
+        message: "A student has submitted an assignment.\nEvaluate and provide feedback or grading.",
+    },
+    {
+        title: "Quiz Completed",
+        message: "A student has completed a quiz.\nResults are available for review.",
+    },
+    {
+        title: "Zoom Meeting Scheduled",
+        message: "A Zoom session has been scheduled.\nCheck the session time and meeting link.",
+    },
+    {
+        title: "Certificate Issued",
+        message: "A course completion certificate has been issued.\nDownload or share it with the student.",
+    },
+    {
+        title: "User Profile Updated",
+        message: "A user has updated their profile information.\nReview if any verification is required.",
+    },
+    {
+        title: "Session Time Changed",
+        message: "A session’s schedule has been updated.\nNotify participants of the new time.",
+    },
+    {
+        title: "Password Reset Requested",
+        message: "A user requested to reset their password.\nEnsure it was a legitimate action.",
+    },
+    {
+        title: "Low Inventory Alert",
+        message: "One or more items are running low on stock.\nReplenish inventory to avoid disruptions.",
+    },
+    {
+        title: "New Trainer Assigned",
+        message: "A trainer has been assigned to a course or group.\nReview trainer details and responsibilities.",
+    },
+    {
+        title: "System Update Completed",
+        message: "The platform has been updated successfully.\nCheck for new features and bug fixes.",
+    },
+    {
+        title: "Payment Failed",
+        message: "A payment attempt did not go through.\nFollow up with the user or retry the transaction.",
+    },
+    {
+        title: "Session Reminder",
+        message: "An upcoming session is scheduled soon.\nMake sure the trainer and students are informed.",
+    },
+    {
+        title: "Test Result Published",
+        message: "Results for a test have been released.\nNotify students to check their performance.",
+    },
+    {
+        title: "User Deactivated",
+        message: "A user account has been deactivated.\nReview access permissions if needed.",
+    },
+    {
+        title: "Weekly Report Ready",
+        message: "Your weekly performance and activity report is available.\nDownload it from your dashboard.",
+    }
+];
+
 export const deviceDistribution = [
     { value: "Mobile", weight: 48 },
     { value: "Tablet", weight: 24 },

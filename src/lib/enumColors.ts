@@ -1,5 +1,5 @@
 import { SeverityPillProps } from "@/components/ui/SeverityPill";
-import { CourseStatuses, GroupStatus, LeadInteractionType, OrderStatus, SessionStatus, SupportTicketStatus, UserNoteStatus, UserNoteTypes } from "@prisma/client";
+import { CourseStatuses, GroupStatus, LeadInteractionType, OrderStatus, SessionStatus, SupportTicketStatus, UserNoteStatus, UserNoteTypes, NotificationChannel, NotificationType } from "@prisma/client";
 
 export const validLeadInteractionsColors: (val: LeadInteractionType) => SeverityPillProps["color"] = (val) => {
     switch (val) {
@@ -122,6 +122,37 @@ export const validSupportTicketStatusColors: (val: SupportTicketStatus) => Sever
             return "info";
         case "Created":
             return "primary";
+        default:
+            return "background";
+    }
+};
+export const validNotificationTypesColors: (val: NotificationType) => SeverityPillProps["color"] = (val) => {
+    switch (val) {
+        case "Info":
+            return "info";
+        case "Success":
+            return "success";
+        case "Warning":
+            return "primary"; // fallback, since 'warning' is not a valid color
+        case "Error":
+            return "destructive";
+        case "Custom":
+            return "muted";
+        default:
+            return "background";
+    }
+};
+
+export const validNotificationChannelsColors: (val: NotificationChannel) => SeverityPillProps["color"] = (val) => {
+    switch (val) {
+        case "InApp":
+            return "primary";
+        case "Email":
+            return "info";
+        case "Push":
+            return "success";
+        case "SMS":
+            return "muted";
         default:
             return "background";
     }

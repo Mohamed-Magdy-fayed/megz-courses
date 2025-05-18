@@ -36,6 +36,7 @@ import { usersRouter } from "@/server/api/routers/admin/usersManagement/users";
 import { cronRouter } from "@/server/api/routers/cronJobs";
 import { authRouter } from "@/server/api/routers/general/auth";
 import { emailsRouter } from "@/server/api/routers/general/emails";
+import { notificationsRouter } from "@/server/api/routers/general/notificationRouter";
 import { pushNotificationsRouter } from "@/server/api/routers/general/pushNotifications";
 import { certificatesRouter } from "@/server/api/routers/student/certificates";
 import { selfServeRouter } from "@/server/api/routers/student/selfServe";
@@ -91,6 +92,7 @@ export const appRouter = createTRPCRouter({
   refunds: refundsRouter,
   pushNotifications: pushNotificationsRouter,
   cron: cronRouter,
+  notifications: notificationsRouter,
 });
 
 // export type definition of API

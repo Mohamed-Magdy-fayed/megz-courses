@@ -1,4 +1,4 @@
-import { CourseStatuses, DefaultStage, Devices, GroupStatus, ItemQuestionType, ItemType, LeadInteractionType, LeadSource, MaterialItemType, MessageTemplateType, OrderStatus, QuestionChoiceType, SessionStatus, SupportTicketStatus, SystemFormTypes, UserNoteStatus, UserNoteTypes, UserRoles, UserScreen } from "@prisma/client";
+import { CourseStatuses, DefaultStage, Devices, GroupStatus, ItemQuestionType, ItemType, LeadInteractionType, LeadSource, MaterialItemType, MessageTemplateType, OrderStatus, QuestionChoiceType, SessionStatus, SupportTicketStatus, SystemFormTypes, UserNoteStatus, UserNoteTypes, UserRoles, UserScreen, NotificationChannel, NotificationType } from "@prisma/client";
 
 export const validUserRoles = [UserRoles.Admin, UserRoles.ChatAgent, UserRoles.SalesAgent, UserRoles.Student, UserRoles.Teacher, UserRoles.Tester, UserRoles.OperationAgent] as const;
 export const validUserScreens = [UserScreen.dashboard, UserScreen.operations_management, UserScreen.notes, UserScreen.groups, UserScreen.trainee_lists, UserScreen.placement_tests, UserScreen.sessions, UserScreen.sales_management, UserScreen.orders, UserScreen.leads, UserScreen.users_management, UserScreen.students, UserScreen.ops_team, UserScreen.edu_team, UserScreen.chat_agents, UserScreen.account, UserScreen.system_management, UserScreen.config, UserScreen.content, UserScreen.products, UserScreen.privacy, UserScreen.terms, UserScreen.documentation, UserScreen.support, UserScreen.tickets] as const;
@@ -20,3 +20,5 @@ export const validMessageTemplateTypes = [MessageTemplateType.AddedToGroup, Mess
 export const validItemTypes = [ItemType.ImageItem, ItemType.PageBreakItem, ItemType.QuestionItem, ItemType.TextItem, ItemType.VideoItem, ItemType.QuestionGroupItem] as const;
 export const validItemQuestionTypes = [ItemQuestionType.Choice, ItemQuestionType.Text] as const;
 export const validQuestionChoiceTypes = [QuestionChoiceType.Checkbox, QuestionChoiceType.Radio] as const;
+export const validNotificationTypes = [NotificationType.Info, NotificationType.Success, NotificationType.Warning, NotificationType.Error, NotificationType.Custom] as const;
+export const validNotificationChannels = [NotificationChannel.InApp, NotificationChannel.Email, NotificationChannel.Push, NotificationChannel.SMS] as const;

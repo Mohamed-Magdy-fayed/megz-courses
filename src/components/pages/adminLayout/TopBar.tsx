@@ -24,6 +24,7 @@ import { SeverityPill } from "@/components/ui/SeverityPill";
 import { format } from "date-fns";
 import { useRouter } from "next/router";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { NotificationDropdown } from "@/components/general/notifications/NotificationDropdown";
 
 export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdentity }) {
   const session = useSession();
@@ -33,14 +34,6 @@ export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdenti
   const [isMounted, setisMounted] = useState(false);
   const navStore = useNavStore((state) => state);
   const pathname = usePathname();
-
-  const trpcUtils = api.useUtils()
-  const { data } = api.notes.getActiveUserNotes.useQuery(undefined, { enabled: session.status === "authenticated" })
-  const editNoteQuery = api.notes.editNoteStatus.useMutation({ onSettled: () => trpcUtils.notes.invalidate() })
-
-  const changeStatus = (id: string, status: UserNoteStatus) => {
-    editNoteQuery.mutate({ id, status })
-  }
 
   const handlePathnameChange = useCallback(() => {
     if (navStore.Opened) {
@@ -74,16 +67,16 @@ export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdenti
       <div className="flex justify-between p-2">
         <div className="flex items-center gap-2">
           <WrapWithTooltip text="Menu">
-              <Button
-                variant="icon"
-                customeColor={"foregroundIcon"}
-                className={cn("lg:!hidden")}
-                onClick={() => {
-                  navStore.openNav();
-                }}
-              >
-                <MenuIcon className="w-4 h-4" />
-              </Button>
+            <Button
+              variant="icon"
+              customeColor={"foregroundIcon"}
+              className={cn("lg:!hidden")}
+              onClick={() => {
+                navStore.openNav();
+              }}
+            >
+              <MenuIcon className="w-4 h-4" />
+            </Button>
           </WrapWithTooltip>
           <div className="col-span-6 flex items-center justify-center">
             <Link href={'/'} className="flex items-center gap-2 justify-center w-fit">
@@ -170,59 +163,10 @@ export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdenti
                 </Link>
               </WrapWithTooltip>
             )}
-          {data?.notes && (
-            <DropdownMenu>
-              <WrapWithTooltip text="Notes that need your attention">
-                <DropdownMenuTrigger className="relative mx-4">
-                  {data.notes.filter(n => n.status !== "Closed").length > 0 && <InfoIcon className="absolute rounded-full text-destructive-foreground bg-destructive -top-2.5 -right-2.5 size-3" />}
-                  {data.notes.filter(n => n.status !== "Closed").length > 0 ? <BellRing className="size-4" /> : <BellIcon className="size-4" />}
-                </DropdownMenuTrigger>
-              </WrapWithTooltip>
-              <DropdownMenuContent>
-                <DropdownMenuLabel>
-                  Notes {data.notes.filter(n => n.status !== "Closed").length > 0 && <SeverityPill color="destructive" className="aspect-square inline-flex">{data?.notes.filter(n => n.status !== "Closed").length}</SeverityPill>}
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <ScrollArea className="max-h-96">
-                    {data.notes.map(note => (
-                      <DropdownMenuItem
-                        key={note.id}
-                        onClick={(e) => {
-                          e.preventDefault()
-                          note.status !== "Closed" && changeStatus(note.id, "Closed")
-                          router.push(`/admin/operations_management/notes/${note.id}`)
-                        }}
-                        className={cn("flex items-center justify-between w-full gap-4 hover:!bg-muted/10 hover:!text-foreground focus-visible:bg-muted/10 focus-visible:text-foreground", note.status !== "Closed" && "bg-muted/10 text-foreground hover:!bg-muted/20")}
-                      >
-                        <div className="grid gap-4 max-w-md">
-                          <Typography variant="secondary">
-                            {note.title}
-                          </Typography>
-                          <Typography className="whitespace-pre-wrap truncate">
-                            {note.messages[0]?.message}
-                          </Typography>
-                          <Typography className="text-xs text-info">
-                            {format(note.updatedAt, "PPp")}
-                          </Typography>
-                        </div>
-                        <WrapWithTooltip text={note.status !== "Closed" ? "Mark as seen!" : "Mark as not seen!"}>
-                          <Button onClick={(e) => {
-                            e.stopPropagation()
-                            changeStatus(note.id, note.status !== "Closed" ? "Closed" : "Opened")
-                          }} className="cursor-pointer pointer-events-auto" variant="icon" customeColor="success">
-                            {note.status !== "Closed"
-                              ? (<EyeOffIcon className="size-4" />)
-                              : (<EyeIcon className="size-4" />)}
-                          </Button>
-                        </WrapWithTooltip>
-                      </DropdownMenuItem>
-                    ))}
-                  </ScrollArea>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+
+          {/* Notification Dropdown using NotificationList */}
+          <NotificationDropdown />
+
           <WrapWithTooltip text="My Account">
             <Link href={`/admin/users_management/account`}>
               <Button variant="icon" customeColor={"primaryIcon"} >

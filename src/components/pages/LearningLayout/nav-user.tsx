@@ -1,13 +1,12 @@
 "use client"
 
 import {
-    BadgeCheck,
     Bell,
     ChevronsUpDown,
-    CreditCard,
+    EyeIcon,
+    EyeOffIcon,
     FilesIcon,
     LogOut,
-    Sparkles,
     UserCog2Icon,
 } from "lucide-react"
 
@@ -41,43 +40,38 @@ import { api } from "@/lib/api"
 import { DisplayError } from "@/components/ui/display-error"
 import Link from "next/link"
 import { Button, SpinnerButton } from "@/components/ui/button"
-import { signOut, useSession } from "next-auth/react"
+import { signOut } from "next-auth/react"
 import { useCallback, useState } from "react"
-import { UserNoteStatus } from "@prisma/client"
 import { useNavStore } from "@/zustand/store"
-import { usePathname } from "next/navigation"
-import { useRouter } from "next/router"
+import { useNotificationList } from "@/hooks/useNotificationList"
+import { NotificationList } from "@/components/general/notifications/NotificationList"
 import { cn } from "@/lib/utils"
+import { formatDistanceToNow } from "date-fns"
 import { Typography } from "@/components/ui/Typoghraphy"
 import WrapWithTooltip from "@/components/ui/wrap-with-tooltip"
-import { format } from "date-fns"
-import { EyeOffIcon } from "lucide-react"
-import { EyeIcon } from "lucide-react"
+import { SeverityPill } from "@/components/ui/SeverityPill"
 
 export function NavUser() {
     const { isMobile } = useSidebar()
-    const session = useSession();
-    const router = useRouter();
 
     const { data, isLoading, isError, error } = api.users.getCurrentUser.useQuery()
 
+    const { unreadCount } = useNotificationList(5, "InApp");
+
+    const trpcUtils = api.useUtils();
+    const updateMutation = api.notifications.update.useMutation({
+        onSuccess: () => trpcUtils.notifications.invalidate(),
+    });
+    const markAllMutation = api.notifications.markAllRead.useMutation({
+        onSuccess: () => trpcUtils.notifications.invalidate(),
+    });
+
+    const changeStatus = useCallback((id: string, isRead: boolean) => {
+        updateMutation.mutate({ id, data: { isRead } });
+    }, [updateMutation]);
+
     const [loading, setLoading] = useState(false);
     const navStore = useNavStore((state) => state);
-    const pathname = usePathname();
-
-    const trpcUtils = api.useUtils()
-    const { data: notesData } = api.notes.getActiveUserNotes.useQuery(undefined, { enabled: session.status === "authenticated" })
-    const editNoteQuery = api.notes.editNoteStatus.useMutation({ onSettled: () => trpcUtils.notes.invalidate() })
-
-    const changeStatus = (id: string, status: UserNoteStatus) => {
-        editNoteQuery.mutate({ id, status })
-    }
-
-    const handlePathnameChange = useCallback(() => {
-        if (navStore.Opened) {
-            navStore.closeNav();
-        }
-    }, [navStore.Opened]);
 
     const handleLogout = () => {
         setLoading(true)
@@ -154,40 +148,56 @@ export function NavUser() {
                                     Notifications
                                 </DropdownMenuSubTrigger>
                                 <DropdownMenuPortal>
-                                    <DropdownMenuSubContent className="max-h-80 overflow-y-auto">
-                                        {notesData?.notes.map(note => (
-                                            <DropdownMenuItem
-                                                key={note.id}
-                                                onClick={(e) => {
-                                                    e.preventDefault()
-                                                    note.status !== "Closed" && changeStatus(note.id, "Closed")
-                                                    router.push(`/admin/operations_management/notes/${note.id}`)
-                                                }}
-                                                className={cn("flex items-center justify-between w-full gap-4 hover:!bg-muted/10 hover:!text-foreground focus-visible:bg-muted/10 focus-visible:text-foreground", note.status !== "Closed" && "bg-muted/10 text-foreground hover:!bg-muted/20")}
-                                            >
-                                                <div className="grid gap-4 max-w-md">
-                                                    <Typography variant="secondary">
-                                                        {note.title}
-                                                    </Typography>
-                                                    <Typography className="whitespace-pre-wrap truncate">
-                                                        {note.messages[0]?.message}
-                                                    </Typography>
-                                                    <Typography className="text-xs text-info">
-                                                        {format(note.updatedAt, "PPp")}
-                                                    </Typography>
-                                                </div>
-                                                <WrapWithTooltip text={note.status !== "Closed" ? "Mark as seen!" : "Mark as not seen!"}>
-                                                    <Button onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        changeStatus(note.id, note.status !== "Closed" ? "Closed" : "Opened")
-                                                    }} className="cursor-pointer pointer-events-auto" variant="icon" customeColor="success">
-                                                        {note.status !== "Closed"
-                                                            ? (<EyeOffIcon className="size-4" />)
-                                                            : (<EyeIcon className="size-4" />)}
+                                    <DropdownMenuSubContent>
+                                        <DropdownMenuGroup className="flex items-center">
+                                            <DropdownMenuLabel>
+                                                Notifications {!!unreadCount && <SeverityPill color="destructive" className="aspect-square inline-flex">{unreadCount}</SeverityPill>}
+                                            </DropdownMenuLabel>
+                                            {!!unreadCount && (
+                                                <WrapWithTooltip text="Mark all as read">
+                                                    <Button
+                                                        onClick={() => markAllMutation.mutate({})}
+                                                        className="ml-auto" variant="icon" customeColor="primaryIcon"
+                                                    >
+                                                        <EyeIcon className="size-4" />
                                                     </Button>
                                                 </WrapWithTooltip>
-                                            </DropdownMenuItem>
-                                        ))}
+                                            )}
+                                        </DropdownMenuGroup>
+                                        <NotificationList
+                                            renderItem={(n) => (
+                                                <DropdownMenuItem
+                                                    key={n.id}
+                                                    onClick={e => {
+                                                        e.preventDefault();
+                                                        if (!n.isRead) changeStatus(n.id, true);
+                                                    }}
+                                                    className={cn(
+                                                        'flex items-center justify-between w-full gap-4 hover:!bg-muted/10 hover:!text-foreground focus-visible:bg-muted/10 focus-visible:text-foreground',
+                                                        !n.isRead && 'bg-info/10 text-foreground hover:!bg-info/20'
+                                                    )}
+                                                >
+                                                    <div className="grid gap-1 max-w-md">
+                                                        <Typography className="font-bold">{n.title}</Typography>
+                                                        <Typography className="whitespace-pre-wrap truncate">{n.message}</Typography>
+                                                        <Typography className="text-xs text-info">{formatDistanceToNow(new Date(n.createdAt))}</Typography>
+                                                    </div>
+                                                    {!n.isRead ? (
+                                                        <WrapWithTooltip text="Mark as read">
+                                                            <Button onClick={e => { e.stopPropagation(); changeStatus(n.id, true); }} className="cursor-pointer pointer-events-auto" variant="icon" customeColor="success">
+                                                                <EyeOffIcon className="size-4" />
+                                                            </Button>
+                                                        </WrapWithTooltip>
+                                                    ) : (
+                                                        <WrapWithTooltip text="Mark as unread">
+                                                            <Button onClick={e => { e.stopPropagation(); changeStatus(n.id, false); }} className="cursor-pointer pointer-events-auto" variant="icon" customeColor="success">
+                                                                <EyeIcon className="size-4" />
+                                                            </Button>
+                                                        </WrapWithTooltip>
+                                                    )}
+                                                </DropdownMenuItem>
+                                            )}
+                                        />
                                     </DropdownMenuSubContent>
                                 </DropdownMenuPortal>
                             </DropdownMenuSub>
