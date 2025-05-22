@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator'
 
 export type LearningLayoutProps = {
     children: ReactNode;
+    sidebarContent?: ReactNode;
 }
 
 export type LearningLayoutCourseType = Prisma.CourseGetPayload<{
@@ -80,13 +81,13 @@ export type LearningLayoutUserType = Prisma.UserGetPayload<{
     },
 }>
 
-const LearningLayout = ({ children }: LearningLayoutProps) => {
+const LearningLayout = ({ children, sidebarContent }: LearningLayoutProps) => {
     useFCMToken()
 
     return (
         <SidebarProvider>
             <style>{`body { overflow-x: auto !important; overflow-y: auto !important; }`}</style>
-            <AppSidebar variant='inset' />
+            <AppSidebar variant='inset' sidebarContent={sidebarContent} />
             <SidebarInset>
                 <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
                     <div className="flex items-center gap-2 px-4">

@@ -113,16 +113,16 @@ model CourseStatus {
 }
 
 model User {
-    id                    String                 @id @default(auto()) @map("_id") @db.ObjectId
+    id                    String                  @id @default(auto()) @map("_id") @db.ObjectId
     name                  String
-    email                 String                 @unique
+    email                 String                  @unique
     emailVerified         DateTime?
     image                 String?
     hashedPassword        String?
     tempPassword          String?
     fcmTokens             String[]
-    phone                 String                 @unique
-    userRoles             UserRoles[]            @default([Student])
+    phone                 String                  @unique
+    userRoles             UserRoles[]             @default([Student])
     userScreens           UserScreen[]
     accounts              Account[]
     sessions              Session[]
@@ -135,28 +135,32 @@ model User {
     leads                 Lead[]
     leadInteractions      LeadInteraction[]
     systemFormSubmissions SystemFormSubmission[]
-    placementTests        PlacementTest[]        @relation("PlacementTestToStudent")
-    createdPlacementTests PlacementTest[]        @relation("PlacementTestToCreatedBy")
-    studentNotes          UserNote[]             @relation("CreatedForStudent")
-    userNotes             UserNote[]             @relation("CreatedByUser")
-    userNoteMention       UserNote[]             @relation("MentionedUser", fields: [userNoteId], references: [id])
-    userNoteId            String[]               @db.ObjectId
-    zoomGroups            ZoomGroup[]            @relation("UserToGroup", fields: [zoomGroupIds], references: [id])
-    zoomGroupIds          String[]               @db.ObjectId
-    teacher               Teacher?               @relation("UserToTeacher")
-    teacherId             String?                @db.ObjectId
-    tester                Tester?                @relation("UserToTester")
-    testerId              String?                @db.ObjectId
-    salesAgent            SalesAgent?            @relation("UserToSalesAgent")
-    salesAgentId          String?                @db.ObjectId
-    chatAgent             ChatAgent?             @relation("UserToChatAgent")
-    supportChat           SupportChat?           @relation("UserToChat")
+    placementTests        PlacementTest[]         @relation("PlacementTestToStudent")
+    createdPlacementTests PlacementTest[]         @relation("PlacementTestToCreatedBy")
+    studentNotes          UserNote[]              @relation("CreatedForStudent")
+    userNotes             UserNote[]              @relation("CreatedByUser")
+    userNoteMention       UserNote[]              @relation("MentionedUser", fields: [userNoteId], references: [id])
+    userNoteId            String[]                @db.ObjectId
+    zoomGroups            ZoomGroup[]             @relation("UserToGroup", fields: [zoomGroupIds], references: [id])
+    zoomGroupIds          String[]                @db.ObjectId
+    teacher               Teacher?                @relation("UserToTeacher")
+    teacherId             String?                 @db.ObjectId
+    tester                Tester?                 @relation("UserToTester")
+    testerId              String?                 @db.ObjectId
+    salesAgent            SalesAgent?             @relation("UserToSalesAgent")
+    salesAgentId          String?                 @db.ObjectId
+    chatAgent             ChatAgent?              @relation("UserToChatAgent")
+    supportChat           SupportChat?            @relation("UserToChat")
     address               Address?
     device                Devices?
-    updatedAt             DateTime               @updatedAt
-    createdAt             DateTime               @default(now())
-    notifications         Notification[]         @relation("UserNotifications")
-    actedNotifications     Notification[]         @relation("NotificationActor")
+    updatedAt             DateTime                @updatedAt
+    createdAt             DateTime                @default(now())
+    notifications         Notification[]          @relation("UserNotifications")
+    actedNotifications    Notification[]          @relation("NotificationActor")
+    discussion            Discussion[]
+    discussionParticipant DiscussionParticipant[]
+    discussionMessage     DiscussionMessage[]
+    discussionMessageRead DiscussionMessageRead[]
 }
 
 model VerificationToken {
@@ -592,6 +596,7 @@ model ZoomGroup {
     courseId        String?                @db.ObjectId
     courseLevel     CourseLevel?           @relation(fields: [courseLevelId], references: [id], onDelete: SetNull)
     courseLevelId   String?                @db.ObjectId
+    discussions     Discussion[]
     zoomSessions    ZoomSession[]
     finalTests      SystemFormSubmission[]
     updatedAt       DateTime               @updatedAt
@@ -946,35 +951,87 @@ model ProductItem {
 // Notification system
 
 enum NotificationType {
-  Info
-  Success
-  Warning
-  Error
-  Custom
+    Info
+    Success
+    Warning
+    Error
+    Custom
 }
 
 enum NotificationChannel {
-  InApp
-  Email
-  Push
-  SMS
+    InApp
+    Email
+    Push
+    SMS
 }
 
 model Notification {
-  id        String               @id @default(auto()) @map("_id") @db.ObjectId
-  user      User                 @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
-  userId    String               @db.ObjectId
-  type      NotificationType
-  title     String
-  message   String
-  data      Json?
-  isRead    Boolean              @default(false)
-  readAt    DateTime?
-  createdAt DateTime             @default(now())
-  updatedAt DateTime             @updatedAt
-  expiresAt DateTime?
-  sent      Boolean              @default(false)
-  channel   NotificationChannel?
-  actorId   String?              @db.ObjectId
-  actor     User?                @relation("NotificationActor", fields: [actorId], references: [id])
+    id        String               @id @default(auto()) @map("_id") @db.ObjectId
+    user      User                 @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+    userId    String               @db.ObjectId
+    type      NotificationType
+    title     String
+    message   String
+    data      Json?
+    isRead    Boolean              @default(false)
+    readAt    DateTime?
+    createdAt DateTime             @default(now())
+    updatedAt DateTime             @updatedAt
+    expiresAt DateTime?
+    sent      Boolean              @default(false)
+    channel   NotificationChannel?
+    actorId   String?              @db.ObjectId
+    actor     User?                @relation("NotificationActor", fields: [actorId], references: [id])
+}
+
+enum DiscussionType {
+    StudentTeacherOneToOne
+    Group
+    AdminPrivate
+}
+
+model Discussion {
+    id            String                  @id @default(auto()) @map("_id") @db.ObjectId
+    type          DiscussionType
+    title         String?
+    zoomGroup     ZoomGroup?              @relation(fields: [zoomGroupId], references: [id])
+    zoomGroupId   String?                 @db.ObjectId
+    participants  DiscussionParticipant[]
+    messages      DiscussionMessage[]
+    createdBy     User                    @relation(fields: [createdById], references: [id])
+    createdById   String                  @db.ObjectId
+    isActive      Boolean                 @default(true)
+    lastMessageAt DateTime                @updatedAt
+    createdAt     DateTime                @default(now())
+}
+
+model DiscussionParticipant {
+    id           String     @id @default(auto()) @map("_id") @db.ObjectId
+    discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+    discussionId String     @db.ObjectId
+    user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId       String     @db.ObjectId
+    joinedAt     DateTime   @default(now())
+}
+
+model DiscussionMessage {
+    id           String                  @id @default(auto()) @map("_id") @db.ObjectId
+    discussion   Discussion              @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+    discussionId String                  @db.ObjectId
+    sender       User                    @relation(fields: [senderId], references: [id])
+    senderId     String                  @db.ObjectId
+    content      String
+    attachments  String[]
+    isReadBy     DiscussionMessageRead[]
+    sentAt       DateTime                @default(now())
+    updatedAt    DateTime                @updatedAt
+}
+
+model DiscussionMessageRead {
+    id        String            @id @default(auto()) @map("_id") @db.ObjectId
+    message   DiscussionMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+    messageId String            @db.ObjectId
+    user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId    String            @db.ObjectId
+    readAt    DateTime          @default(now())
 }

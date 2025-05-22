@@ -24,8 +24,10 @@ declare module "next-auth" {
     accessToken: string;
     user: {
       id: string;
+      name: string;
       phone: string;
       email: string;
+      image: string | null;
       userRoles: UserRoles[];
       userScreens: UserScreen[];
       device: Devices | null;
@@ -37,8 +39,10 @@ declare module "next-auth" {
 
   interface User extends DefaultUser {
     id: string;
+    name: string;
     phone: string;
     email: string;
+    image: string | null;
     userRoles: UserRoles[];
     userScreens: UserScreen[];
     device: Devices | null;
@@ -90,7 +94,7 @@ export const authOptions: NextAuthOptions = {
 
         if (!checkPassword) throw new Error("Incorrect email or password!");
 
-        return { ...user, emailVerified: user.emailVerified, hasPassword: true };
+        return { ...user, emailVerified: user.emailVerified, hasPassword: true, };
       },
     }),
     /**
@@ -154,7 +158,7 @@ export const authOptions: NextAuthOptions = {
           name: session.name,
           email: session.email,
           phone: session.phone,
-          picture: session.image,
+          image: session.image,
           device: session.device,
           emailVerified: session.emailVerified,
           userRoles: session.userRoles,
@@ -169,7 +173,7 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           email: user.email,
           phone: user.phone,
-          picture: user.image,
+          image: user.image,
           device: user.device,
           hasPassword: user.hasPassword,
           emailVerified: !!user.emailVerified,
@@ -186,7 +190,7 @@ export const authOptions: NextAuthOptions = {
           email: token.email,
           phone: token.phone,
           hasPassword: token.hasPassword,
-          picture: token.picture,
+          image: token.picture,
           userRoles: token.userRoles,
           userScreens: token.userScreens,
           device: token.device,

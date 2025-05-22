@@ -1,3 +1,5 @@
+"use client"
+
 import LearningLayout from "@/components/pages/LearningLayout/LearningLayout";
 import Spinner from "@/components/ui/Spinner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

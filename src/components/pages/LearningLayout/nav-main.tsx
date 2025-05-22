@@ -9,11 +9,14 @@ import Link from "next/link"
 
 export function NavMain({
     items,
+    sidebarLabel,
 }: {
+    sidebarLabel?: string;
     items: {
         title: string
         url?: string
         icon?: LucideIcon
+        action?: React.ReactNode
         isActive?: boolean
         items?: {
             title: string
@@ -25,7 +28,7 @@ export function NavMain({
 
     return (
         <SidebarGroup>
-            <SidebarGroupLabel>Levels</SidebarGroupLabel>
+            <SidebarGroupLabel>{sidebarLabel}</SidebarGroupLabel>
             <SidebarMenu>
                 <Accordion type="single" collapsible className="w-full" value={activeItem} onValueChange={setActiveItem}>
                     {items.map((item) => (
@@ -37,10 +40,14 @@ export function NavMain({
                                 className="group/collapsible border-0"
                             >
                                 <AccordionTrigger removeIcon className="hover:no-underline">
-                                    <SidebarMenuButton tooltip={item.title} className="py-6 text-ellipsis">
+                                    <SidebarMenuButton
+                                        tooltip={item.title}
+                                        className="py-6 text-ellipsis"
+                                    >
                                         {item.icon && <item.icon />}
                                         <span>{item.title}</span>
-                                        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                                        {item.items && <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />}
+                                        {item.action && item.action}
                                     </SidebarMenuButton>
                                 </AccordionTrigger>
                                 <AccordionContent>

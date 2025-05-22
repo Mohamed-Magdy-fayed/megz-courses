@@ -1,3 +1,5 @@
+"use client"
+
 import LearningLayout from "@/components/pages/LearningLayout/LearningLayout";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";

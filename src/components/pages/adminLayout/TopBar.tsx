@@ -1,39 +1,31 @@
 import { signOut, useSession } from "next-auth/react";
 import { useNavStore } from "@/zustand/store";
-import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { MenuIcon, UserCircle, MessagesSquare, ListChecks, CircleDollarSign, InfoIcon, BellRing, BellIcon, EyeOffIcon, EyeIcon, ScreenShareIcon } from "lucide-react";
+import { MenuIcon, UserCircle, ListChecks, ScreenShareIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { Separator } from "@/components/ui/separator";
 import { useCallback, useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import Spinner from "@/components/ui/Spinner";
-import { DarkModeToggle } from "../../dark-mode-toggle";
 import Link from "next/link";
 import Image from "next/image";
 import { LogoForeground } from "@/components/pages/adminLayout/Logo";
-import { SiteIdentity, UserNoteStatus } from "@prisma/client";
+import { SiteIdentity } from "@prisma/client";
 import { getInitials } from "@/lib/getInitials";
-import { api } from "@/lib/api";
 import WrapWithTooltip from "@/components/ui/wrap-with-tooltip";
-import { SeverityPill } from "@/components/ui/SeverityPill";
-import { format } from "date-fns";
 import { useRouter } from "next/router";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { NotificationDropdown } from "@/components/general/notifications/NotificationDropdown";
 
 export default function MegzTopBar({ siteIdentity }: { siteIdentity?: SiteIdentity }) {
   const session = useSession();
-  const router = useRouter();
+  const { pathname } = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isMounted, setisMounted] = useState(false);
   const navStore = useNavStore((state) => state);
-  const pathname = usePathname();
 
   const handlePathnameChange = useCallback(() => {
     if (navStore.Opened) {

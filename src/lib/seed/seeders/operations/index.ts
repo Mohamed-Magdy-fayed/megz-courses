@@ -13,6 +13,7 @@ import { seedTrainers } from '@/lib/seed/seeders/users/seedTrainers';
 import { seedForms } from '@/lib/seed/seeders/content/seedForms';
 import { seedLevels } from '@/lib/seed/seeders/content/seedLevels';
 import { seedMaterials } from '@/lib/seed/seeders/content/seedMaterials';
+import { seedNotifications } from '@/lib/seed/seeders/operations/seedNotifications';
 
 export async function seedOperations(
     agents: Awaited<ReturnType<typeof seedSalesAgents>>["agents"],
@@ -33,7 +34,7 @@ export async function seedOperations(
     const { placementTests } = await seedPlacementTests(zoomAccount, placementTestsStatuses, trainers.testers, tests, agents)
     await seedSubmissions(placementTests, tests)
     await seedGroups(zoomAccount, courseStatuses, trainers.teachers, materials)
-    // await seedNotes()
+    await seedNotifications()
 
     logSuccess('✅ Seeded Operations')
 }

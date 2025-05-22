@@ -10,8 +10,8 @@
   },
   "private": true,
   "scripts": {
-    "build": "next build",
-    "dev": "next dev --experimental-https",
+    "build": "next build && npx next analyze",
+    "dev": "next dev  --turbopack --experimental-https",
     "postinstall": "prisma generate",
     "lint": "next lint",
     "start": "next start",
@@ -33,6 +33,7 @@
     "@radix-ui/react-alert-dialog": "^1.1.2",
     "@radix-ui/react-avatar": "^1.0.4",
     "@radix-ui/react-checkbox": "^1.0.4",
+    "@radix-ui/react-collapsible": "^1.1.11",
     "@radix-ui/react-context-menu": "^2.2.1",
     "@radix-ui/react-dialog": "^1.1.13",
     "@radix-ui/react-dropdown-menu": "^2.0.5",

@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuGroup, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { InfoIcon, BellRing, BellIcon, EyeOffIcon, EyeIcon } from 'lucide-react';
 import { SeverityPill } from '@/components/ui/SeverityPill';
@@ -8,23 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Typography } from '@/components/ui/Typoghraphy';
 import { NotificationList } from '@/components/general/notifications/NotificationList';
 import { useNotificationList } from '@/hooks/useNotificationList';
-import { api } from '@/lib/api';
 import WrapWithTooltip from "@/components/ui/wrap-with-tooltip";
 
 export function NotificationDropdown() {
-    const { unreadCount } = useNotificationList(5, "InApp");
-
-    const trpcUtils = api.useUtils();
-    const updateMutation = api.notifications.update.useMutation({
-        onSuccess: () => trpcUtils.notifications.invalidate(),
-    });
-    const markAllMutation = api.notifications.markAllRead.useMutation({
-        onSuccess: () => trpcUtils.notifications.invalidate(),
-    });
-
-    const changeStatus = useCallback((id: string, isRead: boolean) => {
-        updateMutation.mutate({ id, data: { isRead } });
-    }, [updateMutation]);
+    const { unreadCount, changeStatus,markAllMutation } = useNotificationList(5, "InApp");
 
     return (
         <DropdownMenu>

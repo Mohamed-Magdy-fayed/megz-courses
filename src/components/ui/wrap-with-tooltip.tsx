@@ -1,7 +1,7 @@
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import React, { ReactNode } from 'react'
 
-const WrapWithTooltip = ({ children, text }: { children: ReactNode, text: string }) => {
+const WrapWithTooltip = ({ children, text }: { children: ReactNode, text: string | ReactNode }) => {
     return (
         <Tooltip>
             <TooltipTrigger asChild>

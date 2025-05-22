@@ -1,3 +1,5 @@
+"use client"
+
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import type { NextPage } from "next";
 import { PaperContainer } from "@/components/ui/PaperContainers";

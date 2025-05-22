@@ -7,6 +7,7 @@ import {
     EyeOffIcon,
     FilesIcon,
     LogOut,
+    MessagesSquareIcon,
     UserCog2Icon,
 } from "lucide-react"
 

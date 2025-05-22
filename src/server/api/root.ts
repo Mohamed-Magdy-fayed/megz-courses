@@ -35,6 +35,7 @@ import { trainersRouter } from "@/server/api/routers/admin/usersManagement/train
 import { usersRouter } from "@/server/api/routers/admin/usersManagement/users";
 import { cronRouter } from "@/server/api/routers/cronJobs";
 import { authRouter } from "@/server/api/routers/general/auth";
+import { discussionsRouter } from "@/server/api/routers/general/discussionRouter";
 import { emailsRouter } from "@/server/api/routers/general/emails";
 import { notificationsRouter } from "@/server/api/routers/general/notificationRouter";
 import { pushNotificationsRouter } from "@/server/api/routers/general/pushNotifications";
@@ -93,6 +94,7 @@ export const appRouter = createTRPCRouter({
   pushNotifications: pushNotificationsRouter,
   cron: cronRouter,
   notifications: notificationsRouter,
+  discussions: discussionsRouter,
 });
 
 // export type definition of API

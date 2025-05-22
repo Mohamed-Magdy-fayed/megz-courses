@@ -18,8 +18,8 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { usePathname } from "next/navigation"
 import { LearningLayoutCourseType, LearningLayoutLevelType } from "@/components/pages/LearningLayout/LearningLayout"
+import { useRouter } from "next/router"
 
 export function LearningBreadcrumb({ level, course }: {
     level: LearningLayoutLevelType;
@@ -27,7 +27,7 @@ export function LearningBreadcrumb({ level, course }: {
 }) {
     const [open, setOpen] = React.useState(false)
     const [breadcrumbData, setBreadcrumbData] = React.useState<{ label: string, href: string | undefined }[]>([])
-    const pathname = usePathname()
+    const { pathname } = useRouter()
     const pathSegments = pathname.split('/')
 
     const getBreadcrumbLabel = (segment: string, index: number) => {
@@ -45,7 +45,7 @@ export function LearningBreadcrumb({ level, course }: {
 
     const processBreadcrumbData = () => {
         const items = pathSegments.filter((_, i) => i !== 5)
-        
+
         const data = items.map((segment, index) => {
             const href = index === 0 ? "/" : index === 4 ? undefined : (index === 3 && index === pathSegments.length - 1) ? undefined : pathSegments.slice(0, index + 1).join('/');
             const label = getBreadcrumbLabel(segment, index)

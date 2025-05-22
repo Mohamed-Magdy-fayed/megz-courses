@@ -1,7 +1,7 @@
 import { api } from '@/lib/api';
 import { NotificationChannel } from '@prisma/client';
 import { useSession } from 'next-auth/react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 export function useNotificationList(pageSize: number = 20, channel?: NotificationChannel) {
   const { data: session } = useSession();
@@ -29,6 +29,18 @@ export function useNotificationList(pageSize: number = 20, channel?: Notificatio
     [data]
   );
 
+  const trpcUtils = api.useUtils();
+  const updateMutation = api.notifications.update.useMutation({
+    onSuccess: () => trpcUtils.notifications.invalidate(),
+  });
+  const markAllMutation = api.notifications.markAllRead.useMutation({
+    onSuccess: () => trpcUtils.notifications.invalidate(),
+  });
+
+  const changeStatus = useCallback((id: string, isRead: boolean) => {
+    updateMutation.mutate({ id, data: { isRead } });
+  }, [updateMutation]);
+
   return {
     notifications,
     unreadCount,
@@ -38,5 +50,8 @@ export function useNotificationList(pageSize: number = 20, channel?: Notificatio
     hasMore: !!hasNextPage,
     isFetchingMore: isFetchingNextPage,
     refetch,
+    updateMutation,
+    markAllMutation,
+    changeStatus,
   };
 }

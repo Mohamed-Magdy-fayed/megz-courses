@@ -55,21 +55,21 @@
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 40 100% 98.8%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-foreground: 0 0% 27.1%;
 
-    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary: 23 100% 50%;
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-primary-foreground: 21.6 100% 95.1%;
 
-    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent: 33.2 100% 89%;
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-accent-foreground: 0 0% 27.1%;
 
-    --sidebar-border: 220 13% 91%;
+    --sidebar-border: 0 0% 27.1%;
 
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 0 0% 27.1%;
   }
 
   .dark {
@@ -83,17 +83,17 @@
     --popover: 0 11.1% 15.9%;
     --popover-foreground: 20 12% 85.3%;
 
-    --primary: 33.2 100% 89%;
-    --primary-foreground: 0 0% 27.1%;
-    --primary-hover: 32.9 50.5% 80.2%;
+    --primary: 23 100% 50%;
+    --primary-foreground: 21.6 100% 95.1%;
+    --primary-hover: 22.4 100% 45.1%;
 
     --secondary: 16.9 53.3% 47.1%;
     --secondary-foreground: 20 12% 85.3%;
     --secondary-hover: 17.1 53.7% 42.4%;
 
-    --accent: 33.7 54.1% 73.5%;
-    --accent-foreground: 0 11.1% 15.9%;
-    --accent-hover: 33.6 38.4% 66.3%;
+    --accent: 240 3.7% 25.9%;
+    --accent-foreground: 240 4.8% 95.9%;
+    --accent-hover: 240 3.7% 20.9%;
 
     --muted: 33.3 19.1% 36.9%;
     /* 50% pf accent 34.1 55.2% 86.9% */
@@ -106,13 +106,14 @@
     --border: 33.7 54.1% 73.5%;
     --input: 33.7 54.1% 73.5%;
     --ring: 33.7 54.1% 73.5%;
+
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent: 240 3.7% 25.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-border: 240 3.7% 25.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
@@ -125,11 +126,6 @@
   body {
     @apply bg-background text-foreground;
   }
-}
-
-body {
-  overflow-x: hidden;
-  overflow-y: hidden;
 }
 
 .in-table-link {

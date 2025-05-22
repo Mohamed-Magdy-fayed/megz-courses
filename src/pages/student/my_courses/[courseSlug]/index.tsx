@@ -1,4 +1,7 @@
+"use client"
+
 import LearningLayout from "@/components/pages/LearningLayout/LearningLayout"
+import { NavMain } from "@/components/pages/LearningLayout/nav-main"
 import { Typography } from "@/components/ui/Typoghraphy"
 import { Button } from "@/components/ui/button"
 import { DisplayError } from "@/components/ui/display-error"
@@ -6,7 +9,7 @@ import GoBackButton from "@/components/ui/go-back"
 import { Skeleton } from "@/components/ui/skeleton"
 import { api } from "@/lib/api"
 import { format } from "date-fns"
-import { ExternalLink } from "lucide-react"
+import { BookIcon, ExternalLink } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/router"
 import { useMemo } from "react"
@@ -31,7 +34,17 @@ const CoursePage = () => {
     }
 
     return (
-        <LearningLayout>
+        <LearningLayout
+            sidebarContent={
+                <NavMain
+                    items={data.courseStatues.map(courseStatus => ({
+                        icon: BookIcon,
+                        title: courseStatus.level?.name || "Level Name",
+                        items: courseStatus.level?.materialItems.map(item => ({ title: item.title, url: `/student/my_courses/${courseSlug}/${courseStatus.level?.slug}/session/${item.slug}` }))
+                    }))}
+                />
+            }
+        >
             <div className="flex flex-col items-start md:p-4">
                 <div className="p-4 w-full flex items-center justify-between">
                     <div className="flex items-center gap-2">

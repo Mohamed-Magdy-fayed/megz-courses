@@ -1,4 +1,4 @@
-import { NavLink } from "@/components/pages/adminLayout/Drawer";
+import { NavLink } from "@/components/pages/sidebar/sidebar-admin-data";
 import { Certificate, Course, GoogleClient, Lead, LeadStage, MessageTemplate, MetaClient, Order, Parameters, Payment, PlacementTest, Product, Refund, SupportChat, SupportTicket, SystemForm, SystemFormSubmission, Teacher, Tester, User, UserNote, UserRoles, ZoomClient, ZoomGroup, ZoomSession } from "@prisma/client";
 
 type PartialUser = Pick<User, "id" | "email" | "userRoles" | "userScreens">

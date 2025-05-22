@@ -1,3 +1,5 @@
+"use client"
+
 import ControlledPracticeContainer from "@/components/general/materialsShowcaseComponents/ControlledPracticeContainer";
 import FirstTestContainer from "@/components/general/materialsShowcaseComponents/FirstTestContainer";
 import TeachingContainer from "@/components/general/materialsShowcaseComponents/TeachingContainer";

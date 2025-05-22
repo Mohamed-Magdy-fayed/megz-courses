@@ -5,131 +5,17 @@ import { useEffect, useRef, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Typography } from "@/components/ui/Typoghraphy";
-import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { LogoForeground } from "@/components/pages/adminLayout/Logo";
 import { SiteIdentity } from "@prisma/client";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { hasPermission } from "@/server/permissions";
 import { useSession } from "next-auth/react";
-
-export type NavLink = { label: string; url?: string; }
-
-export const mainNavLinks: (NavLink & { children?: NavLink[] })[] = [
-  {
-    label: "Dashboard",
-    url: "admin/dashboard",
-  },
-  {
-    label: "Operations Management",
-    children: [
-      {
-        label: "Notes",
-        url: "admin/operations_management/notes",
-      },
-      {
-        label: "Groups",
-        url: "admin/operations_management/groups",
-      },
-      {
-        label: "Trainee Lists",
-        url: "admin/operations_management/trainee_lists",
-      },
-      {
-        label: "Placement Tests",
-        url: "admin/operations_management/placement_tests",
-      },
-      {
-        label: "Sessions",
-        url: "admin/operations_management/sessions",
-      },
-    ],
-  },
-  {
-    label: "Sales Management",
-    children: [
-      {
-        label: "Orders",
-        url: "admin/sales_management/orders",
-      },
-      {
-        label: "Leads",
-        url: "admin/sales_management/leads",
-      },
-    ],
-  },
-  {
-    label: "Users Management",
-    children: [
-      {
-        label: "Students",
-        url: "admin/users_management/students",
-      },
-      {
-        label: "Operational Team",
-        url: "admin/users_management/ops_team",
-      },
-      {
-        label: "Educational Team",
-        url: "admin/users_management/edu_team",
-      },
-      // {
-      //   label: "Chat Team",
-      //   url: "admin/users_management/chat_agents",
-      // },
-      {
-        label: "Account",
-        url: "admin/users_management/account",
-      },
-    ],
-  },
-  {
-    label: "System Management",
-    children: [
-      {
-        label: "Configurations",
-        url: "admin/system_management/config",
-      },
-      {
-        label: "Content Management",
-        url: "admin/system_management/content",
-      },
-      {
-        label: "Products Management",
-        url: "admin/system_management/products",
-      },
-    ],
-  },
-  {
-    label: "General",
-    children: [
-
-      {
-        label: "Privacy Policy",
-        url: "privacy",
-      },
-      {
-        label: "Terms of Use",
-        url: "terms",
-      },
-      {
-        label: "Documentation",
-        url: "documentation",
-      },
-      {
-        label: "Support",
-        url: "support",
-      },
-      {
-        label: "Tickets",
-        url: "admin/tickets",
-      },
-    ],
-  },
-];
+import { mainNavLinks } from "@/components/pages/sidebar/sidebar-admin-data";
+import { useRouter } from "next/router";
 
 export default function MegzDrawer({ siteIdentity }: { siteIdentity?: SiteIdentity }) {
-  const pathname = usePathname();
+  const { pathname } = useRouter();
   const navStore = useNavStore();
   const session = useSession();
 
@@ -248,31 +134,6 @@ export default function MegzDrawer({ siteIdentity }: { siteIdentity?: SiteIdenti
             })}
           </div>
         </Accordion>
-        {/* <div className="flex flex-col items-center gap-2">
-          {mainNavLinks.map((link) => {
-            const isActive = pathname && pathname.split("/")[1] === link.url;
-            const linkProps = {
-              key: link.url,
-              className: cn(
-                "whitespace-nowrap w-full rounded-lg bg-transparent p-2 py-1 font-bold hover:bg-muted-foreground/80 hover:text-muted",
-                isActive && "bg-muted-foreground text-muted"
-              ),
-              ...(isActive ? { ref: activeLinkRef } : {}),
-            };
-
-            return (
-              <Link
-                onClick={() => {
-                  navStore.closeNav();
-                }}
-                href={`/${link.url}`}
-                {...linkProps}
-              >
-                {link.label}
-              </Link>
-            )
-          })}
-        </div> */}
       </ScrollArea>
       <Separator />
       <div className="py-4">

@@ -1,3 +1,5 @@
+"use client"
+
 import Spinner from "@/components/ui/Spinner";
 import MaterialShowcase from "@/components/admin/systemManagement/contentComponents/materials/MaterialShowcase";
 import LearningLayout from "@/components/pages/LearningLayout/LearningLayout";

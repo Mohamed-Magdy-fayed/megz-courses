@@ -81,6 +81,48 @@ export const zoomGroupsRouter = createTRPCRouter({
 
             return { zoomGroups };
         }),
+    getZoomGroupByLevel: protectedProcedure
+        .input(z.object({
+            courseSlug: z.string(),
+            levelSlug: z.string(),
+        }))
+        .query(async ({ ctx, input: { courseSlug, levelSlug } }) => {
+            const zoomGroup = await ctx.prisma.zoomGroup.findFirst({
+                where: {
+                    students: { some: { id: ctx.session.user.id } },
+                    groupStatus: { in: ["Active", "Completed"] },
+                    course: {
+                        slug: courseSlug,
+                    },
+                    courseLevel: {
+                        slug: levelSlug,
+                    },
+                },
+                include: {
+                    course: true,
+                    zoomSessions: true,
+                    teacher: { include: { user: true } },
+                    courseLevel: {
+                        include: {
+                            materialItems: true,
+                            certificates: {
+                                where: {
+                                    userId: ctx.session.user.id,
+                                    course: {
+                                        slug: courseSlug,
+                                    },
+                                    courseLevel: {
+                                        slug: levelSlug,
+                                    }
+                                }
+                            }
+                        }
+                    },
+                }
+            });
+
+            return { zoomGroup };
+        }),
     getzoomGroups: protectedProcedure
         .input(z.object({
             ids: z.array(z.string()).optional(),
