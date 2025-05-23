@@ -1,111 +1,108 @@
-import { Laptop, Smartphone, TabletIcon } from 'lucide-react'
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Typography } from "@/components/ui/Typoghraphy";
-import { formatPercentage } from "@/lib/utils";
-import { Chart } from '@/components/admin/dashboard/overview/Chart';
+"use client"
 
-const useChartOptions = (labels: string[]) => {
-  return {
-    chart: {
-      background: "transparent",
-    },
-    dataLabels: {
-      enabled: false
-    },
-    labels,
-    legend: {
-      show: false,
-    },
-    plotOptions: {
-      pie: {
-        expandOnClick: false,
-      },
-    },
-    states: {
-      Active: {
-        filter: {
-          type: "none",
-        },
-      },
-      hover: {
-        filter: {
-          type: "none",
-        },
-      },
-    },
-    stroke: {
-      width: 5,
-    },
-    theme: {
-    },
+import * as React from "react"
+import { TrendingUp } from "lucide-react"
+import { Label, Pie, PieChart } from "recharts"
 
-  };
-};
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart"
+import { api } from "@/lib/api"
 
-const iconMap = {
-  Desktop: (
-    <Laptop />
-  ),
-  Tablet: (
-    <TabletIcon />
-  ),
-  Phone: (
-    <Smartphone />
-  ),
-};
+const chartConfig = {
+  visitors: {
+    label: "Visitors",
+  },
+  desktop: {
+    label: "Desktop",
+    color: "hsl(var(--chart-1))",
+  },
+  mobile: {
+    label: "Mobile",
+    color: "hsl(var(--chart-3))",
+  },
+  tablet: {
+    label: "Tablet",
+    color: "hsl(var(--chart-5))",
+  },
+} satisfies ChartConfig
 
-interface TrafficOverviewProps {
-  chartSeries: number[];
-  labels: string[];
-}
+export function TrafficOverview() {
+  const { data, refetch } = api.analytics.getDeviceTraffic.useQuery(undefined, { enabled: false })
 
-export const TrafficOverview = ({
-  chartSeries,
-  labels,
-}: TrafficOverviewProps) => {
-  const chartOptions = useChartOptions(labels);
+  const totalVisitors = Array.isArray(data)
+    ? data.reduce((sum, item) => sum + (item.visitors ?? 0), 0)
+    : 0;
+
+  React.useEffect(() => { refetch() }, []);
 
   return (
-    <Card className="col-span-12 xl:col-span-4">
-      <CardHeader>
-        <Typography variant={"secondary"}>Traffic Source</Typography>
+    <Card className="flex flex-col col-span-12 xl:col-span-4">
+      <CardHeader className="pb-0">
+        <CardTitle>Visitors Devices</CardTitle>
+        <CardDescription>All Time</CardDescription>
       </CardHeader>
-      <CardContent>
-        <Chart
-          height={250}
-          options={{
-            ...chartOptions, tooltip: {
-              fillSeriesColor: true, cssClass: "p-1", custom: (ops) => `${ops.w.globals.labels[ops.seriesIndex]} ${formatPercentage(ops.series[ops.seriesIndex])}`,
-            }
-          }}
-          series={chartSeries}
-          type="donut"
-          width="100%"
-        />
-        <div
-          className="items-center flex justify-center gap-4 mt-2"
+      <CardContent className="flex-1 pb-0">
+        <ChartContainer
+          config={chartConfig}
+          className="mx-auto aspect-square max-h-[500px]"
         >
-          {chartSeries.map((item, index) => {
-            const label = labels[index] as keyof typeof iconMap;
-            if (!label) return;
-
-            return (
-              <div
-                key={label}
-                className="flex flex-col items-center"
-              >
-                {iconMap[label]}
-                <Typography className="my-1" variant="buttonText">
-                  {label}
-                </Typography>
-                <Typography variant="bodyText">
-                  {formatPercentage(item) || 0}
-                </Typography>
-              </div>
-            );
-          })}
-        </div>
+          <PieChart>
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent hideLabel />}
+            />
+            <Pie
+              data={data}
+              dataKey="visitors"
+              nameKey="device"
+              innerRadius={80}
+              strokeWidth={20}
+            >
+              <Label
+                content={({ viewBox }) => {
+                  if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                    return (
+                      <text
+                        x={viewBox.cx}
+                        y={viewBox.cy}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                      >
+                        <tspan
+                          x={viewBox.cx}
+                          y={viewBox.cy}
+                          className="fill-foreground text-3xl font-bold"
+                        >
+                          {totalVisitors.toLocaleString()}
+                        </tspan>
+                        <tspan
+                          x={viewBox.cx}
+                          y={(viewBox.cy || 0) + 24}
+                          className="fill-muted"
+                        >
+                          Visitors
+                        </tspan>
+                      </text>
+                    )
+                  }
+                }}
+              />
+            </Pie>
+          </PieChart>
+        </ChartContainer>
       </CardContent>
     </Card>
-  );
-};
+  )
+}

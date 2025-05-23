@@ -15,12 +15,12 @@ export function SidebarLogo() {
     return (
         <SidebarMenu>
             <SidebarMenuItem>
-                <SidebarMenuButton
-                    tooltip="Home"
-                    size="lg"
-                    className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                >
-                    <Link href={'/'} className="flex items-center gap-1 justify-center w-fit">
+                <Link href={'/'} className="flex items-center gap-1 justify-center w-full">
+                    <SidebarMenuButton
+                        tooltip="Home"
+                        size="lg"
+                        className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                    >
                         {data?.siteIdentity ? (
                             <Image src={data?.siteIdentity.logoForeground} height={1000} width={1000} alt="Logo" className='w-8 rounded-full' />
                         ) : (
@@ -32,8 +32,8 @@ export function SidebarLogo() {
                         <Typography variant={"primary"} className="!text-lg !leading-none !font-extrabold text-primary">
                             {data?.siteIdentity?.name2 || "TMS"}
                         </Typography>
-                    </Link>
-                </SidebarMenuButton>
+                    </SidebarMenuButton>
+                </Link>
             </SidebarMenuItem>
         </SidebarMenu>
     )

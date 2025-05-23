@@ -14,17 +14,17 @@ export const seedNotifications = async (
     const notificationCollection = db.collection("Notification");
 
     // 2. Create notifications for each order
-    const notificationsToInsert: { _id: ObjectId; notificationId: string; notificationProof: string; notificationAmount: any; orderId: ObjectId; userId: any; agentId: ObjectId; createdAt: Date; updatedAt: Date; }[] = []
+    const notificationsToInsert: { createdAt: Date; updatedAt: Date; userId: ObjectId; type: "Info" | "Success" | "Warning" | "Error" | "Custom"; title: string; message: string; isRead: boolean; sent: boolean; channel: "InApp" | "Email" | "Push" | "SMS"; }[] = []
 
     const session = client.startSession();
 
     try {
         const users = await db.collection("User").find().toArray()
-        await notificationCollection.insertMany(users.flatMap(user => {
+        users.forEach(user => {
             return faker.helpers.multiple(() => {
                 const notification = faker.helpers.arrayElement(notificationTemplates)
 
-                return {
+                notificationsToInsert.push({
                     userId: user._id,
                     type: faker.helpers.arrayElement(validNotificationTypes),
                     title: notification.title,
@@ -33,14 +33,16 @@ export const seedNotifications = async (
                     sent: false,
                     channel: faker.helpers.arrayElement(validNotificationChannels),
                     ...generateTimestamps(user.updatedAt)
-                }
+                })
             }, { count: { min: 100, max: 300 } })
-        }))
+        })
 
-        logSuccess(`Inserted ${notificationsToInsert.length} Payments`);
+        await notificationCollection.insertMany(notificationsToInsert)
+
+        logSuccess(`Inserted ${notificationsToInsert.length} Notifications`);
 
     } catch (error) {
-        logError(`Error during seeding Payments: ${error}`);
+        logError(`Error during seeding Notifications: ${error}`);
     } finally {
         await session.endSession();
     }

@@ -1,136 +1,71 @@
-import { Chart } from "@/components/admin/dashboard/overview/Chart";
-import { Card, CardContent } from "@/components/ui/card";
+"use client";
 
-const useChartOptions = (): ApexCharts.ApexOptions => {
-  return {
-    title: {
-      text: "Sales",
-      style: {
-        color: "hsl(var(--muted))",
-        fontSize: "20px"
-      }
-    },
-    chart: {
-      background: "transparent",
-      stacked: false,
-      toolbar: {
-        show: true,
-        offsetY: 15,
-      },
-    },
-    colors: [
-      "hsl(var(--primary))",
-      "hsl(var(--muted))",
-    ],
-    dataLabels: {
-      enabled: false,
-    },
-    fill: {
-      opacity: 1,
-      type: "solid",
-    },
-    grid: {
-      borderColor: "hsl(var(--foreground))",
-      strokeDashArray: 2,
-      xaxis: {
-        lines: {
-          show: true,
-        },
-      },
-      yaxis: {
-        lines: {
-          show: true,
-        },
-      },
-    },
-    legend: {
-      show: true,
-      offsetY: 5
-    },
-    plotOptions: {
-      bar: {
-        columnWidth: "28px",
-        borderRadius: 2,
-      },
-    },
-    xaxis: {
-      axisBorder: {
-        color: "hsl(var(--foreground))",
-        show: true,
-        offsetY: 5
-      },
-      axisTicks: {
-        color: "hsl(var(--foreground))",
-        show: true,
-      },
-      offsetY: 5,
-      categories: [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ],
-      labels: {
-        offsetY: -2,
-      },
-    },
-    yaxis: {
-      axisBorder: {
-        color: "hsl(var(--foreground))",
-        show: true,
-      },
-      axisTicks: {
-        color: "hsl(var(--foreground))",
-        show: true
-      },
-      labels: {
-        offsetX: -5,
-        formatter: (value: number) => {
-          const formatter = new Intl.NumberFormat('en-US', {
-            maximumFractionDigits: 2,
-          });
+import { useEffect } from "react";
+import { TrendingDownIcon, TrendingUpIcon } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
-          if (value > 1000) {
-            return formatter.format(value / 1000) + 'K';
-          } else {
-            return formatter.format(value);
-          }
-        },
-        style: {
-          colors: "hsl(var(--foreground))",
-        },
-      },
-    },
-  };
-};
+import { api } from "@/lib/api";
+import { formatPercentage } from "@/lib/utils";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
-interface SalsesOverviewProps {
-  chartSeries: any[];
-  sync: () => void
-}
+const chartConfig: ChartConfig = {
+  thisYear: {
+    label: "This Year",
+    color: "hsl(var(--chart-1))",
+  },
+  lastYear: {
+    label: "Last Year",
+    color: "hsl(var(--chart-3))",
+  },
+} satisfies ChartConfig;
 
-export const SalesOverview = ({ chartSeries, sync }: SalsesOverviewProps) => {
-  const chartOptions = useChartOptions();
+export function SalesOverview() {
+  const { data, refetch } = api.orders.getSalesPerMonth.useQuery(undefined, { enabled: false });
+
+  useEffect(() => { refetch() }, []);
 
   return (
     <Card className="col-span-12 xl:col-span-8">
-      <CardContent className="grid py-4">
-        <Chart
-          height={400}
-          options={{ ...chartOptions }}
-          series={chartSeries}
-          type="bar"
-          width="100%"
-        />
+      <CardHeader>
+        <CardTitle>Sales Overview</CardTitle>
+        <CardDescription>All Time</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ChartContainer config={chartConfig}>
+          <BarChart accessibilityLayer data={data?.result}>
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="month"
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+              tickFormatter={(value) => value.slice(0, 3)}
+            />
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent indicator="dashed" />}
+            />
+            <Bar dataKey="thisYear" fill="var(--color-thisYear)" radius={4} />
+            <Bar dataKey="lastYear" fill="var(--color-lastYear)" radius={4} />
+          </BarChart>
+        </ChartContainer>
       </CardContent>
-    </Card >
+      <CardFooter className="flex-col items-start gap-2 text-sm">
+        {typeof data?.trend === "number" && (
+          <div className="flex gap-2 font-medium leading-none">
+            Trending {data.trend >= 0 ? "up" : "down"} by {formatPercentage(data.trend)} this month{" "}
+            {data.trend > 0 ? (
+              <TrendingUpIcon className="h-4 w-4" />
+            ) : (
+              <TrendingDownIcon className="h-4 w-4 text-destructive" />
+            )}
+          </div>
+        )}
+        <div className="leading-none text-muted">
+          Showing total sales for the last 2 years
+        </div>
+      </CardFooter>
+    </Card>
   );
-};
+}

@@ -84,6 +84,33 @@ export const leadsRouter = createTRPCRouter({
 
             return leads;
         }),
+    getConversionRate: protectedProcedure
+        .input(z.object({
+            from: z.date(),
+            to: z.date(),
+        }).optional())
+        .query(async ({ ctx, input }) => {
+            const weekDuration = 1000 * 60 * 60 * 24 * 7;
+
+            const convertedStageId = await ctx.prisma.leadStage.findFirst({
+                where: { defaultStage: 'Converted' },
+                select: { id: true },
+            }).then(res => res?.id);
+            if (!convertedStageId) return { conversionRate: 0, change: 0 };
+
+            const [totalCurrent, convertedCurrent, totalPrev, convertedPrev] = await ctx.prisma.$transaction([
+                ctx.prisma.lead.count({ where: input ? { updatedAt: { gte: input.from, lt: input.to } } : {} }),
+                ctx.prisma.lead.count({ where: input ? { updatedAt: { gte: input.from, lt: input.to }, leadStageId: convertedStageId } : { leadStageId: convertedStageId } }),
+                ctx.prisma.lead.count({ where: { updatedAt: { lt: new Date(Date.now() - weekDuration) } } }),
+                ctx.prisma.lead.count({ where: { updatedAt: { lt: new Date(Date.now() - weekDuration) }, leadStageId: convertedStageId } }),
+            ]);
+
+            const currentRate = totalCurrent ? convertedCurrent / totalCurrent : 0;
+            const previousRate = totalPrev ? convertedPrev / totalPrev : 0;
+            const change = currentRate - previousRate;
+
+            return { conversionRate: currentRate, change, previousRate, asd: {totalCurrent, convertedCurrent, totalPrev, convertedPrev} };
+        }),
     getLeadOrders: protectedProcedure
         .input(z.object({
             leadId: z.string(),

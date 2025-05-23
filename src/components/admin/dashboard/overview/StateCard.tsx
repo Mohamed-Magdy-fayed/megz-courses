@@ -1,6 +1,6 @@
 import React from 'react'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
-import { formatPercentage, isGoodState } from '@/lib/utils'
+import { formatNumbers, formatPercentage, isGoodState } from '@/lib/utils'
 import { Scale, MoveUpRight, MoveDownLeft } from 'lucide-react'
 import { Typography } from '@/components/ui/Typoghraphy'
 import { Progress } from '@/components/ui/progress'
@@ -9,10 +9,10 @@ import Counter from './Counter'
 import { Skeleton } from '@/components/ui/skeleton'
 
 const StateCard = ({ state }: { state: StateOverview | undefined }) => {
-    if (!state) return <Skeleton className="col-span-12 rounded-2xlmd:col-span-6 xl:col-span-3 h-48" />
+    if (!state) return <Skeleton className="rounded-2xl h-48" />
 
     return (
-        <Card className="col-span-12 flex flex-col rounded-2xl bg-white p-2 shadow relative md:col-span-6 xl:col-span-3">
+        <Card className="flex flex-col rounded-2xl p-2 shadow-lg relative">
             <CardHeader>
                 <Typography variant="secondary" className="!text-xl xl:tracking-tighter xl:!text-lg">
                     {state.title}
@@ -51,12 +51,12 @@ const StateCard = ({ state }: { state: StateOverview | undefined }) => {
                     </div>
                 )
                     :
-                    isGoodState(state.sinceLastWeek, state.isLiability)
+                    isGoodState(state.sinceLastWeek, state.isLiability) && state.sinceLastWeek > 0
                         ? (
                             <div className="flex gap-2 flex-wrap">
                                 {state.sinceLastWeek > 0 && <MoveUpRight className="text-success" />}
                                 {state.sinceLastWeek < 0 && <MoveDownLeft className="text-success" />}
-                                <Typography className="text-success">{state.progress ? state.sinceLastWeek : formatPercentage(state.sinceLastWeek / state.target * 100)}</Typography>
+                                <Typography className="text-success">{state.progress ? formatPercentage(state.sinceLastWeek * 100) : formatNumbers(state.sinceLastWeek)}</Typography>
                                 <Typography>Since last week</Typography>
                             </div>
                         )
@@ -64,7 +64,7 @@ const StateCard = ({ state }: { state: StateOverview | undefined }) => {
                             <div className="flex gap-2 flex-wrap">
                                 {state.sinceLastWeek < 0 && <MoveDownLeft className="text-destructive" />}
                                 {state.sinceLastWeek > 0 && <MoveUpRight className="text-destructive" />}
-                                <Typography className="text-destructive">{formatPercentage(state.sinceLastWeek / state.target * 100)}</Typography>
+                                <Typography className="text-destructive">{formatNumbers(state.sinceLastWeek)}</Typography>
                                 <Typography>since last week</Typography>
                             </div>
                         )

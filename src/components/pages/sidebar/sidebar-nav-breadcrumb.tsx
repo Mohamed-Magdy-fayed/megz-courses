@@ -18,7 +18,7 @@ export function SidebarNavBreadCrumb() {
             <BreadcrumbList>
                 {pathSegments[0] === "" && (
                     <BreadcrumbItem>
-                        <BreadcrumbLink href={`/`}>Home</BreadcrumbLink>
+                        <BreadcrumbLink className="hover:text-primary" href={`/`}>Home</BreadcrumbLink>
                     </BreadcrumbItem>
                 )}
                 {pathSegments.length > 1 && <BreadcrumbSeparator />}
@@ -51,13 +51,13 @@ export function SidebarNavBreadCrumb() {
                     <React.Fragment key={`${index}_${item}`}>
                         <BreadcrumbItem>
                             {index === arr.length - 1 ? (
-                                <BreadcrumbPage className="max-w-20 truncate md:max-w-none">
+                                <BreadcrumbPage className="max-w-20 truncate md:max-w-none text-primary">
                                     {item}
                                 </BreadcrumbPage>
                             ) : (
                                 <BreadcrumbLink
                                     asChild
-                                    className="max-w-20 truncate md:max-w-none"
+                                    className="max-w-20 truncate md:max-w-none hover:text-primary"
                                 >
                                     <Link href={`${pathname.split(item)[0]}/${item}`}>{item}</Link>
                                 </BreadcrumbLink>

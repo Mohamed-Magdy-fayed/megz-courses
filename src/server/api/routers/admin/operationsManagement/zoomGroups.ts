@@ -123,6 +123,38 @@ export const zoomGroupsRouter = createTRPCRouter({
 
             return { zoomGroup };
         }),
+    getSpendings: protectedProcedure
+        .input(z.object({ from: z.date(), to: z.date() }).optional())
+        .query(async ({ ctx, input }) => {
+            const nowFrom = input?.from ?? new Date(0);
+            const nowTo = input?.to ?? new Date();
+
+            const lastWeekFrom = new Date(nowFrom);
+            lastWeekFrom.setDate(lastWeekFrom.getDate() - 7);
+            const lastWeekTo = new Date(nowTo);
+            lastWeekTo.setDate(lastWeekTo.getDate() - 7);
+
+            const [currentCount, lastWeekCount] = await ctx.prisma.$transaction([
+                ctx.prisma.zoomGroup.count({
+                    where: {
+                        startDate: { gte: nowFrom, lt: nowTo },
+                        groupStatus: { not: "Cancelled" },
+                    },
+                }),
+                ctx.prisma.zoomGroup.count({
+                    where: {
+                        startDate: { gte: lastWeekFrom, lt: lastWeekTo },
+                        groupStatus: { not: "Cancelled" },
+                    },
+                }),
+            ]);
+
+            const currentBudget = currentCount * 1000;
+            const lastWeekBudget = lastWeekCount * 1000;
+            const change = currentBudget - lastWeekBudget
+
+            return { currentBudget, lastWeekBudget, change };
+        }),
     getzoomGroups: protectedProcedure
         .input(z.object({
             ids: z.array(z.string()).optional(),

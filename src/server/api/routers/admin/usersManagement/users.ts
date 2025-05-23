@@ -42,6 +42,36 @@ export const usersRouter = createTRPCRouter({
 
       return { users };
     }),
+  getStudentsState: protectedProcedure
+    .input(z.object({ from: z.date(), to: z.date() }).optional())
+    .query(async ({ ctx, input }) => {
+      const nowFrom = input?.from ?? new Date(0);
+      const nowTo = input?.to ?? new Date();
+
+      const lastWeekFrom = new Date(nowFrom);
+      lastWeekFrom.setDate(lastWeekFrom.getDate() - 7);
+      const lastWeekTo = new Date(nowTo);
+      lastWeekTo.setDate(lastWeekTo.getDate() - 7);
+
+      const [currentCount, lastWeekCount] = await ctx.prisma.$transaction([
+        ctx.prisma.user.count({
+          where: {
+            createdAt: { gte: nowFrom, lt: nowTo },
+            userRoles: { has: "Student" },
+          },
+        }),
+        ctx.prisma.user.count({
+          where: {
+            createdAt: { gte: lastWeekFrom, lt: lastWeekTo },
+            userRoles: { has: "Student" },
+          },
+        }),
+      ]);
+
+      const change = currentCount - lastWeekCount
+
+      return { currentCount, lastWeekCount, change };
+    }),
   getStudents: protectedProcedure
     .input(z.object({
       ids: z.array(z.string()),

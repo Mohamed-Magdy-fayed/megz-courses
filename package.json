@@ -10,7 +10,7 @@
   },
   "private": true,
   "scripts": {
-    "build": "next build && npx next analyze",
+    "build": "next build",
     "dev": "next dev  --turbopack --experimental-https",
     "postinstall": "prisma generate",
     "lint": "next lint",
@@ -92,6 +92,7 @@
     "react-dom": "18.2.0",
     "react-hook-form": "^7.45.1",
     "react-phone-number-input": "^3.4.5",
+    "recharts": "^2.15.3",
     "superjson": "1.12.2",
     "tailwind-merge": "^1.13.2",
     "tailwindcss-animate": "^1.0.6",

@@ -54,7 +54,7 @@ export const coursesRouter = createTRPCRouter({
         orderBy: {
           createdAt: "desc",
         },
-        take: 6,
+        take: 8,
         include: {
           _count: {
             select: { levels: true }

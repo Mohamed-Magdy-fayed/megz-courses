@@ -19,9 +19,9 @@ const SidebarAdminMenu = React.forwardRef<HTMLDivElement, React.ComponentPropsWi
                         .filter(navLink => navLink.label !== "General")
                         .map(navLink =>
                             navLink.children && navLink.children.length ? (
-                                <>
+                                <div key={navLink.label}>
                                     <Collapsible
-                                        key={navLink.label}
+                                        key={navLink.label + "Collapsible"}
                                         defaultOpen={navLink.children.some(
                                             child => child.url && pathname.startsWith(child.url)
                                         )}
@@ -75,7 +75,7 @@ const SidebarAdminMenu = React.forwardRef<HTMLDivElement, React.ComponentPropsWi
                                         </CollapsibleContent>
                                     </Collapsible>
                                     <DropdownMenu
-                                        key={navLink.label}
+                                        key={navLink.label + "DropdownMenu"}
                                     >
                                         <DropdownMenuTrigger asChild className="w-full group group-data-[collapsible=]:hidden group-data-[mobile=true]/sidebar-sheet:hidden">
                                             <SidebarMenuItem>
@@ -118,7 +118,7 @@ const SidebarAdminMenu = React.forwardRef<HTMLDivElement, React.ComponentPropsWi
                                             </DropdownMenuGroup>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
-                                </>
+                                </div>
                             ) : (
                                 <SidebarMenuItem key={navLink.url || navLink.label}>
                                     <SidebarMenuButton
