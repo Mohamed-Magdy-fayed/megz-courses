@@ -8,20 +8,20 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { NavUser } from "@/components/pages/LearningLayout/nav-user"
-import { NavLogo } from "@/components/pages/LearningLayout/nav-logo"
+import { SidebarLogo } from "@/components/pages/sidebar/sidebar-logo"
+import { SidebarUser } from "@/components/pages/sidebar/sidebar-user"
 
 export function AppSidebar({ sidebarContent, ...props }: React.ComponentProps<typeof Sidebar> & { sidebarContent?: React.ReactNode }) {
   return (
     <Sidebar side="left" collapsible="icon" {...props}>
       <SidebarHeader>
-        <NavUser />
+        <SidebarUser />
       </SidebarHeader>
       <SidebarContent>
         {sidebarContent ? sidebarContent : "No content provided"}
       </SidebarContent>
       <SidebarFooter>
-        <NavLogo />
+        <SidebarLogo />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

@@ -51,7 +51,7 @@ export function NavBreadcrumb() {
                                         .filter(seg => !["student", "admin"].includes(seg))
                                         .map((item, index) => (
                                             <DropdownMenuItem key={`${index}_${item}`}>
-                                                <Link href={`${pathname.split(item)[0]}/${item}`}>
+                                                <Link href={`${pathname.split(item)[0]}${item}`}>
                                                     {item}
                                                 </Link>
                                             </DropdownMenuItem>
@@ -70,7 +70,7 @@ export function NavBreadcrumb() {
                                     asChild
                                     className="max-w-20 truncate md:max-w-none"
                                 >
-                                    <Link href={`${pathname.split(item)[0]}/${item}`}>{item}</Link>
+                                    <Link href={`${pathname.split(item)[0]}${item}`}>{item}</Link>
                                 </BreadcrumbLink>
                             ) : (
                                 <BreadcrumbPage className="max-w-20 truncate md:max-w-none">
