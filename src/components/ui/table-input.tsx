@@ -15,7 +15,7 @@ const TableInput = React.forwardRef<HTMLInputElement, TableInputProps>(
           type={"text"}
           autoComplete="off"
           className={cn(
-            "absolute left-0 bottom-0 translate-y-1 w-full p-1 border-transparent border hover:border bg-transparent placeholder:text-foreground rounded focus-visible:outline-none focus-visible:border-primary hover:border-muted",
+            "absolute left-0 bottom-0 placeholder:text-muted translate-y-1 w-full p-1 border-transparent border hover:border bg-transparent rounded focus-visible:outline-none focus-visible:border-primary hover:border-muted",
             className
           )}
           ref={ref}

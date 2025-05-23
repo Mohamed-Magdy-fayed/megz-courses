@@ -19,7 +19,7 @@ export default function DiscussionView({ groupId, studentId }: { groupId: string
     return (
         <div className="flex flex-col h-[85dvh] max-h-[85dvh] bg-background">
             {/* Header */}
-            <div className="flex items-center gap-2 px-4 py-2 border-b bg-card sticky top-0 z-10">
+            <div className="flex items-center gap-2 px-4 py-2 border-b bg-card sticky top-0">
                 {studentId ? (
                     <>
                         <UserAvatar src={student?.user.image || ""} />

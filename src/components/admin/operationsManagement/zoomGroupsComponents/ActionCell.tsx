@@ -35,9 +35,10 @@ interface ActionCellProps {
     startDate: Date;
     status: GroupStatus;
     isGroupPage?: boolean;
+    isTable?: boolean;
 }
 
-const ActionCell: FC<ActionCellProps> = ({ id, courseId, courseLevel, startDate, teacherId, status, studentIds, isGroupPage }) => {
+const ActionCell: FC<ActionCellProps> = ({ id, courseId, courseLevel, startDate, teacherId, status, studentIds, isGroupPage, isTable }) => {
     const { toast } = useToast();
 
     const [loadingToast, setLoadingToast] = useState<toastType>()
@@ -239,7 +240,7 @@ const ActionCell: FC<ActionCellProps> = ({ id, courseId, courseLevel, startDate,
             />
             <DropdownMenu defaultOpen={false} onOpenChange={(val) => setIsOpen(val)} open={isOpen}>
                 <DropdownMenuTrigger asChild>
-                    <Button customeColor="mutedOutlined" size={"sm"} variant={"outline"} >
+                    <Button customeColor="mutedOutlined" size={"sm"} variant={"outline"} className={isTable ? "h-fit p-0 w-full" : ""} >
                         <ChevronDownIcon className="w-4 h-4" />
                     </Button>
                 </DropdownMenuTrigger>

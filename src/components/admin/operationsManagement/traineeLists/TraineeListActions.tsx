@@ -78,7 +78,7 @@ export default function TraineeListActions(trainee: TraineeList) {
             />
             <DropdownMenu open={isMenuOpen} onOpenChange={(val) => setIsMenuOpen(val)}>
                 <DropdownMenuTrigger asChild>
-                    <Button customeColor="mutedOutlined" variant={"outline"} className="w-full h-fit p-0" >
+                    <Button customeColor="mutedOutlined" variant={"outline"} className="w-full h-fit p-0">
                         <ChevronDownIcon className="w-4 h-4" />
                     </Button>
                 </DropdownMenuTrigger>

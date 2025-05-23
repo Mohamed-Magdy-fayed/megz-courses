@@ -1,73 +1,172 @@
-"use client"
+"use client";
 
-import React from "react"
-import { ChevronRight, type LucideIcon } from "lucide-react"
+import React, { useMemo } from "react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { ChevronRight, type LucideIcon } from "lucide-react";
 
-import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from "@/components/ui/sidebar"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import Link from "next/link"
+import { SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarMenuAction, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton, SidebarGroupLabel } from "@/components/ui/sidebar";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
-export function NavMain({
-    items,
-    sidebarLabel,
-}: {
+type NavMainProps = {
     sidebarLabel?: string;
     items: {
-        title: string
-        url?: string
-        icon?: LucideIcon
-        action?: React.ReactNode
-        isActive?: boolean
+        title: string;
+        url?: string;
+        icon?: LucideIcon;
+        action?: React.ReactNode;
+        isActive?: boolean;
         items?: {
-            title: string
-            url: string
-        }[]
-    }[]
-}) {
-    const [activeItem, setActiveItem] = React.useState<string | undefined>(items.find(item => item.isActive)?.title)
+            title: string;
+            url: string;
+            icon?: LucideIcon;
+        }[];
+    }[];
+};
+
+export function NavMain({ items, sidebarLabel }: NavMainProps) {
+    const { pathname } = useRouter();
+
+    const menuItems = useMemo(() => items, [items]);
 
     return (
-        <SidebarGroup>
-            <SidebarGroupLabel>{sidebarLabel}</SidebarGroupLabel>
-            <SidebarMenu>
-                <Accordion type="single" collapsible className="w-full" value={activeItem} onValueChange={setActiveItem}>
-                    {items.map((item) => (
-                        <SidebarMenuItem
-                            key={item.title}
+        <SidebarMenu>
+            <SidebarGroupLabel children={sidebarLabel} />
+            {menuItems.map((item) =>
+                item.items && item.items.length ? (
+                    <div key={item.title}>
+                        <Collapsible
+                            defaultOpen={item.items.some(
+                                (child) => child.url && pathname.startsWith(child.url)
+                            )}
                         >
-                            <AccordionItem
-                                value={item.title}
-                                className="group/collapsible border-0"
+                            <CollapsibleTrigger
+                                asChild
+                                aria-activedescendant={
+                                    item.items.some(
+                                        (child) => child.url && pathname.startsWith(child.url)
+                                    )
+                                        ? "true"
+                                        : "false"
+                                }
+                                className="w-full group group-data-[collapsible=icon]:hidden"
                             >
-                                <AccordionTrigger removeIcon className="hover:no-underline">
+                                <SidebarMenuItem>
                                     <SidebarMenuButton
                                         tooltip={item.title}
-                                        className="py-6 text-ellipsis"
+                                        size="sm"
+                                        className="w-full flex justify-between items-center aria-[activedescendant=true]:bg-accent/60"
                                     >
-                                        {item.icon && <item.icon />}
-                                        <span>{item.title}</span>
-                                        {item.items && <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />}
+                                        {item.icon ? <item.icon /> : <span className="w-4 h-4" />}
+                                        <span className="flex-1 text-left">{item.title}</span>
                                         {item.action && item.action}
+                                        <SidebarMenuAction className="transition-transform duration-200 group-data-[state=open]:rotate-90 ml-auto">
+                                            <ChevronRight />
+                                        </SidebarMenuAction>
                                     </SidebarMenuButton>
-                                </AccordionTrigger>
-                                <AccordionContent>
-                                    <SidebarMenuSub>
-                                        {item.items?.map((subItem) => (
-                                            <SidebarMenuSubItem key={subItem.title}>
-                                                <SidebarMenuSubButton asChild>
-                                                    <Link href={subItem.url}>
-                                                        <span>{subItem.title}</span>
-                                                    </Link>
-                                                </SidebarMenuSubButton>
-                                            </SidebarMenuSubItem>
-                                        ))}
-                                    </SidebarMenuSub>
-                                </AccordionContent>
-                            </AccordionItem>
-                        </SidebarMenuItem>
-                    ))}
-                </Accordion>
-            </SidebarMenu>
-        </SidebarGroup>
-    )
+                                </SidebarMenuItem>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent className="overflow-hidden transition-all data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
+                                <SidebarMenuSub>
+                                    {item.items.map((subItem) => (
+                                        <SidebarMenuSubItem key={subItem.title}>
+                                            <SidebarMenuSubButton
+                                                asChild
+                                                aria-activedescendant={
+                                                    subItem.url && pathname.startsWith(subItem.url)
+                                                        ? "true"
+                                                        : "false"
+                                                }
+                                                className="aria-[activedescendant=true]:bg-accent/60"
+                                            >
+                                                <Link href={subItem.url}>
+                                                    {subItem.icon ? (
+                                                        <subItem.icon />
+                                                    ) : (
+                                                        <span className="w-4 h-4 inline-block" />
+                                                    )}
+                                                    <span>{subItem.title}</span>
+                                                </Link>
+                                            </SidebarMenuSubButton>
+                                        </SidebarMenuSubItem>
+                                    ))}
+                                </SidebarMenuSub>
+                            </CollapsibleContent>
+                        </Collapsible>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild className="w-full group group-data-[mobile=true]/sidebar-sheet:hidden">
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton
+                                        tooltip={item.title}
+                                        size="sm"
+                                        className="w-full flex justify-between items-center aria-[activedescendant=true]:bg-accent/60"
+                                    >
+                                        {item.icon ? <item.icon /> : <span className="w-4 h-4" />}
+                                        <span className="flex-1 text-left">{item.title}</span>
+                                        <SidebarMenuAction className="transition-transform duration-200 ml-auto">
+                                            <ChevronRight />
+                                        </SidebarMenuAction>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent side="right" className="overflow-hidden transition-all">
+                                <DropdownMenuGroup>
+                                    {item.items.map((subItem) => (
+                                        <DropdownMenuItem
+                                            asChild
+                                            key={subItem.url || subItem.title}
+                                            aria-activedescendant={
+                                                subItem.url && pathname.startsWith(subItem.url)
+                                                    ? "true"
+                                                    : "false"
+                                            }
+                                            className="aria-[activedescendant=true]:bg-accent/60"
+                                        >
+                                            <Link href={subItem.url}>
+                                                {subItem.icon ? (
+                                                    <subItem.icon size={20} />
+                                                ) : (
+                                                    <span className="w-4 h-4" />
+                                                )}
+                                                <span>{subItem.title}</span>
+                                            </Link>
+                                            {item.action && item.action}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuGroup>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                ) : (
+                    <SidebarMenuItem key={item.url || item.title}>
+                        <SidebarMenuButton
+                            asChild
+                            tooltip={item.title}
+                            size="sm"
+                            aria-activedescendant={
+                                item.url && pathname.startsWith(item.url) ? "true" : "false"
+                            }
+                            className="aria-[activedescendant=true]:bg-accent/60"
+                        >
+                            {item.url ? (
+                                <Link href={item.url}>
+                                    {item.icon ? <item.icon /> : <span className="w-4 h-4" />}
+                                    <span>{item.title}</span>
+                                    {item.action && item.action}
+                                </Link>
+                            ) : (
+                                <span className="flex items-center">
+                                    {item.icon ? <item.icon /> : <span className="w-4 h-4" />}
+                                    <span>{item.title}</span>
+                                    {item.action && item.action}
+                                </span>
+                            )}
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                )
+            )}
+        </SidebarMenu>
+    );
 }

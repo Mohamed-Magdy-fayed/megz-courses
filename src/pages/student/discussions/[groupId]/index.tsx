@@ -25,15 +25,16 @@ const StudentGroupDiscussionPage = ({ groupId }: InferGetServerSidePropsType<typ
                 <DisplayError message={`No data.participants!`} />
             ) : (
                 <NavMain
+                    sidebarLabel="Participants"
                     items={data.participants.map(participant => ({
                         icon: UserIcon,
                         title: participant.user.name,
                         action: participant.user.userRoles.some(role => role === "Teacher")
                             ? (
                                 <WrapWithTooltip text="Private Discussion">
-                                    <Button asChild className="ml-auto" customeColor="primaryIcon" variant="icon">
+                                    <Button asChild className="ml-auto h-4" customeColor="primaryIcon" variant="default" size="sm">
                                         <Link href={`/student/discussions/${groupId}/${SessionData?.user.id}`}>
-                                            <MessagesSquareIcon size={20} />
+                                            <MessagesSquareIcon size={12} />
                                         </Link>
                                     </Button>
                                 </WrapWithTooltip>

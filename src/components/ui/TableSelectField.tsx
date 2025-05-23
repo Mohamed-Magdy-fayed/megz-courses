@@ -36,19 +36,19 @@ const TableSelectField = <T,>({ placeholder, listTitle, data, handleChange, clas
                 <Button
                     variant="outline"
                     customeColor={"foregroundOutlined"}
-                    className={cn('max-w-sm flex border p-1 border-transparent hover:border-foreground items-center h-fit gap-2 justify-start focus-visible:ring-0 focus-visible:ring-offset-0', isOpen ? "border-primary" : "", className)}
+                    className={cn('max-w-sm flex border p-1 border-transparent hover:border-muted items-center h-fit gap-2 justify-start focus-visible:ring-0 focus-visible:ring-offset-0', isOpen ? "border-primary" : "", className)}
                     {...props}
                 >
                     {!value ? (
-                        <Typography className='text-foreground'>
+                        <Typography className='text-muted'>
                             {placeholder}
                         </Typography>
                     ) : (
-                        <Typography className='text-foreground'>
+                        <Typography className='text-muted'>
                             {`${filteredData.find(d => d.value === value)?.label}`}
                         </Typography>
                     )}
-                    <ChevronDown className="h-4 w-4 opacity-50 ml-auto text-foreground" />
+                    <ChevronDown className="h-4 w-4 opacity-50 ml-auto text-muted" />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>

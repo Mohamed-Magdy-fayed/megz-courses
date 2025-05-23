@@ -1,22 +1,35 @@
-import React from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useSession } from "next-auth/react";
 import { ChevronRight } from "lucide-react";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarMenuAction, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton, } from "@/components/ui/sidebar";
 import { mainNavLinks } from "@/components/pages/sidebar/sidebar-admin-data";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { hasPermission } from "@/server/permissions";
+import { allowedByDefault } from "@/components/pages/adminLayout/AppLayout";
 
 const SidebarAdminMenu = React.forwardRef<HTMLDivElement, React.ComponentPropsWithoutRef<"div">>(
     ({ className, ...props }, ref) => {
         const { pathname } = useRouter()
+        const { data: session } = useSession()
+
+        const allowedNavLinks = useMemo(() => mainNavLinks
+            .filter(link => session?.user && hasPermission(session.user, "screens", "view", link))
+            .map(link => ({
+                ...link,
+                children: link.children?.filter(ch => session?.user && hasPermission(session.user, "screens", "view", ch))
+            })), [session?.user])
 
         return (
             <div ref={ref} className={className} {...props}>
                 <SidebarMenu>
-                    {mainNavLinks
+                    {allowedNavLinks
                         .filter(navLink => navLink.label !== "General")
+                        .filter((l) => session?.user && (hasPermission(session.user, "screens", "view", { url: l.url })
+                            || (!allowedByDefault.some(url => l.url?.startsWith(url)))))
                         .map(navLink =>
                             navLink.children && navLink.children.length ? (
                                 <div key={navLink.label}>

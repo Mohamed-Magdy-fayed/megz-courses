@@ -17,6 +17,7 @@ import {
 import { Dispatch, ReactNode, SetStateAction, useState } from "react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import Spinner from "@/components/ui/Spinner"
+import { Typography } from "@/components/ui/Typoghraphy"
 
 interface MultiSelectFieldProps<T> {
     title: string | ReactNode;
@@ -47,9 +48,11 @@ function MultiSelectField<T>({ selected, setSelected, isLoading, disabled, place
                     aria-expanded={open}
                     className="flex w-full gap-2 bg-background hover:bg-background justify-between text-inherit hover:text-primary hover:border-primary"
                 >
-                    {selected.length > 0
+                    <Typography className="whitespace-pre-wrap">
+                        {selected.length > 0
                         ? data.filter(d => selected.includes(d.value)).reduce((acc, curr) => acc + (curr.label) + ", ", "").slice(0, -2)
                         : placeholder}
+                        </Typography>
                     {isLoading && !disabled ? <Spinner size={20} /> : <ChevronDownIcon className="h-4 w-4 opacity-50 ml-auto" />}
                 </Button>
             </PopoverTrigger>
@@ -70,7 +73,7 @@ function MultiSelectField<T>({ selected, setSelected, isLoading, disabled, place
                                     <Check
                                         className={cn(
                                             "mr-2 h-4 w-4",
-                                            selected === item.value ? "opacity-100" : "opacity-0"
+                                            selected.includes(item.value) ? "opacity-100" : "opacity-0"
                                         )}
                                     />
                                     {item.customLabel ? item.customLabel : item.label}

@@ -99,16 +99,6 @@ export const columns: ColumnDef<CourseRow>[] = [
         filterFn,
     },
     {
-        accessorKey: "slug",
-        header: undefined,
-        cell: undefined,
-    },
-    {
-        accessorKey: "description",
-        header: undefined,
-        cell: undefined,
-    },
-    {
         id: "actions",
         header: "Actions",
         cell: ({ row }) => <CoursesActionCell

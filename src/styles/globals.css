@@ -93,9 +93,9 @@
     --accent-foreground: 240 4.8% 95.9%;
     --accent-hover: 240 3.7% 20.9%;
 
-    --muted: 33.3 19.1% 36.9%;
+    --muted: 33 100% 89%;
     /* 50% pf accent 34.1 55.2% 86.9% */
-    --muted-foreground: 34.1 55.2% 86.9%;
+    --muted-foreground: 32 12% 45%;;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 24 13.5% 92.7%;

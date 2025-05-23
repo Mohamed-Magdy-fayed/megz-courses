@@ -18,7 +18,10 @@ export const LandingNavigationMenu = ({ siteIdentity }: { siteIdentity?: SiteIde
         <div className="col-span-8 flex items-center">
           <Link href={'/'} className="flex items-center gap-1 justify-center w-fit">
             {siteIdentity ? (
-              <Image src={siteIdentity.logoForeground} height={1000} width={1000} alt="Logo" className='w-12 rounded-full' />
+              <>
+                <Image src={siteIdentity.logoForeground} height={1000} width={1000} alt="Logo" className='w-12 rounded-full dark:hidden' />
+                <Image src={siteIdentity.logoPrimary} height={1000} width={1000} alt="Logo" className='w-12 rounded-full hidden dark:block' />
+              </>
             ) : (
               <LogoForeground className="w-12 h-12" />
             )}

@@ -32,7 +32,7 @@ export function SalesOverview() {
         <CardDescription>All Time</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig}>
+        <ChartContainer config={chartConfig} className="h-80 w-full">
           <BarChart accessibilityLayer data={data?.result}>
             <CartesianGrid vertical={false} />
             <XAxis

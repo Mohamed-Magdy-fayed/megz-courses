@@ -90,7 +90,7 @@ export const zoomGroupsRouter = createTRPCRouter({
             const zoomGroup = await ctx.prisma.zoomGroup.findFirst({
                 where: {
                     students: { some: { id: ctx.session.user.id } },
-                    groupStatus: { in: ["Active", "Completed"] },
+                    groupStatus: { in: ["Active", "Completed", "Waiting"] },
                     course: {
                         slug: courseSlug,
                     },

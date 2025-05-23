@@ -22,7 +22,10 @@ export function SidebarLogo() {
                         className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                     >
                         {data?.siteIdentity ? (
-                            <Image src={data?.siteIdentity.logoForeground} height={1000} width={1000} alt="Logo" className='w-8 rounded-full' />
+                            <>
+                                <Image src={data?.siteIdentity.logoForeground} height={1000} width={1000} alt="Logo" className='w-8 rounded-full dark:hidden' />
+                                <Image src={data?.siteIdentity.logoPrimary} height={1000} width={1000} alt="Logo" className='w-8 rounded-full hidden dark:block' />
+                            </>
                         ) : (
                             <LogoPrimary className="w-8 h-8" />
                         )}

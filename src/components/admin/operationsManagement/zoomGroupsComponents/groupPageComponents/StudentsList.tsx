@@ -20,7 +20,7 @@ export default function StudentsList({ students, attendance, groupId }: { groupI
             </CardHeader>
             <Separator />
             <CardContent>
-                <ScrollArea className="h-96">
+                <ScrollArea className="h-96 pr-4">
                     {students.map(student => (
                         <div key={student.id} className="flex items-center gap-2 h-min">
                             <Avatar>
@@ -28,12 +28,12 @@ export default function StudentsList({ students, attendance, groupId }: { groupI
                                 <AvatarFallback>{getInitials(student.name)}</AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col w-full">
-                                <Typography>{student.name}</Typography>
                                 <WrapWithTooltip text="Go to account">
                                     <Link className="in-table-link" href={`/admin/users_management/account/${student.id}`}>
-                                        <Typography>{student.email}</Typography>
+                                        <Typography>{student.name}</Typography>
                                     </Link>
                                 </WrapWithTooltip>
+                                <Typography>{student.email}</Typography>
                                 <Typography>{student.phone || "no phone"}</Typography>
                             </div>
                             <WrapWithTooltip text="Go to discussion">

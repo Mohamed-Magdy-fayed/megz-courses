@@ -10,7 +10,7 @@ export default function ChatBubble ({ message, isOwn, avatar }: { message: any; 
             isOwn ? "bg-primary text-primary-foreground ml-auto" : "bg-info text-info-foreground mr-auto"
         )}>
             {message.content}
-            <div className="text-xs text-muted-foreground mt-1 text-right">{new Date(message.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+            <div className="text-xs text-info-foreground mt-1 text-right">{new Date(message.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
         </div>
         {isOwn && <UserAvatar src={avatar || ""} />}
     </div>

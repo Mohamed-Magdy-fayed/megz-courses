@@ -16,7 +16,7 @@ import Spinner from "@/components/ui/Spinner";
 import SidebarAdminMenu from "@/components/pages/sidebar/sidebar-admin-menu";
 import SidebarGeneralMenu from "@/components/pages/sidebar/sidebar-general-menu";
 
-const allowedByDefault = ["/redirects"]
+export const allowedByDefault = ["/redirects"]
 
 const AppLayout = ({ children, actions, actionGroups }: { children: ReactNode, actions?: SidebarNavAction[]; actionGroups?: SidebarNavActionGroup[] }) => {
   const { pathname } = useRouter();

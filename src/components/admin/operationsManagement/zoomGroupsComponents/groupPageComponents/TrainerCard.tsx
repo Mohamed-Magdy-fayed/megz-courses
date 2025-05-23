@@ -34,10 +34,10 @@ export default function TrainerCard({ trainerUser }: {
                         </Button>
                     </Link>
                 </div>
-                <Typography>{trainerUser.name}</Typography>
                 <Link className="in-table-link" href={`/admin/users_management/account/${trainerUser.id}`}>
-                    <Typography>{trainerUser.email}</Typography>
+                    <Typography>{trainerUser.name}</Typography>
                 </Link>
+                <Typography>{trainerUser.email}</Typography>
                 <Typography>Phone: {trainerUser.phone}</Typography>
             </CardContent>
         </Card>

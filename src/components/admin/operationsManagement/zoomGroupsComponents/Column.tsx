@@ -104,6 +104,7 @@ export const columns: ColumnDef<ColumnType>[] = [
             teacherId={row.original.teacher?.id}
             studentIds={row.original.students.map(student => student.id)}
             status={row.original.groupStatus}
+            isTable
         />
     },
 ];

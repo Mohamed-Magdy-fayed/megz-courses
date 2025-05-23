@@ -6,14 +6,16 @@ import { preMeetingLinkConstructor } from "@/lib/meetingsHelpers";
 import PlacmentTestScheduleClient from "@/components/admin/systemManagement/contentComponents/placmentTestSchedule/PlacmentTestScheduleClient";
 import AutomaticModal from "@/components/ui/automaticModal";
 import { Button } from "@/components/ui/button";
-import { PlusIcon } from "lucide-react";
+import { MoreHorizontalIcon, PlusIcon } from "lucide-react";
 import SchedulePlacementTestModalContent from "@/components/general/modals/SchedulePlacementTestModalContent";
+import { useState } from "react";
 
 const PlacementTestsPage = () => {
-    const { data, isLoading } = api.placementTests.getAllPlacementTests.useQuery()
+    const [isGetAll, setIsGetAll] = useState(false)
+    const { data, isLoading } = api.placementTests.getAllPlacementTests.useQuery({ isGetAll })
 
     return (
-        <AppLayout>
+        <AppLayout actions={[{ label: "Show All", onClick: () => { setIsGetAll(true) }, icon: <MoreHorizontalIcon size={20} /> }]}>
             <main className="flex">
                 <div className="flex w-full flex-col gap-4">
                     <div className="flex justify-between">

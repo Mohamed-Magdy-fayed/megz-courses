@@ -53,9 +53,11 @@ export const placementTestsRouter = createTRPCRouter({
             return { oldTest }
         }),
     getAllPlacementTests: protectedProcedure
-        .query(async ({ ctx }) => {
+        .input(z.object({ isGetAll: z.boolean() }))
+        .query(async ({ ctx, input }) => {
             return {
                 tests: await ctx.prisma.placementTest.findMany({
+                    where: input.isGetAll ? undefined : { oralFeedback: { isSet: false } },
                     include: {
                         student: { include: { courseStatus: { include: { level: true } } } },
                         tester: { include: { user: true } },

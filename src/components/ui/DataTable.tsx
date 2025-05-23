@@ -171,13 +171,13 @@ export function DataTable<TData, TValue>({
           </div>
         )}
         {table.getAllColumns().some(col => !!col.getFilterValue()) && (
-          <Typography className="px-4 pb-4 text-sm text-muted">
+          <Typography className="px-4 pb-4 text-sm text-muted dark:text-muted-foreground">
             {table.getFilteredRowModel().rows.length} of{" "}
             {table.getCoreRowModel().rows.length} row(s) filtered.
           </Typography>
         )}
         {table.getSelectedRowModel().rows.length > 0 && (
-          <div className="flex w-full flex-1 justify-between px-4 pb-4 text-sm text-muted">
+          <div className="flex w-full flex-1 justify-between px-4 pb-4 text-sm text-muted dark:text-muted-foreground">
             <Typography>
               {table.getFilteredSelectedRowModel().rows.length} of{" "}
               {table.getFilteredRowModel().rows.length} row(s) selected.

@@ -10,7 +10,6 @@ import { InfoIcon } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useMemo } from 'react'
 
 export default function ParticipantsSheet({ participants }: { participants: { id: string, user: User }[] }) {
     const router = useRouter()
@@ -33,6 +32,7 @@ export default function ParticipantsSheet({ participants }: { participants: { id
                         {participants.map((participant) => {
                             const isCurrentUser = participant.user.id === sessionData?.user.id
                             const isCurrentUserStudent = sessionData?.user.userRoles.includes("Student")
+                            const isUserStudent = participant.user.userRoles.includes("Student")
 
                             return (
                                 <div key={participant.id} className="flex items-center gap-2">
@@ -55,7 +55,7 @@ export default function ParticipantsSheet({ participants }: { participants: { id
                                         <DropdownMenuContent side='bottom' align='end'>
                                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                             <DropdownMenuSeparator />
-                                            {!isCurrentUser && (
+                                            {!isCurrentUser && !isUserStudent && (
                                                 <DropdownMenuItem asChild>
                                                     <Link href={`${isCurrentUserStudent ? "/student/discussions/" : "/admin/operations_management/discussions/"}${groupId}/${participant.user.id}`} className="w-full">
                                                         Private Discussion
