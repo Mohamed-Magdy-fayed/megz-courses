@@ -5,13 +5,13 @@ type UseEvalformSubmissionProps = {
     courseSlug: string;
     formType: SystemFormTypes;
     levelSlug?: string;
-    materialItemSlug?: string;
+    sessionId?: string;
     enabled?: boolean;
 }
 
-export const useEvalformSubmission = ({ courseSlug, formType, levelSlug, materialItemSlug, enabled }: UseEvalformSubmissionProps) => {
+export const useEvalformSubmission = ({ courseSlug, formType, levelSlug, sessionId, enabled }: UseEvalformSubmissionProps) => {
     const { data: userSubmissionData, isLoading } = api.systemFormSubmissions.getUserSubmissionDetails.useQuery({
-        courseSlug, levelSlug, materialItemSlug, formType
+        courseSlug, levelSlug, sessionId, formType
     }, { enabled })
 
     return {

@@ -5,7 +5,9 @@ import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription }
 import { useEvalformSubmission } from "@/hooks/useEvalFormSubmission"
 import { cn } from "@/lib/utils"
 import { Prisma, SystemFormSubmissionAnswer, SystemFormTypes } from "@prisma/client"
-import { FC, SetStateAction, useState } from "react"
+import { FC, useState } from "react"
+import { DisplayError } from "@/components/ui/display-error"
+import SidebarSekeltonInset from "@/components/pages/sidebar/sidebar-skeleton-inset"
 
 type SystemFormSubmissionCardProps = {
     isSubmissionView: boolean;
@@ -23,7 +25,7 @@ type SystemFormCardProps = {
     courseSlug: string;
     formType: SystemFormTypes;
     levelSlug?: string;
-    materialItemSlug?: string;
+    sessionId?: string;
     enabled?: boolean;
     fullWidth?: boolean;
 }
@@ -71,7 +73,8 @@ const SystemFormCard: FC<UnionType> = (props) => {
 
     const [currentAnswers, setCurrentAnswers] = useState<Omit<SystemFormSubmissionAnswer, "isCorrect">[]>([])
 
-    if (error) return <>{error}</>
+    if (error) return <DisplayError message={error} />
+    if (isLoading) return <SidebarSekeltonInset />
 
     return (
         <Card className={cn("col-span-12 xl:col-span-8 w-full h-fit", props.fullWidth && "xl:col-span-12")}>
@@ -91,20 +94,17 @@ const SystemFormCard: FC<UnionType> = (props) => {
                 ))}
             </CardContent>
             <CardFooter>
-                {!isLoading ? (
-                    <SystemFormResult
-                        isSubmitted={submittedAlready || false}
-                        score={systemSubmission?.totalScore || 0}
-                        totalScore={systemForm?.totalScore || 0}
-                        courseSlug={props.courseSlug}
-                        levelId={systemForm?.courseLevelId || undefined}
-                        systemFormId={systemForm?.id || ""}
-                        answers={currentAnswers}
-                        type={props.formType}
-                    />
-                ) : (
-                    <Spinner />
-                )}
+                <SystemFormResult
+                    isSubmitted={submittedAlready || false}
+                    score={systemSubmission?.totalScore || 0}
+                    totalScore={systemForm?.totalScore || 0}
+                    courseSlug={props.courseSlug}
+                    levelId={systemForm?.courseLevelId || undefined}
+                    sessionId={props.sessionId || undefined}
+                    systemFormId={systemForm?.id || ""}
+                    answers={currentAnswers}
+                    type={props.formType}
+                />
             </CardFooter>
         </Card >
     )

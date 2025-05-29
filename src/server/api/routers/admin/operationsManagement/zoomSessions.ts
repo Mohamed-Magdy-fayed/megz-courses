@@ -14,6 +14,14 @@ import { hasPermission } from "@/server/permissions";
 import { handleSessionStatusUpdate } from "@/server/actions/zoomSessions/sessionsActions";
 
 export const zoomSessionsRouter = createTRPCRouter({
+    getById: protectedProcedure
+        .input(z.object({ id: z.string() }))
+        .query(async ({ ctx, input: { id } }) => {
+            return await ctx.prisma.zoomSession.findUnique({
+                where: { id },
+                include: { materialItem: true },
+            })
+        }),
     getAllSessions: protectedProcedure
         .query(async ({ ctx }) => {
             const sessions = await ctx.prisma.zoomSession.findMany({

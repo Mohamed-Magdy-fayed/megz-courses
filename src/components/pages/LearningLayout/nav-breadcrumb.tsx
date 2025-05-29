@@ -23,8 +23,8 @@ import {
 export function NavBreadcrumb() {
     const [open, setOpen] = React.useState(false)
 
-    const { pathname } = useRouter()
-    const pathSegments = React.useMemo(() => pathname.split('/'), [pathname]);
+    const { asPath } = useRouter();
+    const pathSegments = React.useMemo(() => asPath.split('/'), [asPath]);
     const filteredPathSegments = React.useMemo(() => pathSegments.filter(seg => !["student", "admin"].includes(seg)), [pathSegments]);
 
     return (
@@ -32,7 +32,7 @@ export function NavBreadcrumb() {
             <BreadcrumbList>
                 {filteredPathSegments[0] === "" && (
                     <BreadcrumbItem>
-                        <BreadcrumbLink href={`/`}>Home</BreadcrumbLink>
+                        <BreadcrumbLink className="hover:text-primary" href={`/`}>Home</BreadcrumbLink>
                     </BreadcrumbItem>
                 )}
                 {filteredPathSegments.length > 1 && <BreadcrumbSeparator />}
@@ -51,7 +51,7 @@ export function NavBreadcrumb() {
                                         .filter(seg => !["student", "admin"].includes(seg))
                                         .map((item, index) => (
                                             <DropdownMenuItem key={`${index}_${item}`}>
-                                                <Link href={`${pathname.split(item)[0]}${item}`}>
+                                                <Link href={`${asPath.split(item)[0]}${item}`}>
                                                     {item}
                                                 </Link>
                                             </DropdownMenuItem>
@@ -68,9 +68,9 @@ export function NavBreadcrumb() {
                             {!["student", "admin"].includes(item) ? (
                                 <BreadcrumbLink
                                     asChild
-                                    className="max-w-20 truncate md:max-w-none"
+                                    className="max-w-20 truncate md:max-w-none hover:text-primary"
                                 >
-                                    <Link href={`${pathname.split(item)[0]}${item}`}>{item}</Link>
+                                    <Link href={`${asPath.split(item)[0]}${item}`}>{item}</Link>
                                 </BreadcrumbLink>
                             ) : (
                                 <BreadcrumbPage className="max-w-20 truncate md:max-w-none">

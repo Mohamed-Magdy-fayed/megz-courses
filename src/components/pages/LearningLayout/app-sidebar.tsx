@@ -17,8 +17,8 @@ export function AppSidebar({ sidebarContent, ...props }: React.ComponentProps<ty
       <SidebarHeader>
         <SidebarUser />
       </SidebarHeader>
-      <SidebarContent>
-        {sidebarContent ? sidebarContent : "No content provided"}
+      <SidebarContent className="px-1">
+        {sidebarContent ? sidebarContent : ""}
       </SidebarContent>
       <SidebarFooter>
         <SidebarLogo />

@@ -1,10 +1,13 @@
 "use client"
 
+import { useState } from "react"
 import {
+    BellIcon,
     ChevronsUpDown,
+    FilesIcon,
     ListChecksIcon,
     LogOut,
-    UserIcon,
+    User2Icon,
 } from "lucide-react"
 
 import {
@@ -24,11 +27,11 @@ import {
 } from "@/components/ui/sidebar"
 import { DarkModeToggle } from "@/components/dark-mode-toggle"
 import Link from "next/link"
-import { useNotificationList } from "@/hooks/useNotificationList"
 import { signOut, useSession } from "next-auth/react"
 import { UserCard } from "@/components/ui/user-card"
 import { ScreenShareIcon } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
+import { NotificationsSheet } from "@/components/general/notifications/notifications-sheet"
 
 export function SidebarUser() {
     const { isMobile } = useSidebar()
@@ -80,7 +83,24 @@ export function SidebarUser() {
                 },
             ],
         },
+        {
+            roles: ["Student"] as const,
+            items: [
+                {
+                    text: "My Account",
+                    href: "/student/my_account",
+                    icon: User2Icon,
+                },
+                {
+                    text: "My Courses",
+                    href: "/student/my_courses",
+                    icon: FilesIcon,
+                },
+            ],
+        },
     ];
+
+    const [isOpen, setIsOpen] = useState(false)
 
     const user = useSession().data?.user
     if (!user) return <Skeleton className="w-full h-12" />
@@ -92,10 +112,10 @@ export function SidebarUser() {
         return userRoleMenuItems
             .find(roleGroup => roleGroup.roles.some(role => userRoles.includes(role)))?.items || []
     }
-
     return (
         <SidebarMenu>
             <SidebarMenuItem>
+                <NotificationsSheet isOpen={isOpen} setIsOpen={setIsOpen} />
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton
@@ -132,6 +152,14 @@ export function SidebarUser() {
                                     </Link>
                                 </DropdownMenuItem>
                             ))}
+                        </DropdownMenuGroup>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuGroup>
+                            {/* Notes menu group */}
+                            <DropdownMenuItem onClick={() => setTimeout(() => setIsOpen(true), 100)}>
+                                <BellIcon className="mr-2 w-4 h-4" />
+                                Notifications
+                            </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => signOut({ callbackUrl: `/authentication` })}>

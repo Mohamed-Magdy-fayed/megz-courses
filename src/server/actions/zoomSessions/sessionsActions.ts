@@ -25,7 +25,7 @@ export async function handleSessionStatusUpdate({ prisma, sessionStatus, student
         await Promise.all(students.map(async st => {
             await sendSessionStartingSoonComms({
                 courseName: course.name,
-                quizLink: `${env.NEXTAUTH_URL}student/my_courses/${course.slug}/${level.slug}/quiz/${material.slug}`,
+                quizLink: `${env.NEXTAUTH_URL}student/my_courses/${course.slug}/${level.slug}/quiz/${updatedSession.id}`,
                 ...formatUserForComms(st),
                 zoomJoinLink: preMeetingLinkConstructor({
                     isZoom,
@@ -62,7 +62,7 @@ export async function handleSessionStatusUpdate({ prisma, sessionStatus, student
         await Promise.all(students.map(async st => {
             await sendSessionStartComms({
                 courseName: course.name,
-                materialLink: `${env.NEXTAUTH_URL}student/my_courses/${course.slug}/${level.slug}/session/${material.slug}`,
+                materialLink: `${env.NEXTAUTH_URL}student/my_courses/${course.slug}/${level.slug}/session/${updatedSession.id}`,
                 sessionTitle: material.title,
                 ...formatUserForComms(st),
                 zoomJoinLink: preMeetingLinkConstructor({
@@ -72,7 +72,7 @@ export async function handleSessionStatusUpdate({ prisma, sessionStatus, student
                     sessionTitle: material.title,
                     sessionId: updatedSession.id,
                 }),
-                materialSlug: material.slug,
+                materialSlug: updatedSession.id,
                 uploads: material.uploads
             })
         }))
@@ -84,7 +84,7 @@ export async function handleSessionStatusUpdate({ prisma, sessionStatus, student
                 await sendSessionEndComms({
                     courseName: course.name,
                     ...formatUserForComms(st),
-                    assignmentLink: `${env.NEXTAUTH_URL}student/my_courses/${course.slug}/${level.slug}/assignment/${material.slug}`,
+                    assignmentLink: `${env.NEXTAUTH_URL}student/my_courses/${course.slug}/${level.slug}/assignment/${updatedSession.id}`,
                     nextSessionDate: nextSession?.sessionDate,
                     sessionTitle: material.title,
                 })

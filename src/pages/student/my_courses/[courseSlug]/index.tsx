@@ -1,18 +1,18 @@
 "use client"
 
-import LearningLayout from "@/components/pages/LearningLayout/LearningLayout"
+import { useMemo } from "react"
+import { useRouter } from "next/router"
+import { BookIcon, BookMarkedIcon, DownloadIcon, FileBadgeIcon, FileKey2Icon, FileTextIcon, TrophyIcon, VoteIcon } from "lucide-react"
+import { format } from "date-fns"
+
+import { api } from "@/lib/api"
 import { NavMain } from "@/components/pages/LearningLayout/nav-main"
 import { Typography } from "@/components/ui/Typoghraphy"
-import { Button } from "@/components/ui/button"
-import { DisplayError } from "@/components/ui/display-error"
+import { DisplaySubmissionBadge } from "@/components/student/myCoursesComponents/general/display-submission-badge"
+import { DisplayCertificateBadge } from "@/components/student/myCoursesComponents/general/display-certificate-badge"
 import GoBackButton from "@/components/ui/go-back"
-import { Skeleton } from "@/components/ui/skeleton"
-import { api } from "@/lib/api"
-import { format } from "date-fns"
-import { BookIcon, ExternalLink } from "lucide-react"
-import Link from "next/link"
-import { useRouter } from "next/router"
-import { useMemo } from "react"
+import LearningLayout from "@/components/pages/LearningLayout/LearningLayout"
+import LevelsClient from "@/components/student/myCoursesComponents/course-components/levels-client"
 
 const CoursePage = () => {
     const router = useRouter()
@@ -22,26 +22,53 @@ const CoursePage = () => {
     const course = useMemo(() => data?.courseStatues[0]?.course, [data])
 
     if (isLoading && !error) {
-        return <Skeleton className="w-full h-40" />
+        return <LearningLayout isLoading={isLoading} children={null} />
     }
 
     if (isError && error) {
-        return <DisplayError message={error.message} />
+        return <LearningLayout children={null} error={error.message} />
     }
 
     if (!course) {
-        return <DisplayError message={`No course found!`} />
+        return <LearningLayout children={null} error="Seems you're not in a group for this level yet, please try again later!" />
     }
 
     return (
         <LearningLayout
             sidebarContent={
                 <NavMain
-                    items={data.courseStatues.map(courseStatus => ({
-                        icon: BookIcon,
-                        title: courseStatus.level?.name || "Level Name",
-                        items: courseStatus.level?.materialItems.map(item => ({ title: item.title, url: `/student/my_courses/${courseSlug}/${courseStatus.level?.slug}/session/${item.slug}` }))
-                    }))}
+                    sidebarLabel={course.name}
+                    items={[...data.courseStatues.map(courseStatus => {
+                        return ({
+                            icon: BookIcon,
+                            title: courseStatus.level?.name || "Level Name",
+                            items: [...(courseStatus.level?.materialItems.map(item => {
+                                const zoomSession = item.zoomSessions[0];
+
+                                // Drip logic: Only allow access if session is available/unlocked
+                                const canAccessQuiz = zoomSession && !["Cancelled", "Scheduled"].includes(zoomSession.sessionStatus);
+                                const canAccessSession = zoomSession && ["Ongoing", "Completed"].includes(zoomSession.sessionStatus);
+                                const canAccessAssignment = zoomSession && zoomSession.sessionStatus === "Completed";
+
+                                return ({
+                                    title: item.title,
+                                    icon: FileTextIcon,
+                                    items: [
+                                        { icon: VoteIcon, action: zoomSession?.id ? <DisplaySubmissionBadge className="ml-auto" id={zoomSession.id} type={"Quiz"} /> : undefined, isActive: !!canAccessQuiz, title: "Quiz", url: `/student/my_courses/${courseSlug}/${courseStatus.level?.slug}/quiz/${zoomSession?.id}` },
+                                        { icon: DownloadIcon, isActive: !!canAccessSession, title: "Session", url: `/student/my_courses/${courseSlug}/${courseStatus.level?.slug}/session/${zoomSession?.id}` },
+                                        { icon: BookMarkedIcon, action: zoomSession?.id ? <DisplaySubmissionBadge className="ml-auto" id={zoomSession.id} type={"Assignment"} /> : undefined, isActive: !!canAccessAssignment, title: "Assignment", url: `/student/my_courses/${courseSlug}/${courseStatus.level?.slug}/assignment/${zoomSession?.id}` },
+                                    ],
+                                })
+                            }) || []), {
+                                icon: TrophyIcon,
+                                title: "Level Completion",
+                                items: [
+                                    { icon: FileKey2Icon, action: courseStatus.level?.systemForms[0]?.id ? <DisplaySubmissionBadge className="ml-auto" id={courseStatus.level?.systemForms[0]?.id} type={"FinalTest"} /> : undefined, isActive: !courseStatus.course.certificates[0] && courseStatus.level?.materialItems.every(i => i.zoomSessions[0]?.sessionStatus === "Completed"), title: "Final Test", url: `/student/my_courses/${courseSlug}/${data.courseStatues[0]?.level?.slug}/final_test` },
+                                    { icon: FileBadgeIcon, action: courseStatus.level?.id ? <DisplayCertificateBadge className="ml-auto" id={courseStatus.level.id} /> : undefined, isActive: courseStatus.level?.materialItems.every(i => i.zoomSessions[0]?.sessionStatus === "Completed"), title: "Certificate", url: `/student/my_courses/${courseSlug}/${data.courseStatues[0]?.level?.slug}/certificate` },
+                                ]
+                            }]
+                        })
+                    })]}
                 />
             }
         >
@@ -54,19 +81,7 @@ const CoursePage = () => {
                     <Typography>Added on {format(course.createdAt, "do MMM yyyy")}</Typography>
                 </div>
                 <div className="p-4 w-full space-y-4">
-                    <Typography variant={"secondary"}>Please select a level to start</Typography>
-                    <div className="flex items-center gap-4 p-4 flex-wrap">
-                        {data.courseStatues
-                            .map(status => (
-                                <Link key={status.id} href={`/student/my_courses/${course.slug}/${status.level?.slug}`}>
-                                    <Button variant={"outline"} customeColor={"infoOutlined"}>
-                                        <ExternalLink className="w-4 h-4" />
-                                        <Typography>{status.level?.name}</Typography>
-                                    </Button>
-                                </Link>
-                            ))
-                        }
-                    </div>
+                    <LevelsClient courseSlug={courseSlug} />
                 </div>
             </div>
         </LearningLayout>

@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import { formatPercentage } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { DateRange } from "@/pages/admin/dashboard";
 
 const chartConfig: ChartConfig = {
   thisYear: {
@@ -20,16 +21,27 @@ const chartConfig: ChartConfig = {
   },
 } satisfies ChartConfig;
 
-export function SalesOverview() {
-  const { data, refetch } = api.orders.getSalesPerMonth.useQuery(undefined, { enabled: false });
+export function SalesOverview({ dateRange }: { dateRange: DateRange }) {
+  const { data, refetch } = api.analytics.getSalesPerMonth.useQuery(
+    dateRange ? { from: dateRange.from, to: dateRange.to } : undefined,
+    { enabled: false }
+  );
 
-  useEffect(() => { refetch() }, []);
+  useEffect(() => { refetch() }, [dateRange, refetch]);
 
   return (
     <Card className="col-span-12 xl:col-span-8">
       <CardHeader>
         <CardTitle>Sales Overview</CardTitle>
-        <CardDescription>All Time</CardDescription>
+        <CardDescription>
+          {dateRange ? (
+            <>
+              {dateRange.from?.toLocaleDateString()} - {dateRange.to?.toLocaleDateString()}
+            </>
+          ) : (
+            "All Time"
+          )}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-80 w-full">

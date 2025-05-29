@@ -24,11 +24,8 @@ export const waitingListRouter = createTRPCRouter({
                 }),
             ]);
 
-            if (!placementTest) {
-                throw new TRPCError({ code: "BAD_REQUEST", message: "Placement Test not found!" });
-            }
-
-            if (!hasPermission(ctx.session.user, "placementTests", "update", placementTest)) {
+            // If placementTest exists, check permission, else skip
+            if (placementTest && !hasPermission(ctx.session.user, "placementTests", "update", placementTest)) {
                 throw new TRPCError({ code: "UNAUTHORIZED", message: "You can't take that action!" });
             }
 
@@ -67,7 +64,8 @@ export const waitingListRouter = createTRPCRouter({
 
             const levelName = level.name;
 
-            await ctx.prisma.$transaction([
+            // Build the transaction array
+            const transactionArray: any[] = [
                 ctx.prisma.courseStatus.update({
                     where: { id: unassignedStatus.id },
                     data: {
@@ -90,11 +88,19 @@ export const waitingListRouter = createTRPCRouter({
                         }],
                     },
                 }),
-                ctx.prisma.placementTest.update({
-                    where: { id: placementTest.id },
-                    data: { oralFeedback },
-                })
-            ]);
+            ];
+
+            // Only update placementTest if it exists
+            if (placementTest) {
+                transactionArray.push(
+                    ctx.prisma.placementTest.update({
+                        where: { id: placementTest.id },
+                        data: { oralFeedback },
+                    })
+                );
+            }
+
+            await ctx.prisma.$transaction(transactionArray);
 
             await placementResultComms({
                 courseSlug: course.slug,

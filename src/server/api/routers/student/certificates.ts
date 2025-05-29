@@ -34,12 +34,25 @@ export const certificatesRouter = createTRPCRouter({
         include: {
           user: { include: { zoomGroups: { include: { teacher: { include: { user: true } } } } } },
           course: true,
+          courseLevel: true,
         }
       })
 
       return {
         certificate,
       };
+    }),
+  getCertificateByLevelId: protectedProcedure
+    .input(z.object({
+      id: z.string(),
+    }))
+    .query(async ({ ctx, input: { id } }) => {
+      return await ctx.prisma.certificate.findFirst({
+        where: {
+          courseLevel: { id },
+          userId: ctx.session.user.id,
+        },
+      })
     }),
   getCertificateById: protectedProcedure
     .input(z.object({

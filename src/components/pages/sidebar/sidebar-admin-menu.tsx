@@ -101,7 +101,7 @@ const SidebarAdminMenu = React.forwardRef<HTMLDivElement, React.ComponentPropsWi
                                                     ) ? "true" : "false"}
                                                 >
                                                     {navLink.icon ? <navLink.icon /> : <span className="w-4 h-4 inline-block" />}
-                                                    <span className="flex-1 text-left">{navLink.label}</span>
+                                                    <span className="truncate text-left">{navLink.label}</span>
                                                     <SidebarMenuAction className="transition-transform duration-200 ml-auto">
                                                         <ChevronRight />
                                                         <span className="sr-only">Toggle</span>

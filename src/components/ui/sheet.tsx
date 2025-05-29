@@ -71,7 +71,7 @@ const SheetContent = React.forwardRef<
       {...props}
     >
       {children}
-      <SheetPrimitive.Close asChild autoFocus={false} className="absolute right-4 top-4 opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none rounded-full disabled:pointer-events-none data-[state=open]:bg-slate-100 dark:data-[state=open]:bg-slate-800">
+      <SheetPrimitive.Close asChild autoFocus={false} className="absolute right-4 top-4 opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none rounded-full disabled:pointer-events-none">
         <Button variant={"x"}>
           <X className="h-4 w-4" />
           <span className="sr-only">Close</span>

@@ -4,6 +4,7 @@ import { api } from "@/lib/api";
 import { CircleDollarSign, ListTodo, Users2 } from "lucide-react";
 
 import StateCard from "./StateCard";
+import { DateRange } from "@/pages/admin/dashboard";
 
 export type StateOverview = {
   title: string
@@ -18,11 +19,11 @@ export type StateOverview = {
   totalOrders?: number
 }
 
-export default function StatesOverview() {
-  const spendingsQuery = api.zoomGroups.getSpendings.useQuery(undefined, { enabled: false })
-  const studentsQuery = api.users.getStudentsState.useQuery(undefined, { enabled: false })
-  const leadsQuery = api.leads.getConversionRate.useQuery(undefined, { enabled: false })
-  const ordersQuery = api.orders.getSalesTotal.useQuery(undefined, { enabled: false })
+export default function StatesOverview({ dateRange }: { dateRange: DateRange }) {
+  const spendingsQuery = api.zoomGroups.getSpendings.useQuery(dateRange ? { ...dateRange } : undefined, { enabled: false })
+  const studentsQuery = api.users.getStudentsState.useQuery(dateRange ? { ...dateRange } : undefined, { enabled: false })
+  const leadsQuery = api.leads.getConversionRate.useQuery(dateRange ? { ...dateRange } : undefined, { enabled: false })
+  const ordersQuery = api.orders.getSalesTotal.useQuery(dateRange ? { ...dateRange } : undefined, { enabled: false })
 
   const [states, setStates] = useState<StateOverview[]>([
     {
@@ -102,7 +103,7 @@ export default function StatesOverview() {
 
       setStates(data);
     });
-  }, []);
+  }, [dateRange]);
 
   return (
     <div className="col-span-12 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">

@@ -9,7 +9,7 @@ import { useSession } from 'next-auth/react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
-const UserCard = React.forwardRef<HTMLDivElement, React.ComponentPropsWithoutRef<"div">>(
+const ComponentTemplate = React.forwardRef<HTMLDivElement, React.ComponentPropsWithoutRef<"div">>(
     ({ className, ...props }, ref) => {
         const user = useSession().data?.user
 
@@ -37,6 +37,6 @@ const UserCard = React.forwardRef<HTMLDivElement, React.ComponentPropsWithoutRef
     }
 )
 
-UserCard.displayName = "UserCard"
+ComponentTemplate.displayName = "ComponentTemplate"
 
-export { UserCard }
+export { ComponentTemplate }

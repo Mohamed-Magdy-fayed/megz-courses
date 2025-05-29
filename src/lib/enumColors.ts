@@ -169,3 +169,22 @@ export const validDiscussionTypesColors: (val: DiscussionType) => SeverityPillPr
             return "background";
     }
 };
+
+export const validGroupStatusColors: (val: GroupStatus) => SeverityPillProps["color"] = (val) => {
+    switch (val) {
+        case "Active":
+            return "info";
+        case "Cancelled":
+            return "destructive";
+        case "Completed":
+            return "success";
+        case "Inactive":
+            return "muted";
+        case "Paused":
+            return "muted";
+        case "Waiting":
+            return "primary";
+        default:
+            return "background";
+    }
+};

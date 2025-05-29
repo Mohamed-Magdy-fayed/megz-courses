@@ -2,13 +2,22 @@ import { api } from "@/lib/api";
 import { useRouter } from "next/router";
 import AppLayout from "@/components/pages/adminLayout/AppLayout";
 import { ArrowLeftFromLine } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, SpinnerButton } from "@/components/ui/button";
 import { ConceptTitle } from "@/components/ui/Typoghraphy";
 import Spinner from "@/components/ui/Spinner";
 import { Prisma } from "@prisma/client";
 import { Account } from "@/components/admin/usersManagement/users/accountComponents/Account";
 import { AccountDetails } from "@/components/admin/usersManagement/users/accountComponents/AccountDetails";
 import { UserAccountTabs } from "@/components/admin/usersManagement/users/accountComponents/AccountTabs";
+import AutomaticModal from "@/components/ui/automaticModal";
+import { PackagePlusIcon } from "lucide-react";
+import ProductSelectField from "@/components/general/selectFields/ProductSelectField";
+import { useState } from "react";
+import { toastType, useToast } from "@/components/ui/use-toast";
+import { createMutationOptions } from "@/lib/mutationsHelper";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { PlusSquareIcon } from "lucide-react";
 
 export type UserGetPayload = Prisma.UserGetPayload<{
   include: {
@@ -36,6 +45,30 @@ export default function Page() {
 
   const { data, isLoading } = api.users.getUserById.useQuery({ id }, { enabled: !!id });
 
+  const [isPrivate, setIsPrivate] = useState(false)
+  const [productId, setProductId] = useState<string>()
+  const [loadingToast, setLoadingToast] = useState<toastType>()
+  const { toast } = useToast()
+  const trpcUtils = api.useUtils()
+  const createOrderMutation = api.orders.createOrder.useMutation(
+    createMutationOptions({
+      trpcUtils: trpcUtils.orders,
+      toast,
+      loadingToast,
+      setLoadingToast,
+      successMessageFormatter: ({ order }) => `Order ${order.orderNumber} created successfully.`
+    })
+  )
+
+  function handlePlaceOrder() {
+    if (!productId) return toast({ title: "Nope!", description: "You will have to select a product i think!", variant: "destructive" })
+    createOrderMutation.mutate({
+      productId,
+      isPrivate,
+      studentId: id,
+    })
+  }
+
   return (
     <AppLayout>
       {isLoading || !data?.user
@@ -43,8 +76,8 @@ export default function Page() {
         : (
           <main className="flex-grow py-2 flex flex-col gap-4">
             <div className="grid space-x-4 space-y-4 grid-cols-12">
-              <div className="col-span-12 md:col-span-4 md:border-r-2 border-muted md:p-4">
-                <div className="flex items-center gap-4 mb-8">
+              <div className="col-span-12 md:col-span-4 md:border-r-2 border-muted md:p-4 space-y-8">
+                <div className="flex items-center gap-4">
                   <Button variant={"icon"} customeColor={"primaryIcon"} onClick={() => router.back()}>
                     <ArrowLeftFromLine></ArrowLeftFromLine>
                   </Button>
@@ -52,8 +85,27 @@ export default function Page() {
                 </div>
                 <Account user={data.user} />
               </div>
-              <div className="col-span-12 md:col-span-8">
-                <ConceptTitle className="whitespace-nowrap mb-8">Account Details</ConceptTitle>
+              <div className="col-span-12 md:col-span-8 space-y-8 gap-4">
+                <div className="flex items-center justify-between">
+                  <ConceptTitle className="whitespace-nowrap">Account Details</ConceptTitle>
+                  <AutomaticModal
+                    title="Create an order"
+                    description="Create an order for the student"
+                    trigger={<Button><PackagePlusIcon size={20} className="mr-2" /> Place an order</Button>}
+                    children={
+                      <div className="space-y-4">
+                        <ProductSelectField loading={!!loadingToast} productId={productId} setProductId={setProductId} />
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex items-center space-x-2">
+                            <Switch checked={isPrivate} onCheckedChange={(val) => setIsPrivate(val)} id="isPrivate" />
+                            <Label htmlFor="isPrivate">Private Class?</Label>
+                          </div>
+                          <SpinnerButton icon={PlusSquareIcon} text="Place Order" isLoading={!!loadingToast} onClick={handlePlaceOrder} />
+                        </div>
+                      </div>
+                    }
+                  />
+                </div>
                 <AccountDetails user={data.user} />
               </div>
             </div>

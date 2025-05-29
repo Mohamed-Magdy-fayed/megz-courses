@@ -282,7 +282,7 @@ export const cronRouter = createTRPCRouter({
         // 1. Find sessions that started more than 2 hours ago and are still "Ongoing"
         const sessionsToComplete = await ctx.prisma.zoomSession.findMany({
             where: {
-                sessionStatus: "Ongoing",
+                sessionStatus: { in: ["Ongoing", "Scheduled", "Starting"] },
                 sessionDate: { lte: sixHoursAgo },
             },
             include: {
@@ -352,7 +352,7 @@ export const cronRouter = createTRPCRouter({
 
         const updatedGroups = await ctx.prisma.zoomGroup.updateMany({
             where: {
-                groupStatus: "Active",
+                groupStatus: {in: ["Active","Waiting"]},
                 AND: {
                     zoomSessions: {
                         every: {

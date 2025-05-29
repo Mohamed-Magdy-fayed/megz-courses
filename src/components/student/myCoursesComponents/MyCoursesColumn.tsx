@@ -58,19 +58,19 @@ export const myCoursesColumns: ColumnDef<MyCoursesRow>[] = [
         return (
           <div className="flex flex-col gap-2">
             <Typography>{group.groupNumber}</Typography>
-            {/* {group.isSessionOngoing && ( */}
-            <Link target="_blank" href={
-              `/${preMeetingLinkConstructor({
-                isZoom: !!session?.isZoom,
-                sessionTitle: session?.materialItemTitle || "",
-                sessionId: session?.id,
-                meetingNumber: session?.meetingNumber || "",
-                meetingPassword: session?.meetingPassword || "",
-              })}`
-            }>
-              <Button type="button" customeColor={"info"}>Join Ongoing Session</Button>
-            </Link>
-            {/* )} */}
+            {group.isSessionOngoing && (
+              <Link target="_blank" href={
+                `/${preMeetingLinkConstructor({
+                  isZoom: !!session?.isZoom,
+                  sessionTitle: session?.materialItemTitle || "",
+                  sessionId: session?.id,
+                  meetingNumber: session?.meetingNumber || "",
+                  meetingPassword: session?.meetingPassword || "",
+                })}`
+              }>
+                <Button type="button" customeColor={"info"}>Join Ongoing Session</Button>
+              </Link>
+            )}
           </div>
         )
       }

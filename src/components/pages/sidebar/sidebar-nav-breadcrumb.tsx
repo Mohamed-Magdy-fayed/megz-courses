@@ -10,8 +10,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 export function SidebarNavBreadCrumb() {
     const [open, setOpen] = React.useState(false)
 
-    const { pathname } = useRouter()
-    const pathSegments = React.useMemo(() => pathname.split('/'), [pathname]);
+    const { asPath } = useRouter()
+    const pathSegments = React.useMemo(() => asPath.split('/'), [asPath]);
 
     return (
         <Breadcrumb>
@@ -36,7 +36,7 @@ export function SidebarNavBreadCrumb() {
                                     {pathSegments.slice(1, -2)
                                         .map((item, index) => (
                                             <DropdownMenuItem key={`${index}_${item}`}>
-                                                <Link href={`${pathname.split(item)[0]}${item}`}>
+                                                <Link href={`${asPath.split(item)[0]}${item}`}>
                                                     {item}
                                                 </Link>
                                             </DropdownMenuItem>
@@ -59,7 +59,7 @@ export function SidebarNavBreadCrumb() {
                                     asChild
                                     className="max-w-20 truncate md:max-w-none hover:text-primary"
                                 >
-                                    <Link href={`${pathname.split(item)[0]}${item}`}>{item}</Link>
+                                    <Link href={`${asPath.split(item)[0]}${item}`}>{item}</Link>
                                 </BreadcrumbLink>
                             )}
                         </BreadcrumbItem>

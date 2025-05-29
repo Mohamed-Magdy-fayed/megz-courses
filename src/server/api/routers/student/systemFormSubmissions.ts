@@ -13,6 +13,24 @@ import { z } from "zod";
 import { sendCertificateComms } from "@/server/actions/emails";
 
 export const systemFormSubmissionsRouter = createTRPCRouter({
+    getByRelationId: protectedProcedure
+        .input(z.object({
+            id: z.string(),
+            type: z.enum(validSystemFormTypes),
+        }))
+        .query(async ({ ctx, input: { id,type } }) => {
+            return ctx.prisma.systemFormSubmission.findFirst({
+                where: {
+                    studentId: ctx.session.user.id,
+                    OR: [
+                        { assignmentZoomSessionId: id },
+                        { quizZoomSessionId: id },
+                        { systemFormId: id }
+                    ],
+                    systemForm: {type}
+                }
+            })
+        }),
     getSystemFormSubmissions: protectedProcedure
         .query(async ({ ctx }) => {
             const submissions = await ctx.prisma.systemFormSubmission.findMany()
@@ -23,13 +41,15 @@ export const systemFormSubmissionsRouter = createTRPCRouter({
         .input(z.object({
             courseSlug: z.string(),
             levelSlug: z.string().optional(),
-            materialItemSlug: z.string().optional(),
+            sessionId: z.string().optional(),
             formType: z.enum(validSystemFormTypes),
         }))
-        .query(async ({ ctx, input: { courseSlug, levelSlug, materialItemSlug, formType } }) => {
+        .query(async ({ ctx, input: { courseSlug, levelSlug, sessionId, formType } }) => {
             const userId = ctx.session.user.id
 
-            if (!levelSlug && !materialItemSlug) {
+            console.log(formType, levelSlug, sessionId)
+
+            if (!levelSlug && !sessionId) {
                 const systemForm = await ctx.prisma.systemForm.findFirst({
                     where: {
                         course: { slug: courseSlug },
@@ -42,7 +62,7 @@ export const systemFormSubmissionsRouter = createTRPCRouter({
                 const submission = systemForm.submissions[0]
 
                 return { isSubmitted: !!submission, submission, systemForm }
-            } else if (!materialItemSlug) {
+            } else if (!sessionId) {
                 const systemForm = await ctx.prisma.systemForm.findFirst({
                     where: { courseLevel: { slug: levelSlug }, type: "FinalTest" },
                     include: { submissions: { where: { studentId: userId }, include: { student: true } }, items: { include: { questions: { include: { options: true } } } } },
@@ -54,7 +74,7 @@ export const systemFormSubmissionsRouter = createTRPCRouter({
                 return { isSubmitted: !!submission, submission, systemForm }
             } else {
                 const systemForm = await ctx.prisma.systemForm.findFirst({
-                    where: { materialItem: { slug: materialItemSlug }, type: formType },
+                    where: { materialItem: { zoomSessions: { some: { id: sessionId } } }, type: formType },
                     include: { submissions: { where: { studentId: userId, systemForm: { type: formType } }, include: { student: true } }, items: { include: { questions: { include: { options: true } } } } },
                 })
                 if (!systemForm) return { error: `No ${formType} form found!` }
@@ -79,6 +99,7 @@ export const systemFormSubmissionsRouter = createTRPCRouter({
             formId: z.string(),
             courseSlug: z.string().optional(),
             levelId: z.string().optional(),
+            sessionId: z.string().optional(),
             answers: z.array(z.object({
                 questionId: z.string(),
                 selectedAnswers: z.array(z.string()),
@@ -86,7 +107,7 @@ export const systemFormSubmissionsRouter = createTRPCRouter({
             })),
             type: z.enum(validSystemFormTypes),
         }))
-        .mutation(async ({ ctx, input: { answers, formId, type, courseSlug, levelId } }) => {
+        .mutation(async ({ ctx, input: { answers, formId, type, courseSlug, levelId, sessionId } }) => {
             const systemForm = await ctx.prisma.systemForm.findUnique({
                 where: { id: formId },
                 include: {
@@ -101,6 +122,10 @@ export const systemFormSubmissionsRouter = createTRPCRouter({
                 where: { id: userId },
                 include: {
                     zoomGroups: {
+                        where: {
+                            course: { slug: courseSlug },
+                            courseLevel: levelId ? { id: levelId } : undefined,
+                        },
                         include: {
                             zoomSessions: {
                                 include: {
@@ -123,8 +148,9 @@ export const systemFormSubmissionsRouter = createTRPCRouter({
 
             if (!user) throw new TRPCError({ code: "BAD_REQUEST", message: "no user found!" })
 
-            const zoomGroupId = user.zoomGroups.find(group => group.course?.slug === courseSlug)?.id
-            const zoomSessionId = user.zoomGroups.find(group => group.course?.slug === courseSlug)?.zoomSessions.find(session => session.materialItemId === systemForm.materialItemId)?.id
+            // Find the correct group
+            const zoomGroup = user.zoomGroups[0];
+            const zoomGroupId = zoomGroup?.id;
 
             const submission = await ctx.prisma.systemFormSubmission.create({
                 data: {
@@ -135,11 +161,11 @@ export const systemFormSubmissionsRouter = createTRPCRouter({
                     zoomGroup: (type === "PlacementTest" || type === "FinalTest") && zoomGroupId
                         ? { connect: { id: zoomGroupId } }
                         : undefined,
-                    assignmentZoomSession: type === "Assignment" && zoomSessionId
-                        ? { connect: { id: zoomSessionId } }
+                    assignmentZoomSession: type === "Assignment" && sessionId
+                        ? { connect: { id: sessionId } }
                         : undefined,
-                    quizZoomSession: type === "Quiz" && zoomSessionId
-                        ? { connect: { id: zoomSessionId } }
+                    quizZoomSession: type === "Quiz" && sessionId
+                        ? { connect: { id: sessionId } }
                         : undefined,
                 },
                 include: { systemForm: true }

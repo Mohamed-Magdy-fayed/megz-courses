@@ -49,7 +49,7 @@ export default function CreateOrderModal({ userExists, isOpen, setIsOpen }: Crea
             loadingToast,
             setLoadingToast,
             successMessageFormatter: ({ order, password }) => {
-                toast({
+                if (!userExists) toast({
                     variant: "info",
                     title: "Student sign in",
                     description: `${studentEmail}\n${password}`,
@@ -93,7 +93,11 @@ export default function CreateOrderModal({ userExists, isOpen, setIsOpen }: Crea
             children={
                 <div className="space-y-4">
                     <ProductSelectField loading={!!loadingToast} productId={productId} setProductId={setProductId} />
-                    <div className="flex items-center justify-end gap-4">
+                    <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center space-x-2">
+                            <Switch checked={isPrivate} onCheckedChange={(val) => setIsPrivate(val)} id="isPrivate" />
+                            <Label htmlFor="isPrivate">Private Class?</Label>
+                        </div>
                         <SpinnerButton icon={PlusSquareIcon} text="Place Order" isLoading={!!loadingToast} onClick={onCreateOrder} />
                     </div>
                 </div>

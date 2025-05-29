@@ -1,19 +1,22 @@
 "use client"
 
-import LearningLayout from "@/components/pages/LearningLayout/LearningLayout"
-import { Typography } from "@/components/ui/Typoghraphy"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { DisplayError } from "@/components/ui/display-error"
-import { Skeleton } from "@/components/ui/skeleton"
-import { api } from "@/lib/api"
-import { cn } from "@/lib/utils"
-import { format } from "date-fns"
-import { ArrowLeftToLine, BookMinus, BookOpen, BookOpenCheck, FileBadge, MessagesSquareIcon } from "lucide-react"
-import Link from "next/link"
-import { useRouter } from "next/router"
 import { useMemo } from "react"
+import { useRouter } from "next/router"
+import Link from "next/link"
+import { BookIcon, MessagesSquareIcon, BookMarkedIcon, DownloadIcon, VoteIcon } from "lucide-react"
+
+import { api } from "@/lib/api"
+import LearningLayout from "@/components/pages/LearningLayout/LearningLayout"
+import { NavMain } from "@/components/pages/LearningLayout/nav-main"
+import MaterialsClient from "@/components/student/myCoursesComponents/level-components/materials-client"
+import { Typography } from "@/components/ui/Typoghraphy"
+import { Button } from "@/components/ui/button"
+import GoBackButton from "@/components/ui/go-back"
+import { TrophyIcon } from "lucide-react"
+import { FileKey2Icon } from "lucide-react"
+import { FileBadgeIcon } from "lucide-react"
+import { DisplayCertificateBadge } from "@/components/student/myCoursesComponents/general/display-certificate-badge"
+import { DisplaySubmissionBadge } from "@/components/student/myCoursesComponents/general/display-submission-badge"
 
 const LevelPage = () => {
     const router = useRouter()
@@ -31,25 +34,54 @@ const LevelPage = () => {
     }), [data?.zoomGroup])
 
     if (isLoading && !error) {
-        return <Skeleton className="w-full h-40" />
+        return <LearningLayout isLoading={isLoading} children={null} />
     }
 
     if (isError && error) {
-        return <DisplayError message={error.message} />
+        return <LearningLayout children={null} error={error.message} />
     }
 
     if (!group || !course || !level || !materials || !sessions) {
-        return <DisplayError message="Seems you're not in a group for this level yet, please try again later!" />
+        return <LearningLayout children={null} error="Seems you're not in a group for this level yet, please try again later!" />
     }
 
     return (
-        <LearningLayout>
+        <LearningLayout
+            sidebarContent={
+                <NavMain
+                    sidebarLabel={level.name}
+                    items={[...materials.map(material => {
+                        const zoomSession = sessions.find(session => session.materialItemId === material.id);
+
+                        // Drip logic: Only allow access if session is available/unlocked
+                        const canAccessQuiz = zoomSession && !["Cancelled", "Scheduled"].includes(zoomSession.sessionStatus);
+                        const canAccessSession = zoomSession && ["Ongoing", "Completed"].includes(zoomSession.sessionStatus);
+                        const canAccessAssignment = zoomSession && zoomSession.sessionStatus === "Completed";
+
+                        return {
+                            icon: BookIcon,
+                            title: material.title || "Material Name",
+                            items: [
+                                { icon: VoteIcon, action: zoomSession?.id ? <DisplaySubmissionBadge className="ml-auto" id={zoomSession.id} type={"Quiz"} /> : undefined, isActive: !!canAccessQuiz, title: "Quiz", url: canAccessQuiz ? `/student/my_courses/${courseSlug}/${level?.slug}/quiz/${zoomSession.id}` : undefined },
+                                { icon: DownloadIcon, isActive: !!canAccessSession, title: "Session", url: canAccessSession ? `/student/my_courses/${courseSlug}/${level?.slug}/session/${zoomSession.id}` : undefined },
+                                { icon: BookMarkedIcon, action: zoomSession?.id ? <DisplaySubmissionBadge className="ml-auto" id={zoomSession.id} type={"Assignment"} /> : undefined, isActive: !!canAccessAssignment, title: "Assignment", url: canAccessAssignment ? `/student/my_courses/${courseSlug}/${level?.slug}/assignment/${zoomSession.id}` : undefined },
+                            ],
+                        };
+                    }), {
+                        icon: TrophyIcon,
+                        title: "Level Completion",
+                        items: [
+                            { icon: FileKey2Icon, isActive: !certificate && sessions.every(s => s.sessionStatus === "Completed"), action: level?.systemForms[0]?.id ? <DisplaySubmissionBadge className="ml-auto" id={level?.systemForms[0]?.id} type={"FinalTest"} /> : undefined, title: "Final Test", url: `/student/my_courses/${courseSlug}/${levelSlug}/final_test` },
+                            { icon: FileBadgeIcon, action: level?.id ? <DisplayCertificateBadge className="ml-auto" id={level.id} /> : undefined, isActive: sessions.every(s => s.sessionStatus === "Completed"), title: "Certificate", url: `/student/my_courses/${courseSlug}/${levelSlug}/certificate` },
+                        ]
+                    }]}
+                />
+            }
+        >
             <div className="flex flex-col items-start md:p-4">
                 <div className="p-4 w-full flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <Button onClick={() => router.back()} variant={"icon"} customeColor={"infoIcon"}>
-                            <ArrowLeftToLine className="w-4 h-4" />
-                        </Button>
+                        <GoBackButton />
                         <Typography variant={"primary"}>{course.name} Course</Typography>
                     </div>
                     <Link href={`/student/discussions/${group.id}`}>
@@ -57,133 +89,7 @@ const LevelPage = () => {
                     </Link>
                 </div>
                 <div className="w-full">
-                    <Card className="w-full mx-auto">
-                        <CardHeader>
-                            <CardTitle className="flex itecenters-center justify-between">
-                                <Typography>{level.name} Content</Typography>
-                                <Typography className="text-sm text-primary">{level.materialItems.length} Materials</Typography>
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <Accordion type="single" collapsible>
-                                {materials.map((item, i) => {
-                                    const zoomSession = sessions.find(session => session.materialItemId === item.id)
-
-                                    return (
-                                        <AccordionItem key={item.id} value={item.id}>
-                                            <AccordionTrigger>
-                                                <div className="flex items-center gap-8 justify-between w-full whitespace-nowrap">
-                                                    <Typography>Session {i + 1}: {item.title}</Typography>
-                                                    <Typography>
-                                                        Session Date: {zoomSession?.sessionDate
-                                                            ? format(zoomSession.sessionDate, "PPPPp")
-                                                            : "Not started yet!"
-                                                        }
-                                                    </Typography>
-                                                </div>
-                                            </AccordionTrigger>
-                                            <AccordionContent>
-                                                <div className="flex items-center w-full justify-around py-2">
-                                                    <Link
-                                                        className={
-                                                            cn(zoomSession?.sessionStatus === "Scheduled" && "pointer-events-none")
-                                                        }
-                                                        href={`/student/my_courses/${course.slug}/${level.slug}/Quiz/${item.slug}`}
-                                                    >
-                                                        <Button
-                                                            disabled={zoomSession?.sessionStatus === "Scheduled"}
-                                                            variant={"outline"}
-                                                            customeColor={"infoOutlined"}
-                                                        >
-                                                            <Typography>
-                                                                Quiz
-                                                            </Typography>
-                                                            <BookMinus className="w-4 h-4" />
-                                                        </Button>
-                                                    </Link>
-                                                    <Link
-                                                        className={
-                                                            cn((zoomSession?.sessionStatus && ["Starting", "Scheduled"].includes(zoomSession.sessionStatus)) && "pointer-events-none",)
-                                                        }
-                                                        href={`/student/my_courses/${course.slug}/${level.slug}/session/${item.slug}`}
-                                                    >
-                                                        <Button
-                                                            disabled={(zoomSession?.sessionStatus && ["Starting", "Scheduled"].includes(zoomSession.sessionStatus))}
-                                                            variant={"outline"}
-                                                            customeColor={"primaryOutlined"}
-                                                        >
-                                                            <Typography>
-                                                                Session content
-                                                            </Typography>
-                                                            <BookOpen className="w-4 h-4" />
-                                                        </Button>
-                                                    </Link>
-                                                    <Link
-                                                        className={
-                                                            cn(zoomSession?.sessionStatus !== "Completed" && "pointer-events-none",)
-                                                        }
-                                                        href={`/student/my_courses/${course.slug}/${level.slug}/Assignment/${item.slug}`}
-                                                    >
-                                                        <Button
-                                                            disabled={zoomSession?.sessionStatus !== "Completed"}
-                                                            variant={"outline"}
-                                                            customeColor={"successOutlined"}
-                                                        >
-                                                            <Typography>
-                                                                Assignment
-                                                            </Typography>
-                                                            <BookOpenCheck className="w-4 h-4" />
-                                                        </Button>
-                                                    </Link>
-                                                </div>
-                                            </AccordionContent>
-                                        </AccordionItem>
-                                    )
-                                })}
-                                <AccordionItem value="course-completion">
-                                    <AccordionTrigger>
-                                        Course Completion
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                        <div className="flex items-center w-full justify-around py-2">
-                                            <Link
-                                                className={
-                                                    cn(group?.groupStatus !== "Completed" && "pointer-events-none")
-                                                }
-                                                href={`/student/my_courses/${course.slug}/${level.slug}/final_test`}
-                                            >
-                                                <Button
-                                                    disabled={group?.groupStatus !== "Completed"}
-                                                    variant={"outline"}
-                                                    customeColor={"destructiveOutlined"}
-                                                >
-                                                    <Typography>
-                                                        Final Test
-                                                    </Typography>
-                                                    <BookOpenCheck className="w-4 h-4" />
-                                                </Button>
-                                            </Link>
-                                            <Link
-                                                className={cn(!certificate && "pointer-events-none")}
-                                                href={`/student/my_courses/${course.slug}/${level.slug}/certificate`}
-                                            >
-                                                <Button
-                                                    disabled={!certificate}
-                                                    variant={"outline"}
-                                                    customeColor={"successOutlined"}
-                                                >
-                                                    <Typography>
-                                                        Certificate
-                                                    </Typography>
-                                                    <FileBadge className="w-4 h-4" />
-                                                </Button>
-                                            </Link>
-                                        </div>
-                                    </AccordionContent>
-                                </AccordionItem>
-                            </Accordion>
-                        </CardContent>
-                    </Card>
+                    <MaterialsClient courseSlug={courseSlug} levelSlug={levelSlug} />
                 </div>
             </div>
         </LearningLayout >

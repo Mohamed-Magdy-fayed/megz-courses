@@ -19,6 +19,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 import { api } from "@/lib/api"
+import { DateRange } from "@/pages/admin/dashboard"
 
 const chartConfig = {
   visitors: {
@@ -38,20 +39,31 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-export function TrafficOverview() {
-  const { data, refetch } = api.analytics.getDeviceTraffic.useQuery(undefined, { enabled: false })
+export function TrafficOverview({ dateRange }: { dateRange: DateRange }) {
+  const { data, refetch } = api.analytics.getDeviceTraffic.useQuery(
+    dateRange ? { from: dateRange.from, to: dateRange.to } : undefined,
+    { enabled: false }
+  );
 
   const totalVisitors = Array.isArray(data)
     ? data.reduce((sum, item) => sum + (item.visitors ?? 0), 0)
     : 0;
 
-  React.useEffect(() => { refetch() }, []);
+  React.useEffect(() => { refetch() }, [dateRange, refetch]);
 
   return (
     <Card className="flex flex-col col-span-12 xl:col-span-4">
       <CardHeader className="pb-0">
         <CardTitle>Visitors Devices</CardTitle>
-        <CardDescription>All Time</CardDescription>
+        <CardDescription>
+          {dateRange ? (
+            <>
+              {dateRange.from?.toLocaleDateString()} - {dateRange.to?.toLocaleDateString()}
+            </>
+          ) : (
+            "All Time"
+          )}
+        </CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer

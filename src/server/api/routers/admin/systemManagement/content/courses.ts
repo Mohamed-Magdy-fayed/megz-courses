@@ -12,18 +12,20 @@ export const coursesRouter = createTRPCRouter({
           userId: ctx.session.user.id,
           course: { slug: courseSlug },
           level: { isNot: null },
-          status: "Ongoing",
+          status: { in: ["Ongoing", "Completed", "OrderPaid", "Waiting", "PlacementTest"] },
         },
         select: {
           id: true,
-          course: { select: { id: true, name: true, slug: true,createdAt: true } },
+          course: { select: { id: true, name: true, slug: true, createdAt: true, certificates: { where: { userId: ctx.session.user.id } } } },
           level: {
             select: {
               id: true, name: true, slug: true,
+              systemForms: { where: { type: "FinalTest" } },
               materialItems: {
                 select: {
                   id: true, title: true, slug: true,
-                  systemForms: { select: { id: true } }
+                  systemForms: { select: { id: true } },
+                  zoomSessions: { where: { zoomGroup: { studentIds: { has: ctx.session.user.id } } } }
                 }
               }
             }

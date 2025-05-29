@@ -15,11 +15,12 @@ type SystemFormResultProps = {
     systemFormId: string;
     courseSlug?: string;
     levelId?: string;
+    sessionId?: string;
     answers: Omit<SystemFormSubmissionAnswer, "isCorrect">[];
     type: SystemFormTypes;
 }
 
-export const SystemFormResult: FC<SystemFormResultProps> = ({ type, isSubmitted, score, totalScore, systemFormId, answers, courseSlug, levelId }) => {
+export const SystemFormResult: FC<SystemFormResultProps> = ({ type, isSubmitted, score, totalScore, systemFormId, answers, courseSlug, levelId, sessionId }) => {
     const [loadingToast, setLoadingToast] = useState<toastType>()
 
     const { toast } = useToast()
@@ -43,6 +44,7 @@ export const SystemFormResult: FC<SystemFormResultProps> = ({ type, isSubmitted,
             answers: answers.map(ans => ({ ...ans, textAnswer: ans.textAnswer ?? undefined })),
             courseSlug,
             levelId,
+            sessionId,
         })
     }
 

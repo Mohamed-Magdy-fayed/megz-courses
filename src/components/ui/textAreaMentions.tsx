@@ -105,7 +105,7 @@ const MentionTextarea: React.FC<MentionTextareaProps> = ({ value, setValue, clas
                     value={value}
                     onChange={handleTextareaChange}
                     className={cn(
-                        "w-full resize-none overflow-hidden h-fit flex rounded-md border border-primary/40 bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+                        "w-full resize-none overflow-hidden h-fit flex rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
                         className,
                     )}
                     {...rest}

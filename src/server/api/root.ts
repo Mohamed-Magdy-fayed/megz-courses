@@ -40,6 +40,7 @@ import { emailsRouter } from "@/server/api/routers/general/emails";
 import { notificationsRouter } from "@/server/api/routers/general/notificationRouter";
 import { pushNotificationsRouter } from "@/server/api/routers/general/pushNotifications";
 import { certificatesRouter } from "@/server/api/routers/student/certificates";
+import { courseStatusRouter } from "@/server/api/routers/student/courseStatus";
 import { selfServeRouter } from "@/server/api/routers/student/selfServe";
 import { systemFormSubmissionsRouter } from "@/server/api/routers/student/systemFormSubmissions";
 import { createCallerFactory, createTRPCContext, createTRPCRouter } from "@/server/api/trpc";
@@ -95,6 +96,7 @@ export const appRouter = createTRPCRouter({
   cron: cronRouter,
   notifications: notificationsRouter,
   discussions: discussionsRouter,
+  courseStatus: courseStatusRouter,
 });
 
 // export type definition of API

@@ -6,10 +6,14 @@ import Image from "next/image"
 import { DesktopAuthenticatedProfileMenu, MobileAuthenticatedProfileMenu } from "@/components/pages/landingPageComponents/AuthedProfile"
 import { LogoForeground } from "@/components/pages/adminLayout/Logo"
 import { DesktopUnauthenticatedProfileMenu, MobileUnauthenticatedProfileMenu } from "@/components/pages/landingPageComponents/NoAuthProfile"
-import { NotificationDropdown } from "@/components/general/notifications/NotificationDropdown";
+import { Button } from "@/components/ui/button"
+import { BellRing } from "lucide-react"
+import { useState } from "react"
+import { NotificationsSheet } from "@/components/general/notifications/notifications-sheet"
 
 export const LandingNavigationMenu = ({ siteIdentity }: { siteIdentity?: SiteIdentity }) => {
   const session = useSession()
+  const [isOpen, setIsOpen] = useState(false)
 
   return (
     <div className="w-full z-10 py-2 px-4 md:px-8 md:py-4 max-w-7xl lg:mx-auto">
@@ -36,7 +40,10 @@ export const LandingNavigationMenu = ({ siteIdentity }: { siteIdentity?: SiteIde
 
         <div className="flex col-span-4 items-center gap-4 justify-end">
           {/* Notification Dropdown using NotificationList */}
-          <NotificationDropdown />
+          <NotificationsSheet isOpen={isOpen} setIsOpen={setIsOpen} />
+          <Button onClick={() => setIsOpen(true)} variant="icon" customeColor="foregroundIcon">
+            <BellRing className="size-4" />
+          </Button>
 
           {!session.data?.user && session.status !== "authenticated" ? (
             <>
@@ -51,6 +58,6 @@ export const LandingNavigationMenu = ({ siteIdentity }: { siteIdentity?: SiteIde
           )}
         </div>
       </div>
-    </div>
+    </div >
   )
 }

@@ -1,9 +1,9 @@
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import React, { ReactNode } from 'react'
 
-const WrapWithTooltip = ({ children, text }: { children: ReactNode, text: string | ReactNode }) => {
+const WrapWithTooltip = ({ children, text, delay }: { children: ReactNode, text: string | ReactNode, delay?: number }) => {
     return (
-        <Tooltip>
+        <Tooltip delayDuration={delay}>
             <TooltipTrigger asChild>
                 {children}
             </TooltipTrigger>

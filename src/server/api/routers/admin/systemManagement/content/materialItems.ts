@@ -47,6 +47,42 @@ export const materialItemsRouter = createTRPCRouter({
       });
       return { materialItem };
     }),
+  getBySessionId: protectedProcedure
+    .input(
+      z.object({
+        sessionId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input: { sessionId } }) => {
+      return await ctx.prisma.zoomSession.findUnique({
+        where: { id: sessionId },
+        include: {
+          materialItem: {
+            include: {
+              systemForms: true,
+              zoomSessions: true,
+              courseLevel: { include: { course: true } },
+            }
+          }
+        }
+      });
+    }),
+  getBySlugSimple: protectedProcedure
+    .input(
+      z.object({
+        slug: z.string(),
+        courseSlug: z.string(),
+        levelSlug: z.string(),
+      })
+    )
+    .query(async ({ ctx, input: { slug, courseSlug, levelSlug } }) => {
+      return await ctx.prisma.materialItem.findFirst({
+        where: {
+          slug,
+          courseLevel: { slug: levelSlug, course: { slug: courseSlug } },
+        },
+      });
+    }),
   getBycourseLevelId: protectedProcedure
     .input(
       z.object({

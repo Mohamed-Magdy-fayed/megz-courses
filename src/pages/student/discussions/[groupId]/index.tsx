@@ -50,6 +50,8 @@ const StudentGroupDiscussionPage = ({ groupId }: InferGetServerSidePropsType<typ
 };
 
 export const getServerSideProps: GetServerSideProps<{ groupId: string }> = async (ctx) => {
+    console.log(ctx.query);
+    
     if (typeof ctx.query.groupId !== "string") return { notFound: true };
     return {
         props: {

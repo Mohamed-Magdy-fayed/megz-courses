@@ -5,6 +5,7 @@ import FirstTestContainer from "@/components/general/materialsShowcaseComponents
 import TeachingContainer from "@/components/general/materialsShowcaseComponents/TeachingContainer";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
+import { DisplayError } from "@/components/ui/display-error";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Typography } from "@/components/ui/Typoghraphy";
 import { useToast } from "@/components/ui/use-toast";
@@ -12,27 +13,21 @@ import { storage } from "@/config/firebase";
 import useFileDownload from "@/hooks/useFileDownload";
 import { cn } from "@/lib/utils";
 import { useDraggingStore } from "@/zustand/store";
-import { Course, CourseLevel, MaterialItem, SystemForm, ZoomSession } from "@prisma/client";
+import { MaterialItem } from "@prisma/client";
 import { getDownloadURL, listAll, ListResult, ref } from "firebase/storage";
-import { Download, Copy, Trash } from "lucide-react";
+import { Download, Copy } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { FC, useEffect, useState } from "react";
 
 type MaterialShowcaseProps = {
-    course: Course & {
-        levels: (CourseLevel & {
-            materialItems: MaterialItem[];
-        })[];
-    };
-    materialItem: MaterialItem & {
-        zoomSessions: ZoomSession[];
-        systemForms: SystemForm[];
-    }
+    courseSlug: string;
+    levelSlug: string;
+    materialItem: MaterialItem;
 }
 
-const MaterialShowcase: FC<MaterialShowcaseProps> = ({ materialItem, course }) => {
-    const pathQuery = `uploads/content/courses/${course.slug}/${course.levels.find(lvl => lvl.materialItems.some(item => item.id === materialItem.id))?.slug}/${materialItem.slug}`
+const MaterialShowcase: FC<MaterialShowcaseProps> = ({ courseSlug, levelSlug, materialItem }) => {
+    const pathQuery = `uploads/content/courses/${courseSlug}/${levelSlug}/${materialItem.slug}`
     const router = useRouter();
     const { submission } = useDraggingStore();
     const { downloadFile } = useFileDownload()
@@ -89,13 +84,7 @@ const MaterialShowcase: FC<MaterialShowcaseProps> = ({ materialItem, course }) =
     if (materialItem.type === "Upload") return (
         <div className="flex flex-col gap-2 p-2">
             <Typography variant={"secondary"}>{materialItem.title} Downloadables</Typography>
-            {loading ? (
-                <div className="p-4 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-                    {[1, 2, 3, 4, 5].map(item => (
-                        <Skeleton key={`skele${item}`} className="h-40" />
-                    ))}
-                </div>
-            ) : (
+            {loading ? null : (
                 <div className="p-4 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                     {items.map(item => {
                         const fileType = () => {
