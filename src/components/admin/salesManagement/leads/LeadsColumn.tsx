@@ -125,8 +125,8 @@ export const columns: ColumnDef<LeadColumn>[] = [
   {
     accessorKey: "assigneeName",
     header: "Agent",
-    cell: ({ row }) => row.original.assignee?.id ? (
-      <Link href={`/admin/users_management/account/${row.original.assignee?.id}`} className="in-table-link">
+    cell: ({ row }) => row.original.assignee?.userId ? (
+      <Link href={`/admin/users_management/account/${row.original.assignee?.userId}`} className="in-table-link">
         {row.original.assigneeName}
       </Link>
     ) : row.original.assigneeName,
