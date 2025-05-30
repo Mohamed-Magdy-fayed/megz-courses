@@ -63,7 +63,7 @@ const AppLayout = ({ children, actions, actionGroups }: { children: ReactNode, a
         <SidebarRail />
       </Sidebar>
       <SidebarInset>
-        <header className="flex items-center gap-2 p-4 sticky top-0 z-10">
+        <header className="flex items-center gap-2 p-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
           <SidebarNavBreadCrumb />

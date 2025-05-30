@@ -14,11 +14,11 @@ const landingNavLinks = [
     },
     {
         label: "My Account",
-        url: "/my_account",
+        url: "/student/my_account",
     },
     {
         label: "My Courses",
-        url: "/my_courses",
+        url: "/student/my_courses",
     },
     {
         label: "System Developer",
@@ -49,7 +49,7 @@ const LandingFooter = ({ siteIdentity }: { siteIdentity?: SiteIdentity }) => {
                 <div className='border-t border-primary grid grid-cols-12 space-y-12'>
                     <div className='pt-4 flex flex-col items-center justify-center gap-4 col-span-12 md:col-span-4 lg:col-span-3'>
                         {siteIdentity?.logoPrimary ? (
-                            <Image src={siteIdentity.logoPrimary} height={1000} width={1000} alt="Logo" className='w-24 rounded-full bg-accent' />
+                            <Image src={siteIdentity.logoPrimary} height={1000} width={1000} alt="Logo" className='w-24 rounded-full bg-accent dark:bg-inherit' />
                         ) : (
                             <LogoPrimary className="w-24 h-24" />
                         )}
@@ -84,7 +84,7 @@ const LandingFooter = ({ siteIdentity }: { siteIdentity?: SiteIdentity }) => {
                     </div>
                 </div>
             </div>
-            <div className='flex justify-center p-4 bg-foreground text-background'>
+            <div className='flex justify-center p-4 bg-foreground text-background dark:bg-accent dark:text-foreground'>
                 <Copyright />
             </div>
         </div>

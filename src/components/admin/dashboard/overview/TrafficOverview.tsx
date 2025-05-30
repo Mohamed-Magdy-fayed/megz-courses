@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/chart"
 import { api } from "@/lib/api"
 import { DateRange } from "@/pages/admin/dashboard"
+import { format } from "date-fns"
 
 const chartConfig = {
   visitors: {
@@ -58,7 +59,7 @@ export function TrafficOverview({ dateRange }: { dateRange: DateRange }) {
         <CardDescription>
           {dateRange ? (
             <>
-              {dateRange.from?.toLocaleDateString()} - {dateRange.to?.toLocaleDateString()}
+              {format(dateRange.from, "MMMM-yyyy")} - {format(dateRange.to, "MMMM-yyyy")}
             </>
           ) : (
             "All Time"

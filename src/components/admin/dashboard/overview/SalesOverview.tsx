@@ -9,6 +9,7 @@ import { formatPercentage } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { DateRange } from "@/pages/admin/dashboard";
+import { format } from "date-fns";
 
 const chartConfig: ChartConfig = {
   thisYear: {
@@ -36,7 +37,7 @@ export function SalesOverview({ dateRange }: { dateRange: DateRange }) {
         <CardDescription>
           {dateRange ? (
             <>
-              {dateRange.from?.toLocaleDateString()} - {dateRange.to?.toLocaleDateString()}
+              {format(dateRange.from, "MMMM-yyyy")} - {format(dateRange.to, "MMMM-yyyy")}
             </>
           ) : (
             "All Time"
