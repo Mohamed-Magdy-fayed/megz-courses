@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { api } from "@/lib/api";
 import { format } from "date-fns";
-import { BookIcon, BookMarkedIcon, DownloadIcon, FileBadgeIcon, FileKey2Icon, Printer, TrophyIcon, VoteIcon } from "lucide-react";
+import { AlertCircleIcon, BookIcon, BookMarkedIcon, DownloadIcon, FileBadgeIcon, FileKey2Icon, Printer, TrophyIcon, VoteIcon } from "lucide-react";
 import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
@@ -19,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { NavMain } from "@/components/pages/LearningLayout/nav-main";
 import { DisplayCertificateBadge } from "@/components/student/myCoursesComponents/general/display-certificate-badge";
 import { DisplaySubmissionBadge } from "@/components/student/myCoursesComponents/general/display-submission-badge";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 const CertificatePage: NextPage = () => {
     const router = useRouter();
@@ -58,7 +59,7 @@ const CertificatePage: NextPage = () => {
     if (!group || !course || !level || !materials || !sessions) {
         return <LearningLayout children={null} error="Seems you're not in a group for this level yet, please try again later!" />
     }
-    
+
     return (
         <LearningLayout
             sidebarContent={
@@ -106,7 +107,7 @@ const CertificatePage: NextPage = () => {
                             {certData?.certificate?.course?.name} Certificate
                         </ConceptTitle>
                     </div>
-                    <WrapWithTooltip text="Print">
+                    {certData?.certificate && <WrapWithTooltip text="Print">
                         <Button
                             variant={"icon"}
                             customeColor={"infoIcon"}
@@ -114,7 +115,7 @@ const CertificatePage: NextPage = () => {
                         >
                             <Printer />
                         </Button>
-                    </WrapWithTooltip>
+                    </WrapWithTooltip>}
                 </div>
                 {certData?.certificate ? (
                     <div ref={printRef}>
@@ -137,7 +138,13 @@ const CertificatePage: NextPage = () => {
                         />
                     </div>
                 ) : (
-                    <Typography>Not ready yet</Typography>
+                    <Alert className="w-fit mx-auto">
+                        <AlertCircleIcon />
+                        <AlertTitle>Heads up!</AlertTitle>
+                        <AlertDescription>
+                            Your certificate will be ready after you submit your final test!
+                        </AlertDescription>
+                    </Alert>
                 )}
             </div>
         </LearningLayout>

@@ -43,6 +43,7 @@ interface DataTableProps<TData, TValue> {
   setData: (data: TData[]) => void;
   onDelete?: (callback?: () => void) => void;
   handleImport?: (data: TData[]) => void;
+  handleExport?: (keys: Extract<keyof TData, string>[]) => void;
   importConfig?: {
     templateName: string;
     sheetName: string;
@@ -84,6 +85,7 @@ export function DataTable<TData, TValue>({
   setData,
   onDelete,
   handleImport,
+  handleExport,
   importConfig,
   exportConfig,
   isLoading,
@@ -157,7 +159,7 @@ export function DataTable<TData, TValue>({
           <div className="flex flex-col gap-2 md:flex-row">
             <div className="flex flex-col items-center gap-2 md:flex-row md:justify-start md:gap-4">
               <Typography className="whitespace-nowrap">Total records {table.getRowCount()}</Typography>
-              <ExportImport<TData> data={data} exportConfig={exportConfig} handleImport={handleImport} importConfig={importConfig} isLoading={!!isLoading} />
+              <ExportImport<TData> data={data} exportConfig={exportConfig} handleExport={handleExport} selectedData={data} handleImport={handleImport} importConfig={importConfig} isLoading={!!isLoading} />
             </div>
             <div className="w-full flex flex-col gap-2 items-center md:flex-row md:gap-4 md:justify-end">
               <PaginationPageSizeSelectors

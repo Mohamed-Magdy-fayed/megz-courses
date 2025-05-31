@@ -1,5 +1,5 @@
 import { NavLink } from "@/components/pages/sidebar/sidebar-admin-data";
-import { Certificate, Course, GoogleClient, Lead, LeadStage, MessageTemplate, MetaClient, Order, Parameters, Payment, PlacementTest, Product, Refund, SupportChat, SupportTicket, SystemForm, SystemFormSubmission, Teacher, Tester, User, UserNote, UserRoles, ZoomClient, ZoomGroup, ZoomSession } from "@prisma/client";
+import { Certificate, Course, GoogleClient, Lead, LeadStage, MessageTemplate, MetaClient, Order, Parameters, Payment, PlacementTest, Product, Refund, SalesAgent, SupportChat, SupportTicket, SystemForm, SystemFormSubmission, Teacher, Tester, User, UserNote, UserRoles, ZoomClient, ZoomGroup, ZoomSession } from "@prisma/client";
 
 type PartialUser = Pick<User, "id" | "email" | "userRoles" | "userScreens">
 
@@ -49,7 +49,7 @@ type Permissions = {
         action: "view" | "create" | "update" | "delete"
     },
     leads: {
-        dataType: Partial<Lead>
+        dataType: Partial<Lead & { assignee: SalesAgent | null }>
         action: "view" | "create" | "update" | "delete"
     },
     leadStages: {
@@ -204,7 +204,11 @@ const ROLES = {
     "OperationAgent": {
         adminLayout: { view: true },
         users: unrestricted,
-        leads: { view: true },
+        leads: {
+            view: true,
+            create: true,
+            update: (actioner, actioned) => actioner.id === actioned.assignee?.userId,
+        },
         leadStages: unrestricted,
         zoomGroups: unrestricted,
         systemForms: unrestricted,
@@ -242,7 +246,7 @@ const ROLES = {
         leads: {
             view: true,
             create: true,
-            update: (actioner, actioned) => actioner.id === actioned.assigneeId,
+            update: (actioner, actioned) => actioner.id === actioned.assignee?.userId,
         },
         zoomGroups: unrestricted,
         notes: {

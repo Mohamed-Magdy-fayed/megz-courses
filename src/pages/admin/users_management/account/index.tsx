@@ -30,7 +30,7 @@ const Page = () => {
                 <Account user={userLoader.data.user} />
               </div>
               <div className="col-span-12 md:col-span-8">
-                <ConceptTitle className="whitespace-nowrap mb-8">Account Details</ConceptTitle>
+                <ConceptTitle className="whitespace-nowrap mb-8 block">Account Details</ConceptTitle>
                 <AccountDetails user={userLoader.data.user} />
               </div>
             </div>

@@ -9,7 +9,10 @@ import { useMemo, useRef } from "react";
 import { NavMain } from "@/components/pages/LearningLayout/nav-main";
 import { DisplayCertificateBadge } from "@/components/student/myCoursesComponents/general/display-certificate-badge";
 import { DisplaySubmissionBadge } from "@/components/student/myCoursesComponents/general/display-submission-badge";
-import { BookIcon, VoteIcon, DownloadIcon, BookMarkedIcon, TrophyIcon, FileKey2Icon, FileBadgeIcon } from "lucide-react";
+import { BookIcon, VoteIcon, DownloadIcon, BookMarkedIcon, TrophyIcon, FileKey2Icon, FileBadgeIcon, TerminalIcon } from "lucide-react";
+import { Typography } from "@/components/ui/Typoghraphy";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircleIcon } from "lucide-react";
 
 const FinalTestPage: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = ({ formType }) => {
     const router = useRouter()
@@ -72,12 +75,20 @@ const FinalTestPage: NextPage<InferGetServerSidePropsType<typeof getServerSidePr
                 />
             }
         >
-            <SystemFormCard
-                courseSlug={courseSlug}
-                levelSlug={levelSlug}
-                formType={"FinalTest"}
-                enabled={!!courseSlug && !!levelSlug}
-            />
+            {sessions.some(session => session.sessionStatus !== "Completed")
+                ? <Alert className="w-fit mx-auto">
+                    <AlertCircleIcon />
+                    <AlertTitle>Heads up!</AlertTitle>
+                    <AlertDescription>
+                        Final Test will be available after the last session!
+                    </AlertDescription>
+                </Alert>
+                : <SystemFormCard
+                    courseSlug={courseSlug}
+                    levelSlug={levelSlug}
+                    formType={"FinalTest"}
+                    enabled={!!courseSlug && !!levelSlug}
+                />}
         </LearningLayout>
     )
 }

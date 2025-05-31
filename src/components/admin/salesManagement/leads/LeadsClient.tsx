@@ -5,6 +5,7 @@ import { LeadStage, Prisma } from "@prisma/client";
 import { api } from "@/lib/api";
 import { createMutationOptions } from "@/lib/mutationsHelper";
 import { toastType, useToast } from "@/components/ui/use-toast";
+import { exportToExcel } from "@/lib/exceljs";
 
 type LeadsClientProps = {
   stageName: string;
@@ -68,6 +69,19 @@ const LeadsClient: FC<LeadsClientProps> = ({ stageName, stagesData, resetSelecti
   }) || []
 
   const [callback, setCallback] = useState<() => void>()
+  const exportMutation = api.leads.exportLeads.useMutation(
+    createMutationOptions({
+      loadingToast,
+      setLoadingToast,
+      successMessageFormatter: (data) => {
+        exportToExcel(data, `${stageName} Leads`, stageName)
+        return `${data.length} Leads Exported!`
+      },
+      toast,
+      trpcUtils,
+      loadingMessage: "Exporting..."
+    })
+  );
   const deleteLeadsMutation = api.leads.deleteLead.useMutation(
     createMutationOptions({
       loadingToast,
@@ -105,6 +119,14 @@ const LeadsClient: FC<LeadsClientProps> = ({ stageName, stagesData, resetSelecti
           phone: phone || "",
         })))
       }}
+      handleExport={(keys) => {
+        exportMutation.mutate({
+          select: keys,
+          dateRanges: [],
+          filters: [],
+          searches: [],
+        })
+      }}
       importConfig={{
         reqiredFields: ["name", "email", "phone"],
         sheetName: "Leads Import",
@@ -112,7 +134,7 @@ const LeadsClient: FC<LeadsClientProps> = ({ stageName, stagesData, resetSelecti
       }}
       exportConfig={{
         sheetName: `${stageName} Stage`,
-        fileName: `${stageName} Stage Leads`
+        fileName: `${stageName} Stage Leads`,
       }}
       searches={[
         { key: "code", label: "Code" },

@@ -21,7 +21,10 @@ export async function handleSessionStatusUpdate({ prisma, sessionStatus, student
     zoomGroup: ZoomGroup;
     nextSession?: ZoomSession;
 }) {
+    const isGroupActive = zoomGroup.groupStatus === "Active"
     if (sessionStatus === "Starting") {
+        if (!isGroupActive) await prisma.zoomGroup.update({ where: { id: zoomGroup.id }, data: { groupStatus: "Active" } })
+
         await Promise.all(students.map(async st => {
             await sendSessionStartingSoonComms({
                 courseName: course.name,
@@ -40,6 +43,8 @@ export async function handleSessionStatusUpdate({ prisma, sessionStatus, student
     }
 
     if (sessionStatus === "Ongoing" && isAllSessionsScheduled) {
+        if (!isGroupActive) await prisma.zoomGroup.update({ where: { id: zoomGroup.id }, data: { groupStatus: "Active" } })
+
         await prisma.zoomGroup.update({
             where: { id: zoomGroup.id },
             data: {
@@ -79,6 +84,15 @@ export async function handleSessionStatusUpdate({ prisma, sessionStatus, student
     }
 
     if (sessionStatus === "Completed") {
+        if (!isGroupActive) await prisma.zoomGroup.update({ where: { id: zoomGroup.id }, data: { groupStatus: "Active" } })
+
+        if (isAllSessionsScheduled) await prisma.zoomGroup.update({
+            where: { id: zoomGroup.id },
+            data: {
+                groupStatus: "Active"
+            }
+        })
+
         if (nextSession) {
             await Promise.all(students.map(async st => {
                 await sendSessionEndComms({

@@ -175,7 +175,8 @@ export default function LeadPage() {
             name,
             phone,
             email,
-            password: "Pass.12"
+            password: "Pass.12",
+            leadId: leadData?.lead?.id,
         })
     }
 

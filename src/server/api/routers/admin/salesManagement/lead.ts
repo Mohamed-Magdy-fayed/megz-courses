@@ -6,6 +6,9 @@ import {
 import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { hasPermission } from "@/server/permissions";
+import { createGenericExportSchema, createWhereConditions, transformSortingForPrisma } from "@/lib/serverDataTable/utils";
+import { LeadColumn } from "@/components/admin/salesManagement/leads/LeadsColumn";
+import { Prisma } from "@prisma/client";
 
 export const leadsRouter = createTRPCRouter({
     createLead: protectedProcedure
@@ -65,14 +68,37 @@ export const leadsRouter = createTRPCRouter({
 
             return { count: leads.count }
         }),
+    exportLeads: protectedProcedure
+        .input(createGenericExportSchema<LeadColumn>())
+        .mutation(async ({ ctx, input: { dateRanges, filters, searches, select, sorting } }) => {
+            if (!hasPermission(ctx.session.user, "leads", "view")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" });
+
+            const isAdmin = ctx.session.user.userRoles.includes("Admin")
+
+            const whereConditions: Prisma.LeadWhereInput = {
+                ...createWhereConditions({ dateRanges, filters, searches }),
+                assignee: isAdmin ? { userId: ctx.session.user.id } : undefined
+            }
+
+            const leads = await ctx.prisma.lead.findMany({
+                where: whereConditions,
+                orderBy: sorting.length > 0 ? transformSortingForPrisma(sorting) : [{ createdAt: "desc" }],
+                select: Object.fromEntries(select.map(key => [key, true])),
+            });
+
+            return leads
+        }),
     getLeads: protectedProcedure
         .input(z.object({
             name: z.string(),
         }).optional())
         .query(async ({ ctx, input }) => {
+            const isAdmin = ctx.session.user.userRoles.includes("Admin")
+
             const leads = await ctx.prisma.lead.findMany({
                 where: {
                     leadStage: input?.name ? { name: input.name } : undefined,
+                    assignee: isAdmin ? undefined : { userId: ctx.session.user.id },
                 },
                 include: {
                     leadStage: true, assignee: { include: { user: true } },
@@ -109,7 +135,7 @@ export const leadsRouter = createTRPCRouter({
             const previousRate = totalPrev ? convertedPrev / totalPrev : 0;
             const change = currentRate - previousRate;
 
-            return { conversionRate: currentRate, change, previousRate, asd: {totalCurrent, convertedCurrent, totalPrev, convertedPrev} };
+            return { conversionRate: currentRate, change, previousRate, asd: { totalCurrent, convertedCurrent, totalPrev, convertedPrev } };
         }),
     getLeadOrders: protectedProcedure
         .input(z.object({
@@ -293,7 +319,7 @@ export const leadsRouter = createTRPCRouter({
         .mutation(async ({ ctx, input: { leadIds, toStageId } }) => {
             const leadsToMove = await ctx.prisma.lead.findMany({ where: { id: { in: leadIds } }, include: { leadStage: true, assignee: { include: { user: true } } } })
 
-            if (!hasPermission(ctx.session.user, "leads", "update")) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action!" })
+            if (leadsToMove.some(lead => !hasPermission(ctx.session.user, "leads", "update", lead))) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action!" })
 
             const toStage = await ctx.prisma.leadStage.findUnique({ where: { id: toStageId } })
             const isConverted = toStage?.defaultStage === "Converted"
@@ -370,7 +396,7 @@ export const leadsRouter = createTRPCRouter({
             time: z.date(),
         }))
         .mutation(async ({ input: { id, title, time }, ctx }) => {
-            const lead = await ctx.prisma.lead.findUnique({ where: { id } })
+            const lead = await ctx.prisma.lead.findUnique({ where: { id }, include: { assignee: true } })
             if (!lead) throw new TRPCError({ code: "BAD_REQUEST", message: "No lead with this ID!" })
             if (!hasPermission(ctx.session.user, "leads", "update", lead)) throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to take this action, please contact your Admin!" })
 

@@ -1,10 +1,9 @@
 import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import AppLayout from "@/components/pages/adminLayout/AppLayout";
 import type { NextPage } from "next";
-import { PaperContainer } from "@/components/ui/PaperContainers";
 import LeadsClient from "@/components/admin/salesManagement/leads/LeadsClient";
 import { Button, SpinnerButton } from "@/components/ui/button";
-import { Edit, LinkIcon, ListChecks, ChevronDownIcon, PlusSquare, Trash } from "lucide-react";
+import { Edit, ListChecks, ChevronDownIcon, PlusSquare, Trash } from "lucide-react";
 import { useMemo, useState } from "react";
 import Modal from "@/components/ui/modal";
 import LeadsForm from "@/components/admin/salesManagement/leads/LeadsForm";
@@ -21,9 +20,9 @@ import { formatPercentage } from "@/lib/utils";
 import { ArrowRightToLine } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { LeadColumn } from "@/components/admin/salesManagement/leads/LeadsColumn";
-import Link from "next/link";
 import { SeverityPill } from "@/components/ui/SeverityPill";
 import GoBackButton from "@/components/ui/go-back";
+import { useSession } from "next-auth/react";
 
 const LeadsPage: NextPage = () => {
     const [isAddLeadOpen, setIsAddLeadOpen] = useState(false)
@@ -37,6 +36,7 @@ const LeadsPage: NextPage = () => {
     const [selectedLeads, setSelectedLeads] = useState<LeadColumn[]>([])
 
     const { toast } = useToast()
+    const { data: sessionData } = useSession()
     const trpcUtils = api.useUtils()
 
     const { data: stagesData, isLoading, refetch } = api.leadStages.getLeadStages.useQuery({ labels: values })
@@ -91,6 +91,7 @@ const LeadsPage: NextPage = () => {
         importLeadsMutation.mutate(data);
     }
 
+    const isAdmin = useMemo(() => !!sessionData?.user.userRoles.includes("Admin"), [sessionData])
     const {
         totalLeads,
         convertedLeads,
@@ -129,30 +130,34 @@ const LeadsPage: NextPage = () => {
                 >
                     <LeadsForm setIsOpen={setIsAddLeadOpen} />
                 </Modal>
-                <Modal
-                    title="Add a stage"
-                    description=""
-                    isOpen={isAddStageOpen}
-                    onClose={() => setIsAddStageOpen(false)}
-                >
-                    <StageForm setIsOpen={setIsAddStageOpen} />
-                </Modal>
-                <Modal
-                    title="Change a stage order"
-                    description="Default Stages can't be deleted"
-                    isOpen={isMoveStageOpen}
-                    onClose={() => setIsMoveStageOpen(false)}
-                >
-                    <MoveStageForm setIsOpen={setIsMoveStageOpen} />
-                </Modal>
-                <Modal
-                    title="Delete a stage"
-                    description="Default Stages can't be deleted"
-                    isOpen={isDeleteStageOpen}
-                    onClose={() => setIsDeleteStageOpen(false)}
-                >
-                    <DeleteStageForm setIsOpen={setIsDeleteStageOpen} />
-                </Modal>
+                {isAdmin && (
+                    <>
+                        <Modal
+                            title="Add a stage"
+                            description=""
+                            isOpen={isAddStageOpen}
+                            onClose={() => setIsAddStageOpen(false)}
+                        >
+                            <StageForm setIsOpen={setIsAddStageOpen} />
+                        </Modal>
+                        <Modal
+                            title="Change a stage order"
+                            description="Default Stages can't be deleted"
+                            isOpen={isMoveStageOpen}
+                            onClose={() => setIsMoveStageOpen(false)}
+                        >
+                            <MoveStageForm setIsOpen={setIsMoveStageOpen} />
+                        </Modal>
+                        <Modal
+                            title="Delete a stage"
+                            description="Default Stages can't be deleted"
+                            isOpen={isDeleteStageOpen}
+                            onClose={() => setIsDeleteStageOpen(false)}
+                        >
+                            <DeleteStageForm setIsOpen={setIsDeleteStageOpen} />
+                        </Modal>
+                    </>
+                )}
 
                 <div className="flex w-full flex-col gap-4">
                     <div className="flex justify-between">
@@ -162,14 +167,6 @@ const LeadsPage: NextPage = () => {
                             <Typography>Explore all sales leads</Typography>
                         </div>
                         <div className="flex gap-4 items-center">
-                            <Link href={`/admin/sales_management/leads/my_leads`}>
-                                <Button variant={"link"}>
-                                    <LinkIcon className="w-4 h-4 mr-2" />
-                                    <Typography>
-                                        My Leads
-                                    </Typography>
-                                </Button>
-                            </Link>
                             <Button onClick={() => setIsAddLeadOpen(true)}>
                                 <PlusSquare className="w-4 h-4" />
                                 <Typography>
@@ -197,12 +194,12 @@ const LeadsPage: NextPage = () => {
                                         </SeverityPill>
                                     </TabsTrigger>
                                 ))}
-                                <Button customeColor={"mutedIcon"} onClick={() => setIsManageOpen(!isManageOpen)}>
+                                {isAdmin && <Button customeColor={"mutedIcon"} onClick={() => setIsManageOpen(!isManageOpen)}>
                                     Manage Stages <ChevronDownIcon className="w-4 h-4" />
-                                </Button>
+                                </Button>}
                             </TabsList>
                         )}
-                        <Accordion type="single" collapsible value={isManageOpen ? "Manage Stages" : undefined}>
+                        {isAdmin && <Accordion type="single" collapsible value={isManageOpen ? "Manage Stages" : undefined}>
                             <AccordionItem value="Manage Stages" >
                                 <AccordionContent>
                                     <div className="flex items-center space-x-4 w-full justify-center">
@@ -227,16 +224,16 @@ const LeadsPage: NextPage = () => {
                                     </div>
                                 </AccordionContent>
                             </AccordionItem>
-                        </Accordion>
+                        </Accordion>}
                         {stagesData?.stages.map(stage => (
                             <TabsContent key={stage.id} value={stage.name}>
                                 <div className="flex items-end justify-between gap-4 md:justify-start">
                                     <div className="flex flex-col gap-4 md:flex-row">
-                                        <SpinnerButton
+                                        {isAdmin && <SpinnerButton
                                             icon={ListChecks}
                                             text={`Assign All ${stage.name}`}
                                             isLoading={!!loadingToast} customeColor={"info"} onClick={() => onAssignAll(stage.id)}
-                                        />
+                                        />}
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <SpinnerButton

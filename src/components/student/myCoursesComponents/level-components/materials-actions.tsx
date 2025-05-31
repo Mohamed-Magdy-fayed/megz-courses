@@ -12,6 +12,11 @@ export default function MaterialActions({ material }: { material: MaterialColumn
 
     const { downloadFile } = useFileDownload();
 
+    // Drip logic: Only allow access if session is available/unlocked
+    const canAccessQuiz = !["Cancelled", "Scheduled"].includes(material.sessionStatus);
+    const canAccessSession = ["Ongoing", "Completed"].includes(material.sessionStatus);
+    const canAccessAssignment = material.sessionStatus === "Completed";
+
     // Batch download handler
     const handleBatchDownload = async () => {
         if (material.contentLinks && material.contentLinks.length > 0) {
@@ -31,7 +36,7 @@ export default function MaterialActions({ material }: { material: MaterialColumn
             <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 {material.quizLink && (
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem disabled={!canAccessQuiz} asChild>
                         <Link href={material.quizLink}>
                             <ListChecks className="w-4 h-4 mr-2" />
                             Quiz
@@ -39,7 +44,7 @@ export default function MaterialActions({ material }: { material: MaterialColumn
                     </DropdownMenuItem>
                 )}
                 {material.sessionLink && (
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem disabled={!canAccessSession} asChild>
                         <Link href={material.sessionLink}>
                             <FileText className="w-4 h-4 mr-2" />
                             Session
@@ -47,7 +52,7 @@ export default function MaterialActions({ material }: { material: MaterialColumn
                     </DropdownMenuItem>
                 )}
                 {material.assignmentLink && (
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem disabled={!canAccessAssignment} asChild>
                         <Link href={material.assignmentLink}>
                             <ListTodo className="w-4 h-4 mr-2" />
                             Assignment
@@ -55,7 +60,7 @@ export default function MaterialActions({ material }: { material: MaterialColumn
                     </DropdownMenuItem>
                 )}
                 {material.contentLinks && material.contentLinks.length > 0 && (
-                    <DropdownMenuItem onClick={handleBatchDownload}>
+                    <DropdownMenuItem disabled={!canAccessAssignment} onClick={handleBatchDownload}>
                         <Download className="w-4 h-4 mr-2" />
                         Download All Content
                     </DropdownMenuItem>

@@ -136,7 +136,10 @@ export const ordersRouter = createTRPCRouter({
 
                 if (student.leads[0]?.id) {
                     leadId = student.leads[0]?.id
+                    console.log(`Already found lead ID = ${leadId}`);
+
                 } else {
+                    console.log(`Creating new lead`);
                     const lead = await ctx.prisma.lead.create({
                         data: {
                             code: leadsCodeGenerator(),

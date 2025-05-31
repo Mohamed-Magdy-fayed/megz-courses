@@ -43,7 +43,7 @@ export const AssignModal = ({
                     // @ts-ignore
                     onValueChange={(e) => setAssigneeId(e)}
                 >
-                    <SelectTrigger className="pl-8">
+                    <SelectTrigger className="">
                         <SelectValue
                             placeholder="Select assignee"
                         />

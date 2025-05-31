@@ -12,24 +12,8 @@ export const leadStagesRouter = createTRPCRouter({
             z.object({ labels: z.array(z.string()) }).optional()
         )
         .query(async ({ ctx, input }) => {
-            // const leads = await ctx.prisma.lead.findMany()
-            // const emails = leads.map(l => l.email).filter(l => l !== null)
-            // const phones = leads.map(l => l.phone).filter(l => l !== null)
-
-            // const usersWithEamil = await ctx.prisma.user.findMany({ where: { email: { in: emails } } })
-            // const usersWithPhone = await ctx.prisma.user.findMany({ where: { phone: { in: phones } } })
-
-            // await ctx.prisma.lead.updateMany({
-            //     where: {
-            //         OR: [
-            //             { email: { in: usersWithEamil.map(u => u.email).filter(l => l !== null) } },
-            //             { phone: { in: usersWithPhone.map(u => u.phone).filter(l => l !== null) } },
-            //         ]
-            //     },
-            //     data: {
-            //         isInvalid: true,
-            //     }
-            // })
+            const isAdmin = ctx.session.user.userRoles.includes("Admin")
+            console.log("isAdmin", isAdmin);
 
             const stages = await ctx.prisma.leadStage.findMany({
                 select: {
@@ -40,7 +24,10 @@ export const leadStagesRouter = createTRPCRouter({
                     _count: {
                         select: {
                             leads: {
-                                where: (input?.labels.length || 0) > 0 ? { labels: { some: { value: { in: input?.labels } } } } : undefined,
+                                where: {
+                                    labels: (input?.labels.length || 0) > 0 ? { some: { value: { in: input?.labels } } } : undefined,
+                                    assignee: isAdmin ? undefined : { userId: ctx.session.user.id }
+                                },
                             }
                         },
                     },

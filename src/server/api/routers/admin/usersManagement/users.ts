@@ -296,6 +296,7 @@ export const usersRouter = createTRPCRouter({
         email: z.string().email(),
         password: z.string(),
         phone: z.string(),
+        leadId: z.string().optional(),
         image: z.string().optional(),
         state: z.string().optional(),
         country: z.string().optional(),
@@ -331,6 +332,7 @@ export const usersRouter = createTRPCRouter({
             city: input.city,
             country: input.country,
           },
+          leads: input.leadId ? { connect: { id: input.leadId } } : undefined,
           userRoles: [input.userRole || "Student"],
         },
       });

@@ -34,7 +34,6 @@ export type OrderInput = z.infer<typeof OrderInputSchema>
 
 export default function CreateOrderModal({ userExists, isOpen, setIsOpen }: CreateOrderModalProps) {
     const [isPrivate, setIsPrivate] = useState(false)
-    const [courseId, setCourseId] = useState<string>()
     const [productId, setProductId] = useState<string>()
     const [studentName, setStudentName] = useState("")
     const [studentEmail, setStudentEmail] = useState("")
@@ -44,7 +43,7 @@ export default function CreateOrderModal({ userExists, isOpen, setIsOpen }: Crea
     const trpcUtils = api.useUtils()
     const createOrderMutation = api.orders.createOrder.useMutation(
         createMutationOptions({
-            trpcUtils: trpcUtils.orders,
+            trpcUtils,
             toast,
             loadingToast,
             setLoadingToast,

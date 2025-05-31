@@ -2,13 +2,14 @@
 
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { VoteIcon, DownloadIcon, BookMarkedIcon } from "lucide-react";
+import { VoteIcon, DownloadIcon, BookMarkedIcon, AlertCircleIcon } from "lucide-react";
 
 import { api } from "@/lib/api";
 import { NavMain } from "@/components/pages/LearningLayout/nav-main";
 import LearningLayout from "@/components/pages/LearningLayout/LearningLayout";
 import MaterialShowcase from "@/components/admin/systemManagement/contentComponents/materials/MaterialShowcase";
 import { DisplaySubmissionBadge } from "@/components/student/myCoursesComponents/general/display-submission-badge";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 const SessionPage: NextPage = () => {
     const router = useRouter()
@@ -48,11 +49,19 @@ const SessionPage: NextPage = () => {
 
     return (
         <LearningLayout sidebarContent={sidebarContent}>
-            <MaterialShowcase
-                courseSlug={courseSlug}
-                levelSlug={levelSlug}
-                materialItem={session.materialItem}
-            />
+            {!canAccessSession
+                ? <Alert className="w-fit mx-auto">
+                    <AlertCircleIcon />
+                    <AlertTitle>Heads up!</AlertTitle>
+                    <AlertDescription>
+                        Session Content will be available soon!
+                    </AlertDescription>
+                </Alert>
+                : <MaterialShowcase
+                    courseSlug={courseSlug}
+                    levelSlug={levelSlug}
+                    materialItem={session.materialItem}
+                />}
         </LearningLayout>
     )
 }
