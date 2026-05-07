@@ -12,7 +12,7 @@ export const coursesRouter = createTRPCRouter({
           userId: ctx.session.user.id,
           course: { slug: courseSlug },
           level: { isNot: null },
-          status: { in: ["Ongoing", "Completed", "OrderPaid", "Waiting", "PlacementTest"] },
+          status: { in: ["Ongoing", "Completed", "OrderPaid", "Waiting"] },
         },
         select: {
           id: true,

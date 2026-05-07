@@ -71,6 +71,7 @@ enum UserScreen {
     config
     content
     products
+    certificates
     privacy
     terms
     documentation
@@ -214,6 +215,7 @@ model CourseLevel {
     id            String         @id @default(auto()) @map("_id") @db.ObjectId
     name          String
     slug          String
+    levelOrder    Int            @default(0)
     course        Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
     courseId      String         @db.ObjectId
     systemForms   SystemForm[]
@@ -221,7 +223,6 @@ model CourseLevel {
     certificates  Certificate[]
     courseStatus  CourseStatus[]
     materialItems MaterialItem[]
-    productItems  ProductItem[]
     updatedAt     DateTime       @updatedAt
     createdAt     DateTime       @default(now())
 
@@ -937,18 +938,17 @@ model Product {
 }
 
 model ProductItem {
-    id            String       @id @default(auto()) @map("_id") @db.ObjectId
-    product       Product      @relation(fields: [productId], references: [id])
-    productId     String       @db.ObjectId
-    course        Course       @relation(fields: [courseId], references: [id])
-    courseId      String       @db.ObjectId
-    level         CourseLevel? @relation(fields: [courseLevelId], references: [id])
-    courseLevelId String?      @db.ObjectId
+    id          String  @id @default(auto()) @map("_id") @db.ObjectId
+    product     Product @relation(fields: [productId], references: [id])
+    productId   String  @db.ObjectId
+    course      Course  @relation(fields: [courseId], references: [id])
+    courseId    String  @db.ObjectId
+    levelsCount Int
 
     updatedAt DateTime @updatedAt
     createdAt DateTime @default(now())
 
-    @@unique([productId, courseId, courseLevelId])
+    @@unique([productId, courseId])
 }
 
 // Notification system

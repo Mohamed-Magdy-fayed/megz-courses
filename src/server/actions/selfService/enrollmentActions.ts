@@ -52,7 +52,7 @@ export const enrollHandler = async ({
     }
 
     // Determine source and gather course info
-    let selectedCourses: { id: string; name: string; levelId?: string; }[] = [];
+    let selectedCourses: { id: string; name: string; levelsCount: number }[] = [];
     let productName = "";
     let productDescription = "";
     let totalAmount = 0;
@@ -60,15 +60,15 @@ export const enrollHandler = async ({
     const product = await ctx.prisma.product.findUnique({
         where: { id: productId },
         include: {
-            productItems: { include: { course: true, level: true } },
+            productItems: { include: { course: true } },
         },
     });
     if (!product) throw new TRPCError({ code: "BAD_REQUEST", message: "Product not found" });
 
-    selectedCourses = product.productItems.map(({ course, level }) => ({
+    selectedCourses = product.productItems.map(({ course, levelsCount }) => ({
         id: course.id,
         name: course.name,
-        levelId: level?.id,
+        levelsCount,
     }));
 
     productName = product.name;
@@ -123,7 +123,6 @@ export const enrollHandler = async ({
                                 status: "OrderCreated",
                                 course: { connect: { id: course.id } },
                                 user: { connect: { id: user.id } },
-                                level: course.levelId ? { connect: { id: course.levelId } } : undefined,
                             })),
                         },
                     },

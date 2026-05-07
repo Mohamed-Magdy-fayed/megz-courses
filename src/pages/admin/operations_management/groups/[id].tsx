@@ -20,6 +20,51 @@ const GroupPage: NextPage = () => {
     const id = router.query.id as string
 
     const { data, isLoading, isError, error } = api.zoomGroups.getZoomGroupById.useQuery({ id }, { enabled: !!id })
+    const finalTestOralQuestions = data?.zoomGroup?.courseLevel?.systemForms?.[0]?.oralTestQuestions || null
+    const studentsWithFinalExamContext = data?.zoomGroup?.students.map(student => {
+        const submission = student.systemFormSubmissions[0]
+        const hasSubmission = !!submission
+        const hasProgressDecision = !!submission?.oralFeedback?.includes("[Progress Decision]")
+        const hasCertificateIssued = !!student.certificates.find(certificate =>
+            certificate.courseId === data.zoomGroup?.courseId &&
+            certificate.courseLevelId === data.zoomGroup?.courseLevelId
+        )
+        const hasWaitingCourseStatus = !!student.courseStatus.find(status =>
+            status.courseId === data.zoomGroup?.courseId &&
+            status.status === "Waiting"
+        )
+
+        const isFinalExamActionLocked = hasProgressDecision || hasCertificateIssued || (hasSubmission && hasWaitingCourseStatus)
+        const finalExamStatus: "NotSubmitted" | "Submitted" | "Processed" = isFinalExamActionLocked
+            ? "Processed"
+            : hasSubmission
+                ? "Submitted"
+                : "NotSubmitted"
+
+        return {
+            id: student.id,
+            name: student.name,
+            email: student.email,
+            phone: student.phone,
+            image: student.image,
+            finalTestSubmission: submission
+                ? {
+                    id: submission.id,
+                    oralFeedback: submission.oralFeedback,
+                    oralQuestions: submission.systemForm.oralTestQuestions,
+                }
+                : undefined,
+            finalExamStatus,
+            isFinalExamActionLocked,
+            finalExamLockReason: hasProgressDecision
+                ? "Final exam decision already submitted"
+                : hasCertificateIssued
+                    ? "Certificate already issued"
+                    : hasWaitingCourseStatus
+                        ? "Student already moved to waiting course status"
+                        : undefined,
+        }
+    }) || []
 
     return (
         <AppLayout>
@@ -58,7 +103,8 @@ const GroupPage: NextPage = () => {
                                     <div className="flex flex-col gap-4 col-span-12 xl:col-span-6 row-span-2">
                                         <StudentsList
                                             groupId={id}
-                                            students={data.zoomGroup.students}
+                                            students={studentsWithFinalExamContext}
+                                            fallbackOralQuestions={finalTestOralQuestions}
                                             attendance={formatPercentage(calculateAttendancePercentages(data.zoomGroup).overallAttendancePercentage || 0)}
                                         />
                                     </div>

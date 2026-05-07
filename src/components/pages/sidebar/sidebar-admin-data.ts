@@ -1,4 +1,4 @@
-import { type LucideIcon, LayoutDashboardIcon, ClipboardListIcon, StickyNoteIcon, Users2Icon, ListChecksIcon, FileSearchIcon, CalendarClockIcon, TrendingUpIcon, ReceiptIcon, UserPlusIcon, UsersIcon, GraduationCapIcon, UserCogIcon, CircuitBoardIcon, UserCircleIcon, SlidersHorizontalIcon, Settings2Icon, FileStackIcon, PackageOpenIcon, ShieldCheckIcon, FileTextIcon, BookOpenIcon, LifeBuoyIcon } from "lucide-react";
+import { type LucideIcon, LayoutDashboardIcon, ClipboardListIcon, StickyNoteIcon, Users2Icon, ListChecksIcon, FileSearchIcon, CalendarClockIcon, TrendingUpIcon, ReceiptIcon, UserPlusIcon, UsersIcon, GraduationCapIcon, UserCogIcon, CircuitBoardIcon, UserCircleIcon, SlidersHorizontalIcon, Settings2Icon, FileStackIcon, PackageOpenIcon, ShieldCheckIcon, FileTextIcon, BookOpenIcon, LifeBuoyIcon, AwardIcon } from "lucide-react";
 
 export type NavLink = { label: string; url?: string; icon?: LucideIcon }
 
@@ -104,6 +104,11 @@ export const mainNavLinks: (NavLink & { children?: NavLink[] })[] = [
                 icon: PackageOpenIcon,
                 label: "Products Management",
                 url: "/admin/system_management/products",
+            },
+            {
+                icon: AwardIcon,
+                label: "Certificates",
+                url: "/certificates",
             },
         ],
     },

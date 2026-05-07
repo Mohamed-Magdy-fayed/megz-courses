@@ -11,8 +11,7 @@ export type ProductItemColumn = {
     courseId: string;
     courseName: string;
     courseSlug: string;
-    levelId?: string;
-    levelName?: string;
+    levelsCount: number;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -38,7 +37,7 @@ export const productItemColumns: ColumnDef<ProductItemColumn>[] = [
         enableHiding: false
     },
     { accessorKey: "courseId", cell: ({ row }) => <Link className="in-table-link" href={`/admin/system_management/content/courses/${row.original.courseSlug}`}>{row.original.courseName}</Link> },
-    { accessorKey: "levelName" },
+    { accessorKey: "levelsCount", header: "Levels" },
     { accessorKey: "updatedAt", cell: ({ row }) => format(row.original.updatedAt, "PPp"), filterFn },
     { accessorKey: "createdAt", cell: ({ row }) => format(row.original.createdAt, "PPp"), filterFn },
     { id: "actions", header: "Actions", cell: ({ row }) => <ProductItemActions {...row.original} /> },

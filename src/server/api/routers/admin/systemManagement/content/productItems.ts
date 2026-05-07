@@ -18,7 +18,6 @@ export const productItemsRouter = createTRPCRouter({
                 where: { id },
                 include: {
                     course: true,
-                    level: true,
                     product: true,
                 }
             });
@@ -34,7 +33,6 @@ export const productItemsRouter = createTRPCRouter({
                 where: { productId },
                 include: {
                     course: true,
-                    level: true,
                     product: true,
                 }
             });
@@ -43,11 +41,11 @@ export const productItemsRouter = createTRPCRouter({
         }),
     create: protectedProcedure
         .input(productItemSchema)
-        .mutation(async ({ input: { courseId, levelId, productId }, ctx }) => {
+        .mutation(async ({ input: { courseId, levelsCount, productId }, ctx }) => {
             const productItem = await ctx.prisma.productItem.create({
                 data: {
                     course: { connect: { id: courseId } },
-                    level: { connect: { id: levelId } },
+                    levelsCount,
                     product: { connect: { id: productId } },
                 },
             });
@@ -60,10 +58,10 @@ export const productItemsRouter = createTRPCRouter({
         .input(z.array(productItemSchema))
         .mutation(async ({ input, ctx }) => {
             const productItems = await ctx.prisma.$transaction(
-                input.map(({ courseId, levelId, productId }) => ctx.prisma.productItem.create({
+                input.map(({ courseId, levelsCount, productId }) => ctx.prisma.productItem.create({
                     data: {
                         course: { connect: { id: courseId } },
-                        level: { connect: { id: levelId } },
+                        levelsCount,
                         product: { connect: { id: productId } },
                     },
                 }))
@@ -78,7 +76,7 @@ export const productItemsRouter = createTRPCRouter({
         .mutation(
             async ({
                 ctx,
-                input: { id, courseId, levelId, productId },
+                input: { id, courseId, levelsCount, productId },
             }) => {
                 const productItem = await ctx.prisma.productItem.update({
                     where: {
@@ -86,7 +84,7 @@ export const productItemsRouter = createTRPCRouter({
                     },
                     data: {
                         course: { connect: { id: courseId } },
-                        level: { connect: { id: levelId } },
+                        levelsCount,
                         product: { connect: { id: productId } },
                     },
                 });

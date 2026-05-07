@@ -20,6 +20,7 @@ export const courseStatusRouter = createTRPCRouter({
                 where: {
                     user: { id: ctx.session.user.id },
                     course: { slug: courseSlug },
+                    status: { in: ["Waiting", "Ongoing", "Completed"] },
                 },
                 include: {
                     level: {

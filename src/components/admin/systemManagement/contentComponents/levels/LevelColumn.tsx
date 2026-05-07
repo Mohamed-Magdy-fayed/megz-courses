@@ -8,6 +8,7 @@ export type LevelRow = {
   id: string;
   name: string;
   slug: string;
+  levelOrder: number;
   courseSlug: string;
   createdAt: Date;
 };
@@ -44,6 +45,13 @@ export const columns: ColumnDef<LevelRow>[] = [
     header: "Slug",
   },
   {
+    accessorKey: "levelOrder",
+    header: "Order",
+    cell: ({ row }) => (
+      <Typography>{row.original.levelOrder}</Typography>
+    ),
+  },
+  {
     accessorKey: "createdAt",
     cell: ({ row }) => (
       <Typography>{row.original.createdAt.toDateString()}</Typography>
@@ -62,6 +70,7 @@ export const columns: ColumnDef<LevelRow>[] = [
       id={row.original.id}
       name={row.original.name}
       slug={row.original.slug}
+      levelOrder={row.original.levelOrder}
     />,
   },
 ];

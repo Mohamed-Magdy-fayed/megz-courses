@@ -220,9 +220,39 @@ export const zoomGroupsRouter = createTRPCRouter({
                             sessionDate: "asc"
                         }
                     },
-                    students: { include: { courseStatus: true, orders: true, } },
+                    students: {
+                        include: {
+                            courseStatus: true,
+                            certificates: true,
+                            orders: true,
+                            systemFormSubmissions: {
+                                where: {
+                                    zoomGroupId: id,
+                                    systemForm: {
+                                        type: "FinalTest",
+                                    },
+                                },
+                                orderBy: { createdAt: "desc" },
+                                include: {
+                                    systemForm: {
+                                        select: {
+                                            oralTestQuestions: true,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
                     teacher: { include: { user: true } },
-                    courseLevel: true,
+                    courseLevel: {
+                        include: {
+                            systemForms: {
+                                where: { type: "FinalTest" },
+                                select: { id: true, oralTestQuestions: true },
+                                take: 1,
+                            },
+                        },
+                    },
                 },
             });
             return { zoomGroup };

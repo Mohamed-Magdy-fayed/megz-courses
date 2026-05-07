@@ -47,14 +47,13 @@ export default function ProductItemsClient({ productId }: { productId: string })
     }
 
     const formattedData: ProductItemColumn[] = data?.productItems
-        .map(({ id, course, level, productId, createdAt, updatedAt }) => ({
+        .map(({ id, course, levelsCount, productId, createdAt, updatedAt }) => ({
             id,
             productId,
             courseId: course.id,
             courseName: course.name,
             courseSlug: course.slug,
-            levelId: level?.id,
-            levelName: level?.name,
+            levelsCount,
             createdAt,
             updatedAt,
         })) ?? []
@@ -77,17 +76,17 @@ export default function ProductItemsClient({ productId }: { productId: string })
                     },
                 ]}
                 searches={[
-                    { key: "levelName", label: "Level" },
+                    { key: "levelsCount", label: "Levels Count" },
                 ]}
                 isLoading={isLoading}
                 exportConfig={{ fileName: "Product Items", sheetName: "Product Items" }}
-                importConfig={{ reqiredFields: ["courseId", "levelId"], sheetName: "Product Items", templateName: "Product Items Template" }}
+                importConfig={{ reqiredFields: ["courseId", "levelsCount"], sheetName: "Product Items", templateName: "Product Items Template" }}
                 handleImport={(input) => {
-                    const importData = input.map(({ courseId, levelId }) => ({
+                    const importData = input.map(({ courseId, levelsCount }) => ({
                         id: "",
                         productId,
                         courseId,
-                        levelId,
+                        levelsCount: Number(levelsCount),
                     }))
 
                     const { success, data, error } = z.array(productItemSchema).safeParse(importData)

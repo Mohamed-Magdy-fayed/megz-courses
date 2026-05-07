@@ -17,9 +17,10 @@ interface CellActionProps {
     id: string;
     name: string;
     slug: string;
+    levelOrder: number;
 }
 
-const CellAction: React.FC<CellActionProps> = ({ id, name, slug }) => {
+const CellAction: React.FC<CellActionProps> = ({ id, name, slug, levelOrder }) => {
     const { toastInfo } = useToast();
     const [loading, setLoading] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
@@ -41,7 +42,7 @@ const CellAction: React.FC<CellActionProps> = ({ id, name, slug }) => {
                 isOpen={isEditOpen}
                 onClose={() => setIsEditOpen(false)}
                 children={(
-                    <LevelForm courseSlug={courseSlug} setIsOpen={setIsEditOpen} initialData={{ id, name, slug }} />
+                    <LevelForm courseSlug={courseSlug} setIsOpen={setIsEditOpen} initialData={{ id, name, slug, levelOrder }} />
                 )}
             />
             <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>

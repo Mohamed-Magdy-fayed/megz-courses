@@ -1,7 +1,7 @@
 import { ProductItemColumn } from "@/components/admin/systemManagement/products/productItems/ProductItemColumn"
-import SingleSelectLevel from "@/components/general/selectFields/SingleSelectLevel"
 import SingleSelectCourse from "@/components/general/selectFields/SingleSelectCourse"
 import { SpinnerButton } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { toastType, useToast } from "@/components/ui/use-toast"
 import { api } from "@/lib/api"
@@ -16,7 +16,7 @@ export const productItemSchema = z.object({
     id: z.string(),
     productId: z.string(),
     courseId: z.string(),
-    levelId: z.string(),
+    levelsCount: z.coerce.number().int().min(1, "Levels count must be at least 1"),
 })
 
 type FormValues = z.infer<typeof productItemSchema>
@@ -36,7 +36,7 @@ export default function ProductItemForm({ productId, setIsOpen, initialData }: P
             id: initialData?.id ?? "",
             productId: initialData?.productId ?? productId,
             courseId: initialData?.courseId ?? "",
-            levelId: initialData?.levelId ?? "",
+            levelsCount: initialData?.levelsCount ?? 1,
         }
     })
 
@@ -73,8 +73,6 @@ export default function ProductItemForm({ productId, setIsOpen, initialData }: P
         createMutation.mutate(data)
     }
 
-    const courseId = form.watch("courseId")
-
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-end justify-between gap-4">
@@ -98,16 +96,18 @@ export default function ProductItemForm({ productId, setIsOpen, initialData }: P
                     />
                     <FormField
                         control={form.control}
-                        name="levelId"
+                        name="levelsCount"
                         render={({ field }) => (
                             <FormItem className="p-2">
-                                <FormLabel>Level</FormLabel>
+                                <FormLabel>Number of Levels</FormLabel>
                                 <FormControl>
-                                    <SingleSelectLevel
-                                        courseId={courseId}
-                                        levelId={field.value}
-                                        setLevelId={field.onChange}
-                                        loading={!!loadingToast}
+                                    <Input
+                                        type="number"
+                                        min={1}
+                                        step={1}
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        disabled={!!loadingToast}
                                     />
                                 </FormControl>
                                 <FormMessage />

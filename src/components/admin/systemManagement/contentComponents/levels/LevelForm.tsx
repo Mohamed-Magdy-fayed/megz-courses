@@ -22,6 +22,7 @@ const formSchema = z.object({
   id: z.string(),
   name: z.string().min(1, "Name can't be empty"),
   slug: z.string().min(1, "Slug can't be empty").regex(/^\S*$/, "No spaces allowed"),
+  levelOrder: z.coerce.number().int().min(0, "Order must be 0 or higher"),
 });
 
 type LevelFormValues = z.infer<typeof formSchema>;
@@ -42,6 +43,7 @@ const LevelForm: React.FC<LevelFormProps> = ({ setIsOpen, initialData, courseSlu
     id: "",
     name: "",
     slug: "",
+    levelOrder: 0,
   };
 
   const form = useForm<LevelFormValues>({
@@ -118,6 +120,27 @@ const LevelForm: React.FC<LevelFormProps> = ({ setIsOpen, initialData, courseSlu
                       disabled={!!loadingToast}
                       placeholder="No spaces"
                       {...field}
+                      className="pl-8"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="levelOrder"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Level Order</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min={0}
+                      disabled={!!loadingToast}
+                      placeholder="0"
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                       className="pl-8"
                     />
                   </FormControl>

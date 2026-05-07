@@ -78,6 +78,8 @@ export const certificatesRouter = createTRPCRouter({
       const certificates = await ctx.prisma.certificate.findMany({
         include: {
           user: true,
+          course: true,
+          courseLevel: true,
         }
       })
 

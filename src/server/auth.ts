@@ -11,7 +11,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { env } from "@/env.mjs";
 import { prisma } from "@/server/db";
 import bcrypt from "bcrypt";
-import type { Devices, UserRoles, UserScreen } from "@prisma/client";
+import { Devices, UserRoles, UserScreen } from "@prisma/client";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`

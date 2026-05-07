@@ -27,22 +27,10 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, submission }) => {
     const [isUpdateOralOpen, setIsUpdateOralOpen] = useState(false)
     const [loadingToast, setLoadingToast] = useState<toastType | undefined>()
     const [oralFeedback, setOralFeedback] = useState("")
+    const [progressionDecision, setProgressionDecision] = useState<"MoveNextLevel" | "RepeatLevel" | "CompleteCourse">("MoveNextLevel")
 
-    const { toast } = useToast();
+    const { toast, toastError } = useToast();
     const trpcUtils = api.useUtils()
-
-    const submitOralMutation = api.systemFormSubmissions.submitOralTest.useMutation(
-        createMutationOptions({
-            toast,
-            loadingToast,
-            setLoadingToast,
-            trpcUtils,
-            successMessageFormatter: () => {
-                setIsUpdateOralOpen(false)
-                return `Oral test feedback submitted!`
-            }
-        })
-    )
 
     const deleteMutation = api.systemFormSubmissions.deleteSystemFormSubmission.useMutation(
         createMutationOptions({
@@ -57,8 +45,31 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, submission }) => {
         })
     )
 
+    const approveOutcomeMutation = api.systemFormSubmissions.approveFinalTestOutcome.useMutation(
+        createMutationOptions({
+            toast,
+            loadingToast,
+            setLoadingToast,
+            trpcUtils,
+            successMessageFormatter: ({ student, targetLevelName, outcome }) => {
+                setIsUpdateOralOpen(false)
+                return outcome === "MoveNextLevel"
+                    ? `Oral feedback submitted. ${student.name} moved to waiting list for ${targetLevelName}`
+                    : outcome === "RepeatLevel"
+                        ? `Oral feedback submitted. ${student.name} marked to repeat ${targetLevelName} and added to waiting list`
+                        : `Oral feedback submitted. ${student.name} marked as course completed and certificate issued`
+            }
+        })
+    )
+
     const handleSubmit = () => {
-        submitOralMutation.mutate({ id, oralFeedback })
+        if (!oralFeedback.trim()) return toastError("Please write oral feedback before submitting")
+
+        approveOutcomeMutation.mutate({
+            submissionId: id,
+            outcome: progressionDecision,
+            notes: oralFeedback,
+        })
     }
 
     const onDelete = () => {
@@ -82,6 +93,8 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, submission }) => {
                 setOralFeedback={setOralFeedback}
                 oralQuestions={submission.oralQuestions}
                 handleSubmit={handleSubmit}
+                progressionDecision={progressionDecision}
+                setProgressionDecision={setProgressionDecision}
             />
             <DropdownMenu open={isOpen} onOpenChange={(val) => setIsOpen(val)}>
                 <DropdownMenuTrigger asChild>
@@ -102,7 +115,7 @@ const ActionCell: React.FC<ActionCellProps> = ({ id, submission }) => {
                         setIsUpdateOralOpen(true)
                     }}>
                         <CheckSquareIcon className="w-4 h-4 mr-2" />
-                        Oral Test
+                        Oral Test + Progression Decision
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => {
                         setIsOpen(false)

@@ -6,7 +6,7 @@ import { toastType, useToast } from "@/components/ui/use-toast";
 import { api } from "@/lib/api";
 import { createMutationOptions } from "@/lib/mutationsHelper";
 import { CheckSquare, ChevronDownIcon, Edit, Trash } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function TraineeListActions(trainee: TraineeList) {
     const { toast, toastError } = useToast();
@@ -17,8 +17,18 @@ export default function TraineeListActions(trainee: TraineeList) {
     const [isSubmitLevelOpen, setIsSubmitLevelOpen] = useState(false)
     const [oralFeedback, setOralFeedback] = useState("")
     const [level, setLevel] = useState<string>()
+    const [confirmPartialAllocation, setConfirmPartialAllocation] = useState(false)
 
     const courseLevels = trainee.levelIds.map(l => ({ id: l.value, name: l.label }))
+
+    const { data: allocationPreview, isFetching: isAllocationPreviewLoading } = api.waitingList.getPlacementAllocationPreview.useQuery(
+        { courseId: trainee.courseId, userId: trainee.id, levelId: level || "" },
+        { enabled: isSubmitLevelOpen && !!level }
+    )
+
+    useEffect(() => {
+        setConfirmPartialAllocation(false)
+    }, [level, isSubmitLevelOpen])
 
     const trpcUtils = api.useUtils()
     const addToWaitingListMutation = api.waitingList.addToWaitingList.useMutation(
@@ -52,7 +62,17 @@ export default function TraineeListActions(trainee: TraineeList) {
 
     const handleSubmitLevel = () => {
         if (!level) return toastError("Please select a Level")
-        addToWaitingListMutation.mutate({ courseId: trainee.courseId, levelId: level, userId: trainee.id, oralFeedback })
+        if (allocationPreview?.missingLevelsCount && !confirmPartialAllocation) {
+            return toastError("Please confirm partial allocation before submitting")
+        }
+
+        addToWaitingListMutation.mutate({
+            courseId: trainee.courseId,
+            levelId: level,
+            userId: trainee.id,
+            oralFeedback,
+            acceptPartialAllocation: confirmPartialAllocation,
+        })
     };
 
     return (
@@ -75,6 +95,10 @@ export default function TraineeListActions(trainee: TraineeList) {
                 courseLevels={courseLevels}
                 handleSubmitLevel={handleSubmitLevel}
                 oralQuestions={""}
+                allocationPreview={allocationPreview}
+                isPreviewLoading={isAllocationPreviewLoading}
+                confirmPartialAllocation={confirmPartialAllocation}
+                setConfirmPartialAllocation={setConfirmPartialAllocation}
             />
             <DropdownMenu open={isMenuOpen} onOpenChange={(val) => setIsMenuOpen(val)}>
                 <DropdownMenuTrigger asChild>

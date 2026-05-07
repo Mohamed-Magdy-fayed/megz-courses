@@ -19,7 +19,7 @@ export const productsRouter = createTRPCRouter({
                 where: { id },
                 include: {
                     orders: true,
-                    productItems: { include: { course: true, level: true } }
+                    productItems: { include: { course: true } }
                 }
             });
 

@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { CheckSquare, Copy, ChevronDownIcon } from "lucide-react";
 import { toastType, useToast } from "@/components/ui/use-toast";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import Spinner from "@/components/ui/Spinner";
 import { Typography } from "@/components/ui/Typoghraphy";
@@ -35,6 +35,16 @@ const ActionCell: React.FC<ActionCellProps> = ({ testLink, courseId, courseName,
     const [level, setLevel] = useState<string>()
     const [addToWaitingListToast, setAddToWaitingListToast] = useState<toastType>()
     const [oralFeedback, setOralFeedback] = useState("")
+    const [confirmPartialAllocation, setConfirmPartialAllocation] = useState(false)
+
+    const { data: allocationPreview, isFetching: isAllocationPreviewLoading } = api.waitingList.getPlacementAllocationPreview.useQuery(
+        { courseId, userId, levelId: level || "" },
+        { enabled: isOpen && !!level }
+    )
+
+    useEffect(() => {
+        setConfirmPartialAllocation(false)
+    }, [level, isOpen])
 
     const trpcUtils = api.useUtils()
     const addToWaitingListMutation = api.waitingList.addToWaitingList.useMutation({
@@ -83,7 +93,17 @@ const ActionCell: React.FC<ActionCellProps> = ({ testLink, courseId, courseName,
 
     const handleSubmitLevel = () => {
         if (!level) return toastError("Please select a Level")
-        addToWaitingListMutation.mutate({ courseId, levelId: level, userId, oralFeedback })
+        if (allocationPreview?.missingLevelsCount && !confirmPartialAllocation) {
+            return toastError("Please confirm partial allocation before submitting")
+        }
+
+        addToWaitingListMutation.mutate({
+            courseId,
+            levelId: level,
+            userId,
+            oralFeedback,
+            acceptPartialAllocation: confirmPartialAllocation,
+        })
     };
 
     return (
@@ -100,6 +120,10 @@ const ActionCell: React.FC<ActionCellProps> = ({ testLink, courseId, courseName,
                 courseLevels={courseLevels}
                 handleSubmitLevel={handleSubmitLevel}
                 oralQuestions={oralTestQuestions}
+                allocationPreview={allocationPreview}
+                isPreviewLoading={isAllocationPreviewLoading}
+                confirmPartialAllocation={confirmPartialAllocation}
+                setConfirmPartialAllocation={setConfirmPartialAllocation}
             />
             <DropdownMenu open={isMenuOpen} defaultOpen={false} key={`oaoksnd`} onOpenChange={(val) => setIsMenuOpen(val)} modal>
                 <DropdownMenuTrigger asChild>

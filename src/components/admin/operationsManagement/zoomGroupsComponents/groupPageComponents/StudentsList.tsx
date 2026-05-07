@@ -8,8 +8,26 @@ import { Separator } from '@/components/ui/separator'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { MessagesSquareIcon } from 'lucide-react'
+import StudentFinalExamAction from '@/components/admin/operationsManagement/zoomGroupsComponents/groupPageComponents/StudentFinalExamAction'
+import { Badge } from '@/components/ui/badge'
 
-export default function StudentsList({ students, attendance, groupId }: { groupId: string; students: { id: string, name: string, email: string, phone?: string, image?: string | null }[], attendance: string }) {
+type StudentListItem = {
+    id: string;
+    name: string;
+    email: string;
+    phone?: string;
+    image?: string | null;
+    finalTestSubmission?: {
+        id: string;
+        oralFeedback: string | null;
+        oralQuestions: string | null;
+    };
+    finalExamStatus: "NotSubmitted" | "Submitted" | "Processed";
+    isFinalExamActionLocked: boolean;
+    finalExamLockReason?: string;
+}
+
+export default function StudentsList({ students, attendance, groupId, fallbackOralQuestions }: { groupId: string; students: StudentListItem[], attendance: string, fallbackOralQuestions?: string | null }) {
     return (
         <Card className="flex flex-col gap-4">
             <CardHeader className="flex flex-row py-2 items-center justify-between gap-2">
@@ -33,16 +51,38 @@ export default function StudentsList({ students, attendance, groupId }: { groupI
                                         <Typography>{student.name}</Typography>
                                     </Link>
                                 </WrapWithTooltip>
+                                <Badge
+                                    className={
+                                        student.finalExamStatus === "Processed"
+                                            ? "w-fit bg-emerald-100 text-emerald-700"
+                                            : student.finalExamStatus === "Submitted"
+                                                ? "w-fit bg-amber-100 text-amber-700"
+                                                : "w-fit bg-slate-100 text-slate-700"
+                                    }
+                                >
+                                    {student.finalExamStatus === "NotSubmitted"
+                                        ? "Not Submitted"
+                                        : student.finalExamStatus}
+                                </Badge>
                                 <Typography>{student.email}</Typography>
                                 <Typography>{student.phone || "no phone"}</Typography>
                             </div>
-                            <WrapWithTooltip text="Go to discussion">
-                                <Button variant="outline" customeColor="primaryOutlined">
-                                    <Link href={`/admin/operations_management/discussions/${groupId}/${student.id}`}>
-                                        <MessagesSquareIcon className="w-4 h-4" />
-                                    </Link>
-                                </Button>
-                            </WrapWithTooltip>
+                            <div className="flex items-center gap-2">
+                                <StudentFinalExamAction
+                                    studentName={student.name}
+                                    finalSubmission={student.finalTestSubmission}
+                                    fallbackOralQuestions={fallbackOralQuestions}
+                                    isLocked={student.isFinalExamActionLocked}
+                                    lockReason={student.finalExamLockReason}
+                                />
+                                <WrapWithTooltip text="Go to discussion">
+                                    <Button variant="outline" customeColor="primaryOutlined">
+                                        <Link href={`/admin/operations_management/discussions/${groupId}/${student.id}`}>
+                                            <MessagesSquareIcon className="w-4 h-4" />
+                                        </Link>
+                                    </Button>
+                                </WrapWithTooltip>
+                            </div>
                         </div>
                     ))}
                     <Separator />

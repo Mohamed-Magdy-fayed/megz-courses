@@ -215,6 +215,7 @@ const CoursePage = () => {
                                     id: level.id,
                                     name: level.name,
                                     slug: level.slug,
+                                    levelOrder: level.levelOrder ?? 0,
                                     courseSlug,
                                     createdAt: level.createdAt,
                                 })) : []} />

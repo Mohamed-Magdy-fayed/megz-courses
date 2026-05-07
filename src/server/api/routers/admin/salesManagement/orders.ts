@@ -182,7 +182,6 @@ export const ordersRouter = createTRPCRouter({
                             status: "OrderCreated",
                             isPrivate,
                             course: { connect: { id: item.courseId } },
-                            level: item.courseLevelId ? { connect: { id: item.courseLevelId } } : undefined,
                             user: { connect: { id: studentId || createdStudentId } },
                         }))
                     },

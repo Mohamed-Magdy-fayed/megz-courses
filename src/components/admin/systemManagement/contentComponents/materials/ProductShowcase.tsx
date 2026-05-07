@@ -3,7 +3,7 @@ import { ConceptTitle, Typography } from "@/components/ui/Typoghraphy";
 import { Prisma } from "@prisma/client";
 
 type ProductShowcaseProps = {
-    product: Prisma.ProductGetPayload<{ include: { productItems: { include: { course: true, level: true } } } }>;
+    product: Prisma.ProductGetPayload<{ include: { productItems: { include: { course: true } } } }>;
 }
 
 const ProductShowcase = ({ product }: ProductShowcaseProps) => {
@@ -21,7 +21,7 @@ const ProductShowcase = ({ product }: ProductShowcaseProps) => {
                             <CardDescription>{productItem.course.description}</CardDescription>
                         </CardHeader>
                         <CardFooter className="grid">
-                            <Typography>{productItem.level?.name ?? "One level"}</Typography>
+                            <Typography>{productItem.levelsCount} levels</Typography>
                         </CardFooter>
                     </Card>
                 </div>

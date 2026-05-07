@@ -52,7 +52,7 @@ const ProductPage = ({ id }: InferGetServerSidePropsType<typeof getServerSidePro
                                 <Typography variant={"secondary"}>Contents: </Typography>
                                 <div className="flex gap-2 flex-wrap">
                                     {data.product.productItems.map(item => (
-                                        <Typography key={item.id}>{item.course.name} - {item.level?.name}</Typography>
+                                        <Typography key={item.id}>{item.course.name} - {item.levelsCount} levels</Typography>
                                     ))}
                                 </div>
                             </div>

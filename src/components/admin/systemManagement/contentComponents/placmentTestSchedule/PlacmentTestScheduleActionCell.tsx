@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { CheckSquare, Copy, ChevronDownIcon, TargetIcon, Trash2Icon, CalendarClockIcon } from "lucide-react";
 import { toastType, useToast } from "@/components/ui/use-toast";
-import { SetStateAction, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { env } from "@/env.mjs";
 import { createMutationOptions } from "@/lib/mutationsHelper";
@@ -40,6 +40,16 @@ const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, cou
     const [loadingToast, setLoadingToast] = useState<toastType | undefined>()
     const [level, setLevel] = useState<string>()
     const [oralFeedback, setOralFeedback] = useState("")
+    const [confirmPartialAllocation, setConfirmPartialAllocation] = useState(false)
+
+    const { data: allocationPreview, isFetching: isAllocationPreviewLoading } = api.waitingList.getPlacementAllocationPreview.useQuery(
+        { courseId, userId, levelId: level || "" },
+        { enabled: isSubmitLevelOpen && !!level }
+    )
+
+    useEffect(() => {
+        setConfirmPartialAllocation(false)
+    }, [level, isSubmitLevelOpen])
 
     const trpcUtils = api.useUtils()
     const addToWaitingListMutation = api.waitingList.addToWaitingList.useMutation(
@@ -74,7 +84,16 @@ const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, cou
 
     const handleSubmitLevel = () => {
         if (!level) return toastError("Please select a Level")
-        addToWaitingListMutation.mutate({ courseId, levelId: level, userId, oralFeedback })
+        if (allocationPreview?.missingLevelsCount && !confirmPartialAllocation) {
+            return toastError("Please confirm partial allocation before submitting")
+        }
+        addToWaitingListMutation.mutate({
+            courseId,
+            levelId: level,
+            userId,
+            oralFeedback,
+            acceptPartialAllocation: confirmPartialAllocation,
+        })
     };
 
     const handleDelete = () => {
@@ -102,6 +121,10 @@ const ActionCell: React.FC<ActionCellProps> = ({ courseId, courseLevels, id, cou
                 courseLevels={courseLevels.map(l => ({ id: l.value, name: l.label }))}
                 handleSubmitLevel={handleSubmitLevel}
                 oralQuestions={oralTestQuestions}
+                allocationPreview={allocationPreview}
+                isPreviewLoading={isAllocationPreviewLoading}
+                confirmPartialAllocation={confirmPartialAllocation}
+                setConfirmPartialAllocation={setConfirmPartialAllocation}
             />
             <SchedulePlacementTestModal
                 courseId={courseId}
